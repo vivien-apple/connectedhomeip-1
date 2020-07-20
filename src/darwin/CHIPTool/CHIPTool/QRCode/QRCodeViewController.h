@@ -16,11 +16,10 @@
  */
 
 #import <AVFoundation/AVFoundation.h>
-#import <UIKit/UIKit.h>
+#import "CHIPViewControllerBase.h"
 
-#import "BLEConnectionController.h"
 
-@interface QRCodeViewController : UIViewController <AVCaptureMetadataOutputObjectsDelegate>
+@interface QRCodeViewController : CHIPViewControllerBase <AVCaptureMetadataOutputObjectsDelegate>
 
 @property (weak, nonatomic) IBOutlet UIView * qrCodeViewPreview;
 @property (weak, nonatomic) IBOutlet UITextField * manualCodeTextField;
@@ -31,8 +30,6 @@
 
 @property (weak, nonatomic) IBOutlet UIActivityIndicatorView * activityIndicator;
 @property (weak, nonatomic) IBOutlet UILabel * errorLabel;
-
-@property (strong, nonatomic) BLEConnectionController * ble;
 
 @property (weak, nonatomic) IBOutlet UIView * setupPayloadView;
 @property (weak, nonatomic) IBOutlet UILabel * manualCodeLabel;
