@@ -23,12 +23,25 @@
 #include <support/logging/CHIPLogging.h>
 #include <system/SystemPacketBuffer.h>
 
+#include "esp_log.h"
+
 #if CONFIG_HAVE_DISPLAY
 extern BluetoothWidget bluetoothLED;
 #endif // CONFIG_HAVE_DISPLAY
 
 using namespace ::chip;
 using namespace ::chip::Ble;
+using namespace ::chip::DeviceLayer;
+
+extern const char * TAG;
+
+void GetStationIP(char * ip_buf, size_t ip_len)
+{
+    tcpip_adapter_ip_info_t ip;
+    tcpip_adapter_get_ip_info(TCPIP_ADAPTER_IF_STA, &ip);
+    IPAddress::FromIPv4(ip.ip).ToString(ip_buf, ip_len);
+    ESP_LOGE(TAG, "Got station ip %s", ip_buf);
+}
 
 void HandleBleMessageReceived(BLEEndPoint * endPoint, PacketBuffer * buffer)
 {
@@ -38,6 +51,9 @@ void HandleBleMessageReceived(BLEEndPoint * endPoint, PacketBuffer * buffer)
     memcpy(msg, buffer->Start(), bufferLen);
 
     ChipLogProgress(Ble, "BLEEndPoint: Receive message: %s", msg);
+
+    char gw_ip[INET6_ADDRSTRLEN];
+    GetStationIP(gw_ip, sizeof(gw_ip));
 
     endPoint->Send(buffer);
 }

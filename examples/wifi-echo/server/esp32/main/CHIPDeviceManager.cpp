@@ -60,7 +60,7 @@ CHIP_ERROR CHIPDeviceManager::Init(CHIPDeviceManagerCallbacks * cb)
     {
     case RendezvousInformationFlags::kBLE:
         ConnectivityMgr().SetBLEAdvertisingEnabled(ConnectivityManager::kCHIPoBLEServiceMode_Enabled);
-        ConnectivityMgr().SetWiFiAPMode(ConnectivityManager::kWiFiAPMode_Disabled);
+        ConnectivityMgr().SetWiFiStationMode(ConnectivityManager::kWiFiStationMode_Enabled);
         break;
 
     case RendezvousInformationFlags::kWiFi:
