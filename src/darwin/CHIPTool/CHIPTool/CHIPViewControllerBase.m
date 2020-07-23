@@ -57,6 +57,10 @@ static NSString * const ipKey = @"ipk";
     dispatch_queue_t callbackQueue = dispatch_queue_create("com.zigbee.chip.example.callback", DISPATCH_QUEUE_SERIAL);
     self.chipController = [CHIPDeviceController sharedController];
     [self.chipController registerCallbacks:callbackQueue
+        onConnected:^(void) {
+            typeof(self) strongSelf = weakSelf;
+            [strongSelf postConnected];
+        }
         onMessage:^(NSData * _Nonnull message) {
             typeof(self) strongSelf = weakSelf;
             NSString * strMessage = [[NSString alloc] initWithData:message encoding:NSUTF8StringEncoding];
@@ -195,6 +199,19 @@ static NSString * const ipKey = @"ipk";
             self.resultLabel.hidden = YES;
         });
     });
+}
+
+- (void)postConnected
+{
+    NSString * msg = @"ping";
+
+    NSError * error;
+    BOOL didSend = [self.chipController sendMessage:[msg dataUsingEncoding:NSUTF8StringEncoding] error:&error];
+    if (!didSend) {
+        NSLog(@"Error: %@", error.localizedDescription);
+    } else {
+        NSLog(@"Message Sent");
+    }
 }
 
 - (void)viewDidDisappear:(BOOL)animated
