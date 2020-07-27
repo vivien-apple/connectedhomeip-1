@@ -23,6 +23,8 @@
 
 using namespace ::chip;
 
+extern CHIP_ERROR SetWiFiStationProvisioning(char * ssid, char * key);
+
 BluetoothWidget * RendezvousSession::mVirtualLed;
 
 Ble::BLEEndPoint * RendezvousSession::mEndPoint = nullptr;
@@ -82,5 +84,8 @@ void RendezvousSession::HandleMessageReceived(Ble::BLEEndPoint * endPoint, Packe
 
     ChipLogProgress(Ble, "RendezvousSession: Receive message: %s", msg);
 
-    mEndPoint->Send(buffer);
+    char *ssid = strtok(msg, ":");
+    char *key = strtok(NULL, ":");
+    ChipLogProgress(Ble, "RendezvousSession: SSID: %s, key: %s", ssid, key);
+    SetWiFiStationProvisioning(ssid, key);
 }
