@@ -24,7 +24,7 @@
 #include "LEDWidget.h"
 #include "ListScreen.h"
 #include "QRCodeScreen.h"
-#include "RendezvousSession.h"
+#include "RendezvousDeviceCallbacks.h"
 #include "ScreenManager.h"
 #include "WiFiWidget.h"
 #include "esp_event_loop.h"
@@ -105,7 +105,6 @@ WiFiWidget wifiLED;
 const char * TAG = "wifi-echo-demo";
 
 static EchoDeviceCallbacks EchoCallbacks;
-RendezvousSession * rendezvousSession = nullptr;
 
 namespace {
 
@@ -463,7 +462,7 @@ extern "C" void app_main()
 
     if (isRendezvousBLE())
     {
-        rendezvousSession = new RendezvousSession(&bluetoothLED);
+        DeviceLayer::ConnectivityMgr().AddCHIPoBLEConnectionHandler(RendezvousDeviceCallbacks::OnNewConnection);
     }
 
 #if CONFIG_USE_ECHO_CLIENT

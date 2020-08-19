@@ -128,11 +128,10 @@ CHIP_ERROR ChipDeviceController::Shutdown()
         mSessionManager = NULL;
     }
 
-    if (mUnsecuredTransport != NULL)
+    if (mRendezvousSession != NULL)
     {
-        mUnsecuredTransport->Release();
-        delete mUnsecuredTransport;
-        mUnsecuredTransport = NULL;
+        delete mRendezvousSession;
+        mRendezvousSession = NULL;
     }
 
     mConState = kConnectionState_NotConnected;
@@ -151,23 +150,19 @@ CHIP_ERROR ChipDeviceController::ConnectDevice(NodeId remoteDeviceId, const uint
                                                MessageReceiveHandler onMessageReceived, ErrorHandler onError)
 {
     CHIP_ERROR err = CHIP_NO_ERROR;
-
-#if CONFIG_DEVICE_LAYER && CONFIG_NETWORK_LAYER_BLE
-    Transport::BLE * transport;
+    RendezvousSession * rendezvousSession;
 
     VerifyOrExit(mState == kState_Initialized && mConState == kConnectionState_NotConnected, err = CHIP_ERROR_INCORRECT_STATE);
+
+    rendezvousSession = new RendezvousSession(RendezvousParameters(Transport::PeerAddress::BLE(), discriminator, setupPINCode));
+    err               = rendezvousSession->Init(this);
+    SuccessOrExit(err);
+
+    mRendezvousSession = rendezvousSession;
 
     mRemoteDeviceId  = Optional<NodeId>::Value(remoteDeviceId);
     mAppReqState     = appReqState;
     mOnNewConnection = onConnected;
-
-    transport = new Transport::BLE();
-    err       = transport->Init(Transport::BleConnectionParameters(this, DeviceLayer::ConnectivityMgr().GetBleLayer())
-                              .SetDiscriminator(discriminator)
-                              .SetSetupPINCode(setupPINCode));
-    SuccessOrExit(err);
-
-    mUnsecuredTransport = transport->Retain();
 
     // connected state before 'OnConnect'
     mConState = kConnectionState_Connected;
@@ -179,9 +174,6 @@ CHIP_ERROR ChipDeviceController::ConnectDevice(NodeId remoteDeviceId, const uint
     {
         mConState = kConnectionState_NotConnected;
     }
-#else
-    err = CHIP_ERROR_UNSUPPORTED_CHIP_FEATURE;
-#endif // CONFIG_DEVICE_LAYER && CONFIG_NETWORK_LAYER_BLE
 
     SuccessOrExit(err);
 
@@ -298,11 +290,10 @@ CHIP_ERROR ChipDeviceController::DisconnectDevice()
         mSessionManager = NULL;
     }
 
-    if (mUnsecuredTransport != NULL)
+    if (mRendezvousSession != NULL)
     {
-        mUnsecuredTransport->Release();
-        delete mUnsecuredTransport;
-        mUnsecuredTransport = NULL;
+        delete mRendezvousSession;
+        mRendezvousSession = NULL;
     }
 
     mConState = kConnectionState_NotConnected;
@@ -317,14 +308,10 @@ CHIP_ERROR ChipDeviceController::SendMessage(void * appReqState, PacketBuffer * 
 
     mAppReqState = appReqState;
 
-    if (mUnsecuredTransport != NULL)
+    if (mRendezvousSession != NULL)
     {
         VerifyOrExit(IsConnected(), err = CHIP_ERROR_INCORRECT_STATE);
-        // Unsecured transport does not use a MessageHeader, but the Transport::Base API expects one, so
-        // let build an empty one for now.
-        MessageHeader header;
-        Transport::PeerAddress peerAddress = Transport::PeerAddress::BLE();
-        err                                = mUnsecuredTransport->SendMessage(header, peerAddress, buffer);
+        err = mRendezvousSession->SendMessage(buffer);
     }
     else
     {
@@ -402,7 +389,7 @@ void ChipDeviceController::OnMessageReceived(const MessageHeader & header, Trans
     }
 }
 
-void ChipDeviceController::OnBLEConnectionError(BLE_ERROR err)
+void ChipDeviceController::OnRendezvousError(CHIP_ERROR err)
 {
     if (mOnError)
     {
@@ -410,9 +397,9 @@ void ChipDeviceController::OnBLEConnectionError(BLE_ERROR err)
     }
 }
 
-void ChipDeviceController::OnBLEConnectionComplete(BLE_ERROR err)
+void ChipDeviceController::OnRendezvousConnectionOpened()
 {
-    ChipLogDetail(Controller, "BLE Connection complete");
+    ChipLogDetail(Controller, "Rendezvous Connection opened");
 
     if (mOnNewConnection)
     {
@@ -420,9 +407,9 @@ void ChipDeviceController::OnBLEConnectionComplete(BLE_ERROR err)
     }
 }
 
-void ChipDeviceController::OnBLEConnectionClosed(BLE_ERROR err)
+void ChipDeviceController::OnRendezvousConnectionClosed(CHIP_ERROR err)
 {
-    ChipLogDetail(Controller, "BLE Connection closed");
+    ChipLogDetail(Controller, "Rendezvous Connection closed");
 
     // TODO: determine if connection closed is really to be treated as an error.
     if (mOnError)
@@ -431,7 +418,7 @@ void ChipDeviceController::OnBLEConnectionClosed(BLE_ERROR err)
     }
 }
 
-void ChipDeviceController::OnBLEPacketReceived(PacketBuffer * buffer)
+void ChipDeviceController::OnRendezvousMessageReceived(PacketBuffer * buffer)
 {
     if (mOnComplete.Response)
     {

@@ -15,23 +15,25 @@
  *    limitations under the License.
  */
 
-#include "BluetoothWidget.h"
-
 #include <platform/CHIPDeviceLayer.h>
+#include <transport/RendezvousSession.h>
 
 using namespace ::chip;
 
-class RendezvousSession
+class RendezvousDeviceCallbacks : public RendezvousSessionCallback
 {
 public:
-    RendezvousSession(BluetoothWidget * virtualLed);
     CHIP_ERROR Send(const char * msg);
+    static void OnNewConnection(Ble::BLEEndPoint * endPoint);
+
+    //////////// RendezvousSession callback Implementation ///////////////
+    void OnRendezvousError(CHIP_ERROR err) override;
+    void OnRendezvousConnectionOpened() override;
+    void OnRendezvousConnectionClosed(CHIP_ERROR err) override;
+    void OnRendezvousMessageReceived(PacketBuffer * buffer) override;
 
 private:
-    static void HandleConnectionOpened(Ble::BLEEndPoint * endPoint);
-    static void HandleConnectionClosed(Ble::BLEEndPoint * endPoint, BLE_ERROR err);
-    static void HandleMessageReceived(Ble::BLEEndPoint * endPoint, System::PacketBuffer * buffer);
+    RendezvousSession * mRendezvousSession;
 
-    static BluetoothWidget * mVirtualLed;
-    static Ble::BLEEndPoint * mEndPoint;
+    CHIP_ERROR Init(Ble::BLEEndPoint * endPoint);
 };
