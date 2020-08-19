@@ -128,11 +128,10 @@ CHIP_ERROR ChipDeviceController::Shutdown()
         mSessionManager = NULL;
     }
 
-    if (mUnsecuredTransport != NULL)
+    if (mRendezvousSession != NULL)
     {
-        mUnsecuredTransport->Release();
-        delete mUnsecuredTransport;
-        mUnsecuredTransport = NULL;
+        delete mRendezvousSession;
+        mRendezvousSession = NULL;
     }
 
     mConState = kConnectionState_NotConnected;
@@ -167,7 +166,7 @@ CHIP_ERROR ChipDeviceController::ConnectDevice(NodeId remoteDeviceId, const uint
                               .SetSetupPINCode(setupPINCode));
     SuccessOrExit(err);
 
-    mUnsecuredTransport = transport->Retain();
+    mRendezvousSession = new RendezvousSession(transport, nullptr);
 
     // connected state before 'OnConnect'
     mConState = kConnectionState_Connected;
@@ -298,11 +297,10 @@ CHIP_ERROR ChipDeviceController::DisconnectDevice()
         mSessionManager = NULL;
     }
 
-    if (mUnsecuredTransport != NULL)
+    if (mRendezvousSession != NULL)
     {
-        mUnsecuredTransport->Release();
-        delete mUnsecuredTransport;
-        mUnsecuredTransport = NULL;
+        delete mRendezvousSession;
+        mRendezvousSession = NULL;
     }
 
     mConState = kConnectionState_NotConnected;
@@ -317,14 +315,10 @@ CHIP_ERROR ChipDeviceController::SendMessage(void * appReqState, PacketBuffer * 
 
     mAppReqState = appReqState;
 
-    if (mUnsecuredTransport != NULL)
+    if (mRendezvousSession != NULL)
     {
         VerifyOrExit(IsConnected(), err = CHIP_ERROR_INCORRECT_STATE);
-        // Unsecured transport does not use a MessageHeader, but the Transport::Base API expects one, so
-        // let build an empty one for now.
-        MessageHeader header;
-        Transport::PeerAddress peerAddress = Transport::PeerAddress::BLE();
-        err                                = mUnsecuredTransport->SendMessage(header, peerAddress, buffer);
+        err = mRendezvousSession->SendMessage(buffer);
     }
     else
     {

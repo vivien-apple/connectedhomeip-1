@@ -33,6 +33,7 @@
 #include <core/CHIPTLV.h>
 #include <support/DLLUtil.h>
 #include <transport/BLE.h>
+#include <transport/RendezvousSession.h>
 #include <transport/SecureSessionMgr.h>
 #include <transport/UDP.h>
 
@@ -213,7 +214,7 @@ private:
     Inet::InetLayer * mInetLayer;
 
     SecureSessionMgr<Transport::UDP> * mSessionManager;
-    Transport::Base * mUnsecuredTransport = NULL;
+    RendezvousSession * mRendezvousSession;
 
     ConnectionState mConState;
     void * mAppReqState;

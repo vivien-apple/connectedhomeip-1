@@ -24,10 +24,24 @@ namespace chip {
 RendezvousSession::RendezvousSession(Transport::Base * transport, RendezvousSessionCallbackHandler * callbacks) :
     mTransport(transport), mCallbacks(callbacks)
 {
-    (void) mTransport;
-    (void) mCallbacks;
+    mTransport->Retain();
 }
 
-RendezvousSession::~RendezvousSession() {}
+RendezvousSession::~RendezvousSession()
+{
+    mTransport->Release();
+    mCallbacks = nullptr;
+}
+
+CHIP_ERROR RendezvousSession::SendMessage(System::PacketBuffer * buffer)
+{
+    // Rendezvous does not use a MessageHeader, but the Transport::Base API expects one, so
+    // let build an empty one for now.
+    MessageHeader header;
+    Transport::PeerAddress peerAddress = Transport::PeerAddress::BLE();
+    CHIP_ERROR err                     = mTransport->SendMessage(header, peerAddress, buffer);
+
+    return err;
+}
 
 } // namespace chip

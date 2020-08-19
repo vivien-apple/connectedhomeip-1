@@ -39,6 +39,7 @@ class RendezvousSession
 public:
     RendezvousSession(Transport::Base * transport, RendezvousSessionCallbackHandler * callbacks);
     virtual ~RendezvousSession();
+    CHIP_ERROR SendMessage(System::PacketBuffer * buffer);
 
 private:
     Transport::Base * mTransport                  = nullptr;
