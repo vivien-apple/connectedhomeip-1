@@ -32,7 +32,6 @@
 #include <core/CHIPCore.h>
 #include <core/CHIPTLV.h>
 #include <support/DLLUtil.h>
-#include <transport/BLE.h>
 #include <transport/RendezvousSession.h>
 #include <transport/SecureSessionMgr.h>
 #include <transport/UDP.h>
@@ -51,7 +50,7 @@ typedef void (*ErrorHandler)(ChipDeviceController * deviceController, void * app
 typedef void (*MessageReceiveHandler)(ChipDeviceController * deviceController, void * appReqState, System::PacketBuffer * payload);
 };
 
-class DLL_EXPORT ChipDeviceController : public SecureSessionMgrCallback, public Transport::BLECallbackHandler
+class DLL_EXPORT ChipDeviceController : public SecureSessionMgrCallback, public RendezvousSessionCallback
 {
     friend class ChipDeviceControllerCallback;
 
@@ -186,17 +185,13 @@ public:
 
     void OnNewConnection(Transport::PeerConnectionState * state, SecureSessionMgrBase * mgr) override;
 
-    //////////// BLECallbackHandler Implementation ///////////////
-    void OnBLEConnectionError(BLE_ERROR err) override;
-    void OnBLEConnectionComplete(BLE_ERROR err) override;
-    void OnBLEConnectionClosed(BLE_ERROR err) override;
-    void OnBLEPacketReceived(PacketBuffer * buffer) override;
+    //////////// RendezvousSession callback Implementation ///////////////
+    void OnRendezvousError(CHIP_ERROR err) override;
+    void OnRendezvousConnectionOpened(CHIP_ERROR err) override;
+    void OnRendezvousConnectionClosed(CHIP_ERROR err) override;
+    void OnRendezvousMessageReceived(PacketBuffer * buffer) override;
 
 private:
-#if CONFIG_NETWORK_LAYER_BLE
-    friend class Transport::BLE;
-#endif
-
     enum
     {
         kState_NotInitialized = 0,

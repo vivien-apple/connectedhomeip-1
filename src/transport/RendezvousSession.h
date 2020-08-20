@@ -18,32 +18,65 @@
 #ifndef __TRANSPORT_RENDEZVOUSSESSION_H__
 #define __TRANSPORT_RENDEZVOUSSESSION_H__
 
-#include <system/SystemPacketBuffer.h>
+#include <core/CHIPCore.h>
+#include <transport/BLE.h>
 #include <transport/Base.h>
 
 namespace chip {
 
-class RendezvousSessionCallbackHandler
+class RendezvousParameters
 {
 public:
-    virtual ~RendezvousSessionCallbackHandler() {}
+    explicit RendezvousParameters(const Transport::PeerAddress & peerAddress, uint16_t discriminator, uint32_t setupPINCode) :
+        mPeerAddress(peerAddress), mDiscriminator(discriminator), mSetupPINCode(setupPINCode)
+    {}
 
-    virtual void OnConnectionOpened(CHIP_ERROR err)               = 0;
-    virtual void OnConnectionClosed(CHIP_ERROR err)               = 0;
-    virtual void OnMessageReceived(System::PacketBuffer * buffer) = 0;
-    virtual void OnError(CHIP_ERROR err)                          = 0;
+    bool IsUDP() const { return mPeerAddress.GetTransportType() == Transport::Type::kUdp; };
+    bool IsBLE() const { return mPeerAddress.GetTransportType() == Transport::Type::kBle; };
+
+    uint16_t GetDiscriminator() const { return mDiscriminator; };
+    uint32_t GetSetupPINCode() const { return mSetupPINCode; };
+
+private:
+    Transport::PeerAddress mPeerAddress;
+    uint16_t mDiscriminator = 0; ///< the target peripheral discriminator
+    uint32_t mSetupPINCode  = 0; ///< the target peripheral setup PIN Code
 };
 
-class RendezvousSession
+class RendezvousSessionCallback
 {
 public:
-    RendezvousSession(Transport::Base * transport, RendezvousSessionCallbackHandler * callbacks);
+    virtual ~RendezvousSessionCallback() {}
+
+    virtual void OnRendezvousConnectionOpened(CHIP_ERROR err)               = 0;
+    virtual void OnRendezvousConnectionClosed(CHIP_ERROR err)               = 0;
+    virtual void OnRendezvousMessageReceived(System::PacketBuffer * buffer) = 0;
+    virtual void OnRendezvousError(CHIP_ERROR err)                          = 0;
+};
+
+class RendezvousSession : public Transport::BLECallbackHandler
+{
+public:
+    explicit RendezvousSession(const RendezvousParameters & params) : mParams(params) {}
+
+    CHIP_ERROR Init(RendezvousSessionCallback * callbacks);
     virtual ~RendezvousSession();
     CHIP_ERROR SendMessage(System::PacketBuffer * buffer);
 
+    //////////// BLECallbackHandler Implementation ///////////////
+    void OnBLEConnectionError(BLE_ERROR err) override;
+    void OnBLEConnectionComplete(BLE_ERROR err) override;
+    void OnBLEConnectionClosed(BLE_ERROR err) override;
+    void OnBLEPacketReceived(System::PacketBuffer * buffer) override;
+
 private:
-    Transport::Base * mTransport                  = nullptr;
-    RendezvousSessionCallbackHandler * mCallbacks = nullptr; ///< transport events
+#if CONFIG_DEVICE_LAYER && CONFIG_NETWORK_LAYER_BLE
+    CHIP_ERROR InitInternalBle(uint16_t discriminator, uint32_t setupPINCode);
+#endif
+
+    const RendezvousParameters & mParams;
+    Transport::Base * mTransport           = nullptr;
+    RendezvousSessionCallback * mCallbacks = nullptr; ///< transport events
 };
 
 } // namespace chip
