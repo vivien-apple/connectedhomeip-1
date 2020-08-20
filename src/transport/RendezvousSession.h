@@ -34,6 +34,7 @@ public:
     bool IsUDP() const { return mPeerAddress.GetTransportType() == Transport::Type::kUdp; };
     bool IsBLE() const { return mPeerAddress.GetTransportType() == Transport::Type::kBle; };
 
+    const Transport::PeerAddress GetPeerAddress() const { return mPeerAddress; };
     uint16_t GetDiscriminator() const { return mDiscriminator; };
     uint32_t GetSetupPINCode() const { return mSetupPINCode; };
 
