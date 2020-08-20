@@ -87,12 +87,24 @@ CHIP_ERROR RendezvousSession::SendMessage(System::PacketBuffer * buffer)
     return err;
 }
 
-void RendezvousSession::OnBLEConnectionError(BLE_ERROR err) {}
+void RendezvousSession::OnBLEConnectionError(BLE_ERROR err)
+{
+    mCallbacks->OnRendezvousError(err);
+}
 
-void RendezvousSession::OnBLEConnectionComplete(BLE_ERROR err) {}
+void RendezvousSession::OnBLEConnectionComplete(BLE_ERROR err)
+{
+    mCallbacks->OnRendezvousConnectionOpened(err);
+}
 
-void RendezvousSession::OnBLEConnectionClosed(BLE_ERROR err) {}
+void RendezvousSession::OnBLEConnectionClosed(BLE_ERROR err)
+{
+    mCallbacks->OnRendezvousConnectionClosed(err);
+}
 
-void RendezvousSession::OnBLEPacketReceived(PacketBuffer * buffer) {}
+void RendezvousSession::OnBLEPacketReceived(PacketBuffer * buffer)
+{
+    mCallbacks->OnRendezvousMessageReceived(buffer);
+}
 
 } // namespace chip
