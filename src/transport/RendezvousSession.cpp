@@ -35,7 +35,19 @@ CHIP_ERROR RendezvousSession::Init(RendezvousSessionCallback * callbacks)
     if (mParams.IsBLE())
     {
 #if CONFIG_DEVICE_LAYER && CONFIG_NETWORK_LAYER_BLE
-        err = InitInternalBle(mParams.GetDiscriminator(), mParams.GetSetupPINCode());
+        Transport::BleConnectionParameters params = Transport::BleConnectionParameters(this);
+
+        if (mParams.HasDiscriminator())
+        {
+            params.SetBleLayer(DeviceLayer::ConnectivityMgr().GetBleLayer());
+            params.SetDiscriminator(mParams.GetDiscriminator());
+        }
+        else if (mParams.HasEndPoint())
+        {
+            params.SetEndPoint(mParams.GetEndPoint());
+        }
+
+        err = InitInternalBle(params);
 #else
         err = CHIP_ERROR_UNSUPPORTED_CHIP_FEATURE;
 #endif // CONFIG_DEVICE_LAYER && CONFIG_NETWORK_LAYER_BLE
@@ -49,13 +61,12 @@ exit:
 }
 
 #if CONFIG_DEVICE_LAYER && CONFIG_NETWORK_LAYER_BLE
-CHIP_ERROR RendezvousSession::InitInternalBle(uint16_t discriminator, uint32_t setupPINCode)
+CHIP_ERROR RendezvousSession::InitInternalBle(Transport::BleConnectionParameters & params)
 {
     CHIP_ERROR err             = CHIP_NO_ERROR;
     Transport::BLE * transport = new Transport::BLE();
-    err = transport->Init(Transport::BleConnectionParameters(this, DeviceLayer::ConnectivityMgr().GetBleLayer())
-                              .SetDiscriminator(discriminator)
-                              .SetSetupPINCode(setupPINCode));
+
+    err = transport->Init(params);
     SuccessOrExit(err);
 
     mTransport = transport;

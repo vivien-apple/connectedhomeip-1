@@ -17,21 +17,28 @@
 
 #include "BluetoothWidget.h"
 
+#include <transport/RendezvousSession.h>
 #include <platform/CHIPDeviceLayer.h>
 
 using namespace ::chip;
 
-class RendezvousSession
+class RendezvousDeviceCallbacks : public RendezvousSessionCallback
 {
 public:
-    RendezvousSession(BluetoothWidget * virtualLed);
+    RendezvousDeviceCallbacks(BluetoothWidget * virtualLed);
     CHIP_ERROR Send(const char * msg);
 
 private:
-    static void HandleConnectionOpened(Ble::BLEEndPoint * endPoint);
-    static void HandleConnectionClosed(Ble::BLEEndPoint * endPoint, BLE_ERROR err);
-    static void HandleMessageReceived(Ble::BLEEndPoint * endPoint, System::PacketBuffer * buffer);
+    //////////// RendezvousSession callback Implementation ///////////////
+    void OnRendezvousError(CHIP_ERROR err) override;
+    void OnRendezvousConnectionOpened(CHIP_ERROR err) override;
+    void OnRendezvousConnectionClosed(CHIP_ERROR err) override;
+    void OnRendezvousMessageReceived(PacketBuffer * buffer) override;
 
-    static BluetoothWidget * mVirtualLed;
-    static Ble::BLEEndPoint * mEndPoint;
+    static void OnNewConnection(Ble::BLEEndPoint * endPoint);
+
+    uint32_t mSetupPINCode;
+    BluetoothWidget * mVirtualLed;
+
+    static RendezvousSession * mRendezvousSession;
 };

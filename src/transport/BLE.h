@@ -45,8 +45,8 @@ class BLECallbackHandler;
 class BleConnectionParameters
 {
 public:
-    explicit BleConnectionParameters(BLECallbackHandler * callbacks, Ble::BleLayer * layer) :
-        mCallbackHandler(callbacks), mLayer(layer)
+    explicit BleConnectionParameters(BLECallbackHandler * callbacks) :
+        mCallbackHandler(callbacks)
     {}
 
     BleConnectionParameters(const BleConnectionParameters &) = default;
@@ -54,7 +54,14 @@ public:
 
     BLECallbackHandler * GetCallbackHandler() { return mCallbackHandler; }
 
+    bool HasBleLayer() const { return mLayer != nullptr; };
     Ble::BleLayer * GetBleLayer() { return mLayer; }
+    BleConnectionParameters & SetBleLayer(Ble::BleLayer * bleLayer)
+    {
+        mLayer = bleLayer;
+
+        return *this;
+    }
 
     bool HasConnectionObject() const { return mConnectionObj; };
     BLE_CONNECTION_OBJECT GetConnectionObject() const { return mConnectionObj; };
@@ -74,11 +81,11 @@ public:
         return *this;
     }
 
-    bool HasSetupPINCode() const { return mSetupPINCode != 0; };
-    uint32_t GetSetupPINCode() const { return mSetupPINCode; };
-    BleConnectionParameters & SetSetupPINCode(const uint32_t setupPINCode)
+    bool HasEndPoint() const { return mEndPoint != nullptr; };
+    Ble::BLEEndPoint * GetEndPoint() const { return mEndPoint; };
+    BleConnectionParameters & SetEndPoint(Ble::BLEEndPoint * endPoint)
     {
-        mSetupPINCode = setupPINCode;
+        mEndPoint = endPoint;
 
         return *this;
     }
@@ -86,9 +93,9 @@ public:
 private:
     BLECallbackHandler * mCallbackHandler = nullptr;
     Ble::BleLayer * mLayer                = nullptr; ///< Associated ble layer
+    Ble::BLEEndPoint * mEndPoint          = nullptr; ///< the target peripheral opened BLEEndPoint
     BLE_CONNECTION_OBJECT mConnectionObj  = 0;       ///< the target peripheral BLE_CONNECTION_OBJECT
     uint16_t mDiscriminator               = 0;       ///< the target peripheral discriminator
-    uint32_t mSetupPINCode                = 0;       ///< the target peripheral setup PIN Code
 };
 
 /** Implements a transport using BLE.
@@ -129,7 +136,9 @@ public:
 
 private:
     CHIP_ERROR InitInternal(Ble::BleLayer * bleLayer, BLE_CONNECTION_OBJECT connObj);
+    CHIP_ERROR InitInternal(Ble::BLEEndPoint * endPoint);
     CHIP_ERROR DelegateConnection(Ble::BleLayer * bleLayer, const uint16_t connDiscriminator);
+    void SetupEvents(Ble::BLEEndPoint * endPoint);
 
     // Those functions are BLEConnectionDelegate callbacks used when the connection
     // parameters used a name instead of a BLE_CONNECTION_OBJECT.

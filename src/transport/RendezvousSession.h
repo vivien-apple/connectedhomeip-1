@@ -31,17 +31,28 @@ public:
         mPeerAddress(peerAddress), mDiscriminator(discriminator), mSetupPINCode(setupPINCode)
     {}
 
+    explicit RendezvousParameters(const Transport::PeerAddress & peerAddress, Ble::BLEEndPoint * endPoint, uint32_t setupPINCode) :
+        mPeerAddress(peerAddress), mEndPoint(endPoint), mSetupPINCode(setupPINCode)
+    {}
+
     bool IsUDP() const { return mPeerAddress.GetTransportType() == Transport::Type::kUdp; };
     bool IsBLE() const { return mPeerAddress.GetTransportType() == Transport::Type::kBle; };
 
     const Transport::PeerAddress GetPeerAddress() const { return mPeerAddress; };
+
+    bool HasDiscriminator() const { return mDiscriminator != 0; };
     uint16_t GetDiscriminator() const { return mDiscriminator; };
+
     uint32_t GetSetupPINCode() const { return mSetupPINCode; };
+
+    bool HasEndPoint() const { return mEndPoint != nullptr; };
+    Ble::BLEEndPoint * GetEndPoint() const { return mEndPoint; };
 
 private:
     Transport::PeerAddress mPeerAddress;
-    uint16_t mDiscriminator = 0; ///< the target peripheral discriminator
-    uint32_t mSetupPINCode  = 0; ///< the target peripheral setup PIN Code
+    Ble::BLEEndPoint * mEndPoint = nullptr;
+    uint16_t mDiscriminator      = 0; ///< the target peripheral discriminator
+    uint32_t mSetupPINCode       = 0; ///< the target peripheral setup PIN Code
 };
 
 class RendezvousSessionCallback
@@ -72,7 +83,7 @@ public:
 
 private:
 #if CONFIG_DEVICE_LAYER && CONFIG_NETWORK_LAYER_BLE
-    CHIP_ERROR InitInternalBle(uint16_t discriminator, uint32_t setupPINCode);
+    CHIP_ERROR InitInternalBle(Transport::BleConnectionParameters & params);
 #endif
 
     const RendezvousParameters & mParams;

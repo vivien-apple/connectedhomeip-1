@@ -15,7 +15,7 @@
  *    limitations under the License.
  */
 
-#include "RendezvousSession.h"
+#include "RendezvousDeviceCallbacks.h"
 #include <support/CodeUtils.h>
 #include <support/ErrorStr.h>
 #include <support/logging/CHIPLogging.h>
@@ -25,18 +25,17 @@ using namespace ::chip;
 
 extern CHIP_ERROR SetWiFiStationProvisioning(char * ssid, char * key);
 
-BluetoothWidget * RendezvousSession::mVirtualLed;
+RendezvousSession * RendezvousDeviceCallbacks::mRendezvousSession = nullptr;
 
-Ble::BLEEndPoint * RendezvousSession::mEndPoint = nullptr;
-
-RendezvousSession::RendezvousSession(BluetoothWidget * virtualLed)
+RendezvousSession::RendezvousDeviceCallbacks(uint32_t setupPINCode, BluetoothWidget * virtualLed)
 {
+    mSetupPINCode = setupPINCode;
     mVirtualLed = virtualLed;
 
     DeviceLayer::ConnectivityMgr().AddCHIPoBLEConnectionHandler(HandleConnectionOpened);
 }
 
-CHIP_ERROR RendezvousSession::Send(const char * msg)
+CHIP_ERROR RendezvousDeviceCallbacks::Send(const char * msg)
 {
     CHIP_ERROR err = CHIP_NO_ERROR;
     System::PacketBuffer * buffer;
@@ -48,31 +47,34 @@ CHIP_ERROR RendezvousSession::Send(const char * msg)
     memcpy(buffer->Start(), msg, msgLen);
     buffer->SetDataLength(msgLen);
 
-    err = mEndPoint->Send(buffer);
+    err = mRendezvousSession->SendMessage(buffer);
 
 exit:
     return err;
 }
 
-void RendezvousSession::HandleConnectionOpened(Ble::BLEEndPoint * endPoint)
+void RendezvousDeviceCallbacks::OnNewConnection(Ble::BLEEndPoint * endPoint)
 {
-    ChipLogProgress(Ble, "RendezvousSession: Connection opened");
+    RendezvousParameters params = new RendezvousParameters(Transport::PeerAddress::BLE(), endPoint, mSetupPINCode);
+    mRendezvousSession = new RendezvousSession(params);
+    mRendezvousSession->Init(this);
+}
 
-    mEndPoint                     = endPoint;
-    mEndPoint->OnMessageReceived  = HandleMessageReceived;
-    mEndPoint->OnConnectionClosed = HandleConnectionClosed;
+void RendezvousDeviceCallbacks::OnRendezvousError(CHIP_ERROR err)
+{
+}
+
+void RendezvousDeviceCallbacks::OnRendezvousConnectionOpened(CHIP_ERROR err)
+{
     mVirtualLed->Set(true);
 }
 
-void RendezvousSession::HandleConnectionClosed(Ble::BLEEndPoint * endPoint, BLE_ERROR err)
+void RendezvousDeviceCallbacks::OnRendezvousConnectionClosed(CHIP_ERROR err)
 {
-    ChipLogProgress(Ble, "RendezvousSession: Connection closed (%s)", ErrorStr(err));
-
-    mEndPoint = nullptr;
     mVirtualLed->Set(false);
 }
 
-void RendezvousSession::HandleMessageReceived(Ble::BLEEndPoint * endPoint, PacketBuffer * buffer)
+void RendezvousDeviceCallbacks::OnRendezvousMessageReceived(PacketBuffer * buffer)
 {
     const size_t bufferLen = buffer->DataLength();
     char msg[bufferLen];
@@ -100,6 +102,7 @@ void RendezvousSession::HandleMessageReceived(Ble::BLEEndPoint * endPoint, Packe
     else
     {
         // Echo.
-        mEndPoint->Send(buffer);
+        mRendezvousSession->Send(buffer);
     }
 }
+
