@@ -15,24 +15,35 @@
  *    limitations under the License.
  */
 
+#include "esp_log.h"
+#include "BluetoothWidget.h"
 #include "RendezvousDeviceCallbacks.h"
+#include <platform/ConfigurationManager.h>
 #include <support/CodeUtils.h>
 #include <support/ErrorStr.h>
 #include <support/logging/CHIPLogging.h>
 #include <system/SystemPacketBuffer.h>
 
+static const char * TAG = "rendezvous-devicecallbacks";
+
 using namespace ::chip;
+
+extern BluetoothWidget bluetoothLED;
+
+RendezvousDeviceCallbacks * rendezvousCallbacks = nullptr;
 
 extern CHIP_ERROR SetWiFiStationProvisioning(char * ssid, char * key);
 
-RendezvousSession * RendezvousDeviceCallbacks::mRendezvousSession = nullptr;
-
-RendezvousSession::RendezvousDeviceCallbacks(uint32_t setupPINCode, BluetoothWidget * virtualLed)
+RendezvousDeviceCallbacks::RendezvousDeviceCallbacks(Ble::BLEEndPoint * endPoint)
 {
-    mSetupPINCode = setupPINCode;
-    mVirtualLed = virtualLed;
-
-    DeviceLayer::ConnectivityMgr().AddCHIPoBLEConnectionHandler(HandleConnectionOpened);
+    uint32_t setupPINCode;
+    CHIP_ERROR err = GetSetupPINCode(&setupPINCode);
+    if (err == CHIP_NO_ERROR)
+    {
+        RendezvousParameters params = RendezvousParameters(Transport::PeerAddress::BLE(), endPoint, setupPINCode);
+        mRendezvousSession = new RendezvousSession(params);
+        mRendezvousSession->Init(this);
+    }
 }
 
 CHIP_ERROR RendezvousDeviceCallbacks::Send(const char * msg)
@@ -41,7 +52,7 @@ CHIP_ERROR RendezvousDeviceCallbacks::Send(const char * msg)
     System::PacketBuffer * buffer;
     const size_t msgLen = strlen(msg);
 
-    VerifyOrExit(mEndPoint, err = CHIP_ERROR_INCORRECT_STATE);
+    VerifyOrExit(mRendezvousSession, err = CHIP_ERROR_INCORRECT_STATE);
 
     buffer = System::PacketBuffer::NewWithAvailableSize(msgLen);
     memcpy(buffer->Start(), msg, msgLen);
@@ -53,11 +64,19 @@ exit:
     return err;
 }
 
+CHIP_ERROR GetSetupPINCode(uint32_t * setupPINCode)
+{
+    CHIP_ERROR err = DeviceLayer::ConfigurationMgr().GetSetupPinCode(*setupPINCode);
+    VerifyOrExit(err == CHIP_NO_ERROR, ESP_LOGE(TAG, "Couldn't get setupPINCode: %d", err));
+
+exit:
+    return err;
+}
+
+
 void RendezvousDeviceCallbacks::OnNewConnection(Ble::BLEEndPoint * endPoint)
 {
-    RendezvousParameters params = new RendezvousParameters(Transport::PeerAddress::BLE(), endPoint, mSetupPINCode);
-    mRendezvousSession = new RendezvousSession(params);
-    mRendezvousSession->Init(this);
+    rendezvousCallbacks = new RendezvousDeviceCallbacks(endPoint);
 }
 
 void RendezvousDeviceCallbacks::OnRendezvousError(CHIP_ERROR err)
@@ -66,12 +85,12 @@ void RendezvousDeviceCallbacks::OnRendezvousError(CHIP_ERROR err)
 
 void RendezvousDeviceCallbacks::OnRendezvousConnectionOpened(CHIP_ERROR err)
 {
-    mVirtualLed->Set(true);
+    bluetoothLED.Set(true);
 }
 
 void RendezvousDeviceCallbacks::OnRendezvousConnectionClosed(CHIP_ERROR err)
 {
-    mVirtualLed->Set(false);
+    bluetoothLED.Set(false);
 }
 
 void RendezvousDeviceCallbacks::OnRendezvousMessageReceived(PacketBuffer * buffer)
@@ -81,7 +100,7 @@ void RendezvousDeviceCallbacks::OnRendezvousMessageReceived(PacketBuffer * buffe
     msg[bufferLen] = 0;
     memcpy(msg, buffer->Start(), bufferLen);
 
-    ChipLogProgress(Ble, "RendezvousSession: Receive message: %s", msg);
+    ChipLogProgress(Ble, "RendezvousDeviceCallbacks: Receive message: %s", msg);
 
     if ((bufferLen > 3) && (msg[0] == msg[1]) && (msg[0] == msg[bufferLen - 1]))
     {
@@ -91,18 +110,18 @@ void RendezvousDeviceCallbacks::OnRendezvousMessageReceived(PacketBuffer * buffe
         char * key  = strtok(NULL, msg);
         if (ssid && key)
         {
-            ChipLogProgress(Ble, "RendezvousSession: SSID: %s, key: %s", ssid, key);
+            ChipLogProgress(Ble, "RendezvousDeviceCallbacks: SSID: %s, key: %s", ssid, key);
             SetWiFiStationProvisioning(ssid, key);
         }
         else
         {
-            ChipLogError(Ble, "RendezvousSession: SSID: %p, key: %p", ssid, key);
+            ChipLogError(Ble, "RendezvousDeviceCallbacks: SSID: %p, key: %p", ssid, key);
         }
     }
     else
     {
         // Echo.
-        mRendezvousSession->Send(buffer);
+        mRendezvousSession->SendMessage(buffer);
     }
 }
 

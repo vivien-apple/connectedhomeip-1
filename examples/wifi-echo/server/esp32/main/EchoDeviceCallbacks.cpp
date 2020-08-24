@@ -24,7 +24,7 @@
  **/
 
 #include "EchoDeviceCallbacks.h"
-#include "RendezvousSession.h"
+#include "RendezvousDeviceCallbacks.h"
 #include "esp_heap_caps.h"
 #include "esp_log.h"
 #include <platform/CHIPDeviceLayer.h>
@@ -46,7 +46,7 @@ using namespace ::chip::DeviceLayer;
 // In wifi-echo.cpp
 extern LEDWidget statusLED;
 extern WiFiWidget wifiLED;
-extern RendezvousSession * rendezvousSession;
+extern RendezvousDeviceCallbacks * rendezvousCallbacks;
 
 void EchoDeviceCallbacks::DeviceEventCallback(const ChipDeviceEvent * event, intptr_t arg)
 {
@@ -64,9 +64,9 @@ void EchoDeviceCallbacks::DeviceEventCallback(const ChipDeviceEvent * event, int
 
                 // Since the commissioner device does not yet have a mechanism to discover the IP address
                 // of the peripheral, the following code send it over the current Rendezvous session.
-                if (rendezvousSession != NULL)
+                if (rendezvousCallbacks != NULL)
                 {
-                    rendezvousSession->Send(ipAddrStr);
+                    rendezvousCallbacks->Send(ipAddrStr);
                 }
             }
             wifiLED.Set(true);

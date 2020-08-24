@@ -98,14 +98,13 @@ extern void startClient(void);
 
 #endif // CONFIG_HAVE_DISPLAY
 
-LEDWidget statusLED;
 BluetoothWidget bluetoothLED;
+LEDWidget statusLED;
 WiFiWidget wifiLED;
 
 const char * TAG = "wifi-echo-demo";
 
 static EchoDeviceCallbacks EchoCallbacks;
-RendezvousDeviceCallbacks * rendezvousCallbacks = nullptr;
 
 namespace {
 
@@ -463,7 +462,7 @@ extern "C" void app_main()
 
     if (isRendezvousBLE())
     {
-        rendezvousCallbacks = new RendezvousDeviceCallbacks(&bluetoothLED);
+        DeviceLayer::ConnectivityMgr().AddCHIPoBLEConnectionHandler(RendezvousDeviceCallbacks::OnNewConnection);
     }
 
 #if CONFIG_USE_ECHO_CLIENT
