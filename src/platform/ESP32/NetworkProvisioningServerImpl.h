@@ -53,8 +53,8 @@ private:
     // ===== Members used by GenericNetworkProvisioningServerImpl<> to invoke platform-specific
     //       operations.
 
-    CHIP_ERROR GetWiFiStationProvision(NetworkInfo & netInfo, bool includeCredentials);
-    CHIP_ERROR SetWiFiStationProvision(const NetworkInfo & netInfo);
+    CHIP_ERROR GetWiFiStationProvision(DeviceNetworkInfo & netInfo, bool includeCredentials);
+    CHIP_ERROR SetWiFiStationProvision(const DeviceNetworkInfo & netInfo);
     CHIP_ERROR ClearWiFiStationProvision(void);
     CHIP_ERROR InitiateWiFiScan(void);
     void HandleScanDone(void);

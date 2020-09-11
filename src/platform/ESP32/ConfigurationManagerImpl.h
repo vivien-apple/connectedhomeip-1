@@ -35,6 +35,7 @@
 #endif
 
 #include <platform/ESP32/ESP32Config.h>
+#include <platform/internal/DeviceNetworkInfo.h>
 
 namespace chip {
 namespace DeviceLayer {
@@ -82,6 +83,9 @@ private:
     friend ConfigurationManagerImpl & ConfigurationMgrImpl(void);
 
     static ConfigurationManagerImpl sInstance;
+
+    CHIP_ERROR GetWiFiStationSecurityType(Protocols::NetworkProvisioning::WiFiSecurityType & secType);
+    CHIP_ERROR UpdateWiFiStationSecurityType(Protocols::NetworkProvisioning::WiFiSecurityType secType);
 
     // ===== Private members reserved for use by this class only.
 

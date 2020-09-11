@@ -32,15 +32,20 @@
 #if CHIP_DEVICE_CONFIG_ENABLE_THREAD
 #include <platform/ThreadStackManager.h>
 #endif // CHIP_DEVICE_CONFIG_ENABLE_THREAD
+#include <platform/internal/DeviceNetworkInfo.h>
+#include <protocols/CHIPProtocols.h>
+#include <protocols/common/CommonProtocol.h>
 
 namespace chip {
 namespace DeviceLayer {
 namespace Internal {
 
 using namespace ::chip::TLV;
+using namespace ::chip::Protocols::NetworkProvisioning;
+using namespace ::chip::Protocols::Common;
 
-using Profiles::kChipProfile_Common;
-using Profiles::kChipProfile_NetworkProvisioning;
+using Protocols::kChipProtocol_Common;
+using Protocols::kChipProtocol_NetworkProvisioning;
 
 namespace {
 
@@ -106,7 +111,7 @@ exit:
     // If an error occurred, send a Internal Error back to the requestor.
     if (err != CHIP_NO_ERROR)
     {
-        SendStatusReport(kChipProfile_Common, kStatus_InternalError, err);
+        SendStatusReport(kChipProtocol_Common, kStatus_InternalError, err);
         mState = kState_Idle;
     }
 }
@@ -174,14 +179,14 @@ CHIP_ERROR GenericNetworkProvisioningServerImpl<ImplClass>::HandleScanNetworks(u
 #endif // CHIP_DEVICE_CONFIG_ENABLE_THREAD
 
     default:
-        err = SendStatusReport(kChipProfile_NetworkProvisioning, kStatusCode_UnsupportedNetworkType);
+        err = SendStatusReport(kChipProtocol_NetworkProvisioning, kStatusCode_UnsupportedNetworkType);
         ExitNow();
     }
 
     // Reject the request if the application is currently in control of the requested network.
     if (isAppControlled)
     {
-        err = SendStatusReport(kChipProfile_Common, kStatus_NotAvailable);
+        err = SendStatusReport(kChipProtocol_Common, kStatus_NotAvailable);
         ExitNow();
     }
 
@@ -200,7 +205,7 @@ CHIP_ERROR GenericNetworkProvisioningServerImpl<ImplClass>::DoInit()
     CHIP_ERROR err;
 
     // Call init on the server base class.
-    err = ServerBaseClass::Init(&::chip::DeviceLayer::ExchangeMgr);
+    err = ServerBaseClass::Init(ExchangeMgr);
     SuccessOrExit(err);
 
     // Set the pointer to the delegate object.
@@ -255,14 +260,14 @@ CHIP_ERROR GenericNetworkProvisioningServerImpl<ImplClass>::HandleAddUpdateNetwo
         // If updating the provision, verify that the specified network is provisioned.
         if (isUpdate && !ConnectivityMgr().IsWiFiStationProvisioned())
         {
-            err = SendStatusReport(kChipProfile_NetworkProvisioning, kStatusCode_UnknownNetwork);
+            err = SendStatusReport(kChipProtocol_NetworkProvisioning, kStatusCode_UnknownNetwork);
             ExitNow();
         }
 
         // Reject the request if the application is currently in control of the WiFi station.
         if (ConnectivityMgr().IsWiFiStationApplicationControlled())
         {
-            err = SendStatusReport(kChipProfile_Common, kStatus_NotAvailable);
+            err = SendStatusReport(kChipProtocol_Common, kStatus_NotAvailable);
             ExitNow();
         }
 
@@ -323,14 +328,14 @@ CHIP_ERROR GenericNetworkProvisioningServerImpl<ImplClass>::HandleAddUpdateNetwo
         // If updating the provision, verify that the Thread network is provisioned.
         if (isUpdate && !ThreadStackMgr().IsThreadProvisioned())
         {
-            err = SendStatusReport(kChipProfile_NetworkProvisioning, kStatusCode_UnknownNetwork);
+            err = SendStatusReport(kChipProtocol_NetworkProvisioning, kStatusCode_UnknownNetwork);
             ExitNow();
         }
 
         // Reject the request if the application is currently in control of the Thread network.
         if (ConnectivityMgr().IsThreadApplicationControlled())
         {
-            err = SendStatusReport(kChipProfile_Common, kStatus_NotAvailable);
+            err = SendStatusReport(kChipProtocol_Common, kStatus_NotAvailable);
             ExitNow();
         }
 
@@ -364,7 +369,7 @@ CHIP_ERROR GenericNetworkProvisioningServerImpl<ImplClass>::HandleAddUpdateNetwo
     default:
 
         ChipLogProgress(DeviceLayer, "%sUnsupported network type: %d", sLogPrefix, netInfo.NetworkType);
-        err = SendStatusReport(kChipProfile_NetworkProvisioning, kStatusCode_UnsupportedNetworkType, CHIP_ERROR_INVALID_ARGUMENT);
+        err = SendStatusReport(kChipProtocol_NetworkProvisioning, kStatusCode_UnsupportedNetworkType, CHIP_ERROR_INVALID_ARGUMENT);
         ExitNow();
     }
 
@@ -398,7 +403,7 @@ CHIP_ERROR GenericNetworkProvisioningServerImpl<ImplClass>::HandleRemoveNetwork(
         // Reject the request if the application is currently in control of the WiFi station.
         if (ConnectivityMgr().IsWiFiStationApplicationControlled())
         {
-            err = SendStatusReport(kChipProfile_Common, kStatus_NotAvailable);
+            err = SendStatusReport(kChipProtocol_Common, kStatus_NotAvailable);
             ExitNow();
         }
 
@@ -426,7 +431,7 @@ CHIP_ERROR GenericNetworkProvisioningServerImpl<ImplClass>::HandleRemoveNetwork(
         // Reject the request if the application is currently in control of the Thread network.
         if (ConnectivityMgr().IsThreadApplicationControlled())
         {
-            err = SendStatusReport(kChipProfile_Common, kStatus_NotAvailable);
+            err = SendStatusReport(kChipProtocol_Common, kStatus_NotAvailable);
             ExitNow();
         }
 
@@ -439,8 +444,7 @@ CHIP_ERROR GenericNetworkProvisioningServerImpl<ImplClass>::HandleRemoveNetwork(
 
     default:
     sendUnknownNetworkResp:
-
-        err = SendStatusReport(kChipProfile_NetworkProvisioning, kStatusCode_UnknownNetwork);
+        err = SendStatusReport(kChipProtocol_NetworkProvisioning, kStatusCode_UnknownNetwork);
         ExitNow();
     }
 
@@ -554,7 +558,7 @@ CHIP_ERROR GenericNetworkProvisioningServerImpl<ImplClass>::HandleEnableDisableN
         // Reject the request if the application is currently in control of the WiFi station.
         if (ConnectivityMgr().IsWiFiStationApplicationControlled())
         {
-            err = SendStatusReport(kChipProfile_Common, kStatus_NotAvailable);
+            err = SendStatusReport(kChipProtocol_Common, kStatus_NotAvailable);
             ExitNow();
         }
 
@@ -581,7 +585,7 @@ CHIP_ERROR GenericNetworkProvisioningServerImpl<ImplClass>::HandleEnableDisableN
         // Reject the request if the application is currently in control of the Thread network.
         if (ConnectivityMgr().IsThreadApplicationControlled())
         {
-            err = SendStatusReport(kChipProfile_Common, kStatus_NotAvailable);
+            err = SendStatusReport(kChipProtocol_Common, kStatus_NotAvailable);
             ExitNow();
         }
 
@@ -597,7 +601,7 @@ CHIP_ERROR GenericNetworkProvisioningServerImpl<ImplClass>::HandleEnableDisableN
     default:
     sendUnknownNetworkResp:
 
-        err = SendStatusReport(kChipProfile_NetworkProvisioning, kStatusCode_UnknownNetwork);
+        err = SendStatusReport(kChipProtocol_NetworkProvisioning, kStatusCode_UnknownNetwork);
         ExitNow();
     }
 
@@ -631,7 +635,7 @@ CHIP_ERROR GenericNetworkProvisioningServerImpl<ImplClass>::HandleTestConnectivi
         // Reject the request if the application is currently in control of the WiFi station.
         if (ConnectivityMgr().IsWiFiStationApplicationControlled())
         {
-            err = SendStatusReport(kChipProfile_Common, kStatus_NotAvailable);
+            err = SendStatusReport(kChipProtocol_Common, kStatus_NotAvailable);
             ExitNow();
         }
 
@@ -670,7 +674,7 @@ CHIP_ERROR GenericNetworkProvisioningServerImpl<ImplClass>::HandleTestConnectivi
             // Reject the request if the application is currently in control of the Thread network.
             if (ConnectivityMgr().IsThreadApplicationControlled())
             {
-                err = SendStatusReport(kChipProfile_Common, kStatus_NotAvailable);
+                err = SendStatusReport(kChipProtocol_Common, kStatus_NotAvailable);
                 ExitNow();
             }
 
@@ -694,7 +698,7 @@ CHIP_ERROR GenericNetworkProvisioningServerImpl<ImplClass>::HandleTestConnectivi
     default:
     sendUnknownNetworkResp:
 
-        err = SendStatusReport(kChipProfile_NetworkProvisioning, kStatusCode_UnknownNetwork);
+        err = SendStatusReport(kChipProtocol_NetworkProvisioning, kStatusCode_UnknownNetwork);
         ExitNow();
     }
 
@@ -722,7 +726,7 @@ CHIP_ERROR GenericNetworkProvisioningServerImpl<ImplClass>::HandleSetRendezvousM
 
         if ((rendezvousMode & ~kSupportedModes) != 0)
         {
-            err = SendStatusReport(kChipProfile_Common, kStatus_UnsupportedMessage);
+            err = SendStatusReport(kChipProtocol_Common, kStatus_UnsupportedMessage);
             ExitNow();
         }
     }
@@ -737,7 +741,7 @@ CHIP_ERROR GenericNetworkProvisioningServerImpl<ImplClass>::HandleSetRendezvousM
         const ConnectivityManager::WiFiAPMode apMode = ConnectivityMgr().GetWiFiAPMode();
         if (apMode == ConnectivityManager::kWiFiAPMode_ApplicationControlled || apMode == ConnectivityManager::kWiFiAPMode_Disabled)
         {
-            err = SendStatusReport(kChipProfile_Common, kStatus_NotAvailable);
+            err = SendStatusReport(kChipProtocol_Common, kStatus_NotAvailable);
             ExitNow();
         }
 
@@ -770,7 +774,7 @@ CHIP_ERROR GenericNetworkProvisioningServerImpl<ImplClass>::HandleSetRendezvousM
         if (threadMode == ConnectivityManager::kThreadMode_ApplicationControlled ||
             threadMode == ConnectivityManager::kThreadMode_Disabled || !ThreadStackMgr().IsThreadProvisioned())
         {
-            err = SendStatusReport(kChipProfile_Common, kStatus_NotAvailable);
+            err = SendStatusReport(kChipProtocol_Common, kStatus_NotAvailable);
             ExitNow();
         }
 
@@ -814,7 +818,7 @@ CHIP_ERROR GenericNetworkProvisioningServerImpl<ImplClass>::ValidateWiFiStationP
     if (netInfo.NetworkType != kNetworkType_WiFi)
     {
         ChipLogProgress(DeviceLayer, "%sUnsupported WiFi station network type: %d", sLogPrefix, netInfo.NetworkType);
-        statusProfileId = kChipProfile_NetworkProvisioning;
+        statusProfileId = kChipProtocol_NetworkProvisioning;
         statusCode      = kStatusCode_UnsupportedNetworkType;
         ExitNow(err = CHIP_ERROR_INVALID_ARGUMENT);
     }
@@ -822,7 +826,7 @@ CHIP_ERROR GenericNetworkProvisioningServerImpl<ImplClass>::ValidateWiFiStationP
     if (netInfo.WiFiSSID[0] == 0)
     {
         ChipLogProgress(DeviceLayer, "%sMissing WiFi station SSID", sLogPrefix);
-        statusProfileId = kChipProfile_NetworkProvisioning;
+        statusProfileId = kChipProtocol_NetworkProvisioning;
         statusCode      = kStatusCode_InvalidNetworkConfiguration;
         ExitNow(err = CHIP_ERROR_INVALID_ARGUMENT);
     }
@@ -837,7 +841,7 @@ CHIP_ERROR GenericNetworkProvisioningServerImpl<ImplClass>::ValidateWiFiStationP
         {
             ChipLogProgress(DeviceLayer, "%sUnsupported WiFi station mode: %d", sLogPrefix, netInfo.WiFiMode);
         }
-        statusProfileId = kChipProfile_NetworkProvisioning;
+        statusProfileId = kChipProtocol_NetworkProvisioning;
         statusCode      = kStatusCode_InvalidNetworkConfiguration;
         ExitNow(err = CHIP_ERROR_INVALID_ARGUMENT);
     }
@@ -852,7 +856,7 @@ CHIP_ERROR GenericNetworkProvisioningServerImpl<ImplClass>::ValidateWiFiStationP
         {
             ChipLogProgress(DeviceLayer, "%sUnsupported WiFi station role: %d", sLogPrefix, netInfo.WiFiRole);
         }
-        statusProfileId = kChipProfile_NetworkProvisioning;
+        statusProfileId = kChipProtocol_NetworkProvisioning;
         statusCode      = kStatusCode_InvalidNetworkConfiguration;
         ExitNow(err = CHIP_ERROR_INVALID_ARGUMENT);
     }
@@ -861,7 +865,7 @@ CHIP_ERROR GenericNetworkProvisioningServerImpl<ImplClass>::ValidateWiFiStationP
     if (!ImplClass::IsSupportedWiFiSecurityType(netInfo.WiFiSecurityType))
     {
         ChipLogProgress(DeviceLayer, "%sUnsupported WiFi station security type: %d", sLogPrefix, netInfo.WiFiSecurityType);
-        statusProfileId = kChipProfile_NetworkProvisioning;
+        statusProfileId = kChipProtocol_NetworkProvisioning;
         statusCode      = kStatusCode_UnsupportedWiFiSecurityType;
         ExitNow(err = CHIP_ERROR_INVALID_ARGUMENT);
     }
@@ -869,7 +873,7 @@ CHIP_ERROR GenericNetworkProvisioningServerImpl<ImplClass>::ValidateWiFiStationP
     if (netInfo.WiFiSecurityType != kWiFiSecurityType_None && netInfo.WiFiKeyLen == 0)
     {
         ChipLogProgress(DeviceLayer, "%sMissing WiFi Key", sLogPrefix);
-        statusProfileId = kChipProfile_NetworkProvisioning;
+        statusProfileId = kChipProtocol_NetworkProvisioning;
         statusCode      = kStatusCode_InvalidNetworkConfiguration;
         ExitNow(err = CHIP_ERROR_INVALID_ARGUMENT);
     }
@@ -894,7 +898,7 @@ GenericNetworkProvisioningServerImpl<ImplClass>::ValidateThreadProvision(bool is
     {
         if (netInfo.ThreadChannel < 11 && netInfo.ThreadChannel > 26)
         {
-            statusProfileId = kChipProfile_NetworkProvisioning;
+            statusProfileId = kChipProtocol_NetworkProvisioning;
             statusCode      = kStatusCode_InvalidNetworkConfiguration;
             ExitNow(err = CHIP_ERROR_INVALID_ARGUMENT);
         }
@@ -1006,7 +1010,7 @@ void GenericNetworkProvisioningServerImpl<ImplClass>::ContinueWiFiConnectivityTe
             //     - Lack of a default router
             //     - Lack of a DNS server
             //     - Inability to contact an external server.
-            mTestConnectivityResult.mStatusProfileId = kChipProfile_NetworkProvisioning;
+            mTestConnectivityResult.mStatusProfileId = kChipProtocol_NetworkProvisioning;
             mTestConnectivityResult.mStatusCode      = kStatusCode_TestNetworkFailed;
         }
     }
@@ -1043,7 +1047,7 @@ void GenericNetworkProvisioningServerImpl<ImplClass>::ContinueThreadConnectivity
             //     - Lack of a peer router detected in the Mesh (for end nodes, this means
             //       lack of a parent router).
             //     - Inability to contact/ping the peer router.
-            mTestConnectivityResult.mStatusProfileId = kChipProfile_NetworkProvisioning;
+            mTestConnectivityResult.mStatusProfileId = kChipProtocol_NetworkProvisioning;
             mTestConnectivityResult.mStatusCode      = kStatusCode_NoRouterAvailable;
         }
     }

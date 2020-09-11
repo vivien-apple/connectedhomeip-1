@@ -20,6 +20,7 @@
 #ifndef DEVICE_NETWORK_INFO_H
 #define DEVICE_NETWORK_INFO_H
 
+#include <protocols/network-provisioning/NetworkProvisioning.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -52,37 +53,24 @@ enum
     kWiFiStationNetworkId = 2,
 };
 
-/**
- * WiFi Security Modes.
- */
-enum WiFiAuthSecurityType
-{
-    kWiFiSecurityType_NotSpecified = -1,
-
-    kWiFiSecurityType_None                = 1,
-    kWiFiSecurityType_WEP                 = 2,
-    kWiFiSecurityType_WPAPersonal         = 3,
-    kWiFiSecurityType_WPA2Personal        = 4,
-    kWiFiSecurityType_WPA2MixedPersonal   = 5,
-    kWiFiSecurityType_WPAEnterprise       = 6,
-    kWiFiSecurityType_WPA2Enterprise      = 7,
-    kWiFiSecurityType_WPA2MixedEnterprise = 8,
-    kWiFiSecurityType_WPA3Personal        = 9,
-    kWiFiSecurityType_WPA3MixedPersonal   = 10,
-    kWiFiSecurityType_WPA3Enterprise      = 11,
-    kWiFiSecurityType_WPA3MixedEnterprise = 12,
-};
-
 class DeviceNetworkInfo
 {
 public:
-    uint32_t NetworkId; /**< The network id assigned to the network by the device. */
+    typedef Protocols::NetworkProvisioning::NetworkType NetworkType_t;
+    typedef Protocols::NetworkProvisioning::WiFiMode WiFiMode_t;
+    typedef Protocols::NetworkProvisioning::WiFiRole WiFiRole_t;
+    typedef Protocols::NetworkProvisioning::WiFiSecurityType WiFiSecurityType_t;
+
+    NetworkType_t NetworkType; /**< The type of network. */
+    uint32_t NetworkId;        /**< The network id assigned to the network by the device. */
 
     // ---- WiFi-specific Fields ----
     char WiFiSSID[kMaxWiFiSSIDLength + 1]; /**< The WiFi SSID as a NULL-terminated string. */
     uint8_t WiFiKey[kMaxWiFiKeyLength];    /**< The WiFi key (NOT NULL-terminated). */
     uint8_t WiFiKeyLen;                    /**< The length in bytes of the WiFi key. */
-    WiFiAuthSecurityType WiFiSecurityType; /**< The WiFi security type. */
+    WiFiMode_t WiFiMode;                   /**< The operating mode of the WiFi network.*/
+    WiFiRole_t WiFiRole;                   /**< The role played by the device on the WiFi network. */
+    WiFiSecurityType_t WiFiSecurityType;   /**< The WiFi security type. */
 
     // ---- Thread-specific Fields ----
     char ThreadNetworkName[kMaxThreadNetworkNameLength + 1];
@@ -98,13 +86,23 @@ public:
     uint16_t ThreadPANId;  /**< The 16-bit Thread PAN ID, or kThreadPANId_NotSpecified */
     uint8_t ThreadChannel; /**< The Thread channel (currently [11..26]), or kThreadChannel_NotSpecified */
 
+    // ---- General Fields ----
+    int16_t WirelessSignalStrength; /**< The signal strength of the network, or INT16_MIN if not
+                                         available/applicable. */
     struct
     {
         bool NetworkId : 1;           /**< True if the NetworkId field is present. */
         bool ThreadExtendedPANId : 1; /**< True if the ThreadExtendedPANId field is present. */
         bool ThreadMeshPrefix : 1;    /**< True if the ThreadMeshPrefix field is present. */
+        bool ThreadNetworkKey : 1;    /**< True if the ThreadNetworkKey field is present. */
         bool ThreadPSKc : 1;          /**< True if the ThreadPSKc field is present. */
     } FieldPresent;
+
+    void Reset();
+    CHIP_ERROR Decode(TLV::TLVReader & reader);
+    CHIP_ERROR Encode(TLV::TLVWriter & writer) const;
+    CHIP_ERROR MergeTo(DeviceNetworkInfo & dest);
+    static CHIP_ERROR EncodeArray(TLV::TLVWriter & writer, const DeviceNetworkInfo * elems, size_t count);
 };
 
 } // namespace Internal

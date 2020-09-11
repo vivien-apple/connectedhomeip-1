@@ -20,7 +20,6 @@
 #ifndef ESP_UTILS_H
 #define ESP_UTILS_H
 
-#include "platform/internal/DeviceNetworkInfo.h"
 #include <platform/internal/CHIPDeviceLayerInternal.h>
 
 namespace chip {
@@ -36,6 +35,7 @@ public:
     static CHIP_ERROR StartWiFiLayer(void);
     static CHIP_ERROR EnableStationMode(void);
     static CHIP_ERROR SetAPMode(bool enabled);
+    static Protocols::NetworkProvisioning::WiFiSecurityType WiFiAuthModeToChipWiFiSecurityType(wifi_auth_mode_t authMode);
     static int OrderScanResultsByRSSI(const void * _res1, const void * _res2);
     static const char * WiFiModeToStr(wifi_mode_t wifiMode);
     static struct netif * GetNetif(tcpip_adapter_if_t intfId);
@@ -43,10 +43,6 @@ public:
     static bool IsInterfaceUp(tcpip_adapter_if_t intfId);
     static const char * InterfaceIdToName(tcpip_adapter_if_t intfId);
     static bool HasIPv6LinkLocalAddress(tcpip_adapter_if_t intfId);
-
-    static CHIP_ERROR GetWiFiStationProvision(Internal::DeviceNetworkInfo & netInfo, bool includeCredentials);
-    static CHIP_ERROR SetWiFiStationProvision(const Internal::DeviceNetworkInfo & netInfo);
-    static CHIP_ERROR ClearWiFiStationProvision(void);
 };
 
 } // namespace Internal

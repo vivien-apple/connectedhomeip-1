@@ -19,20 +19,24 @@
 /* this file behaves like a config.h, comes first */
 #include <platform/internal/CHIPDeviceLayerInternal.h>
 
+#include <platform/internal/DeviceNetworkInfo.h>
 #include <platform/internal/GenericNetworkProvisioningServerImpl.ipp>
 #include <platform/internal/NetworkProvisioningServer.h>
+#include <protocols/CHIPProtocols.h>
+#include <protocols/common/CommonProtocol.h>
 
 #include <core/CHIPTLV.h>
 #include <platform/ESP32/ESP32Utils.h>
-#include <platform/internal/DeviceNetworkInfo.h>
 
 #include "esp_event.h"
 #include "esp_wifi.h"
 
 using namespace ::chip;
+using namespace ::chip::Protocols::NetworkProvisioning;
+using namespace ::chip::Protocols::Common;
 using namespace ::chip::TLV;
 
-using Profiles::kChipProfile_Common;
+using Protocols::kChipProtocol_Common;
 
 namespace chip {
 namespace DeviceLayer {
@@ -90,7 +94,7 @@ exit:
     return;
 }
 
-CHIP_ERROR NetworkProvisioningServerImpl::GetWiFiStationProvision(NetworkInfo & netInfo, bool includeCredentials)
+CHIP_ERROR NetworkProvisioningServerImpl::GetWiFiStationProvision(DeviceNetworkInfo & netInfo, bool includeCredentials)
 {
     CHIP_ERROR err = CHIP_NO_ERROR;
     wifi_config_t stationConfig;
@@ -126,7 +130,7 @@ exit:
     return err;
 }
 
-CHIP_ERROR NetworkProvisioningServerImpl::SetWiFiStationProvision(const NetworkInfo & netInfo)
+CHIP_ERROR NetworkProvisioningServerImpl::SetWiFiStationProvision(const DeviceNetworkInfo & netInfo)
 {
     CHIP_ERROR err = CHIP_NO_ERROR;
     wifi_config_t wifiConfig;
@@ -280,18 +284,17 @@ void NetworkProvisioningServerImpl::HandleScanDone()
         SuccessOrExit(err);
         for (encodedResultCount = 0; encodedResultCount < scanResultCount; encodedResultCount++)
         {
-            NetworkInfo netInfo;
+            DeviceNetworkInfo netInfo;
             const wifi_ap_record_t & scanResult = scanResults[encodedResultCount];
 
             netInfo.Reset();
             netInfo.NetworkType = kNetworkType_WiFi;
-            memcpy(netInfo.WiFiSSID, scanResult.ssid,
-                   min(strlen((char *) scanResult.ssid) + 1, (size_t) NetworkInfo::kMaxWiFiSSIDLength));
-            netInfo.WiFiSSID[NetworkInfo::kMaxWiFiSSIDLength] = 0;
-            netInfo.WiFiMode                                  = kWiFiMode_Managed;
-            netInfo.WiFiRole                                  = kWiFiRole_Station;
-            netInfo.WiFiSecurityType                          = ESP32Utils::WiFiAuthModeToChipWiFiSecurityType(scanResult.authmode);
-            netInfo.WirelessSignalStrength                    = scanResult.rssi;
+            memcpy(netInfo.WiFiSSID, scanResult.ssid, min(strlen((char *) scanResult.ssid) + 1, kMaxWiFiSSIDLength));
+            netInfo.WiFiSSID[kMaxWiFiSSIDLength] = 0;
+            netInfo.WiFiMode                     = kWiFiMode_Managed;
+            netInfo.WiFiRole                     = kWiFiRole_Station;
+            netInfo.WiFiSecurityType             = ESP32Utils::WiFiAuthModeToChipWiFiSecurityType(scanResult.authmode);
+            netInfo.WirelessSignalStrength       = scanResult.rssi;
 
             {
                 chip::TLV::TLVWriter savePoint = writer;
@@ -323,7 +326,7 @@ exit:
     // requestor.
     if (err != CHIP_NO_ERROR && GetCurrentOp() == kMsgType_ScanNetworks)
     {
-        SendStatusReport(kChipProfile_Common, kStatus_InternalError, err);
+        SendStatusReport(kChipProtocol_Common, kStatus_InternalError, err);
     }
 
     // Tell the ConnectivityManager that the WiFi scan is now done.  This allows it to continue
@@ -345,7 +348,7 @@ void NetworkProvisioningServerImpl::HandleScanTimeOut(::chip::System::Layer * aL
     // Common:InternalError StatusReport to the client.
     if (sInstance.GetCurrentOp() == kMsgType_ScanNetworks)
     {
-        sInstance.SendStatusReport(kChipProfile_Common, kStatus_InternalError, CHIP_ERROR_TIMEOUT);
+        sInstance.SendStatusReport(kChipProtocol_Common, kStatus_InternalError, CHIP_ERROR_TIMEOUT);
     }
 
     // Tell the ConnectivityManager that the WiFi scan is now done.

@@ -154,6 +154,7 @@ CHIP_BUILD_WITH_GN ?= ""
 ifeq ($(CHIP_BUILD_WITH_GN),y)
 COMPONENT_ADD_INCLUDEDIRS +=   $(REL_OUTPUT_DIR)/src/include \
                                $(REL_CHIP_ROOT)/third_party/nlassert/repo/include \
+                               $(REL_CHIP_ROOT)/third_party/nlio/repo/include \
                                $(REL_OUTPUT_DIR)/gen/third_party/connectedhomeip/src/app/include \
                                $(REL_OUTPUT_DIR)/gen/include
 else # CHIP_BUILD_WITH_GN == y

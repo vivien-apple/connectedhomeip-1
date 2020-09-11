@@ -67,8 +67,8 @@ menu "CHIP Core"
                 message handlers with the CHIP message layer to direct incoming messages to
                 their code.
 
-        config WRMP_TIMER_DEFAULT_PERIOD
-            int "Default WRMP Timer Tick Interval (ms)"
+        config RMP_TIMER_DEFAULT_PERIOD
+            int "Default RMP Timer Tick Interval (ms)"
             range 0 65535
             default 50
             help

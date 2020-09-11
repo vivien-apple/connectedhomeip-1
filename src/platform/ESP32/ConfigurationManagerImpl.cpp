@@ -38,6 +38,7 @@ namespace chip {
 namespace DeviceLayer {
 
 using namespace ::chip::DeviceLayer::Internal;
+using namespace ::chip::Protocols::NetworkProvisioning;
 
 namespace {
 
@@ -132,6 +133,44 @@ CHIP_ERROR ConfigurationManagerImpl::_WritePersistedStorageValue(::chip::Platfor
 {
     ESP32Config::Key configKey{ kConfigNamespace_ChipCounters, key };
     return WriteConfigValue(configKey, value);
+}
+
+CHIP_ERROR ConfigurationManagerImpl::GetWiFiStationSecurityType(WiFiSecurityType & secType)
+{
+    CHIP_ERROR err;
+    uint32_t secTypeInt;
+
+    err = ReadConfigValue(kConfigKey_WiFiStationSecType, secTypeInt);
+    if (err == CHIP_NO_ERROR)
+    {
+        secType = (WiFiSecurityType) secTypeInt;
+    }
+    return err;
+}
+
+CHIP_ERROR ConfigurationManagerImpl::UpdateWiFiStationSecurityType(WiFiSecurityType secType)
+{
+    CHIP_ERROR err;
+    WiFiSecurityType curSecType;
+
+    if (secType != kWiFiSecurityType_NotSpecified)
+    {
+        err = GetWiFiStationSecurityType(curSecType);
+        if (err == CHIP_DEVICE_ERROR_CONFIG_NOT_FOUND || (err == CHIP_NO_ERROR && secType != curSecType))
+        {
+            uint32_t secTypeInt = secType;
+            err                 = WriteConfigValue(kConfigKey_WiFiStationSecType, secTypeInt);
+        }
+        SuccessOrExit(err);
+    }
+    else
+    {
+        err = ClearConfigValue(kConfigKey_WiFiStationSecType);
+        SuccessOrExit(err);
+    }
+
+exit:
+    return err;
 }
 
 void ConfigurationManagerImpl::DoFactoryReset(intptr_t arg)

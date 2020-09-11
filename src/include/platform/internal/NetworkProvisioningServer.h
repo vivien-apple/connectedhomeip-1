@@ -42,7 +42,7 @@ public:
     // NetworkProvisioningDelegate * GetDelegate(void);
     void StartPendingScan(void);
     bool ScanInProgress(void);
-    void OnPlatformEvent(const CHIPDeviceEvent * event);
+    void OnPlatformEvent(const ChipDeviceEvent * event);
 
 protected:
     // Construction/destruction limited to subclasses.
@@ -96,7 +96,7 @@ inline bool NetworkProvisioningServer::ScanInProgress(void)
     return static_cast<ImplClass *>(this)->_ScanInProgress();
 }
 
-inline void NetworkProvisioningServer::OnPlatformEvent(const CHIPDeviceEvent * event)
+inline void NetworkProvisioningServer::OnPlatformEvent(const ChipDeviceEvent * event)
 {
     static_cast<ImplClass *>(this)->_OnPlatformEvent(event);
 }

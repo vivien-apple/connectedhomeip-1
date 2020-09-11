@@ -20,6 +20,7 @@
 #ifndef GENERIC_NETWORK_PROVISIONING_SERVER_IMPL_H
 #define GENERIC_NETWORK_PROVISIONING_SERVER_IMPL_H
 
+#include <protocols/network-provisioning/NetworkProvisioning.h>
 #include <platform/internal/CHIPDeviceLayerInternal.h>
 
 namespace chip {
@@ -30,15 +31,13 @@ class NetworkProvisioningServerImpl;
 class DeviceNetworkInfo;
 
 template <class ImplClass>
-class GenericNetworkProvisioningServerImpl : public ::chip::Profiles::NetworkProvisioning::NetworkProvisioningServer,
-                                             public ::chip::Profiles::NetworkProvisioning::NetworkProvisioningDelegate
+class GenericNetworkProvisioningServerImpl :
+  public ::chip::Protocols::NetworkProvisioning::NetworkProvisioningServer,
+  public ::chip::Protocols::NetworkProvisioning::NetworkProvisioningDelegate
 {
 protected:
-    using ServerBaseClass    = ::chip::Profiles::NetworkProvisioning::NetworkProvisioningServer;
-    using NetworkInfo        = ::chip::DeviceLayer::Internal::DeviceNetworkInfo;
-    using NetworkType_t      = ::chip::Profiles::NetworkProvisioning::NetworkType;
-    using PacketBuffer       = ::chip::System::PacketBuffer;
-    using WiFiSecurityType_t = ::chip::Profiles::NetworkProvisioning::WiFiSecurityType;
+    using ServerBaseClass    = ::chip::Protocols::NetworkProvisioning::NetworkProvisioningServer;
+    using WiFiSecurityType_t = ::chip::Protocols::NetworkProvisioning::WiFiSecurityType;
 
     // ===== Members that implement the NetworkProvisioningServer abstract interface
 
@@ -96,6 +95,16 @@ protected:
     void HandleConnectivityTestSuccess(void);
     static void HandleConnectivityTestTimeOut(::chip::System::Layer * aLayer, void * aAppState, ::chip::System::Error aError);
 
+    CHIP_ERROR SendNetworkScanComplete(uint8_t resultCount, PacketBuffer * scanResultsTLV) { return CHIP_NO_ERROR; };
+    CHIP_ERROR SendAddNetworkComplete(uint32_t networkId) { return CHIP_NO_ERROR; };
+    CHIP_ERROR SendGetNetworksComplete(uint8_t resultCount, PacketBuffer * resultsTLV) { return CHIP_NO_ERROR; };
+    CHIP_ERROR SendGetWirelessRegulatoryConfigComplete(PacketBuffer * resultsTLV) { return CHIP_NO_ERROR; };
+    CHIP_ERROR SendSuccessResponse(void) { return CHIP_NO_ERROR; };
+    CHIP_ERROR SendStatusReport(uint32_t statusProfileId, uint16_t statusCode, CHIP_ERROR sysError = CHIP_NO_ERROR)
+    {
+        return CHIP_NO_ERROR;
+    }
+
 private:
     ImplClass * Impl() { return static_cast<ImplClass *>(this); }
 };
@@ -104,7 +113,7 @@ private:
 extern template class GenericNetworkProvisioningServerImpl<NetworkProvisioningServerImpl>;
 
 template <class ImplClass>
-inline ::chip::Profiles::NetworkProvisioning::NetworkProvisioningDelegate *
+inline ::chip::Protocols::NetworkProvisioning::NetworkProvisioningDelegate *
 GenericNetworkProvisioningServerImpl<ImplClass>::_GetDelegate(void)
 {
     return this;
