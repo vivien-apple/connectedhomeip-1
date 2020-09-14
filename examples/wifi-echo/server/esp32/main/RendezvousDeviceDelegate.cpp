@@ -35,12 +35,17 @@ using namespace ::chip;
 RendezvousDeviceDelegate::RendezvousDeviceDelegate()
 {
     CHIP_ERROR err = CHIP_NO_ERROR;
+    RendezvousParameters * params;
 
     uint32_t setupPINCode;
     err = DeviceLayer::ConfigurationMgr().GetSetupPinCode(setupPINCode);
     SuccessOrExit(err);
 
-    mRendezvousSession = new RendezvousSession(this, RendezvousParameters(setupPINCode).SetLocalNodeId(kLocalNodeId));
+    params = new RendezvousParameters(setupPINCode);
+    params->SetLocalNodeId(kLocalNodeId);
+    params->SetBleLayer(DeviceLayer::ConnectivityMgr().GetBleLayer());
+
+    mRendezvousSession = new RendezvousSession(this, *params);
     err                = mRendezvousSession->Init();
 
 exit:

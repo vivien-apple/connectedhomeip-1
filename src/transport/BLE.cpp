@@ -27,10 +27,6 @@
 #include <transport/BLE.h>
 #include <transport/MessageHeader.h>
 
-#if CONFIG_DEVICE_LAYER
-#include <platform/CHIPDeviceLayer.h>
-#endif
-
 #include <inttypes.h>
 
 namespace chip {
@@ -48,12 +44,10 @@ BLE::~BLE()
 
 CHIP_ERROR BLE::Init(RendezvousSessionDelegate * delegate, const RendezvousParameters & params)
 {
-    CHIP_ERROR err = CHIP_NO_ERROR;
-    BleLayer * bleLayer;
+    CHIP_ERROR err      = CHIP_NO_ERROR;
+    BleLayer * bleLayer = params.GetBleLayer();
 
     VerifyOrExit(mState == State::kNotReady, err = CHIP_ERROR_INCORRECT_STATE);
-
-    bleLayer = GetBleLayer(params);
     VerifyOrExit(bleLayer, err = CHIP_ERROR_INCORRECT_STATE);
 
     if (params.HasDiscriminator())
@@ -70,24 +64,6 @@ CHIP_ERROR BLE::Init(RendezvousSessionDelegate * delegate, const RendezvousParam
 
 exit:
     return err;
-}
-
-BleLayer * BLE::GetBleLayer(const RendezvousParameters & params)
-{
-    BleLayer * bleLayer = nullptr;
-
-    if (params.HasBleLayer())
-    {
-        bleLayer = params.GetBleLayer();
-    }
-    else
-    {
-#if CONFIG_DEVICE_LAYER
-        bleLayer = DeviceLayer::ConnectivityMgr().GetBleLayer();
-#endif
-    }
-
-    return bleLayer;
 }
 
 CHIP_ERROR BLE::InitInternal(BLE_CONNECTION_OBJECT connObj)
