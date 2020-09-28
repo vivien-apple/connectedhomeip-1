@@ -367,6 +367,103 @@ uint16_t encodeMoveToPercentCommand(uint8_t * buffer, uint16_t buf_length, uint8
  * */
 uint16_t encodeStopMoveToPercentCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint);
 
+/**
+ * Level Control cluster commands
+ */
+
+/**
+ * @brief Encode a move-to-level command for the Level Control cluster
+ * @param buffer                Buffer to encode into
+ * @param buf_length            Length of buffer
+ * @param destination_endpoint  Destination endpoint
+ * @param level                 The level value
+ * @param transitionTime        A transition time
+ * @param optionMask            An option mask
+ * @param optionOverride        An option override
+ * */
+uint16_t encodeMoveToLevelCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint, uint8_t level,
+                                  uint16_t transitionTime, uint8_t optionMask, uint8_t optionOverride);
+
+/**
+ * @brief Encode a move command for the Level Control cluster
+ * @param buffer                Buffer to encode into
+ * @param buf_length            Length of buffer
+ * @param destination_endpoint  Destination endpoint
+ * @param moveMode              The move mode to use
+ * @param rate                  The rate of the change
+ * @param optionMask            An option mask
+ * @param optionOverride        An option override
+ * */
+uint16_t encodeMoveCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint, uint8_t moveMode, uint8_t rate,
+                           uint8_t optionMask, uint8_t optionOverride);
+
+/**
+ * @brief Encode a step command for the Level Control cluster
+ * @param buffer                Buffer to encode into
+ * @param buf_length            Length of buffer
+ * @param destination_endpoint  Destination endpoint
+ * @param stepMode              The step mode to use
+ * @param stepSize              The step size to use
+ * @param transitionTime        A transition time
+ * @param optionMask            An option mask
+ * @param optionOverride        An option override
+ * */
+uint16_t encodeStepCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint, uint8_t stepMode, uint8_t stepSize,
+                           uint16_t transitionTime, uint8_t optionMask, uint8_t optionOverride);
+
+/**
+ * @brief Encode a stop command for the Level Control cluster
+ * @param buffer                Buffer to encode into
+ * @param buf_length            Length of buffer
+ * @param destination_endpoint  Destination endpoint
+ * @param optionMask            An option mask
+ * @param optionOverride        An option override
+ * */
+uint16_t encodeStopCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint, uint8_t optionMask,
+                           uint8_t optionOverride);
+
+/**
+ * @brief Encode a move-to-level-with-onoff command for the Level Control cluster
+ * @param buffer                Buffer to encode into
+ * @param buf_length            Length of buffer
+ * @param destination_endpoint  Destination endpoint
+ * @param level                 A level to move to
+ * @param transitionTime        A transition time
+ * */
+uint16_t encodeMoveToLevelWithOnOffCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint, uint8_t level,
+                                           uint16_t transitionTime);
+
+/**
+ * @brief Encode a move-with-onoff command for the Level Control cluster
+ * @param buffer                Buffer to encode into
+ * @param buf_length            Length of buffer
+ * @param destination_endpoint  Destination endpoint
+ * @param moveMode              The move mode to use
+ * @param rate                  The rate of the change
+ * */
+uint16_t encodeMoveWithOnOffCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint, uint8_t moveMode,
+                                    uint8_t rate);
+
+/**
+ * @brief Encode a step-with-onoff command for the Level Control cluster
+ * @param buffer                Buffer to encode into
+ * @param buf_length            Length of buffer
+ * @param destination_endpoint  Destination endpoint
+ * @param stepMode              The step mode to use
+ * @param stepSize              The step size to use
+ * @param transitionTime        A transition time
+ * */
+uint16_t encodeStepWithOnOffCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint, uint8_t stepMode,
+                                    uint8_t stepSize, uint16_t transitionTime);
+
+/**
+ * @brief Encode a stop-with-onoff command for the Level Control cluster
+ * @param buffer                Buffer to encode into
+ * @param buf_length            Length of buffer
+ * @param destination_endpoint  Destination endpoint
+ * */
+uint16_t encodeStopWithOnOffCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint);
+
 #ifdef __cplusplus
 }
 #endif

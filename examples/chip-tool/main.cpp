@@ -20,6 +20,7 @@
 #include "commands/clusters/Basic/Commands.h"
 #include "commands/clusters/ColorControl/Commands.h"
 #include "commands/clusters/Identify/Commands.h"
+#include "commands/clusters/LevelControl/Commands.h"
 #include "commands/clusters/OnOff/Commands.h"
 #include "commands/echo/Commands.h"
 
@@ -41,6 +42,7 @@ int main(int argc, char * argv[])
     registerClusterBasic(commands);
     registerClusterColorControl(commands);
     registerClusterIdentify(commands);
+    registerClusterLevelControl(commands);
     registerClusterOnOff(commands);
 
     return commands.Run(kLocalDeviceId, kRemoteDeviceId, argc, argv);

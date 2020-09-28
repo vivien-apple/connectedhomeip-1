@@ -169,6 +169,7 @@ uint16_t encodeReadAttributesCommand(uint8_t * buffer, uint16_t buf_length, uint
 #define BARRIERCONTROL_CLUSTER_ID 0x0103
 #define BASIC_CLUSTER_ID 0x0000
 #define ONOFF_CLUSTER_ID 0x0006
+#define LEVELCONTROL_CLUSTER_ID 0x0008
 #define IDENTIFY_CLUSTER_ID 0x0003
 #define COLORCONTROL_CLUSTER_ID 0x0300
 
@@ -406,6 +407,85 @@ uint16_t encodeMoveToPercentCommand(uint8_t * buffer, uint16_t buf_length, uint8
 uint16_t encodeStopMoveToPercentCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint)
 {
     COMMAND("StopMoveToPercent", BARRIERCONTROL_CLUSTER_ID, 0x01);
+}
+
+/*
+ * Level Control Cluster commands
+ */
+uint16_t encodeMoveToLevelCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint, uint8_t level,
+                                  uint16_t transitionTime, uint8_t optionMask, uint8_t optionOverride)
+{
+    COMMAND_HEADER("MoveToLevel", LEVELCONTROL_CLUSTER_ID, 0x00);
+    buf.Put(level);
+    buf.PutLE16(transitionTime);
+    buf.Put(optionMask);
+    buf.Put(optionOverride);
+    COMMAND_FOOTER("MoveToLevel");
+}
+
+uint16_t encodeMoveCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint, uint8_t moveMode, uint8_t rate,
+                           uint8_t optionMask, uint8_t optionOverride)
+{
+    COMMAND_HEADER("Move", LEVELCONTROL_CLUSTER_ID, 0x01);
+    buf.Put(moveMode);
+    buf.Put(rate);
+    buf.Put(optionMask);
+    buf.Put(optionOverride);
+    COMMAND_FOOTER("Move");
+}
+
+uint16_t encodeStepCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint, uint8_t stepMode, uint8_t stepSize,
+                           uint16_t transitionTime, uint8_t optionMask, uint8_t optionOverride)
+{
+    COMMAND_HEADER("Step", LEVELCONTROL_CLUSTER_ID, 0x02);
+    buf.Put(stepMode);
+    buf.Put(stepSize);
+    buf.PutLE16(transitionTime);
+    buf.Put(optionMask);
+    buf.Put(optionOverride);
+    COMMAND_FOOTER("Step");
+}
+
+uint16_t encodeStopCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint, uint8_t optionMask,
+                           uint8_t optionOverride)
+{
+    COMMAND_HEADER("Stop", LEVELCONTROL_CLUSTER_ID, 0x03);
+    buf.Put(optionMask);
+    buf.Put(optionOverride);
+    COMMAND_FOOTER("Stop");
+}
+
+uint16_t encodeMoveToLevelWithOnOffCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint, uint8_t level,
+                                           uint16_t transitionTime)
+{
+    COMMAND_HEADER("MoveToLevelWithOnOff", LEVELCONTROL_CLUSTER_ID, 0x04);
+    buf.Put(level);
+    buf.PutLE16(transitionTime);
+    COMMAND_FOOTER("MoveToLevelWithOnOff");
+}
+
+uint16_t encodeMoveWithOnOffCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint, uint8_t moveMode,
+                                    uint8_t rate)
+{
+    COMMAND_HEADER("MoveWithOnOff", LEVELCONTROL_CLUSTER_ID, 0x05);
+    buf.Put(moveMode);
+    buf.Put(rate);
+    COMMAND_FOOTER("MoveWithOnOff");
+}
+
+uint16_t encodeStepWithOnOffCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint, uint8_t stepMode,
+                                    uint8_t stepSize, uint16_t transitionTime)
+{
+    COMMAND_HEADER("StepWithOnOff", LEVELCONTROL_CLUSTER_ID, 0x06);
+    buf.Put(stepMode);
+    buf.Put(stepSize);
+    buf.PutLE16(transitionTime);
+    COMMAND_FOOTER("StepWithOnOff");
+}
+
+uint16_t encodeStopWithOnOffCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint)
+{
+    COMMAND("StopWithOnOff", LEVELCONTROL_CLUSTER_ID, 0x07);
 }
 
 } // extern "C"
