@@ -16,6 +16,7 @@
  *
  */
 
+#include "commands/clusters/Basic/Commands.h"
 #include "commands/clusters/ColorControl/Commands.h"
 #include "commands/clusters/Identify/Commands.h"
 #include "commands/clusters/OnOff/Commands.h"
@@ -35,6 +36,7 @@ int main(int argc, char * argv[])
     Commands commands;
 
     registerCommandsEcho(commands);
+    registerClusterBasic(commands);
     registerClusterColorControl(commands);
     registerClusterIdentify(commands);
     registerClusterOnOff(commands);
