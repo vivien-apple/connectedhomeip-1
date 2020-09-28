@@ -19,9 +19,10 @@
 #ifndef __CHIPTOOL_COMMANDS_H__
 #define __CHIPTOOL_COMMANDS_H__
 
+#include "Utils.h"
+#include <map>
+
 #include <controller/CHIPDeviceController.h>
-#include <memory>
-#include <vector>
 
 class Command;
 
@@ -31,13 +32,18 @@ public:
     using ChipDeviceController = ::chip::DeviceController::ChipDeviceController;
     using NodeId               = ::chip::NodeId;
 
-    void Register(std::unique_ptr<Command> command);
+    void Registers(const char * clusterName, commands_list commandsList);
     int Run(NodeId localId, NodeId remoteId, int argc, char * argv[]);
 
 private:
     CHIP_ERROR RunCommand(ChipDeviceController & dc, NodeId remoteId, int argc, char * argv[]);
+
     void ShowUsage(const char * executable);
-    std::vector<std::unique_ptr<Command>> commands;
+    void PrintMiscCommands();
+    void PrintClustersCommands();
+    void PrintClustersAttributes();
+
+    std::map<const char *, std::vector<std::unique_ptr<Command>>> clusters;
 };
 
 #endif // __CHIPTOOL_COMMANDS_H__

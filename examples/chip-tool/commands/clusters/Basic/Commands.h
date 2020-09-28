@@ -34,9 +34,14 @@ public:
 
 void registerClusterBasic(Commands & commands)
 {
+    const char * clusterName = "Basic";
     const uint16_t clusterId = 0x0000;
 
-    commands.Register(make_unique<ResetToFactory>(clusterId));
+    commands_list clusterCommands = {
+        make_unique<ResetToFactory>(clusterId),
+    };
+
+    commands.Registers(clusterName, clusterCommands);
 }
 
 #endif // __CHIPTOOL_BASIC_COMMANDS_H__

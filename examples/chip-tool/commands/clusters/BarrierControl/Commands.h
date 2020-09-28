@@ -46,10 +46,15 @@ public:
 
 void registerClusterBarrierControl(Commands & commands)
 {
+    const char * clusterName = "BarrierControl";
     const uint16_t clusterId = 0x0103;
 
-    commands.Register(make_unique<MoveToPercent>(clusterId));
-    commands.Register(make_unique<StopMoveToPercent>(clusterId));
+    commands_list clusterCommands = {
+        make_unique<MoveToPercent>(clusterId),
+        make_unique<StopMoveToPercent>(clusterId),
+    };
+
+    commands.Registers(clusterName, clusterCommands);
 }
 
 #endif // __CHIPTOOL_BARRIERCONTROL_COMMANDS_H__

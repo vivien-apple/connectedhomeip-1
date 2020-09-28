@@ -252,22 +252,27 @@ public:
 
 void registerClusterColorControl(Commands & commands)
 {
+    const char * clusterName = "ColorControl";
     const uint16_t clusterId = 0x0300;
 
-    commands.Register(make_unique<MoveToHue>(clusterId));
-    commands.Register(make_unique<MoveHue>(clusterId));
-    commands.Register(make_unique<StepHue>(clusterId));
-    commands.Register(make_unique<MoveToSaturation>(clusterId));
-    commands.Register(make_unique<MoveSaturation>(clusterId));
-    commands.Register(make_unique<StepSaturation>(clusterId));
-    commands.Register(make_unique<MoveToHueSaturation>(clusterId));
-    commands.Register(make_unique<MoveToColor>(clusterId));
-    commands.Register(make_unique<MoveColor>(clusterId));
-    commands.Register(make_unique<StepColor>(clusterId));
-    commands.Register(make_unique<MoveToColorTemperature>(clusterId));
-    commands.Register(make_unique<MoveColorTemperature>(clusterId));
-    commands.Register(make_unique<StepColorTemperature>(clusterId));
-    commands.Register(make_unique<StopMoveStep>(clusterId));
+    commands_list clusterCommands = {
+        make_unique<MoveToHue>(clusterId),
+        make_unique<MoveHue>(clusterId),
+        make_unique<StepHue>(clusterId),
+        make_unique<MoveToSaturation>(clusterId),
+        make_unique<MoveSaturation>(clusterId),
+        make_unique<StepSaturation>(clusterId),
+        make_unique<MoveToHueSaturation>(clusterId),
+        make_unique<MoveToColor>(clusterId),
+        make_unique<MoveColor>(clusterId),
+        make_unique<StepColor>(clusterId),
+        make_unique<MoveToColorTemperature>(clusterId),
+        make_unique<MoveColorTemperature>(clusterId),
+        make_unique<StepColorTemperature>(clusterId),
+        make_unique<StopMoveStep>(clusterId),
+    };
+
+    commands.Registers(clusterName, clusterCommands);
 }
 
 #endif // __CHIPTOOL_COLORCONTROL_COMMANDS_H__

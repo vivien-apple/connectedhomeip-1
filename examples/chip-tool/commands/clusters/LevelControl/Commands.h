@@ -134,16 +134,21 @@ public:
 
 void registerClusterLevelControl(Commands & commands)
 {
+    const char * clusterName = "LevelControl";
     const uint16_t clusterId = 0x0008;
 
-    commands.Register(make_unique<MoveToLevel>(clusterId));
-    commands.Register(make_unique<Move>(clusterId));
-    commands.Register(make_unique<Step>(clusterId));
-    commands.Register(make_unique<Stop>(clusterId));
-    commands.Register(make_unique<MoveToLevelWithOnOff>(clusterId));
-    commands.Register(make_unique<MoveWithOnOff>(clusterId));
-    commands.Register(make_unique<StepWithOnOff>(clusterId));
-    commands.Register(make_unique<StopWithOnOff>(clusterId));
+    commands_list clusterCommands = {
+        make_unique<MoveToLevel>(clusterId),
+        make_unique<Move>(clusterId),
+        make_unique<Step>(clusterId),
+        make_unique<Stop>(clusterId),
+        make_unique<MoveToLevelWithOnOff>(clusterId),
+        make_unique<MoveWithOnOff>(clusterId),
+        make_unique<StepWithOnOff>(clusterId),
+        make_unique<StopWithOnOff>(clusterId),
+    };
+
+    commands.Registers(clusterName, clusterCommands);
 }
 
 #endif // __CHIPTOOL_LEVELCONTROL_COMMANDS_H__

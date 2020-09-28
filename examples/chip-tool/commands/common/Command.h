@@ -20,7 +20,8 @@
 #define __CHIPTOOL_COMMAND_H__
 
 #include "Commands.h"
-#include <vector>
+
+#include "Utils.h"
 
 #include <controller/CHIPDeviceController.h>
 #include <inet/InetInterface.h>
@@ -41,12 +42,6 @@ struct Argument
     uint32_t max;
     void * value;
 };
-
-template <typename T, typename... Args>
-std::unique_ptr<T> make_unique(Args &&... args)
-{
-    return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
-}
 
 class Command
 {

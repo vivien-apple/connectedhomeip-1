@@ -16,33 +16,27 @@
  *
  */
 
-#ifndef __CHIPTOOL_ECHO_COMMANDS_H__
-#define __CHIPTOOL_ECHO_COMMANDS_H__
+#ifndef __CHIPTOOL_UTILS_H__
+#define __CHIPTOOL_UTILS_H__
 
-#include "../common/EchoCommand.h"
+#include <memory>
+#include <vector>
 
-class Echo : public EchoCommand
+class Command;
+
+template <typename T, typename... Args>
+std::unique_ptr<Command> make_unique(Args &&... args)
 {
-public:
-    Echo() : EchoCommand("echo", NetworkType::UDP) {}
-};
-
-class EchoBle : public EchoCommand
-{
-public:
-    EchoBle() : EchoCommand("echo-ble", NetworkType::BLE) {}
-};
-
-void registerCommandsEcho(Commands & commands)
-{
-    const char * clusterName = "";
-
-    commands_list clusterCommands = {
-        make_unique<Echo>(),
-        make_unique<EchoBle>(),
-    };
-
-    commands.Registers(clusterName, clusterCommands);
+    return std::unique_ptr<Command>(new T(std::forward<Args>(args)...));
 }
 
-#endif // __CHIPTOOL_ECHO_COMMANDS_H__
+struct movable_initializer_list
+{
+    movable_initializer_list(std::unique_ptr<Command> && in) : item(std::move(in)) {}
+    operator std::unique_ptr<Command>() const && { return std::move(item); }
+    mutable std::unique_ptr<Command> item;
+};
+
+typedef std::initializer_list<movable_initializer_list> commands_list;
+
+#endif // __CHIPTOOL_UTILS_H__
