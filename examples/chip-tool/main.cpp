@@ -16,6 +16,7 @@
  *
  */
 
+#include "commands/clusters/BarrierControl/Commands.h"
 #include "commands/clusters/Basic/Commands.h"
 #include "commands/clusters/ColorControl/Commands.h"
 #include "commands/clusters/Identify/Commands.h"
@@ -36,6 +37,7 @@ int main(int argc, char * argv[])
     Commands commands;
 
     registerCommandsEcho(commands);
+    registerClusterBarrierControl(commands);
     registerClusterBasic(commands);
     registerClusterColorControl(commands);
     registerClusterIdentify(commands);

@@ -346,6 +346,27 @@ uint16_t encodeStopMoveStepCommand(uint8_t * buffer, uint16_t buf_length, uint8_
  * */
 uint16_t encodeResetToFactoryCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint);
 
+/**
+ * Barrier Control cluster commands
+ */
+
+/**
+ * @brief Encode a move-to-percent command for the Barrier Control cluster
+ * @param buffer                Buffer to encode into
+ * @param buf_length            Length of buffer
+ * @param destination_endpoint  Destination endpoint
+ * @param percent               The percent to open the barrier to
+ * */
+uint16_t encodeMoveToPercentCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint, uint8_t percent);
+
+/**
+ * @brief Encode a stop-move-to-percent command for the Barrier Control cluster
+ * @param buffer                Buffer to encode into
+ * @param buf_length            Length of buffer
+ * @param destination_endpoint  Destination endpoint
+ * */
+uint16_t encodeStopMoveToPercentCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint);
+
 #ifdef __cplusplus
 }
 #endif
