@@ -491,7 +491,7 @@ void emberAfPluginIasZoneServerManageQueueEventHandler(void)
     {
         airTimeRemainingMs = EMBER_AF_PLUGIN_IAS_ZONE_SERVER_MIN_OTA_TIME_MS - (elapsedTimeQs * MILLISECOND_TICKS_PER_SECOND / 4);
         emberAfIasZoneClusterPrintln("Not enough time passed for a retry, sleeping %d more mS", airTimeRemainingMs);
-        emberEventControlSetDelayMS(emberAfPluginIasZoneServerManageQueueEventControl, airTimeRemainingMs);
+        emberAfEventControlSetDelayMS(&emberAfPluginIasZoneServerManageQueueEventControl, airTimeRemainingMs);
     }
     else
     {
@@ -785,8 +785,8 @@ void emberAfIasZoneClusterServerMessageSentCallback(EmberOutgoingMessageType typ
                                      queueRetryParams.currentBackoffTimeSec);
 
         // Delay according to the current retransmit backoff time.
-        emberEventControlSetDelayMS(emberAfPluginIasZoneServerManageQueueEventControl,
-                                    queueRetryParams.currentBackoffTimeSec * MILLISECOND_TICKS_PER_SECOND);
+        emberAfEventControlSetDelayMS(&emberAfPluginIasZoneServerManageQueueEventControl,
+                                      queueRetryParams.currentBackoffTimeSec * MILLISECOND_TICKS_PER_SECOND);
 
         // The backoff time needs to be increased if the maximum backoff time is not reached yet.
         if ((queueRetryParams.currentBackoffTimeSec * queueRetryParams.config.backoffSeqCommonRatio) <=

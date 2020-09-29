@@ -611,7 +611,7 @@ static void startLockout()
     uint8_t lockoutTimeS = getUserCodeTemporaryDisableTime();
     if (lockoutTimeS != 0)
     {
-        emberEventControlSetDelayMS(emberAfPluginDoorLockServerLockoutEventControl, lockoutTimeS * MILLISECOND_TICKS_PER_SECOND);
+        emberAfEventControlSetDelayMS(&emberAfPluginDoorLockServerLockoutEventControl, lockoutTimeS * MILLISECOND_TICKS_PER_SECOND);
     }
 }
 
@@ -681,8 +681,8 @@ static void scheduleAutoRelock(uint32_t autoRelockTimeS)
     }
     else
     {
-        emberEventControlSetDelayMS(emberAfPluginDoorLockServerRelockEventControl,
-                                    (autoRelockTimeS * MILLISECOND_TICKS_PER_SECOND));
+        emberAfEventControlSetDelayMS(&emberAfPluginDoorLockServerRelockEventControl,
+                                      (autoRelockTimeS * MILLISECOND_TICKS_PER_SECOND));
     }
 }
 
