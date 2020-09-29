@@ -43,13 +43,12 @@
 #include "attribute-storage.h"
 #include "gen/callback.h"
 
+#include <platform/CHIPDeviceLayer.h>
+#include <system/SystemTimer.h>
+
 #define EMBER_MAX_EVENT_CONTROL_DELAY_MS (UINT32_MAX / 2)
 #define EMBER_MAX_EVENT_CONTROL_DELAY_QS (EMBER_MAX_EVENT_CONTROL_DELAY_MS >> 8)
 #define EMBER_MAX_EVENT_CONTROL_DELAY_MINUTES (EMBER_MAX_EVENT_CONTROL_DELAY_MS >> 16)
-
-// stub these for af-gen-event.h issue #1934
-#define emberAfPushEndPointNetworkIndex(x) (void) 0
-#define emberAfPopNetworkIndex(x) (void) 0
 
 #include "gen/af-gen-event.h"
 
@@ -65,7 +64,37 @@ struct EmberEventData
 // Globals
 
 #ifdef EMBER_AF_GENERATED_EVENT_CODE
+extern "C" {
+// Stubs for IAS Zone Client Cluster issue #2057
+EmberEventControl emberAfPluginIasZoneClientStateMachineEventControl;
+void emberAfPluginIasZoneClientStateMachineEventHandler(void){};
+
+// Stubs for IAS Zone Server Cluster issue #2058
+EmberEventControl emberAfPluginIasZoneServerManageQueueEventControl;
+void emberAfPluginIasZoneServerManageQueueEventHandler(void){};
+void emberAfIasZoneClusterServerTickCallback(uint8_t endpoint){};
+
+// Stubs for Network related methods
+EmberEventControl emberAfPluginNetworkSteeringFinishSteeringEventControl;
+EmberEventControl emberAfPluginUpdateTcLinkKeyBeginTcLinkKeyUpdateEventControl;
+void emberAfPluginScanDispatchScanNetworkEventHandler(void){};
+void emberAfPluginNetworkSteeringFinishSteeringEventHandler(void){};
+void emberAfPluginUpdateTcLinkKeyBeginTcLinkKeyUpdateEventHandler(void){};
+// The Network Steering plugin defines a method that use emberEventControlSetInactive without
+// passing a pointer. But this method is unused, so let's override the method call for linking
+// to succeed.
+#define emberEventControlSetInactive(x) (void) 0
+
+// Stub these for af-gen-event.h issue #1934
+#define emberAfPushEndpointNetworkIndex(x) (void) 0
+#define emberAfPushNetworkIndex(x) (void) 0
+#define emberAfPopNetworkIndex() (void) 0
 EMBER_AF_GENERATED_EVENT_CODE
+#undef emberEventControlSetInactive
+#undef emberAfPushEndpointNetworkIndex
+#undef emberAfPopNetworkIndex
+#undef emberEventControlSetInactive
+}
 #endif // EMBER_AF_GENERATED_EVENT_CODE
 
 #if defined(EMBER_AF_GENERATED_EVENT_CONTEXT)
@@ -90,6 +119,23 @@ EmberEventData emAfEvents[] = {
 
     { NULL, NULL }
 };
+
+void EventControlHandler(chip::System::Layer * systemLayer, void * appState, chip::System::Error error)
+{
+    EmberEventControl * control = reinterpret_cast<EmberEventControl *>(appState);
+    if (control->status != EMBER_EVENT_INACTIVE)
+    {
+        for (size_t i = 0; i < sizeof(emAfEvents); i++)
+        {
+            if (emAfEvents[i].control == control)
+            {
+                control->status = EMBER_EVENT_INACTIVE;
+                emAfEvents[i].handler();
+                return;
+            }
+        }
+    }
+}
 
 const char emAfStackEventString[] = "Stack";
 
@@ -124,13 +170,29 @@ EmberStatus emberAfEventControlSetDelayMS(EmberEventControl * control, uint32_t 
 {
     if (delayMs <= EMBER_MAX_EVENT_CONTROL_DELAY_MS)
     {
-        // TODO: set a CHIP timer here emberEventControlSetDelayMS(*control, delayMs); #658
+        control->status = EMBER_EVENT_MS_TIME;
+        chip::DeviceLayer::SystemLayer.StartTimer(delayMs, EventControlHandler, control);
     }
     else
     {
         return EMBER_BAD_ARGUMENT;
     }
     return EMBER_SUCCESS;
+}
+
+void emberEventControlSetInactive(EmberEventControl * control)
+{
+    if (control->status != EMBER_EVENT_INACTIVE)
+    {
+        control->status = EMBER_EVENT_INACTIVE;
+        chip::DeviceLayer::SystemLayer.CancelTimer(EventControlHandler, control);
+    }
+}
+
+void emberEventControlSetActive(EmberEventControl * control)
+{
+    control->status = EMBER_EVENT_ZERO_DELAY;
+    chip::DeviceLayer::SystemLayer.ScheduleWork(EventControlHandler, control);
 }
 
 EmberStatus emberAfEventControlSetDelayQS(EmberEventControl * control, uint32_t delayQs)
@@ -211,7 +273,7 @@ EmberStatus emberAfDeactivateClusterTick(uint8_t endpoint, EmberAfClusterId clus
     EmberAfEventContext * context = findEventContext(endpoint, clusterId, isClient);
     if (context != NULL)
     {
-        emberEventControlSetInactive((*(context->eventControl)));
+        emberEventControlSetInactive(context->eventControl);
         return EMBER_SUCCESS;
     }
     return EMBER_BAD_ARGUMENT;
