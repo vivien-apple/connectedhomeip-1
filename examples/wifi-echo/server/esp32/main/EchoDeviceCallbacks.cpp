@@ -93,22 +93,16 @@ void EchoDeviceCallbacks::DeviceEventCallback(const ChipDeviceEvent * event, int
     }
 }
 
-void EchoDeviceCallbacks::PostAttributeChangeCallback(uint8_t endpoint, EmberAfClusterId clusterId, EmberAfAttributeId attributeId,
-                                                      uint8_t mask, uint16_t manufacturerCode, uint8_t type, uint8_t size,
-                                                      uint8_t * value)
+void OnOffPostAttributeChangeCallback(uint8_t endpoint, uint16_t attributeId, uint8_t * value)
 {
-    if (clusterId != ZCL_ON_OFF_CLUSTER_ID)
-    {
-        ESP_LOGI(TAG, "PostAttributeChangeCallback for unhandled cluster ID: %d", clusterId);
-        return;
-    }
+    ESP_LOGI(TAG, "endpoint: '0x%02x', attribute ID: '0x%04x', value: %d", endpoint, attributeId, *value);
 
     if (attributeId != ZCL_ON_OFF_ATTRIBUTE_ID)
     {
         ESP_LOGI(TAG, "Unknown attribute ID: %d", attributeId);
         return;
     }
-    ESP_LOGI(TAG, "Got the post attribute callback with value %d for endpoint %d", *value, endpoint);
+
     // At this point we can assume that value points to a bool value.
     if (endpoint == 1)
     {
@@ -121,6 +115,79 @@ void EchoDeviceCallbacks::PostAttributeChangeCallback(uint8_t endpoint, EmberAfC
     else
     {
         ESP_LOGE(TAG, "Unexpected endpoint id: %d", endpoint);
+    }
+}
+
+TimerHandle_t identifyTimer;
+void IdentifyTimerCallback(TimerHandle_t handle)
+{
+    statusLED1.Animate();
+
+    // Get remaining timer count.
+    uint32_t timerCount = (uint32_t) pvTimerGetTimerID(handle);
+
+    // Decrement the timer count.
+    timerCount--;
+    vTimerSetTimerID(handle, (void *) timerCount);
+
+    // If the timer count reaches 0, just stop the timer.
+    if (timerCount == 0)
+    {
+        xTimerStop(handle, 0);
+    }
+}
+
+void IdentifyPostAttributeChangeCallback(uint8_t endpoint, uint16_t attributeId, uint8_t * value)
+{
+    ESP_LOGI(TAG, "endpoint: '0x%02x', attribute ID: '0x%04x', value: %d", endpoint, attributeId, *value);
+
+    if (attributeId != ZCL_IDENTIFY_TIME_ATTRIBUTE_ID)
+    {
+        ESP_LOGI(TAG, "Unknown attribute ID: %d", attributeId);
+        return;
+    }
+
+    // Only endpoint 1 supports the Identify cluster
+    if (endpoint == 1)
+    {
+        statusLED1.Blink(500);
+
+        // timerCount represents the number of callback execution before the we stopped the timer.
+        // value is expressed in seconds and the timer is fired every 250ms, so just multiply value by 4.
+        // Also, we want timerCount to be odd number, so the ligth state ends in the same state it starts.
+        uint32_t timerCount = (*value) * 4;
+
+        identifyTimer = xTimerCreate("IdentifyTimer", pdMS_TO_TICKS(250), pdTRUE, (void *) timerCount, &IdentifyTimerCallback);
+        if (xTimerStart(identifyTimer, 10) != pdPASS)
+        {
+            ESP_LOGE(TAG, "Identify timer start error");
+        }
+    }
+    else
+    {
+        ESP_LOGE(TAG, "Unexpected endpoint id: %d", endpoint);
+    }
+}
+
+void EchoDeviceCallbacks::PostAttributeChangeCallback(uint8_t endpoint, EmberAfClusterId clusterId, EmberAfAttributeId attributeId,
+                                                      uint8_t mask, uint16_t manufacturerCode, uint8_t type, uint8_t size,
+                                                      uint8_t * value)
+{
+    ESP_LOGI(TAG, "PostAttributeChangeCallback for cluster ID: '0x%04x'", clusterId);
+
+    switch (clusterId)
+    {
+    case ZCL_ON_OFF_CLUSTER_ID:
+        OnOffPostAttributeChangeCallback(endpoint, attributeId, value);
+        break;
+
+    case ZCL_IDENTIFY_CLUSTER_ID:
+        IdentifyPostAttributeChangeCallback(endpoint, attributeId, value);
+        break;
+
+    default:
+        ESP_LOGI(TAG, "Unhandled cluster ID: %d", clusterId);
+        break;
     }
 
     ESP_LOGI(TAG, "Current free heap: %d\n", heap_caps_get_free_size(MALLOC_CAP_8BIT));
