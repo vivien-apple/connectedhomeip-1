@@ -169,6 +169,90 @@ void IdentifyPostAttributeChangeCallback(uint8_t endpoint, uint16_t attributeId,
     }
 }
 
+color_t Temperature2RGB(uint16_t temp)
+{
+    float x  = (float) (temp / 1000.0);
+    float x2 = x * x;
+    float x3 = x2 * x;
+    float x4 = x3 * x;
+    float x5 = x4 * x;
+
+    float R, G, B = 0.0;
+
+    // red
+    if (temp <= 6600)
+        R = 1.0;
+    else
+        R = 0.0002889f * x5 - 0.01258f * x4 + 0.2148f * x3 - 1.776f * x2 + 6.907f * x - 8.723f;
+
+    // green
+    if (temp <= 6600)
+        G = -4.593e-05f * x5 + 0.001424f * x4 - 0.01489f * x3 + 0.0498f * x2 + 0.1669f * x - 0.1653f;
+    else
+        G = -1.308e-07f * x5 + 1.745e-05f * x4 - 0.0009116f * x3 + 0.02348f * x2 - 0.3048f * x + 2.159f;
+
+    // blue
+    if (temp <= 2000.0)
+        B = 0.0;
+    else if (temp < 6600.0)
+        B = 1.764e-05f * x5 + 0.0003575f * x4 - 0.01554f * x3 + 0.1549f * x2 - 0.3682f * x + 0.2386f;
+    else
+        B = 1.0;
+
+    uint8_t a_R = R * 255;
+    uint8_t a_G = G * 255;
+    uint8_t a_B = B * 255;
+    return { a_R, a_G, a_B };
+}
+
+uint8_t colorMode = 0;
+void ColorControlPostAttributeChangeCallback(uint8_t endpoint, uint16_t attributeId, uint8_t * value)
+{
+    ESP_LOGI(TAG, "endpoint: '0x%02x', attribute ID: '0x%04x', value: %d", endpoint, attributeId, *value);
+
+    uint16_t colorTemperature = 0;
+    switch (attributeId)
+    {
+    case ZCL_COLOR_CONTROL_ENHANCED_COLOR_MODE_ATTRIBUTE_ID:
+        ESP_LOGI(TAG, "Enhanced color mode: %d", *value);
+        return;
+    case ZCL_COLOR_CONTROL_COLOR_MODE_ATTRIBUTE_ID:
+        ESP_LOGI(TAG, "Color mode: %d", *value);
+        colorMode = *value;
+        return;
+    case ZCL_COLOR_CONTROL_REMAINING_TIME_ATTRIBUTE_ID:
+        ESP_LOGI(TAG, "Remaining time: %d", *value);
+        return;
+    case ZCL_COLOR_CONTROL_COLOR_TEMPERATURE_ATTRIBUTE_ID:
+        memcpy(&colorTemperature, value, sizeof(colorTemperature));
+        ESP_LOGI(TAG, "Current Temperature: %d", colorTemperature);
+        // colorTemperature = chip::Encoding::LittleEndian::Read16(value);
+        break;
+    default:
+        ESP_LOGI(TAG, "Unknown attribute ID: %d", attributeId);
+        return;
+    }
+
+    // Only endpoint 1 supports the Color Control cluster
+    if (endpoint == 1)
+    {
+        if (colorMode == 0x02)
+        {
+#if CONFIG_HAVE_DISPLAY
+            statusLED1.SetVLEDColor(Temperature2RGB(colorTemperature));
+#endif
+        }
+        else
+        {
+            ESP_LOGE(TAG, "Unexpected color mode: '0x%02x'", colorMode);
+        }
+    }
+    else
+    {
+        ESP_LOGE(TAG, "Unexpected endpoint id: %d", endpoint);
+    }
+}
+
 void EchoDeviceCallbacks::PostAttributeChangeCallback(uint8_t endpoint, EmberAfClusterId clusterId, EmberAfAttributeId attributeId,
                                                       uint8_t mask, uint16_t manufacturerCode, uint8_t type, uint8_t size,
                                                       uint8_t * value)
@@ -179,6 +263,10 @@ void EchoDeviceCallbacks::PostAttributeChangeCallback(uint8_t endpoint, EmberAfC
     {
     case ZCL_ON_OFF_CLUSTER_ID:
         OnOffPostAttributeChangeCallback(endpoint, attributeId, value);
+        break;
+
+    case ZCL_COLOR_CONTROL_CLUSTER_ID:
+        ColorControlPostAttributeChangeCallback(endpoint, attributeId, value);
         break;
 
     case ZCL_IDENTIFY_CLUSTER_ID:

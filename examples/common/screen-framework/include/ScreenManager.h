@@ -57,6 +57,8 @@ public:
 
     static int AddVLED(color_t color);
 
+    static void SetVLEDColor(int id, color_t color);
+
     static void SetVLED(int id, bool on);
 
     static void ToggleVLED(int id);

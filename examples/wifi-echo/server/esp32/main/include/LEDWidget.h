@@ -38,6 +38,7 @@ public:
     void BlinkOnError();
     void Animate();
 #if CONFIG_HAVE_DISPLAY
+    void SetVLEDColor(color_t color);
     void SetVLED(int id1, int id2);
 #endif
 

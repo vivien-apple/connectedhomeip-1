@@ -306,6 +306,12 @@ int ScreenManager::AddVLED(color_t color)
     return id;
 }
 
+void ScreenManager::SetVLEDColor(int id, color_t color)
+{
+    vleds[id] = color;
+    DisplayVLED(id);
+}
+
 void ScreenManager::SetVLED(int id, bool on)
 {
     Lock lock;

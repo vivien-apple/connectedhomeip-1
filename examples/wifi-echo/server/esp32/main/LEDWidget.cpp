@@ -133,6 +133,14 @@ void LEDWidget::DoSet(bool state)
 }
 
 #if CONFIG_HAVE_DISPLAY
+void LEDWidget::SetVLEDColor(color_t color)
+{
+    if (mVLED1 != -1)
+    {
+        ScreenManager::SetVLEDColor(mVLED1, color);
+    }
+}
+
 void LEDWidget::SetVLED(int id1, int id2)
 {
     mVLED1 = id1;
