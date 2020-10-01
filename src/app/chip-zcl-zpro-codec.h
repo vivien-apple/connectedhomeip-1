@@ -93,6 +93,10 @@ uint16_t encodeApsFrame(uint8_t * buffer, uint16_t buf_length, EmberApsFrame * a
 }
 #endif
 
+#ifdef __cplusplus
+extern "C++" {
+#endif
+
 uint16_t encodeClusterSpecificCommandHeader(chip::BufBound & buf, uint8_t endpointId, uint16_t clusterId, uint8_t commandId);
 
 uint16_t encodeGlobalCommandHeader(chip::BufBound & buf, uint8_t endpointId, uint16_t clusterId, uint8_t commandIdId);
@@ -146,5 +150,9 @@ uint16_t encodeGlobalCommand(uint8_t * buffer, uint16_t bufferLen, uint8_t endpo
 
     return buf.Fit() && chip::CanCastTo<uint16_t>(buf.Written()) ? static_cast<uint16_t>(buf.Written()) : 0;
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // CHIP_ZCL_ZPRO_CODEC_H
