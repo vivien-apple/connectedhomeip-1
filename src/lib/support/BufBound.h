@@ -24,7 +24,7 @@
 #ifndef CHIP_BUFBOUND_H
 #define CHIP_BUFBOUND_H
 
-#include <climits>
+#include <limits.h>
 #include <stdint.h>
 #include <string.h>
 #include <support/SafeInt.h>
