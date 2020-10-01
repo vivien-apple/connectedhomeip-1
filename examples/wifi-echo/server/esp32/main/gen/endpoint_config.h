@@ -184,15 +184,34 @@
             { 0xFFFD, ZCL_INT16U_ATTRIBUTE_TYPE, 2, (0x00), { (uint8_t *) 0x0001 } }, /* 78 / Color Control / cluster revision*/   \
             {                                                                                                                      \
                 0xFFFD, ZCL_INT16U_ATTRIBUTE_TYPE, 2, (ATTRIBUTE_MASK_CLIENT), { (uint8_t *) 0x0001 }                              \
-            },                                                                          /* 79 / IAS Zone / cluster revision*/      \
-            { 0x0000, ZCL_ENUM8_ATTRIBUTE_TYPE, 1, (0x00), { (uint8_t *) 0x00 } },      /* 80 / IAS Zone / zone state*/            \
-            { 0x0001, ZCL_ENUM16_ATTRIBUTE_TYPE, 2, (0x00), { (uint8_t *) 0x0000 } },   /* 81 / IAS Zone / zone type*/             \
-            { 0x0002, ZCL_BITMAP16_ATTRIBUTE_TYPE, 2, (0x00), { (uint8_t *) 0x0000 } }, /* 82 / IAS Zone / zone status*/           \
+            }, /* 79 / Temperature Measurement / cluster revision*/                                                                \
+            {                                                                                                                      \
+                0x0000, ZCL_INT16S_ATTRIBUTE_TYPE, 2, (0x00), { (uint8_t *) 0x0000 }                                               \
+            }, /* 80 / Temperature Measurement / measured value*/                                                                  \
+            {                                                                                                                      \
+                0x0001, ZCL_INT16S_ATTRIBUTE_TYPE, 2, (0x00), { (uint8_t *) 0x0000L }                                              \
+            }, /* 81 / Temperature Measurement / min measured value*/                                                              \
+            {                                                                                                                      \
+                0x0002, ZCL_INT16S_ATTRIBUTE_TYPE, 2, (0x00), { (uint8_t *) 0x0000L }                                              \
+            }, /* 82 / Temperature Measurement / max measured value*/                                                              \
+            {                                                                                                                      \
+                0xFFFD, ZCL_INT16U_ATTRIBUTE_TYPE, 2, (0x00), { (uint8_t *) 0x0001 }                                               \
+            }, /* 83 / Temperature Measurement / cluster revision*/                                                                \
+            {                                                                                                                      \
+                0xFFFD, ZCL_INT16U_ATTRIBUTE_TYPE, 2, (ATTRIBUTE_MASK_CLIENT), { (uint8_t *) 0x0001 }                              \
+            },                                                                          /* 84 / IAS Zone / cluster revision*/      \
+            { 0x0000, ZCL_ENUM8_ATTRIBUTE_TYPE, 1, (0x00), { (uint8_t *) 0x00 } },      /* 85 / IAS Zone / zone state*/            \
+            { 0x0001, ZCL_ENUM16_ATTRIBUTE_TYPE, 2, (0x00), { (uint8_t *) 0x0000 } },   /* 86 / IAS Zone / zone type*/             \
+            { 0x0002, ZCL_BITMAP16_ATTRIBUTE_TYPE, 2, (0x00), { (uint8_t *) 0x0000 } }, /* 87 / IAS Zone / zone status*/           \
             {                                                                                                                      \
                 0x0010, ZCL_IEEE_ADDRESS_ATTRIBUTE_TYPE, 8, (ATTRIBUTE_MASK_WRITABLE), { NULL }                                    \
-            },                                                                        /* 83 / IAS Zone / IAS CIE address*/         \
-            { 0x0011, ZCL_INT8U_ATTRIBUTE_TYPE, 1, (0x00), { (uint8_t *) 0xFF } },    /* 84 / IAS Zone / Zone ID*/                 \
-            { 0xFFFD, ZCL_INT16U_ATTRIBUTE_TYPE, 2, (0x00), { (uint8_t *) 0x0001 } }, /* 85 / IAS Zone / cluster revision*/        \
+            },                                                                        /* 88 / IAS Zone / IAS CIE address*/         \
+            { 0x0011, ZCL_INT8U_ATTRIBUTE_TYPE, 1, (0x00), { (uint8_t *) 0xFF } },    /* 89 / IAS Zone / Zone ID*/                 \
+            { 0xFFFD, ZCL_INT16U_ATTRIBUTE_TYPE, 2, (0x00), { (uint8_t *) 0x0001 } }, /* 90 / IAS Zone / cluster revision*/        \
+            {                                                                                                                      \
+                0xFFFD, ZCL_INT16U_ATTRIBUTE_TYPE, 2, (ATTRIBUTE_MASK_CLIENT), { (uint8_t *) 0x0001 }                              \
+            },                                                                        /* 91 / Messaging / cluster revision*/       \
+            { 0xFFFD, ZCL_INT16U_ATTRIBUTE_TYPE, 2, (0x00), { (uint8_t *) 0x0001 } }, /* 92 / Messaging / cluster revision*/       \
     }
 
 // Cluster function static arrays
@@ -219,7 +238,9 @@
         (EmberAfGenericClusterFunction) emberAfIasZoneClusterServerInitCallback,                                              \
         (EmberAfGenericClusterFunction) emberAfIasZoneClusterServerMessageSentCallback,                                       \
         (EmberAfGenericClusterFunction) emberAfIasZoneClusterServerPreAttributeChangedCallback                                \
-    };
+    };                                                                                                                             \
+    const EmberAfGenericClusterFunction emberAfFuncArrayMessagingClusterServer[] = { (                                             \
+        EmberAfGenericClusterFunction) emberAfMessagingClusterServerInitCallback };
 
 // Clusters definitions
 #define GENERATED_CLUSTERS                                                                                                         \
@@ -296,17 +317,30 @@
                 66,     (CLUSTER_MASK_SERVER | CLUSTER_MASK_INIT_FUNCTION),      emberAfFuncArrayColorControlClusterServer,        \
             },                                                                                                                     \
             {                                                                                                                      \
-                0x0500, (EmberAfAttributeMetadata *) &(generatedAttributes[79]), 1,                                                \
+                0x0402, (EmberAfAttributeMetadata *) &(generatedAttributes[79]), 1, 2, (CLUSTER_MASK_CLIENT), NULL,                \
+            },                                                                                                                     \
+            {                                                                                                                      \
+                0x0402, (EmberAfAttributeMetadata *) &(generatedAttributes[80]), 4, 8, (CLUSTER_MASK_SERVER), NULL,                \
+            },                                                                                                                     \
+            {                                                                                                                      \
+                0x0500, (EmberAfAttributeMetadata *) &(generatedAttributes[84]), 1,                                                \
                 2,      (CLUSTER_MASK_CLIENT | CLUSTER_MASK_INIT_FUNCTION),      emberAfFuncArrayIasZoneClusterClient,             \
             },                                                                                                                     \
             {                                                                                                                      \
                 0x0500,                                                                                                            \
-                (EmberAfAttributeMetadata *) &(generatedAttributes[80]),                                                           \
+                (EmberAfAttributeMetadata *) &(generatedAttributes[85]),                                                           \
                 6,                                                                                                                 \
                 16,                                                                                                                \
                 (CLUSTER_MASK_SERVER | CLUSTER_MASK_INIT_FUNCTION | CLUSTER_MASK_MESSAGE_SENT_FUNCTION |                           \
                  CLUSTER_MASK_PRE_ATTRIBUTE_CHANGED_FUNCTION),                                                                     \
                 emberAfFuncArrayIasZoneClusterServer,                                                                              \
+            },                                                                                                                     \
+            {                                                                                                                      \
+                0x0703, (EmberAfAttributeMetadata *) &(generatedAttributes[91]), 1, 2, (CLUSTER_MASK_CLIENT), NULL,                \
+            },                                                                                                                     \
+            {                                                                                                                      \
+                0x0703, (EmberAfAttributeMetadata *) &(generatedAttributes[92]), 1,                                                \
+                2,      (CLUSTER_MASK_SERVER | CLUSTER_MASK_INIT_FUNCTION),      emberAfFuncArrayMessagingClusterServer,           \
             },                                                                                                                     \
             {                                                                                                                      \
                 0x0006, (EmberAfAttributeMetadata *) &(generatedAttributes[18]), 2,                                                \
@@ -317,7 +351,7 @@
 // Endpoint types
 #define GENERATED_ENDPOINT_TYPES                                                                                                   \
     {                                                                                                                              \
-        { (EmberAfCluster *) &(generatedClusters[0]), 22, 139 }, { (EmberAfCluster *) &(generatedClusters[22]), 1, 3 },            \
+        { (EmberAfCluster *) &(generatedClusters[0]), 26, 153 }, { (EmberAfCluster *) &(generatedClusters[26]), 1, 3 },            \
     }
 
 // Cluster manufacturer codes
@@ -344,7 +378,7 @@
 #define ATTRIBUTE_SINGLETONS_SIZE (6)
 
 // Total size of attribute storage
-#define ATTRIBUTE_MAX_SIZE 142
+#define ATTRIBUTE_MAX_SIZE 156
 
 // Array of endpoints that are supported
 #define FIXED_ENDPOINT_ARRAY                                                                                                       \
@@ -384,20 +418,24 @@
 
 #define EMBER_AF_GENERATED_PLUGIN_INIT_FUNCTION_DECLARATIONS                                                                       \
     void emberAfPluginReportingInitCallback(void);                                                                                 \
+    void emberAfPluginTemperatureMeasurementServerInitCallback(void);                                                              \
     void emberAfPluginBarrierControlServerInitCallback(void);                                                                      \
     void emberAfPluginDoorLockServerInitCallback(void);
 
 #define EMBER_AF_GENERATED_PLUGIN_INIT_FUNCTION_CALLS                                                                              \
     emberAfPluginReportingInitCallback();                                                                                          \
+    emberAfPluginTemperatureMeasurementServerInitCallback();                                                                       \
     emberAfPluginBarrierControlServerInitCallback();                                                                               \
     emberAfPluginDoorLockServerInitCallback();
 
 #define EMBER_AF_GENERATED_PLUGIN_STACK_STATUS_FUNCTION_DECLARATIONS                                                               \
     void emberAfPluginReportingStackStatusCallback(EmberStatus status);                                                            \
+    void emberAfPluginTemperatureMeasurementServerStackStatusCallback(EmberStatus status);                                         \
     void emberAfPluginIasZoneServerStackStatusCallback(EmberStatus status);
 
 #define EMBER_AF_GENERATED_PLUGIN_STACK_STATUS_FUNCTION_CALLS                                                                      \
     emberAfPluginReportingStackStatusCallback(status);                                                                             \
+    emberAfPluginTemperatureMeasurementServerStackStatusCallback(status);                                                          \
     emberAfPluginIasZoneServerStackStatusCallback(status);
 
 #define EMBER_AF_GENERATED_PLUGIN_ZDO_MESSAGE_RECEIVED_FUNCTION_DECLARATIONS                                                       \
@@ -568,6 +606,10 @@
             { 0x0500, 0x00,                                                                                                        \
               COMMAND_MASK_OUTGOING_SERVER | COMMAND_MASK_INCOMING_CLIENT }, /* IAS Zone / ZoneStatusChangeNotification */         \
             { 0x0500, 0x01, COMMAND_MASK_OUTGOING_SERVER | COMMAND_MASK_INCOMING_CLIENT }, /* IAS Zone / ZoneEnrollRequest */      \
+            { 0x0703, 0x00, COMMAND_MASK_OUTGOING_SERVER },                                /* Messaging / DisplayMessage */        \
+            { 0x0703, 0x00, COMMAND_MASK_OUTGOING_CLIENT | COMMAND_MASK_INCOMING_SERVER }, /* Messaging / GetLastMessage */        \
+            { 0x0703, 0x01, COMMAND_MASK_OUTGOING_SERVER },                                /* Messaging / CancelMessage */         \
+            { 0x0703, 0x01, COMMAND_MASK_OUTGOING_CLIENT | COMMAND_MASK_INCOMING_SERVER }, /* Messaging / MessageConfirmation */   \
             { 0x0800, 0x00, COMMAND_MASK_INCOMING_CLIENT }, /* Key Establishment / InitiateKeyEstablishmentResponse */             \
             { 0x0800, 0x00, COMMAND_MASK_INCOMING_SERVER }, /* Key Establishment / InitiateKeyEstablishmentRequest */              \
             { 0x0800, 0x01, COMMAND_MASK_INCOMING_CLIENT }, /* Key Establishment / EphemeralDataResponse */                        \
@@ -584,7 +626,7 @@
             { 0x0B03, 0x02, COMMAND_MASK_INCOMING_CLIENT }, /* Appliance Statistics / LogQueueResponse */                          \
             { 0x0B03, 0x03, COMMAND_MASK_INCOMING_CLIENT }, /* Appliance Statistics / StatisticsAvailable */                       \
     }
-#define EMBER_AF_GENERATED_COMMAND_COUNT (160)
+#define EMBER_AF_GENERATED_COMMAND_COUNT (164)
 
 // Command manufacturer codes
 #define GENERATED_COMMAND_MANUFACTURER_CODES                                                                                       \
@@ -598,15 +640,16 @@
 // Generated reporting configuration defaults
 #define EMBER_AF_GENERATED_REPORTING_CONFIG_DEFAULTS                                                                               \
     {                                                                                                                              \
-        { EMBER_ZCL_REPORTING_DIRECTION_REPORTED, 1, 0x0006, 0x0000, CLUSTER_MASK_SERVER, 0x0000, { { 1, 65534, 0 } } },           \
-            { EMBER_ZCL_REPORTING_DIRECTION_REPORTED, 1, 0x0008, 0x0000, CLUSTER_MASK_SERVER, 0x0000, { { 1, 65534, 0 } } },       \
-            { EMBER_ZCL_REPORTING_DIRECTION_REPORTED, 1, 0x0101, 0x0000, CLUSTER_MASK_SERVER, 0x0000, { { 1, 65534, 0 } } },       \
-            { EMBER_ZCL_REPORTING_DIRECTION_REPORTED, 1, 0x0300, 0x0000, CLUSTER_MASK_SERVER, 0x0000, { { 1, 65534, 0 } } },       \
-            { EMBER_ZCL_REPORTING_DIRECTION_REPORTED, 1, 0x0300, 0x0001, CLUSTER_MASK_SERVER, 0x0000, { { 1, 65534, 0 } } },       \
-            { EMBER_ZCL_REPORTING_DIRECTION_REPORTED, 1, 0x0300, 0x0003, CLUSTER_MASK_SERVER, 0x0000, { { 1, 65534, 0 } } },       \
-            { EMBER_ZCL_REPORTING_DIRECTION_REPORTED, 1, 0x0300, 0x0004, CLUSTER_MASK_SERVER, 0x0000, { { 1, 65534, 0 } } },       \
-            { EMBER_ZCL_REPORTING_DIRECTION_REPORTED, 1, 0x0300, 0x0007, CLUSTER_MASK_SERVER, 0x0000, { { 1, 65534, 0 } } },       \
-            { EMBER_ZCL_REPORTING_DIRECTION_REPORTED, 2, 0x0006, 0x0000, CLUSTER_MASK_SERVER, 0x0000, { { 1, 65534, 0 } } },       \
+        { EMBER_ZCL_REPORTING_DIRECTION_REPORTED, 1, 0x0006, 0x0000, CLUSTER_MASK_SERVER, 0x0000, 1, 65534, 0 },                   \
+            { EMBER_ZCL_REPORTING_DIRECTION_REPORTED, 1, 0x0008, 0x0000, CLUSTER_MASK_SERVER, 0x0000, 1, 65534, 0 },               \
+            { EMBER_ZCL_REPORTING_DIRECTION_REPORTED, 1, 0x0101, 0x0000, CLUSTER_MASK_SERVER, 0x0000, 1, 65534, 0 },               \
+            { EMBER_ZCL_REPORTING_DIRECTION_REPORTED, 1, 0x0300, 0x0000, CLUSTER_MASK_SERVER, 0x0000, 1, 65534, 0 },               \
+            { EMBER_ZCL_REPORTING_DIRECTION_REPORTED, 1, 0x0300, 0x0001, CLUSTER_MASK_SERVER, 0x0000, 1, 65534, 0 },               \
+            { EMBER_ZCL_REPORTING_DIRECTION_REPORTED, 1, 0x0300, 0x0003, CLUSTER_MASK_SERVER, 0x0000, 1, 65534, 0 },               \
+            { EMBER_ZCL_REPORTING_DIRECTION_REPORTED, 1, 0x0300, 0x0004, CLUSTER_MASK_SERVER, 0x0000, 1, 65534, 0 },               \
+            { EMBER_ZCL_REPORTING_DIRECTION_REPORTED, 1, 0x0300, 0x0007, CLUSTER_MASK_SERVER, 0x0000, 1, 65534, 0 },               \
+            { EMBER_ZCL_REPORTING_DIRECTION_REPORTED, 1, 0x0402, 0x0000, CLUSTER_MASK_SERVER, 0x0000, 1, 65534, 0 },               \
+            { EMBER_ZCL_REPORTING_DIRECTION_REPORTED, 2, 0x0006, 0x0000, CLUSTER_MASK_SERVER, 0x0000, 1, 65534, 0 },               \
     }
-#define EMBER_AF_GENERATED_REPORTING_CONFIG_DEFAULTS_TABLE_SIZE (9)
+#define EMBER_AF_GENERATED_REPORTING_CONFIG_DEFAULTS_TABLE_SIZE (10)
 #endif // SILABS_AF_ENDPOINT_CONFIG

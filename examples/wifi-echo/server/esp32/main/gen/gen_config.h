@@ -78,8 +78,12 @@
 #define ZCL_USING_BARRIER_CONTROL_CLUSTER_SERVER
 #define ZCL_USING_COLOR_CONTROL_CLUSTER_CLIENT
 #define ZCL_USING_COLOR_CONTROL_CLUSTER_SERVER
+#define ZCL_USING_TEMP_MEASUREMENT_CLUSTER_CLIENT
+#define ZCL_USING_TEMP_MEASUREMENT_CLUSTER_SERVER
 #define ZCL_USING_IAS_ZONE_CLUSTER_CLIENT
 #define ZCL_USING_IAS_ZONE_CLUSTER_SERVER
+#define ZCL_USING_MESSAGING_CLUSTER_CLIENT
+#define ZCL_USING_MESSAGING_CLUSTER_SERVER
 /**** Optional Attributes ****/
 #define ZCL_USING_COLOR_CONTROL_CLUSTER_COLOR_CONTROL_CURRENT_HUE_ATTRIBUTE
 #define ZCL_USING_COLOR_CONTROL_CLUSTER_COLOR_CONTROL_CURRENT_SATURATION_ATTRIBUTE
@@ -139,13 +143,17 @@
 #define EMBER_AF_BARRIER_CONTROL_CLUSTER_SERVER_ENDPOINT_COUNT (1)
 #define EMBER_AF_COLOR_CONTROL_CLUSTER_CLIENT_ENDPOINT_COUNT (1)
 #define EMBER_AF_COLOR_CONTROL_CLUSTER_SERVER_ENDPOINT_COUNT (1)
+#define EMBER_AF_TEMP_MEASUREMENT_CLUSTER_CLIENT_ENDPOINT_COUNT (1)
+#define EMBER_AF_TEMP_MEASUREMENT_CLUSTER_SERVER_ENDPOINT_COUNT (1)
 #define EMBER_AF_IAS_ZONE_CLUSTER_CLIENT_ENDPOINT_COUNT (1)
 #define EMBER_AF_IAS_ZONE_CLUSTER_SERVER_ENDPOINT_COUNT (1)
+#define EMBER_AF_MESSAGING_CLUSTER_CLIENT_ENDPOINT_COUNT (1)
+#define EMBER_AF_MESSAGING_CLUSTER_SERVER_ENDPOINT_COUNT (1)
 
 /**** Cluster Endpoint Summaries ****/
-#define EMBER_AF_MAX_SERVER_CLUSTER_COUNT (11)
-#define EMBER_AF_MAX_CLIENT_CLUSTER_COUNT (11)
-#define EMBER_AF_MAX_TOTAL_CLUSTER_COUNT (22)
+#define EMBER_AF_MAX_SERVER_CLUSTER_COUNT (13)
+#define EMBER_AF_MAX_CLIENT_CLUSTER_COUNT (13)
+#define EMBER_AF_MAX_TOTAL_CLUSTER_COUNT (26)
 
 /**** CLI Section ****/
 #define EMBER_AF_GENERATE_CLI
@@ -165,6 +173,10 @@
 /**** Callback Section ****/
 #define EMBER_CALLBACK_STACK_STATUS
 #define EMBER_CALLBACK_IDENTIFY_CLUSTER_IDENTIFY_QUERY_RESPONSE
+#define EMBER_CALLBACK_MARK_BUFFERS
+#define EMBER_CALLBACK_ENERGY_SCAN_RESULT
+#define EMBER_CALLBACK_NETWORK_FOUND
+#define EMBER_CALLBACK_SCAN_COMPLETE
 #define EMBER_CALLBACK_IAS_ZONE_CLUSTER_IAS_ZONE_CLUSTER_CLIENT_INIT
 #define EMBER_CALLBACK_IAS_ZONE_CLUSTER_ZONE_ENROLL_REQUEST
 #define EMBER_CALLBACK_IAS_ZONE_CLUSTER_ZONE_STATUS_CHANGE_NOTIFICATION
@@ -178,6 +190,9 @@
 #define EMBER_CALLBACK_GROUPS_CLUSTER_VIEW_GROUP_RESPONSE
 #define EMBER_CALLBACK_GROUPS_CLUSTER_GET_GROUP_MEMBERSHIP_RESPONSE
 #define EMBER_CALLBACK_GROUPS_CLUSTER_REMOVE_GROUP_RESPONSE
+#define EMBER_CALLBACK_MESSAGING_CLUSTER_MESSAGING_CLUSTER_SERVER_INIT
+#define EMBER_CALLBACK_MESSAGING_CLUSTER_GET_LAST_MESSAGE
+#define EMBER_CALLBACK_MESSAGING_CLUSTER_MESSAGE_CONFIRMATION
 #define EMBER_CALLBACK_SCENES_CLUSTER_SCENES_CLUSTER_SERVER_INIT
 #define EMBER_CALLBACK_SCENES_CLUSTER_ADD_SCENE
 #define EMBER_CALLBACK_SCENES_CLUSTER_VIEW_SCENE
@@ -235,6 +250,7 @@
 #define EMBER_CALLBACK_COLOR_CONTROL_CLUSTER_MOVE_TO_SATURATION
 #define EMBER_CALLBACK_COLOR_CONTROL_CLUSTER_STEP_HUE
 #define EMBER_CALLBACK_COLOR_CONTROL_CLUSTER_STEP_SATURATION
+#define EMBER_CALLBACK_TEMPERATURE_READING_COMPLETE
 #define EMBER_CALLBACK_ON_OFF_CLUSTER_ON_OFF_CLUSTER_SERVER_INIT
 #define EMBER_CALLBACK_ON_OFF_CLUSTER_OFF
 #define EMBER_CALLBACK_ON_OFF_CLUSTER_ON
@@ -278,6 +294,16 @@
 // Global switch
 #define EMBER_AF_PRINT_ENABLE
 // Individual areas
+#define EMBER_AF_PRINT_CORE 0x0001
+#define EMBER_AF_PRINT_BITS                                                                                                        \
+    {                                                                                                                              \
+        0x01                                                                                                                       \
+    }
+#define EMBER_AF_PRINT_NAMES                                                                                                       \
+    {                                                                                                                              \
+        "Core", NULL                                                                                                               \
+    }
+#define EMBER_AF_PRINT_NAME_NUMBER 1
 
 #define EMBER_AF_SUPPORT_COMMAND_DISCOVERY
 
@@ -366,6 +392,11 @@
 #define EMBER_AF_PLUGIN_MBEDTLS_CONF_DEVICE_ACCELERATION
 #define EMBER_AF_PLUGIN_MBEDTLS_CONF_DEVICE_ACCELERATION_APP
 
+// Use this macro to check if Messaging Server Cluster plugin is included
+#define EMBER_AF_PLUGIN_MESSAGING_SERVER
+// User options for plugin Messaging Server Cluster
+#define EMBER_AF_PLUGIN_MESSAGING_SERVER_MESSAGE_SIZE 16
+
 // Use this macro to check if NVM3 Library plugin is included
 #define EMBER_AF_PLUGIN_NVM3
 // User options for plugin NVM3 Library
@@ -414,6 +445,20 @@
 #define EMBER_AF_PLUGIN_STRONG_RANDOM_RADIO_PRNG
 #define USE_RADIO_API_FOR_TRNG
 
+// Use this macro to check if Temperature Measurement Server Cluster plugin is included
+#define EMBER_AF_PLUGIN_TEMPERATURE_MEASUREMENT_SERVER
+// User options for plugin Temperature Measurement Server Cluster
+#define EMBER_AF_PLUGIN_TEMPERATURE_MEASUREMENT_SERVER_MAX_MEASUREMENT_FREQUENCY_S 300
+#define EMBER_AF_PLUGIN_TEMPERATURE_MEASUREMENT_SERVER_DEFAULT_REPORTABLE_TEMPERATURE_CHANGE_M_C 500
+#define EMBER_AF_PLUGIN_TEMPERATURE_MEASUREMENT_SERVER_OVER_TEMPERATURE
+#define EMBER_AF_PLUGIN_TEMPERATURE_MEASUREMENT_SERVER_OVER_TEMPERATURE_ASSERT_WARNING_THRESHOLD 55
+#define EMBER_AF_PLUGIN_TEMPERATURE_MEASUREMENT_SERVER_OVER_TEMPERATURE_DEASSERT_WARNING_THRESHOLD 50
+#define EMBER_AF_PLUGIN_TEMPERATURE_MEASUREMENT_SERVER_OVER_TEMPERATURE_ASSERT_CRITICAL_THRESHOLD 60
+#define EMBER_AF_PLUGIN_TEMPERATURE_MEASUREMENT_SERVER_OVER_TEMPERATURE_DEASSERT_CRITICAL_THRESHOLD 55
+
+// Use this macro to check if Temperature Si7053 Stub plugin is included
+#define EMBER_AF_PLUGIN_TEMPERATURE_SI7053_STUB
+
 // Use this macro to check if ZCL Framework Core plugin is included
 #define EMBER_AF_PLUGIN_ZCL_FRAMEWORK_CORE
 // User options for plugin ZCL Framework Core
@@ -460,6 +505,11 @@
 #define EMBER_AF_API_SERIAL                                                                                                        \
     "../../../../../Applications/Simplicity "                                                                                      \
     "Studio.app/Contents/Eclipse/developer/sdks/gecko_sdk_suite/v3.0/platform/base/hal/plugin/serial/serial.h"
+
+// API temperature from Temperature Si7053 Stub plugin
+#define EMBER_AF_API_TEMPERATURE                                                                                                   \
+    "../../../../../Applications/Simplicity "                                                                                      \
+    "Studio.app/Contents/Eclipse/developer/sdks/gecko_sdk_suite/v3.0/platform/base/hal/plugin/temperature/temperature.h"
 
 // API command-interpreter2 from ZCL Framework Core plugin
 #define EMBER_AF_API_COMMAND_INTERPRETER2                                                                                          \

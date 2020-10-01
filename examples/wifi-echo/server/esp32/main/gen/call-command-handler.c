@@ -119,8 +119,14 @@ EmberAfStatus emberAfClusterSpecificCommandParse(EmberAfClusterCommand * cmd)
         case ZCL_COLOR_CONTROL_CLUSTER_ID:
             result = status(false, true, cmd->mfgSpecific);
             break;
+        case ZCL_TEMP_MEASUREMENT_CLUSTER_ID:
+            result = status(false, true, cmd->mfgSpecific);
+            break;
         case ZCL_IAS_ZONE_CLUSTER_ID:
             result = emberAfIasZoneClusterClientCommandParse(cmd);
+            break;
+        case ZCL_MESSAGING_CLUSTER_ID:
+            result = status(false, true, cmd->mfgSpecific);
             break;
         default:
             // Unrecognized cluster ID, error status will apply.
@@ -162,8 +168,14 @@ EmberAfStatus emberAfClusterSpecificCommandParse(EmberAfClusterCommand * cmd)
         case ZCL_COLOR_CONTROL_CLUSTER_ID:
             result = emberAfColorControlClusterServerCommandParse(cmd);
             break;
+        case ZCL_TEMP_MEASUREMENT_CLUSTER_ID:
+            result = status(false, true, cmd->mfgSpecific);
+            break;
         case ZCL_IAS_ZONE_CLUSTER_ID:
             result = emberAfIasZoneClusterServerCommandParse(cmd);
+            break;
+        case ZCL_MESSAGING_CLUSTER_ID:
+            result = emberAfMessagingClusterServerCommandParse(cmd);
             break;
         default:
             // Unrecognized cluster ID, error status will apply.
@@ -2281,6 +2293,72 @@ EmberAfStatus emberAfIasZoneClusterServerCommandParse(EmberAfClusterCommand * cm
             payloadOffset += 1u;
             zoneId     = emberAfGetInt8u(cmd->buffer, payloadOffset, cmd->bufLen);
             wasHandled = emberAfIasZoneClusterZoneEnrollResponseCallback(enrollResponseCode, zoneId);
+            break;
+        }
+        default: {
+            // Unrecognized command ID, error status will apply.
+            break;
+        }
+        }
+    }
+    return status(wasHandled, true, cmd->mfgSpecific);
+}
+
+// Cluster: Messaging, server
+EmberAfStatus emberAfMessagingClusterServerCommandParse(EmberAfClusterCommand * cmd)
+{
+    bool wasHandled = false;
+    if (!cmd->mfgSpecific)
+    {
+        switch (cmd->commandId)
+        {
+        case ZCL_GET_LAST_MESSAGE_COMMAND_ID: {
+            // Command is fixed length: 0
+            wasHandled = emberAfMessagingClusterGetLastMessageCallback();
+            break;
+        }
+        case ZCL_MESSAGE_CONFIRMATION_COMMAND_ID: {
+            uint16_t payloadOffset = cmd->payloadStartIndex;
+            uint32_t messageId;                 // Ver.: always
+            uint32_t confirmationTime;          // Ver.: always
+            uint8_t messageConfirmationControl; // Ver.: since se-1.2a-07-5356-19
+            uint8_t * messageResponse;          // Ver.: since se-1.2a-07-5356-19
+            // Command is not a fixed length
+            if (cmd->bufLen < payloadOffset + 4u)
+            {
+                return EMBER_ZCL_STATUS_MALFORMED_COMMAND;
+            }
+            messageId = emberAfGetInt32u(cmd->buffer, payloadOffset, cmd->bufLen);
+            payloadOffset += 4u;
+            if (cmd->bufLen < payloadOffset + 4u)
+            {
+                return EMBER_ZCL_STATUS_MALFORMED_COMMAND;
+            }
+            confirmationTime = emberAfGetInt32u(cmd->buffer, payloadOffset, cmd->bufLen);
+            payloadOffset += 4u;
+            if ((cmd->bufLen < payloadOffset + 1u))
+            {
+                // Argument is not always present:
+                // - it is present only in versions higher than: se-1.2a-07-5356-19
+                messageConfirmationControl = 0xFF;
+            }
+            else
+            {
+                messageConfirmationControl = emberAfGetInt8u(cmd->buffer, payloadOffset, cmd->bufLen);
+                payloadOffset += 1u;
+            }
+            if ((cmd->bufLen < payloadOffset + emberAfStringLength(cmd->buffer + payloadOffset) + 1u))
+            {
+                // Argument is not always present:
+                // - it is present only in versions higher than: se-1.2a-07-5356-19
+                messageResponse = NULL;
+            }
+            else
+            {
+                messageResponse = emberAfGetString(cmd->buffer, payloadOffset, cmd->bufLen);
+            }
+            wasHandled = emberAfMessagingClusterMessageConfirmationCallback(messageId, confirmationTime, messageConfirmationControl,
+                                                                            messageResponse);
             break;
         }
         default: {
