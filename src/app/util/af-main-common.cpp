@@ -149,6 +149,12 @@ static uint8_t getMessageSentCallbackIndex(void);
 static void invalidateMessageSentCallbackEntry(uint8_t messageTag);
 static EmberAfMessageSentFunction getMessageSentCallback(uint8_t tag);
 
+// TODO Move and implement this function elsewhere
+bool emberAfGetEndpointInfoCallback(uint8_t endpoint, uint8_t * returnNetworkIndex, EmberAfEndpointInfoStruct * returnEndpointInfo)
+{
+    return false;
+}
+
 static uint8_t getMessageSentCallbackIndex(void)
 {
     uint8_t i;
@@ -262,6 +268,7 @@ static EmberStatus send(EmberOutgoingMessageType type, uint64_t indexOrDestinati
     // The source endpoint in the APS frame MUST be valid at this point.  We use
     // it to set the appropriate outgoing network as well as the profile id in
     // the APS frame.
+
     EmberAfEndpointInfoStruct endpointInfo;
     uint8_t networkIndex = 0;
     if (emberAfGetEndpointInfoCallback(apsFrame->sourceEndpoint, &networkIndex, &endpointInfo))
@@ -316,10 +323,11 @@ static EmberStatus send(EmberOutgoingMessageType type, uint64_t indexOrDestinati
         // Called prior to fragmentation in case the mesasge does not go out over the
         // Zigbee radio, and instead goes to some other transport that does not require
         // low level ZigBee fragmentation.
-        if (emberAfPreMessageSendCallback(&messageStruct, &status))
-        {
-            return status;
-        }
+        // TODO Commented out since emberAfPreMessageSendCallback is not implemented (always return false)
+        // if (emberAfPreMessageSendCallback(&messageStruct, &status))
+        // {
+        //     return status;
+        // }
     }
 
     // SE 1.4 requires an option to disable APS ACK and Default Response
@@ -370,7 +378,8 @@ static EmberStatus send(EmberOutgoingMessageType type, uint64_t indexOrDestinati
 
     if (status == EMBER_SUCCESS)
     {
-        emberAfAddToCurrentAppTasks(EMBER_AF_WAITING_FOR_DATA_ACK | EMBER_AF_WAITING_FOR_ZCL_RESPONSE);
+        // TODO Not yet implemented
+        // emberAfAddToCurrentAppTasks(EMBER_AF_WAITING_FOR_DATA_ACK | EMBER_AF_WAITING_FOR_ZCL_RESPONSE);
     }
 
     // emberAfPopNetworkIndex();
@@ -566,7 +575,9 @@ EmberStatus emberAfSendInterPan(EmberPanId panId, const EmberEUI64 destinationLo
     }
     header.profileId = profileId;
     header.clusterId = clusterId;
-    return emberAfInterpanSendMessageCallback(&header, messageLength, messageBytes);
+    // TODO emberAfInterpanSendMessageCallback is not implemented
+    // return emberAfInterpanSendMessageCallback(&header, messageLength, messageBytes);
+    return EMBER_LIBRARY_NOT_PRESENT;
 }
 
 void emberAfPrintMessageData(uint8_t * data, uint16_t length)
@@ -618,7 +629,7 @@ void emAfMessageSentHandler(EmberOutgoingMessageType type, uint64_t indexOrDesti
     callback = getMessageSentCallback(messageTag);
     invalidateMessageSentCallbackEntry(messageTag);
 
-    emberAfRemoveFromCurrentAppTasks(EMBER_AF_WAITING_FOR_DATA_ACK);
+    // emberAfRemoveFromCurrentAppTasks(EMBER_AF_WAITING_FOR_DATA_ACK);
 
     if (messageContents != NULL && messageContents[0] & ZCL_CLUSTER_SPECIFIC_COMMAND)
     {
@@ -640,8 +651,8 @@ void emAfMessageSentHandler(EmberOutgoingMessageType type, uint64_t indexOrDesti
 #ifdef EMBER_AF_GENERATED_PLUGIN_MESSAGE_SENT_FUNCTION_CALLS
     EMBER_AF_GENERATED_PLUGIN_MESSAGE_SENT_FUNCTION_CALLS
 #endif
-
-    emberAfMessageSentCallback(type, indexOrDestination, apsFrame, messageLength, messageContents, status);
+    // TODO emberAfMessageSentCallback not implemented
+    // emberAfMessageSentCallback(type, indexOrDestination, apsFrame, messageLength, messageContents, status);
 }
 
 #ifdef EMBER_AF_PLUGIN_FRAGMENTATION

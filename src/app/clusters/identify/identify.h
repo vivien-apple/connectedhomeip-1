@@ -1,5 +1,5 @@
 
-/*
+/**
  *
  *    Copyright (c) 2020 Project CHIP Authors
  *
@@ -16,9 +16,14 @@
  *    limitations under the License.
  */
 
-#ifndef CALL_COMMAND_HANDLER
-#define CALL_COMMAND_HANDLER
+#ifndef ZCL_IDENTIFY_H
+#define ZCL_IDENTIFY_H
 
-#include "af-types.h"
+// this file contains all the common includes for clusters in the util
+#include <app/util/af.h>
 
-#endif // CALL_COMMAND_HANDLER
+bool emberAfPluginIdentifyStartFeedbackCallback(uint8_t endpoint, uint16_t identifyTime);
+
+bool emberAfPluginIdentifyStopFeedbackCallback(uint8_t endpoint);
+
+#endif // ZCL_IDENTIFY_H

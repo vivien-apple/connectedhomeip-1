@@ -1,5 +1,4 @@
-
-/*
+/**
  *
  *    Copyright (c) 2020 Project CHIP Authors
  *
@@ -16,9 +15,21 @@
  *    limitations under the License.
  */
 
-#ifndef CALL_COMMAND_HANDLER
-#define CALL_COMMAND_HANDLER
 
-#include "af-types.h"
+#include "time-util.h"
 
-#endif // CALL_COMMAND_HANDLER
+#include "af.h"
+
+/** @brief Get Current Time
+ *
+ * This callback is called when device attempts to get current time from the
+ * hardware. If this device has means to retrieve exact time, then this method
+ * should implement it. If the callback can't provide the exact time it should
+ * return 0 to indicate failure. Default action is to return 0, which indicates
+ * that device does not have access to real time.
+ *
+ */
+uint32_t emberAfGetCurrentTime(void)
+{
+    return 0;
+}

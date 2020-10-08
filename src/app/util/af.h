@@ -110,6 +110,7 @@ extern "C" {
 #include "gen/command-id.h"
 #include "gen/enums.h"
 #include "gen/print-cluster.h"
+#include "plugin-config.h"
 //#include "app/util/serial/command-interpreter2.h"
 //#include "app/framework/cli/zcl-cli.h"
 
@@ -856,13 +857,15 @@ EmberStatus emberAfBroadcastPermitJoin(uint8_t duration);
 
 /**
  * @brief A function used to add a task to the task register.
+ * TODO emberAfAddToCurrentAppTasksCallback
  */
-#define emberAfAddToCurrentAppTasks(x) emberAfAddToCurrentAppTasksCallback(x)
+//#define emberAfAddToCurrentAppTasks(x) emberAfAddToCurrentAppTasksCallback(x)
 
 /**
  * @brief A function used to remove a task from the task register.
+ * TODO emberAfRemoveFromCurrentAppTasksCallback
  */
-#define emberAfRemoveFromCurrentAppTasks(x) emberAfRemoveFromCurrentAppTasksCallback(x)
+//#define emberAfRemoveFromCurrentAppTasks(x) emberAfRemoveFromCurrentAppTasksCallback(x)
 
 /**
  * @brief A macro used to retrieve the bitmask of all application

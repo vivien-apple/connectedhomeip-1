@@ -1,5 +1,4 @@
-
-/*
+/**
  *
  *    Copyright (c) 2020 Project CHIP Authors
  *
@@ -16,9 +15,11 @@
  *    limitations under the License.
  */
 
-#ifndef CALL_COMMAND_HANDLER
-#define CALL_COMMAND_HANDLER
+#ifndef __GROUPS_SERVER_H__
+#define __GROUPS_SERVER_H__
 
-#include "af-types.h"
+#include <app/util/af.h>
 
-#endif // CALL_COMMAND_HANDLER
+bool emberAfGroupsClusterEndpointInGroupCallback(uint8_t endpoint, uint16_t groupId);
+
+#endif //__GROUPS_SERVER_H__

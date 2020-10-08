@@ -158,10 +158,10 @@ bool emberAfReadReportingConfigurationResponseCallback(EmberAfClusterId clusterI
  * @param type   Ver.: always
  * @param data   Ver.: always
  */
-void emberAfReportingAttributeChangeCallback(CHIPEndpointId endpoint, EmberAfClusterId clusterId, EmberAfAttributeId attributeId,
+void emberAfReportingAttributeChangeCallback(uint8_t endpoint, EmberAfClusterId clusterId, EmberAfAttributeId attributeId,
                                              uint8_t mask, uint16_t manufacturerCode, EmberAfAttributeType type, uint8_t * data);
 
 #ifdef __cplusplus
-} // extern "C"
-#endif // __cplusplus
+}
+#endif
 #endif

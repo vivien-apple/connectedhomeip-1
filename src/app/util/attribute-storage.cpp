@@ -78,10 +78,6 @@ const uint8_t generatedDefaults[] = GENERATED_DEFAULTS;
 const EmberAfAttributeMinMaxValue minMaxDefaults[] = GENERATED_MIN_MAX_DEFAULTS;
 #endif // GENERATED_MIN_MAX_DEFAULTS
 
-#ifdef GENERATED_FUNCTION_ARRAYS
-GENERATED_FUNCTION_ARRAYS
-#endif
-
 #ifdef EMBER_AF_SUPPORT_COMMAND_DISCOVERY
 const EmberAfCommandMetadata generatedCommands[]              = GENERATED_COMMANDS;
 const EmberAfManufacturerCodeEntry commandManufacturerCodes[] = GENERATED_COMMAND_MANUFACTURER_CODES;
@@ -1143,14 +1139,7 @@ void emAfLoadAttributeDefaults(EndpointId endpoint, bool writeTokens)
     }
 }
 
-void emAfLoadAttributesFromTokens(EndpointId endpoint)
-{
-    // On EZSP host we currently do not support this. We need to come up with some
-    // callbacks.
-#ifndef EZSP_HOST
-    GENERATED_TOKEN_LOADER(endpoint);
-#endif // EZSP_HOST
-}
+void emAfLoadAttributesFromTokens(uint8_t endpoint) {}
 
 // 'data' argument may be null, since we changed the ptrToDefaultValue
 // to be null instead of pointing to all zeroes.
@@ -1162,12 +1151,6 @@ void emAfSaveAttributeToToken(uint8_t * data, EndpointId endpoint, EmberAfCluste
     {
         return;
     }
-
-// On EZSP host we currently do not support this. We need to come up with some
-// callbacks.
-#ifndef EZSP_HOST
-    GENERATED_TOKEN_SAVER;
-#endif // EZSP_HOST
 }
 
 // This function returns the actual function point from the array,

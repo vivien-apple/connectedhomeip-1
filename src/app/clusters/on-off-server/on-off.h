@@ -1,5 +1,4 @@
-
-/*
+/**
  *
  *    Copyright (c) 2020 Project CHIP Authors
  *
@@ -16,9 +15,11 @@
  *    limitations under the License.
  */
 
-#ifndef CALL_COMMAND_HANDLER
-#define CALL_COMMAND_HANDLER
+#ifndef ON_OFF_H
+#define ON_OFF_H
 
-#include "af-types.h"
+#include "af.h"
 
-#endif // CALL_COMMAND_HANDLER
+EmberAfStatus emberAfOnOffClusterSetValueCallback(uint8_t endpoint, uint8_t command, bool initiatedByLevelChange);
+
+#endif // ON_OFF_H

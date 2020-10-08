@@ -57,7 +57,6 @@ source_set("all-clusters-common") {
     "${chip_root}/src/app/util/util.cpp",
     "gen/call-command-handler.c",
     "gen/callback-stub.c",
-    "gen/clusters-callback-stubs.c",
   ]
 
   deps = [

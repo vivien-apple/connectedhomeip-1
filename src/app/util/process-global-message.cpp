@@ -42,16 +42,10 @@
 #include "af.h"
 #include "common.h"
 
+#include "attribute-table.h"
+#include "ember-print.h"
 #include <app/clusters/ias-zone-client/ias-zone-client.h>
-
-//#include "../plugin/key-establishment/key-establishment.h"
-//#include "../plugin/smart-energy-registration/smart-energy-registration.h"
-//#include "../plugin/trust-center-keepalive/trust-center-keepalive.h"
-//#include "../plugin/test-harness/test-harness.h"
-//#ifdef EMBER_AF_PLUGIN_WWAH_SERVER_SILABS
-//  #include "../plugin/wwah-server-silabs/wwah-server-silabs.h"
-//#endif
-//#include "../plugin/simple-metering-server/simple-metering-server.h"
+#include <app/reporting/reporting.h>
 
 #ifdef EMBER_AF_PLUGIN_COMMS_HUB_FUNCTION_SUB_GHZ
 #include "app/framework/plugin/comms-hub-function-sub-ghz/comms-hub-function-sub-ghz.h"
@@ -272,7 +266,6 @@ bool emAfProcessGlobalCommand(EmberAfClusterCommand * cmd)
 
                 emberAfAttributesPrintln("WRITE: clus %2x attr %2x ", clusterId, attrId);
                 emberAfAttributesPrintln("FAIL %x", status);
-                emberAfCoreFlush();
                 if (status == EMBER_ZCL_STATUS_MALFORMED_COMMAND)
                 {
                     // this attribute is malformed, terminate attribute processing.
@@ -364,7 +357,7 @@ bool emAfProcessGlobalCommand(EmberAfClusterCommand * cmd)
                                                        &(message[msgIndex + 3]),
 #endif //(BIGENDIAN_CPU)
                                                        dataType);
-                emberAfAttributesPrint("WRITE: clus %2x attr %2x ", clusterId, attrId);
+                emberAfAttributesPrintln("WRITE: clus %2x attr %2x ", clusterId, attrId);
                 if (status == EMBER_ZCL_STATUS_SUCCESS)
                 {
                     numSuccess++;
@@ -378,7 +371,6 @@ bool emAfProcessGlobalCommand(EmberAfClusterCommand * cmd)
                     emberAfPutInt16uInResp(attrId);
                     emberAfAttributesPrintln("FAIL %x", status);
                 }
-                emberAfCoreFlush();
 
                 // Increment past the attribute id (two bytes), the type (one byte), and
                 // the data (N bytes, including the length byte for strings).
@@ -503,7 +495,7 @@ bool emAfProcessGlobalCommand(EmberAfClusterCommand * cmd)
                 (emberAfGetInt8u(message, msgIndex + 3, msgLen) == ZCL_UTC_TIME_ATTRIBUTE_TYPE))
             {
                 // emberAfSetTime(emberAfGetInt32u(message, msgIndex + 4, msgLen));
-                // emberAfDebugPrintln("time sync ok, time: %4x", emberAfGetCurrentTime());
+                // emberAfPrint("time sync ok, time: %4x", emberAfGetCurrentTime());
                 emAfSyncingTime = false;
             }
 #ifdef EMBER_AF_PLUGIN_SMART_ENERGY_REGISTRATION_TIME_SOURCE_REQUIRED
@@ -547,11 +539,12 @@ bool emAfProcessGlobalCommand(EmberAfClusterCommand * cmd)
         emberAfPluginSimpleMeteringClusterReadAttributesResponseCallback(clusterId, message + msgIndex,
                                                                          static_cast<uint16_t>(msgLen - msgIndex));
 #endif
-
-        if (!emberAfReadAttributesResponseCallback(clusterId, message + msgIndex, static_cast<uint16_t>(msgLen - msgIndex)))
-        {
-            emberAfSendDefaultResponse(cmd, EMBER_ZCL_STATUS_SUCCESS);
-        }
+        // TODO Commented out since not implemented and was defaulted to 0 A.K.A always true in this context
+        // Issue #3522
+        // if (!emberAfReadAttributesResponseCallback(clusterId, message + msgIndex, msgLen - msgIndex))
+        // {
+        emberAfSendDefaultResponse(cmd, EMBER_ZCL_STATUS_SUCCESS);
+        //}
         return true;
 
     // ([status:1] [attribute id:2])+
@@ -594,10 +587,11 @@ bool emAfProcessGlobalCommand(EmberAfClusterCommand * cmd)
 
     // ([attribute id:2] [type:1] [data:V])+
     case ZCL_REPORT_ATTRIBUTES_COMMAND_ID:
-        if (!emberAfReportAttributesCallback(clusterId, message + msgIndex, static_cast<uint16_t>(msgLen - msgIndex)))
-        {
-            emberAfSendDefaultResponse(cmd, EMBER_ZCL_STATUS_SUCCESS);
-        }
+        // TODO Commented out since not implemented and was defaulted to 0 A.K.A always true in this context
+        // if (!emberAfReportAttributesCallback(clusterId, message + msgIndex, msgLen - msgIndex))
+        // {
+        emberAfSendDefaultResponse(cmd, EMBER_ZCL_STATUS_SUCCESS);
+        // }
         return true;
 
     // [command id:1] [status:1]
@@ -610,7 +604,8 @@ bool emAfProcessGlobalCommand(EmberAfClusterCommand * cmd)
 
         emberAfClusterDefaultResponseWithMfgCodeCallback(cmd->apsFrame->destinationEndpoint, clusterId, commandId, status,
                                                          clientServerMask, cmd->mfgCode);
-        emberAfDefaultResponseCallback(clusterId, commandId, status);
+        // TODO Implement this function : issue emberAfDefaultResponseCallback
+        // emberAfDefaultResponseCallback(clusterId, commandId, status);
         return true;
     }
 
@@ -666,11 +661,12 @@ bool emAfProcessGlobalCommand(EmberAfClusterCommand * cmd)
             printDiscoverCommandsResponse(false, // is ZCL command generated?
                                           clusterId, discoveryComplete, message + msgIndex,
                                           static_cast<uint16_t>(msgLen - msgIndex));
-            if (!emberAfDiscoverCommandsReceivedResponseCallback(clusterId, cmd->mfgCode, discoveryComplete, message + msgIndex,
-                                                                 static_cast<uint16_t>(msgLen - msgIndex)))
-            {
-                emberAfSendDefaultResponse(cmd, EMBER_ZCL_STATUS_SUCCESS);
-            }
+            // TODO
+            //if (!emberAfDiscoverCommandsReceivedResponseCallback(clusterId, cmd->mfgCode, discoveryComplete, message + msgIndex,
+            //                                                     static_cast<uint16_t>(msgLen - msgIndex)))
+            //{
+            emberAfSendDefaultResponse(cmd, EMBER_ZCL_STATUS_SUCCESS);
+            //}
             return true;
         }
         else
@@ -686,11 +682,12 @@ bool emAfProcessGlobalCommand(EmberAfClusterCommand * cmd)
             printDiscoverCommandsResponse(true, // is ZCL command generated?
                                           clusterId, discoveryComplete, message + msgIndex,
                                           static_cast<uint16_t>(msgLen - msgIndex));
-            if (!emberAfDiscoverCommandsGeneratedResponseCallback(clusterId, cmd->mfgCode, discoveryComplete, message + msgIndex,
-                                                                  static_cast<uint16_t>(msgLen - msgIndex)))
-            {
-                emberAfSendDefaultResponse(cmd, EMBER_ZCL_STATUS_SUCCESS);
-            }
+            // TODO
+            //if (!emberAfDiscoverCommandsGeneratedResponseCallback(clusterId, cmd->mfgCode, discoveryComplete, message + msgIndex,
+            //                                                      static_cast<uint16_t>(msgLen - msgIndex)))
+            //{
+            emberAfSendDefaultResponse(cmd, EMBER_ZCL_STATUS_SUCCESS);
+            //}
             return true;
         }
         else
