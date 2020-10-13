@@ -40,8 +40,7 @@ void LogV(uint8_t module, uint8_t category, const char * msg, va_list v)
         GetModuleName(moduleName, module);
 
         char formattedMsg[512];
-        int32_t prefixLen = snprintf(formattedMsg, sizeof(formattedMsg), "CHIP: [%s] %s", moduleName,
-                                     (category == kLogCategory_Error) ? "Error: " : "");
+        int32_t prefixLen = snprintf(formattedMsg, sizeof(formattedMsg), "CHIP: [%s]", moduleName);
         if (prefixLen < 0)
         {
             // This should never happens.
@@ -58,21 +57,29 @@ void LogV(uint8_t module, uint8_t category, const char * msg, va_list v)
         switch (category)
         {
         case kLogCategory_Error:
-            os_log_with_type(OS_LOG_DEFAULT, OS_LOG_TYPE_ERROR, "%{public}s", formattedMsg);
-            fprintf(stderr, "\033[1;31m");
+            os_log_with_type(OS_LOG_DEFAULT, OS_LOG_TYPE_ERROR, "🔴 %{public}s", formattedMsg);
+#if TARGET_OS_MAC && TARGET_OS_IPHONE == 0
+            fprintf(stdout, "\033[1;31m");
+#endif
             break;
 
         case kLogCategory_Progress:
-            os_log_with_type(OS_LOG_DEFAULT, OS_LOG_TYPE_INFO, "%{public}s", formattedMsg);
-            fprintf(stderr, "\033[0;34m");
+            os_log_with_type(OS_LOG_DEFAULT, OS_LOG_TYPE_INFO, "🔵 %{public}s", formattedMsg);
+#if TARGET_OS_MAC && TARGET_OS_IPHONE == 0
+            fprintf(stdout, "\033[0;34m");
+#endif
             break;
 
         case kLogCategory_Detail:
-            os_log_with_type(OS_LOG_DEFAULT, OS_LOG_TYPE_DEBUG, "%{public}s", formattedMsg);
-            fprintf(stderr, "\033[0;32m");
+            os_log_with_type(OS_LOG_DEFAULT, OS_LOG_TYPE_DEBUG, "🟢 %{public}s", formattedMsg);
+#if TARGET_OS_MAC && TARGET_OS_IPHONE == 0
+            fprintf(stdout, "\033[0;32m");
+#endif
             break;
         }
-        fprintf(stderr, "%s\n\033[0m", formattedMsg);
+#if TARGET_OS_MAC && TARGET_OS_IPHONE == 0
+        fprintf(stdout, "%s\n\033[0m", formattedMsg);
+#endif
     }
 }
 } // namespace Logging
