@@ -3630,6 +3630,8 @@ class GroupsGetGroupMembership : public ModelCommand
 public:
     GroupsGetGroupMembership() : ModelCommand("get-group-membership", kGroupsClusterId, 0x02)
     {
+        // groupList is an array, but since chip-tool does not support variable
+        // number of arguments, only a single instance is supported.
         AddArgument("groupList", 0, UINT16_MAX, &mGroupList);
     }
 
@@ -4515,14 +4517,16 @@ public:
         AddArgument("sceneID", 0, UINT8_MAX, &mSceneID);
         AddArgument("transitionTime", 0, UINT16_MAX, &mTransitionTime);
         AddArgument("sceneName", &mSceneName);
-        // FIXME - SExtensionFieldSetList is not supported.
-        AddArgument("extensionFieldSets", &mExtensionFieldSets);
+        // extensionFieldSets is an array, but since chip-tool does not support variable
+        // number of arguments, only a single instance is supported.
+        AddArgument("clusterId", 0, UINT16_MAX, &mClusterId);
+        AddArgument("extensionFieldSet", &mExtensionFieldSet);
     }
 
     uint16_t EncodeCommand(PacketBuffer * buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
         return encodeScenesClusterAddSceneCommand(buffer->Start(), bufferSize, endPointId, mGroupID, mSceneID, mTransitionTime,
-                                                  mSceneName, mExtensionFieldSets);
+                                                  mSceneName, mClusterId, mExtensionFieldSet);
     }
 
     // Global Response: DefaultResponse
@@ -4544,8 +4548,8 @@ private:
     uint8_t mSceneID;
     uint16_t mTransitionTime;
     char * mSceneName;
-    // FIXME - SExtensionFieldSetList is not supported.
-    void * mExtensionFieldSets;
+    uint16_t mClusterId;
+    char * mExtensionFieldSet;
 };
 
 /*
@@ -4603,14 +4607,16 @@ public:
         AddArgument("sceneID", 0, UINT8_MAX, &mSceneID);
         AddArgument("transitionTime", 0, UINT16_MAX, &mTransitionTime);
         AddArgument("sceneName", &mSceneName);
-        // FIXME - SExtensionFieldSetList is not supported.
-        AddArgument("extensionFieldSets", &mExtensionFieldSets);
+        // extensionFieldSets is an array, but since chip-tool does not support variable
+        // number of arguments, only a single instance is supported.
+        AddArgument("clusterId", 0, UINT16_MAX, &mClusterId);
+        AddArgument("extensionFieldSet", &mExtensionFieldSet);
     }
 
     uint16_t EncodeCommand(PacketBuffer * buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
         return encodeScenesClusterEnhancedAddSceneCommand(buffer->Start(), bufferSize, endPointId, mGroupID, mSceneID,
-                                                          mTransitionTime, mSceneName, mExtensionFieldSets);
+                                                          mTransitionTime, mSceneName, mClusterId, mExtensionFieldSet);
     }
 
     // Global Response: DefaultResponse
@@ -4632,8 +4638,8 @@ private:
     uint8_t mSceneID;
     uint16_t mTransitionTime;
     char * mSceneName;
-    // FIXME - SExtensionFieldSetList is not supported.
-    void * mExtensionFieldSets;
+    uint16_t mClusterId;
+    char * mExtensionFieldSet;
 };
 
 /*

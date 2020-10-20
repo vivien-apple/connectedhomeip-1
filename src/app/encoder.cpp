@@ -60,14 +60,16 @@
     return result;
 
 #define COMMAND_INSERT_STRING(name, str)                                                                                           \
-    size_t length = strlen(str);                                                                                                   \
-    if (!CanCastTo<uint8_t>(length))                                                                                               \
     {                                                                                                                              \
-        ChipLogError(Zcl, "Error encoding %s command. String too long: %d", name, length);                                         \
-        return 0;                                                                                                                  \
-    }                                                                                                                              \
-    buf.Put(static_cast<uint8_t>(length));                                                                                         \
-    buf.Put(str);
+        size_t length = strlen(str);                                                                                               \
+        if (!CanCastTo<uint8_t>(length))                                                                                           \
+        {                                                                                                                          \
+            ChipLogError(Zcl, "Error encoding %s command. String too long: %d", name, length);                                     \
+            return 0;                                                                                                              \
+        }                                                                                                                          \
+        buf.Put(static_cast<uint8_t>(length));                                                                                     \
+        buf.Put(str);                                                                                                              \
+    }
 
 #define COMMAND(name, cluster_id, command_id)                                                                                      \
     COMMAND_HEADER(name, cluster_id, command_id);                                                                                  \
@@ -224,9 +226,10 @@ uint16_t encodeReadAttributesCommand(uint8_t * buffer, uint16_t buf_length, uint
 uint16_t encodeBarrierControlClusterGoToPercentCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint,
                                                        uint8_t percentOpen)
 {
-    COMMAND_HEADER("BarrierControlGoToPercent", BARRIER_CONTROL_CLUSTER_ID, 0x00);
+    const char * kName = "BarrierControlGoToPercent";
+    COMMAND_HEADER(kName, BARRIER_CONTROL_CLUSTER_ID, 0x00);
     buf.Put(percentOpen);
-    COMMAND_FOOTER("BarrierControlGoToPercent");
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -234,8 +237,9 @@ uint16_t encodeBarrierControlClusterGoToPercentCommand(uint8_t * buffer, uint16_
  */
 uint16_t encodeBarrierControlClusterStopCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint)
 {
-    COMMAND_HEADER("BarrierControlStop", BARRIER_CONTROL_CLUSTER_ID, 0x01);
-    COMMAND_FOOTER("BarrierControlStop");
+    const char * kName = "BarrierControlStop";
+    COMMAND_HEADER(kName, BARRIER_CONTROL_CLUSTER_ID, 0x01);
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -294,8 +298,9 @@ uint16_t encodeBarrierControlClusterReadBarrierPositionAttribute(uint8_t * buffe
  */
 uint16_t encodeBasicClusterResetToFactoryDefaultsCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint)
 {
-    COMMAND_HEADER("BasicResetToFactoryDefaults", BASIC_CLUSTER_ID, 0x00);
-    COMMAND_FOOTER("BasicResetToFactoryDefaults");
+    const char * kName = "BasicResetToFactoryDefaults";
+    COMMAND_HEADER(kName, BASIC_CLUSTER_ID, 0x00);
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -386,12 +391,13 @@ uint16_t encodeBasicClusterReadPowerSourceAttribute(uint8_t * buffer, uint16_t b
 uint16_t encodeColorControlClusterMoveColorCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint,
                                                    int16_t rateX, int16_t rateY, uint8_t optionsMask, uint8_t optionsOverride)
 {
-    COMMAND_HEADER("ColorControlMoveColor", COLOR_CONTROL_CLUSTER_ID, 0x08);
+    const char * kName = "ColorControlMoveColor";
+    COMMAND_HEADER(kName, COLOR_CONTROL_CLUSTER_ID, 0x08);
     buf.PutLE16(static_cast<uint16_t>(rateX));
     buf.PutLE16(static_cast<uint16_t>(rateY));
     buf.Put(optionsMask);
     buf.Put(optionsOverride);
-    COMMAND_FOOTER("ColorControlMoveColor");
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -403,14 +409,15 @@ uint16_t encodeColorControlClusterMoveColorTemperatureCommand(uint8_t * buffer, 
                                                               uint16_t colorTemperatureMaximumMireds, uint8_t optionsMask,
                                                               uint8_t optionsOverride)
 {
-    COMMAND_HEADER("ColorControlMoveColorTemperature", COLOR_CONTROL_CLUSTER_ID, 0x4B);
+    const char * kName = "ColorControlMoveColorTemperature";
+    COMMAND_HEADER(kName, COLOR_CONTROL_CLUSTER_ID, 0x4B);
     buf.Put(moveMode);
     buf.PutLE16(rate);
     buf.PutLE16(colorTemperatureMinimumMireds);
     buf.PutLE16(colorTemperatureMaximumMireds);
     buf.Put(optionsMask);
     buf.Put(optionsOverride);
-    COMMAND_FOOTER("ColorControlMoveColorTemperature");
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -419,12 +426,13 @@ uint16_t encodeColorControlClusterMoveColorTemperatureCommand(uint8_t * buffer, 
 uint16_t encodeColorControlClusterMoveHueCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint,
                                                  uint8_t moveMode, uint8_t rate, uint8_t optionsMask, uint8_t optionsOverride)
 {
-    COMMAND_HEADER("ColorControlMoveHue", COLOR_CONTROL_CLUSTER_ID, 0x01);
+    const char * kName = "ColorControlMoveHue";
+    COMMAND_HEADER(kName, COLOR_CONTROL_CLUSTER_ID, 0x01);
     buf.Put(moveMode);
     buf.Put(rate);
     buf.Put(optionsMask);
     buf.Put(optionsOverride);
-    COMMAND_FOOTER("ColorControlMoveHue");
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -434,12 +442,13 @@ uint16_t encodeColorControlClusterMoveSaturationCommand(uint8_t * buffer, uint16
                                                         uint8_t moveMode, uint8_t rate, uint8_t optionsMask,
                                                         uint8_t optionsOverride)
 {
-    COMMAND_HEADER("ColorControlMoveSaturation", COLOR_CONTROL_CLUSTER_ID, 0x04);
+    const char * kName = "ColorControlMoveSaturation";
+    COMMAND_HEADER(kName, COLOR_CONTROL_CLUSTER_ID, 0x04);
     buf.Put(moveMode);
     buf.Put(rate);
     buf.Put(optionsMask);
     buf.Put(optionsOverride);
-    COMMAND_FOOTER("ColorControlMoveSaturation");
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -449,13 +458,14 @@ uint16_t encodeColorControlClusterMoveToColorCommand(uint8_t * buffer, uint16_t 
                                                      uint16_t colorX, uint16_t colorY, uint16_t transitionTime, uint8_t optionsMask,
                                                      uint8_t optionsOverride)
 {
-    COMMAND_HEADER("ColorControlMoveToColor", COLOR_CONTROL_CLUSTER_ID, 0x07);
+    const char * kName = "ColorControlMoveToColor";
+    COMMAND_HEADER(kName, COLOR_CONTROL_CLUSTER_ID, 0x07);
     buf.PutLE16(colorX);
     buf.PutLE16(colorY);
     buf.PutLE16(transitionTime);
     buf.Put(optionsMask);
     buf.Put(optionsOverride);
-    COMMAND_FOOTER("ColorControlMoveToColor");
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -465,12 +475,13 @@ uint16_t encodeColorControlClusterMoveToColorTemperatureCommand(uint8_t * buffer
                                                                 uint16_t colorTemperatureMireds, uint16_t transitionTime,
                                                                 uint8_t optionsMask, uint8_t optionsOverride)
 {
-    COMMAND_HEADER("ColorControlMoveToColorTemperature", COLOR_CONTROL_CLUSTER_ID, 0x0A);
+    const char * kName = "ColorControlMoveToColorTemperature";
+    COMMAND_HEADER(kName, COLOR_CONTROL_CLUSTER_ID, 0x0A);
     buf.PutLE16(colorTemperatureMireds);
     buf.PutLE16(transitionTime);
     buf.Put(optionsMask);
     buf.Put(optionsOverride);
-    COMMAND_FOOTER("ColorControlMoveToColorTemperature");
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -480,13 +491,14 @@ uint16_t encodeColorControlClusterMoveToHueCommand(uint8_t * buffer, uint16_t bu
                                                    uint8_t direction, uint16_t transitionTime, uint8_t optionsMask,
                                                    uint8_t optionsOverride)
 {
-    COMMAND_HEADER("ColorControlMoveToHue", COLOR_CONTROL_CLUSTER_ID, 0x00);
+    const char * kName = "ColorControlMoveToHue";
+    COMMAND_HEADER(kName, COLOR_CONTROL_CLUSTER_ID, 0x00);
     buf.Put(hue);
     buf.Put(direction);
     buf.PutLE16(transitionTime);
     buf.Put(optionsMask);
     buf.Put(optionsOverride);
-    COMMAND_FOOTER("ColorControlMoveToHue");
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -496,13 +508,14 @@ uint16_t encodeColorControlClusterMoveToHueAndSaturationCommand(uint8_t * buffer
                                                                 uint8_t hue, uint8_t saturation, uint16_t transitionTime,
                                                                 uint8_t optionsMask, uint8_t optionsOverride)
 {
-    COMMAND_HEADER("ColorControlMoveToHueAndSaturation", COLOR_CONTROL_CLUSTER_ID, 0x06);
+    const char * kName = "ColorControlMoveToHueAndSaturation";
+    COMMAND_HEADER(kName, COLOR_CONTROL_CLUSTER_ID, 0x06);
     buf.Put(hue);
     buf.Put(saturation);
     buf.PutLE16(transitionTime);
     buf.Put(optionsMask);
     buf.Put(optionsOverride);
-    COMMAND_FOOTER("ColorControlMoveToHueAndSaturation");
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -512,12 +525,13 @@ uint16_t encodeColorControlClusterMoveToSaturationCommand(uint8_t * buffer, uint
                                                           uint8_t saturation, uint16_t transitionTime, uint8_t optionsMask,
                                                           uint8_t optionsOverride)
 {
-    COMMAND_HEADER("ColorControlMoveToSaturation", COLOR_CONTROL_CLUSTER_ID, 0x03);
+    const char * kName = "ColorControlMoveToSaturation";
+    COMMAND_HEADER(kName, COLOR_CONTROL_CLUSTER_ID, 0x03);
     buf.Put(saturation);
     buf.PutLE16(transitionTime);
     buf.Put(optionsMask);
     buf.Put(optionsOverride);
-    COMMAND_FOOTER("ColorControlMoveToSaturation");
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -527,13 +541,14 @@ uint16_t encodeColorControlClusterStepColorCommand(uint8_t * buffer, uint16_t bu
                                                    int16_t stepX, int16_t stepY, uint16_t transitionTime, uint8_t optionsMask,
                                                    uint8_t optionsOverride)
 {
-    COMMAND_HEADER("ColorControlStepColor", COLOR_CONTROL_CLUSTER_ID, 0x09);
+    const char * kName = "ColorControlStepColor";
+    COMMAND_HEADER(kName, COLOR_CONTROL_CLUSTER_ID, 0x09);
     buf.PutLE16(static_cast<uint16_t>(stepX));
     buf.PutLE16(static_cast<uint16_t>(stepY));
     buf.PutLE16(transitionTime);
     buf.Put(optionsMask);
     buf.Put(optionsOverride);
-    COMMAND_FOOTER("ColorControlStepColor");
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -545,7 +560,8 @@ uint16_t encodeColorControlClusterStepColorTemperatureCommand(uint8_t * buffer, 
                                                               uint16_t colorTemperatureMaximumMireds, uint8_t optionsMask,
                                                               uint8_t optionsOverride)
 {
-    COMMAND_HEADER("ColorControlStepColorTemperature", COLOR_CONTROL_CLUSTER_ID, 0x4C);
+    const char * kName = "ColorControlStepColorTemperature";
+    COMMAND_HEADER(kName, COLOR_CONTROL_CLUSTER_ID, 0x4C);
     buf.Put(stepMode);
     buf.PutLE16(stepSize);
     buf.PutLE16(transitionTime);
@@ -553,7 +569,7 @@ uint16_t encodeColorControlClusterStepColorTemperatureCommand(uint8_t * buffer, 
     buf.PutLE16(colorTemperatureMaximumMireds);
     buf.Put(optionsMask);
     buf.Put(optionsOverride);
-    COMMAND_FOOTER("ColorControlStepColorTemperature");
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -563,13 +579,14 @@ uint16_t encodeColorControlClusterStepHueCommand(uint8_t * buffer, uint16_t buf_
                                                  uint8_t stepMode, uint8_t stepSize, uint8_t transitionTime, uint8_t optionsMask,
                                                  uint8_t optionsOverride)
 {
-    COMMAND_HEADER("ColorControlStepHue", COLOR_CONTROL_CLUSTER_ID, 0x02);
+    const char * kName = "ColorControlStepHue";
+    COMMAND_HEADER(kName, COLOR_CONTROL_CLUSTER_ID, 0x02);
     buf.Put(stepMode);
     buf.Put(stepSize);
     buf.Put(transitionTime);
     buf.Put(optionsMask);
     buf.Put(optionsOverride);
-    COMMAND_FOOTER("ColorControlStepHue");
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -579,13 +596,14 @@ uint16_t encodeColorControlClusterStepSaturationCommand(uint8_t * buffer, uint16
                                                         uint8_t stepMode, uint8_t stepSize, uint8_t transitionTime,
                                                         uint8_t optionsMask, uint8_t optionsOverride)
 {
-    COMMAND_HEADER("ColorControlStepSaturation", COLOR_CONTROL_CLUSTER_ID, 0x05);
+    const char * kName = "ColorControlStepSaturation";
+    COMMAND_HEADER(kName, COLOR_CONTROL_CLUSTER_ID, 0x05);
     buf.Put(stepMode);
     buf.Put(stepSize);
     buf.Put(transitionTime);
     buf.Put(optionsMask);
     buf.Put(optionsOverride);
-    COMMAND_FOOTER("ColorControlStepSaturation");
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -594,10 +612,11 @@ uint16_t encodeColorControlClusterStepSaturationCommand(uint8_t * buffer, uint16
 uint16_t encodeColorControlClusterStopMoveStepCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint,
                                                       uint8_t optionsMask, uint8_t optionsOverride)
 {
-    COMMAND_HEADER("ColorControlStopMoveStep", COLOR_CONTROL_CLUSTER_ID, 0x47);
+    const char * kName = "ColorControlStopMoveStep";
+    COMMAND_HEADER(kName, COLOR_CONTROL_CLUSTER_ID, 0x47);
     buf.Put(optionsMask);
     buf.Put(optionsOverride);
-    COMMAND_FOOTER("ColorControlStopMoveStep");
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -1035,8 +1054,9 @@ uint16_t encodeColorControlClusterReadStartUpColorTemperatureMiredsAttribute(uin
  */
 uint16_t encodeDoorLockClusterClearAllPINCodesCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint)
 {
-    COMMAND_HEADER("DoorLockClearAllPINCodes", DOOR_LOCK_CLUSTER_ID, 0x08);
-    COMMAND_FOOTER("DoorLockClearAllPINCodes");
+    const char * kName = "DoorLockClearAllPINCodes";
+    COMMAND_HEADER(kName, DOOR_LOCK_CLUSTER_ID, 0x08);
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -1044,8 +1064,9 @@ uint16_t encodeDoorLockClusterClearAllPINCodesCommand(uint8_t * buffer, uint16_t
  */
 uint16_t encodeDoorLockClusterClearAllRFIDCodesCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint)
 {
-    COMMAND_HEADER("DoorLockClearAllRFIDCodes", DOOR_LOCK_CLUSTER_ID, 0x19);
-    COMMAND_FOOTER("DoorLockClearAllRFIDCodes");
+    const char * kName = "DoorLockClearAllRFIDCodes";
+    COMMAND_HEADER(kName, DOOR_LOCK_CLUSTER_ID, 0x19);
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -1054,9 +1075,10 @@ uint16_t encodeDoorLockClusterClearAllRFIDCodesCommand(uint8_t * buffer, uint16_
 uint16_t encodeDoorLockClusterClearHolidayScheduleCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint,
                                                           uint8_t holidayScheduleID)
 {
-    COMMAND_HEADER("DoorLockClearHolidaySchedule", DOOR_LOCK_CLUSTER_ID, 0x13);
+    const char * kName = "DoorLockClearHolidaySchedule";
+    COMMAND_HEADER(kName, DOOR_LOCK_CLUSTER_ID, 0x13);
     buf.Put(holidayScheduleID);
-    COMMAND_FOOTER("DoorLockClearHolidaySchedule");
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -1065,9 +1087,10 @@ uint16_t encodeDoorLockClusterClearHolidayScheduleCommand(uint8_t * buffer, uint
 uint16_t encodeDoorLockClusterClearPINCodeCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint,
                                                   uint16_t userID)
 {
-    COMMAND_HEADER("DoorLockClearPINCode", DOOR_LOCK_CLUSTER_ID, 0x07);
+    const char * kName = "DoorLockClearPINCode";
+    COMMAND_HEADER(kName, DOOR_LOCK_CLUSTER_ID, 0x07);
     buf.PutLE16(userID);
-    COMMAND_FOOTER("DoorLockClearPINCode");
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -1076,9 +1099,10 @@ uint16_t encodeDoorLockClusterClearPINCodeCommand(uint8_t * buffer, uint16_t buf
 uint16_t encodeDoorLockClusterClearRFIDCodeCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint,
                                                    uint16_t userID)
 {
-    COMMAND_HEADER("DoorLockClearRFIDCode", DOOR_LOCK_CLUSTER_ID, 0x18);
+    const char * kName = "DoorLockClearRFIDCode";
+    COMMAND_HEADER(kName, DOOR_LOCK_CLUSTER_ID, 0x18);
     buf.PutLE16(userID);
-    COMMAND_FOOTER("DoorLockClearRFIDCode");
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -1087,10 +1111,11 @@ uint16_t encodeDoorLockClusterClearRFIDCodeCommand(uint8_t * buffer, uint16_t bu
 uint16_t encodeDoorLockClusterClearWeekdayScheduleCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint,
                                                           uint8_t scheduleID, uint16_t userID)
 {
-    COMMAND_HEADER("DoorLockClearWeekdaySchedule", DOOR_LOCK_CLUSTER_ID, 0x0D);
+    const char * kName = "DoorLockClearWeekdaySchedule";
+    COMMAND_HEADER(kName, DOOR_LOCK_CLUSTER_ID, 0x0D);
     buf.Put(scheduleID);
     buf.PutLE16(userID);
-    COMMAND_FOOTER("DoorLockClearWeekdaySchedule");
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -1099,10 +1124,11 @@ uint16_t encodeDoorLockClusterClearWeekdayScheduleCommand(uint8_t * buffer, uint
 uint16_t encodeDoorLockClusterClearYearDayScheduleCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint,
                                                           uint8_t scheduleID, uint16_t userID)
 {
-    COMMAND_HEADER("DoorLockClearYearDaySchedule", DOOR_LOCK_CLUSTER_ID, 0x10);
+    const char * kName = "DoorLockClearYearDaySchedule";
+    COMMAND_HEADER(kName, DOOR_LOCK_CLUSTER_ID, 0x10);
     buf.Put(scheduleID);
     buf.PutLE16(userID);
-    COMMAND_FOOTER("DoorLockClearYearDaySchedule");
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -1111,9 +1137,10 @@ uint16_t encodeDoorLockClusterClearYearDayScheduleCommand(uint8_t * buffer, uint
 uint16_t encodeDoorLockClusterGetHolidayScheduleCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint,
                                                         uint8_t holidayScheduleID)
 {
-    COMMAND_HEADER("DoorLockGetHolidaySchedule", DOOR_LOCK_CLUSTER_ID, 0x12);
+    const char * kName = "DoorLockGetHolidaySchedule";
+    COMMAND_HEADER(kName, DOOR_LOCK_CLUSTER_ID, 0x12);
     buf.Put(holidayScheduleID);
-    COMMAND_FOOTER("DoorLockGetHolidaySchedule");
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -1122,9 +1149,10 @@ uint16_t encodeDoorLockClusterGetHolidayScheduleCommand(uint8_t * buffer, uint16
 uint16_t encodeDoorLockClusterGetLogRecordCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint,
                                                   uint16_t logIndex)
 {
-    COMMAND_HEADER("DoorLockGetLogRecord", DOOR_LOCK_CLUSTER_ID, 0x04);
+    const char * kName = "DoorLockGetLogRecord";
+    COMMAND_HEADER(kName, DOOR_LOCK_CLUSTER_ID, 0x04);
     buf.PutLE16(logIndex);
-    COMMAND_FOOTER("DoorLockGetLogRecord");
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -1133,9 +1161,10 @@ uint16_t encodeDoorLockClusterGetLogRecordCommand(uint8_t * buffer, uint16_t buf
 uint16_t encodeDoorLockClusterGetPINCodeCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint,
                                                 uint16_t userID)
 {
-    COMMAND_HEADER("DoorLockGetPINCode", DOOR_LOCK_CLUSTER_ID, 0x06);
+    const char * kName = "DoorLockGetPINCode";
+    COMMAND_HEADER(kName, DOOR_LOCK_CLUSTER_ID, 0x06);
     buf.PutLE16(userID);
-    COMMAND_FOOTER("DoorLockGetPINCode");
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -1144,9 +1173,10 @@ uint16_t encodeDoorLockClusterGetPINCodeCommand(uint8_t * buffer, uint16_t buf_l
 uint16_t encodeDoorLockClusterGetRFIDCodeCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint,
                                                  uint16_t userID)
 {
-    COMMAND_HEADER("DoorLockGetRFIDCode", DOOR_LOCK_CLUSTER_ID, 0x17);
+    const char * kName = "DoorLockGetRFIDCode";
+    COMMAND_HEADER(kName, DOOR_LOCK_CLUSTER_ID, 0x17);
     buf.PutLE16(userID);
-    COMMAND_FOOTER("DoorLockGetRFIDCode");
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -1155,9 +1185,10 @@ uint16_t encodeDoorLockClusterGetRFIDCodeCommand(uint8_t * buffer, uint16_t buf_
 uint16_t encodeDoorLockClusterGetUserTypeCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint,
                                                  uint16_t userID)
 {
-    COMMAND_HEADER("DoorLockGetUserType", DOOR_LOCK_CLUSTER_ID, 0x15);
+    const char * kName = "DoorLockGetUserType";
+    COMMAND_HEADER(kName, DOOR_LOCK_CLUSTER_ID, 0x15);
     buf.PutLE16(userID);
-    COMMAND_FOOTER("DoorLockGetUserType");
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -1166,10 +1197,11 @@ uint16_t encodeDoorLockClusterGetUserTypeCommand(uint8_t * buffer, uint16_t buf_
 uint16_t encodeDoorLockClusterGetWeekdayScheduleCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint,
                                                         uint8_t scheduleID, uint16_t userID)
 {
-    COMMAND_HEADER("DoorLockGetWeekdaySchedule", DOOR_LOCK_CLUSTER_ID, 0x0C);
+    const char * kName = "DoorLockGetWeekdaySchedule";
+    COMMAND_HEADER(kName, DOOR_LOCK_CLUSTER_ID, 0x0C);
     buf.Put(scheduleID);
     buf.PutLE16(userID);
-    COMMAND_FOOTER("DoorLockGetWeekdaySchedule");
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -1178,10 +1210,11 @@ uint16_t encodeDoorLockClusterGetWeekdayScheduleCommand(uint8_t * buffer, uint16
 uint16_t encodeDoorLockClusterGetYearDayScheduleCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint,
                                                         uint8_t scheduleID, uint16_t userID)
 {
-    COMMAND_HEADER("DoorLockGetYearDaySchedule", DOOR_LOCK_CLUSTER_ID, 0x0F);
+    const char * kName = "DoorLockGetYearDaySchedule";
+    COMMAND_HEADER(kName, DOOR_LOCK_CLUSTER_ID, 0x0F);
     buf.Put(scheduleID);
     buf.PutLE16(userID);
-    COMMAND_FOOTER("DoorLockGetYearDaySchedule");
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -1190,9 +1223,10 @@ uint16_t encodeDoorLockClusterGetYearDayScheduleCommand(uint8_t * buffer, uint16
 uint16_t encodeDoorLockClusterLockDoorCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint,
                                               char * pINOrRFIDCode)
 {
-    COMMAND_HEADER("DoorLockLockDoor", DOOR_LOCK_CLUSTER_ID, 0x00);
-    COMMAND_INSERT_STRING("DoorLockLockDoor", pINOrRFIDCode);
-    COMMAND_FOOTER("DoorLockLockDoor");
+    const char * kName = "DoorLockLockDoor";
+    COMMAND_HEADER(kName, DOOR_LOCK_CLUSTER_ID, 0x00);
+    COMMAND_INSERT_STRING(kName, pINOrRFIDCode);
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -1202,10 +1236,11 @@ uint16_t encodeDoorLockClusterSetHolidayScheduleCommand(uint8_t * buffer, uint16
                                                         uint8_t holidayScheduleID, uint32_t localStartTime, uint32_t localEndTime,
                                                         uint8_t operatingModeDuringHoliday)
 {
-    COMMAND_HEADER("DoorLockSetHolidaySchedule", DOOR_LOCK_CLUSTER_ID, 0x11);
+    const char * kName = "DoorLockSetHolidaySchedule";
+    COMMAND_HEADER(kName, DOOR_LOCK_CLUSTER_ID, 0x11);
     buf.Put(holidayScheduleID);
     buf.Put(operatingModeDuringHoliday);
-    COMMAND_FOOTER("DoorLockSetHolidaySchedule");
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -1214,12 +1249,13 @@ uint16_t encodeDoorLockClusterSetHolidayScheduleCommand(uint8_t * buffer, uint16
 uint16_t encodeDoorLockClusterSetPINCodeCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint,
                                                 uint16_t userID, uint8_t userStatus, uint8_t userType, char * pIN)
 {
-    COMMAND_HEADER("DoorLockSetPINCode", DOOR_LOCK_CLUSTER_ID, 0x05);
+    const char * kName = "DoorLockSetPINCode";
+    COMMAND_HEADER(kName, DOOR_LOCK_CLUSTER_ID, 0x05);
     buf.PutLE16(userID);
     buf.Put(userStatus);
     buf.Put(userType);
-    COMMAND_INSERT_STRING("DoorLockSetPINCode", pIN);
-    COMMAND_FOOTER("DoorLockSetPINCode");
+    COMMAND_INSERT_STRING(kName, pIN);
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -1228,12 +1264,13 @@ uint16_t encodeDoorLockClusterSetPINCodeCommand(uint8_t * buffer, uint16_t buf_l
 uint16_t encodeDoorLockClusterSetRFIDCodeCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint,
                                                  uint16_t userID, uint8_t userStatus, uint8_t userType, char * rFIDCode)
 {
-    COMMAND_HEADER("DoorLockSetRFIDCode", DOOR_LOCK_CLUSTER_ID, 0x16);
+    const char * kName = "DoorLockSetRFIDCode";
+    COMMAND_HEADER(kName, DOOR_LOCK_CLUSTER_ID, 0x16);
     buf.PutLE16(userID);
     buf.Put(userStatus);
     buf.Put(userType);
-    COMMAND_INSERT_STRING("DoorLockSetRFIDCode", rFIDCode);
-    COMMAND_FOOTER("DoorLockSetRFIDCode");
+    COMMAND_INSERT_STRING(kName, rFIDCode);
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -1242,10 +1279,11 @@ uint16_t encodeDoorLockClusterSetRFIDCodeCommand(uint8_t * buffer, uint16_t buf_
 uint16_t encodeDoorLockClusterSetUserTypeCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint,
                                                  uint16_t userID, uint8_t userType)
 {
-    COMMAND_HEADER("DoorLockSetUserType", DOOR_LOCK_CLUSTER_ID, 0x14);
+    const char * kName = "DoorLockSetUserType";
+    COMMAND_HEADER(kName, DOOR_LOCK_CLUSTER_ID, 0x14);
     buf.PutLE16(userID);
     buf.Put(userType);
-    COMMAND_FOOTER("DoorLockSetUserType");
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -1255,7 +1293,8 @@ uint16_t encodeDoorLockClusterSetWeekdayScheduleCommand(uint8_t * buffer, uint16
                                                         uint8_t scheduleID, uint16_t userID, uint8_t daysMask, uint8_t startHour,
                                                         uint8_t startMinute, uint8_t endHour, uint8_t endMinute)
 {
-    COMMAND_HEADER("DoorLockSetWeekdaySchedule", DOOR_LOCK_CLUSTER_ID, 0x0B);
+    const char * kName = "DoorLockSetWeekdaySchedule";
+    COMMAND_HEADER(kName, DOOR_LOCK_CLUSTER_ID, 0x0B);
     buf.Put(scheduleID);
     buf.PutLE16(userID);
     buf.Put(daysMask);
@@ -1263,7 +1302,7 @@ uint16_t encodeDoorLockClusterSetWeekdayScheduleCommand(uint8_t * buffer, uint16
     buf.Put(startMinute);
     buf.Put(endHour);
     buf.Put(endMinute);
-    COMMAND_FOOTER("DoorLockSetWeekdaySchedule");
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -1273,10 +1312,11 @@ uint16_t encodeDoorLockClusterSetYearDayScheduleCommand(uint8_t * buffer, uint16
                                                         uint8_t scheduleID, uint16_t userID, uint32_t localStartTime,
                                                         uint32_t localEndTime)
 {
-    COMMAND_HEADER("DoorLockSetYearDaySchedule", DOOR_LOCK_CLUSTER_ID, 0x0E);
+    const char * kName = "DoorLockSetYearDaySchedule";
+    COMMAND_HEADER(kName, DOOR_LOCK_CLUSTER_ID, 0x0E);
     buf.Put(scheduleID);
     buf.PutLE16(userID);
-    COMMAND_FOOTER("DoorLockSetYearDaySchedule");
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -1285,9 +1325,10 @@ uint16_t encodeDoorLockClusterSetYearDayScheduleCommand(uint8_t * buffer, uint16
 uint16_t encodeDoorLockClusterUnlockDoorCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint,
                                                 char * pINOrRFIDCode)
 {
-    COMMAND_HEADER("DoorLockUnlockDoor", DOOR_LOCK_CLUSTER_ID, 0x01);
-    COMMAND_INSERT_STRING("DoorLockUnlockDoor", pINOrRFIDCode);
-    COMMAND_FOOTER("DoorLockUnlockDoor");
+    const char * kName = "DoorLockUnlockDoor";
+    COMMAND_HEADER(kName, DOOR_LOCK_CLUSTER_ID, 0x01);
+    COMMAND_INSERT_STRING(kName, pINOrRFIDCode);
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -1296,10 +1337,11 @@ uint16_t encodeDoorLockClusterUnlockDoorCommand(uint8_t * buffer, uint16_t buf_l
 uint16_t encodeDoorLockClusterUnlockWithTimeoutCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint,
                                                        uint16_t timeoutInSeconds, char * pINOrRFIDCode)
 {
-    COMMAND_HEADER("DoorLockUnlockWithTimeout", DOOR_LOCK_CLUSTER_ID, 0x03);
+    const char * kName = "DoorLockUnlockWithTimeout";
+    COMMAND_HEADER(kName, DOOR_LOCK_CLUSTER_ID, 0x03);
     buf.PutLE16(timeoutInSeconds);
-    COMMAND_INSERT_STRING("DoorLockUnlockWithTimeout", pINOrRFIDCode);
-    COMMAND_FOOTER("DoorLockUnlockWithTimeout");
+    COMMAND_INSERT_STRING(kName, pINOrRFIDCode);
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -1357,10 +1399,11 @@ uint16_t encodeDoorLockClusterReadActuatorEnabledAttribute(uint8_t * buffer, uin
 uint16_t encodeGroupsClusterAddGroupCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint, uint16_t groupId,
                                             char * groupName)
 {
-    COMMAND_HEADER("GroupsAddGroup", GROUPS_CLUSTER_ID, 0x00);
+    const char * kName = "GroupsAddGroup";
+    COMMAND_HEADER(kName, GROUPS_CLUSTER_ID, 0x00);
     buf.PutLE16(groupId);
-    COMMAND_INSERT_STRING("GroupsAddGroup", groupName);
-    COMMAND_FOOTER("GroupsAddGroup");
+    COMMAND_INSERT_STRING(kName, groupName);
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -1369,10 +1412,11 @@ uint16_t encodeGroupsClusterAddGroupCommand(uint8_t * buffer, uint16_t buf_lengt
 uint16_t encodeGroupsClusterAddGroupIfIdentifyingCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint,
                                                          uint16_t groupId, char * groupName)
 {
-    COMMAND_HEADER("GroupsAddGroupIfIdentifying", GROUPS_CLUSTER_ID, 0x05);
+    const char * kName = "GroupsAddGroupIfIdentifying";
+    COMMAND_HEADER(kName, GROUPS_CLUSTER_ID, 0x05);
     buf.PutLE16(groupId);
-    COMMAND_INSERT_STRING("GroupsAddGroupIfIdentifying", groupName);
-    COMMAND_FOOTER("GroupsAddGroupIfIdentifying");
+    COMMAND_INSERT_STRING(kName, groupName);
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -1381,9 +1425,10 @@ uint16_t encodeGroupsClusterAddGroupIfIdentifyingCommand(uint8_t * buffer, uint1
 uint16_t encodeGroupsClusterGetGroupMembershipCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint,
                                                       uint16_t groupList)
 {
-    COMMAND_HEADER("GroupsGetGroupMembership", GROUPS_CLUSTER_ID, 0x02);
+    const char * kName = "GroupsGetGroupMembership";
+    COMMAND_HEADER(kName, GROUPS_CLUSTER_ID, 0x02);
     buf.PutLE16(groupList);
-    COMMAND_FOOTER("GroupsGetGroupMembership");
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -1391,8 +1436,9 @@ uint16_t encodeGroupsClusterGetGroupMembershipCommand(uint8_t * buffer, uint16_t
  */
 uint16_t encodeGroupsClusterRemoveAllGroupsCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint)
 {
-    COMMAND_HEADER("GroupsRemoveAllGroups", GROUPS_CLUSTER_ID, 0x04);
-    COMMAND_FOOTER("GroupsRemoveAllGroups");
+    const char * kName = "GroupsRemoveAllGroups";
+    COMMAND_HEADER(kName, GROUPS_CLUSTER_ID, 0x04);
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -1401,9 +1447,10 @@ uint16_t encodeGroupsClusterRemoveAllGroupsCommand(uint8_t * buffer, uint16_t bu
 uint16_t encodeGroupsClusterRemoveGroupCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint,
                                                uint16_t groupId)
 {
-    COMMAND_HEADER("GroupsRemoveGroup", GROUPS_CLUSTER_ID, 0x03);
+    const char * kName = "GroupsRemoveGroup";
+    COMMAND_HEADER(kName, GROUPS_CLUSTER_ID, 0x03);
     buf.PutLE16(groupId);
-    COMMAND_FOOTER("GroupsRemoveGroup");
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -1411,9 +1458,10 @@ uint16_t encodeGroupsClusterRemoveGroupCommand(uint8_t * buffer, uint16_t buf_le
  */
 uint16_t encodeGroupsClusterViewGroupCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint, uint16_t groupId)
 {
-    COMMAND_HEADER("GroupsViewGroup", GROUPS_CLUSTER_ID, 0x01);
+    const char * kName = "GroupsViewGroup";
+    COMMAND_HEADER(kName, GROUPS_CLUSTER_ID, 0x01);
     buf.PutLE16(groupId);
-    COMMAND_FOOTER("GroupsViewGroup");
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -1446,9 +1494,10 @@ uint16_t encodeGroupsClusterReadNameSupportAttribute(uint8_t * buffer, uint16_t 
 uint16_t encodeIdentifyClusterIdentifyCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint,
                                               uint16_t identifyTime)
 {
-    COMMAND_HEADER("IdentifyIdentify", IDENTIFY_CLUSTER_ID, 0x00);
+    const char * kName = "IdentifyIdentify";
+    COMMAND_HEADER(kName, IDENTIFY_CLUSTER_ID, 0x00);
     buf.PutLE16(identifyTime);
-    COMMAND_FOOTER("IdentifyIdentify");
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -1456,8 +1505,9 @@ uint16_t encodeIdentifyClusterIdentifyCommand(uint8_t * buffer, uint16_t buf_len
  */
 uint16_t encodeIdentifyClusterIdentifyQueryCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint)
 {
-    COMMAND_HEADER("IdentifyIdentifyQuery", IDENTIFY_CLUSTER_ID, 0x01);
-    COMMAND_FOOTER("IdentifyIdentifyQuery");
+    const char * kName = "IdentifyIdentifyQuery";
+    COMMAND_HEADER(kName, IDENTIFY_CLUSTER_ID, 0x01);
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -1495,12 +1545,13 @@ uint16_t encodeIdentifyClusterReadIdentifyTimeAttribute(uint8_t * buffer, uint16
 uint16_t encodeLevelClusterMoveCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint, uint8_t moveMode,
                                        uint8_t rate, uint8_t optionsMask, uint8_t optionsOverride)
 {
-    COMMAND_HEADER("LevelMove", LEVEL_CLUSTER_ID, 0x01);
+    const char * kName = "LevelMove";
+    COMMAND_HEADER(kName, LEVEL_CLUSTER_ID, 0x01);
     buf.Put(moveMode);
     buf.Put(rate);
     buf.Put(optionsMask);
     buf.Put(optionsOverride);
-    COMMAND_FOOTER("LevelMove");
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -1509,12 +1560,13 @@ uint16_t encodeLevelClusterMoveCommand(uint8_t * buffer, uint16_t buf_length, ui
 uint16_t encodeLevelClusterMoveToLevelCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint, uint8_t level,
                                               uint16_t transitionTime, uint8_t optionsMask, uint8_t optionsOverride)
 {
-    COMMAND_HEADER("LevelMoveToLevel", LEVEL_CLUSTER_ID, 0x00);
+    const char * kName = "LevelMoveToLevel";
+    COMMAND_HEADER(kName, LEVEL_CLUSTER_ID, 0x00);
     buf.Put(level);
     buf.PutLE16(transitionTime);
     buf.Put(optionsMask);
     buf.Put(optionsOverride);
-    COMMAND_FOOTER("LevelMoveToLevel");
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -1524,12 +1576,13 @@ uint16_t encodeLevelClusterMoveToLevelWithOnOffCommand(uint8_t * buffer, uint16_
                                                        uint8_t level, uint16_t transitionTime, uint8_t optionsMask,
                                                        uint8_t optionsOverride)
 {
-    COMMAND_HEADER("LevelMoveToLevelWithOnOff", LEVEL_CLUSTER_ID, 0x04);
+    const char * kName = "LevelMoveToLevelWithOnOff";
+    COMMAND_HEADER(kName, LEVEL_CLUSTER_ID, 0x04);
     buf.Put(level);
     buf.PutLE16(transitionTime);
     buf.Put(optionsMask);
     buf.Put(optionsOverride);
-    COMMAND_FOOTER("LevelMoveToLevelWithOnOff");
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -1538,12 +1591,13 @@ uint16_t encodeLevelClusterMoveToLevelWithOnOffCommand(uint8_t * buffer, uint16_
 uint16_t encodeLevelClusterMoveWithOnOffCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint,
                                                 uint8_t moveMode, uint8_t rate, uint8_t optionsMask, uint8_t optionsOverride)
 {
-    COMMAND_HEADER("LevelMoveWithOnOff", LEVEL_CLUSTER_ID, 0x05);
+    const char * kName = "LevelMoveWithOnOff";
+    COMMAND_HEADER(kName, LEVEL_CLUSTER_ID, 0x05);
     buf.Put(moveMode);
     buf.Put(rate);
     buf.Put(optionsMask);
     buf.Put(optionsOverride);
-    COMMAND_FOOTER("LevelMoveWithOnOff");
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -1552,13 +1606,14 @@ uint16_t encodeLevelClusterMoveWithOnOffCommand(uint8_t * buffer, uint16_t buf_l
 uint16_t encodeLevelClusterStepCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint, uint8_t stepMode,
                                        uint8_t stepSize, uint16_t transitionTime, uint8_t optionsMask, uint8_t optionsOverride)
 {
-    COMMAND_HEADER("LevelStep", LEVEL_CLUSTER_ID, 0x02);
+    const char * kName = "LevelStep";
+    COMMAND_HEADER(kName, LEVEL_CLUSTER_ID, 0x02);
     buf.Put(stepMode);
     buf.Put(stepSize);
     buf.PutLE16(transitionTime);
     buf.Put(optionsMask);
     buf.Put(optionsOverride);
-    COMMAND_FOOTER("LevelStep");
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -1568,13 +1623,14 @@ uint16_t encodeLevelClusterStepWithOnOffCommand(uint8_t * buffer, uint16_t buf_l
                                                 uint8_t stepMode, uint8_t stepSize, uint16_t transitionTime, uint8_t optionsMask,
                                                 uint8_t optionsOverride)
 {
-    COMMAND_HEADER("LevelStepWithOnOff", LEVEL_CLUSTER_ID, 0x06);
+    const char * kName = "LevelStepWithOnOff";
+    COMMAND_HEADER(kName, LEVEL_CLUSTER_ID, 0x06);
     buf.Put(stepMode);
     buf.Put(stepSize);
     buf.PutLE16(transitionTime);
     buf.Put(optionsMask);
     buf.Put(optionsOverride);
-    COMMAND_FOOTER("LevelStepWithOnOff");
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -1583,10 +1639,11 @@ uint16_t encodeLevelClusterStepWithOnOffCommand(uint8_t * buffer, uint16_t buf_l
 uint16_t encodeLevelClusterStopCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint, uint8_t optionsMask,
                                        uint8_t optionsOverride)
 {
-    COMMAND_HEADER("LevelStop", LEVEL_CLUSTER_ID, 0x03);
+    const char * kName = "LevelStop";
+    COMMAND_HEADER(kName, LEVEL_CLUSTER_ID, 0x03);
     buf.Put(optionsMask);
     buf.Put(optionsOverride);
-    COMMAND_FOOTER("LevelStop");
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -1595,10 +1652,11 @@ uint16_t encodeLevelClusterStopCommand(uint8_t * buffer, uint16_t buf_length, ui
 uint16_t encodeLevelClusterStopWithOnOffCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint,
                                                 uint8_t optionsMask, uint8_t optionsOverride)
 {
-    COMMAND_HEADER("LevelStopWithOnOff", LEVEL_CLUSTER_ID, 0x07);
+    const char * kName = "LevelStopWithOnOff";
+    COMMAND_HEADER(kName, LEVEL_CLUSTER_ID, 0x07);
     buf.Put(optionsMask);
     buf.Put(optionsOverride);
-    COMMAND_FOOTER("LevelStopWithOnOff");
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -1630,8 +1688,9 @@ uint16_t encodeLevelClusterReadCurrentLevelAttribute(uint8_t * buffer, uint16_t 
  */
 uint16_t encodeOnOffClusterOffCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint)
 {
-    COMMAND_HEADER("OnOffOff", ON_OFF_CLUSTER_ID, 0x00);
-    COMMAND_FOOTER("OnOffOff");
+    const char * kName = "OnOffOff";
+    COMMAND_HEADER(kName, ON_OFF_CLUSTER_ID, 0x00);
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -1639,8 +1698,9 @@ uint16_t encodeOnOffClusterOffCommand(uint8_t * buffer, uint16_t buf_length, uin
  */
 uint16_t encodeOnOffClusterOnCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint)
 {
-    COMMAND_HEADER("OnOffOn", ON_OFF_CLUSTER_ID, 0x01);
-    COMMAND_FOOTER("OnOffOn");
+    const char * kName = "OnOffOn";
+    COMMAND_HEADER(kName, ON_OFF_CLUSTER_ID, 0x01);
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -1648,8 +1708,9 @@ uint16_t encodeOnOffClusterOnCommand(uint8_t * buffer, uint16_t buf_length, uint
  */
 uint16_t encodeOnOffClusterToggleCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint)
 {
-    COMMAND_HEADER("OnOffToggle", ON_OFF_CLUSTER_ID, 0x02);
-    COMMAND_FOOTER("OnOffToggle");
+    const char * kName = "OnOffToggle";
+    COMMAND_HEADER(kName, ON_OFF_CLUSTER_ID, 0x02);
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -1700,14 +1761,18 @@ uint16_t encodeOnOffClusterReadOnOffAttribute(uint8_t * buffer, uint16_t buf_len
  * Command AddScene
  */
 uint16_t encodeScenesClusterAddSceneCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint, uint16_t groupID,
-                                            uint8_t sceneID, uint16_t transitionTime, char * sceneName, void * extensionFieldSets)
+                                            uint8_t sceneID, uint16_t transitionTime, char * sceneName, uint16_t clusterId,
+                                            char * extensionFieldSet)
 {
-    COMMAND_HEADER("ScenesAddScene", SCENES_CLUSTER_ID, 0x00);
+    const char * kName = "ScenesAddScene";
+    COMMAND_HEADER(kName, SCENES_CLUSTER_ID, 0x00);
     buf.PutLE16(groupID);
     buf.Put(sceneID);
     buf.PutLE16(transitionTime);
-    COMMAND_INSERT_STRING("ScenesAddScene", sceneName);
-    COMMAND_FOOTER("ScenesAddScene");
+    COMMAND_INSERT_STRING(kName, sceneName);
+    buf.PutLE16(clusterId);
+    COMMAND_INSERT_STRING(kName, extensionFieldSet);
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -1717,13 +1782,14 @@ uint16_t encodeScenesClusterCopySceneCommand(uint8_t * buffer, uint16_t buf_leng
                                              uint16_t groupIdentifierFrom, uint8_t sceneIdentifierFrom, uint16_t groupIdentifierTo,
                                              uint8_t sceneIdentifierTo)
 {
-    COMMAND_HEADER("ScenesCopyScene", SCENES_CLUSTER_ID, 0x42);
+    const char * kName = "ScenesCopyScene";
+    COMMAND_HEADER(kName, SCENES_CLUSTER_ID, 0x42);
     buf.Put(mode);
     buf.PutLE16(groupIdentifierFrom);
     buf.Put(sceneIdentifierFrom);
     buf.PutLE16(groupIdentifierTo);
     buf.Put(sceneIdentifierTo);
-    COMMAND_FOOTER("ScenesCopyScene");
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -1731,14 +1797,17 @@ uint16_t encodeScenesClusterCopySceneCommand(uint8_t * buffer, uint16_t buf_leng
  */
 uint16_t encodeScenesClusterEnhancedAddSceneCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint,
                                                     uint16_t groupID, uint8_t sceneID, uint16_t transitionTime, char * sceneName,
-                                                    void * extensionFieldSets)
+                                                    uint16_t clusterId, char * extensionFieldSet)
 {
-    COMMAND_HEADER("ScenesEnhancedAddScene", SCENES_CLUSTER_ID, 0x40);
+    const char * kName = "ScenesEnhancedAddScene";
+    COMMAND_HEADER(kName, SCENES_CLUSTER_ID, 0x40);
     buf.PutLE16(groupID);
     buf.Put(sceneID);
     buf.PutLE16(transitionTime);
-    COMMAND_INSERT_STRING("ScenesEnhancedAddScene", sceneName);
-    COMMAND_FOOTER("ScenesEnhancedAddScene");
+    COMMAND_INSERT_STRING(kName, sceneName);
+    buf.PutLE16(clusterId);
+    COMMAND_INSERT_STRING(kName, extensionFieldSet);
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -1747,10 +1816,11 @@ uint16_t encodeScenesClusterEnhancedAddSceneCommand(uint8_t * buffer, uint16_t b
 uint16_t encodeScenesClusterEnhancedViewSceneCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint,
                                                      uint16_t groupID, uint8_t sceneID)
 {
-    COMMAND_HEADER("ScenesEnhancedViewScene", SCENES_CLUSTER_ID, 0x41);
+    const char * kName = "ScenesEnhancedViewScene";
+    COMMAND_HEADER(kName, SCENES_CLUSTER_ID, 0x41);
     buf.PutLE16(groupID);
     buf.Put(sceneID);
-    COMMAND_FOOTER("ScenesEnhancedViewScene");
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -1759,9 +1829,10 @@ uint16_t encodeScenesClusterEnhancedViewSceneCommand(uint8_t * buffer, uint16_t 
 uint16_t encodeScenesClusterGetSceneMembershipCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint,
                                                       uint16_t groupID)
 {
-    COMMAND_HEADER("ScenesGetSceneMembership", SCENES_CLUSTER_ID, 0x06);
+    const char * kName = "ScenesGetSceneMembership";
+    COMMAND_HEADER(kName, SCENES_CLUSTER_ID, 0x06);
     buf.PutLE16(groupID);
-    COMMAND_FOOTER("ScenesGetSceneMembership");
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -1770,11 +1841,12 @@ uint16_t encodeScenesClusterGetSceneMembershipCommand(uint8_t * buffer, uint16_t
 uint16_t encodeScenesClusterRecallSceneCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint,
                                                uint16_t groupID, uint8_t sceneID, uint16_t transitionTime)
 {
-    COMMAND_HEADER("ScenesRecallScene", SCENES_CLUSTER_ID, 0x05);
+    const char * kName = "ScenesRecallScene";
+    COMMAND_HEADER(kName, SCENES_CLUSTER_ID, 0x05);
     buf.PutLE16(groupID);
     buf.Put(sceneID);
     buf.PutLE16(transitionTime);
-    COMMAND_FOOTER("ScenesRecallScene");
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -1783,9 +1855,10 @@ uint16_t encodeScenesClusterRecallSceneCommand(uint8_t * buffer, uint16_t buf_le
 uint16_t encodeScenesClusterRemoveAllScenesCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint,
                                                    uint16_t groupID)
 {
-    COMMAND_HEADER("ScenesRemoveAllScenes", SCENES_CLUSTER_ID, 0x03);
+    const char * kName = "ScenesRemoveAllScenes";
+    COMMAND_HEADER(kName, SCENES_CLUSTER_ID, 0x03);
     buf.PutLE16(groupID);
-    COMMAND_FOOTER("ScenesRemoveAllScenes");
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -1794,10 +1867,11 @@ uint16_t encodeScenesClusterRemoveAllScenesCommand(uint8_t * buffer, uint16_t bu
 uint16_t encodeScenesClusterRemoveSceneCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint,
                                                uint16_t groupID, uint8_t sceneID)
 {
-    COMMAND_HEADER("ScenesRemoveScene", SCENES_CLUSTER_ID, 0x02);
+    const char * kName = "ScenesRemoveScene";
+    COMMAND_HEADER(kName, SCENES_CLUSTER_ID, 0x02);
     buf.PutLE16(groupID);
     buf.Put(sceneID);
-    COMMAND_FOOTER("ScenesRemoveScene");
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -1806,10 +1880,11 @@ uint16_t encodeScenesClusterRemoveSceneCommand(uint8_t * buffer, uint16_t buf_le
 uint16_t encodeScenesClusterStoreSceneCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint, uint16_t groupID,
                                               uint8_t sceneID)
 {
-    COMMAND_HEADER("ScenesStoreScene", SCENES_CLUSTER_ID, 0x04);
+    const char * kName = "ScenesStoreScene";
+    COMMAND_HEADER(kName, SCENES_CLUSTER_ID, 0x04);
     buf.PutLE16(groupID);
     buf.Put(sceneID);
-    COMMAND_FOOTER("ScenesStoreScene");
+    COMMAND_FOOTER(kName);
 }
 
 /*
@@ -1818,10 +1893,11 @@ uint16_t encodeScenesClusterStoreSceneCommand(uint8_t * buffer, uint16_t buf_len
 uint16_t encodeScenesClusterViewSceneCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint, uint16_t groupID,
                                              uint8_t sceneID)
 {
-    COMMAND_HEADER("ScenesViewScene", SCENES_CLUSTER_ID, 0x01);
+    const char * kName = "ScenesViewScene";
+    COMMAND_HEADER(kName, SCENES_CLUSTER_ID, 0x01);
     buf.PutLE16(groupID);
     buf.Put(sceneID);
-    COMMAND_FOOTER("ScenesViewScene");
+    COMMAND_FOOTER(kName);
 }
 
 /*
