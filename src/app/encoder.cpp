@@ -209,6 +209,7 @@ uint16_t encodeReadAttributesCommand(uint8_t * buffer, uint16_t buf_length, uint
 |------------------------------------------------------------------------------|
 | Commands:                                                           |        |
 | * GoToPercent                                                       |   0x00 |
+| * Stop                                                              |   0x01 |
 |------------------------------------------------------------------------------|
 | Attributes:                                                         |        |
 | * MovingState                                                       | 0x0001 |
@@ -226,6 +227,15 @@ uint16_t encodeBarrierControlClusterGoToPercentCommand(uint8_t * buffer, uint16_
     COMMAND_HEADER("BarrierControlGoToPercent", BARRIER_CONTROL_CLUSTER_ID, 0x00);
     buf.Put(percentOpen);
     COMMAND_FOOTER("BarrierControlGoToPercent");
+}
+
+/*
+ * Command Stop
+ */
+uint16_t encodeBarrierControlClusterStopCommand(uint8_t * buffer, uint16_t buf_length, uint8_t destination_endpoint)
+{
+    COMMAND_HEADER("BarrierControlStop", BARRIER_CONTROL_CLUSTER_ID, 0x01);
+    COMMAND_FOOTER("BarrierControlStop");
 }
 
 /*
