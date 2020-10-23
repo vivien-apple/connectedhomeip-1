@@ -674,6 +674,27 @@ public:
 };
 
 /*
+ * Discover attributes
+ */
+class DiscoverBarrierControlAttributes : public ModelCommand
+{
+public:
+    DiscoverBarrierControlAttributes() : ModelCommand("discover", kBarrierControlClusterId, 0x0c) { ModelCommand::AddArguments(); }
+
+    uint16_t EncodeCommand(PacketBuffer * buffer, uint16_t bufferSize, uint8_t endPointId) override
+    {
+        return encodeBarrierControlClusterDiscoverAttributes(buffer->Start(), bufferSize, endPointId);
+    }
+
+    // Global Response: DiscoverAttributesResponse
+    bool HandleGlobalResponse(uint8_t commandId, uint8_t * message, uint16_t messageLen) const override
+    {
+        DiscoverAttributesResponse response;
+        return response.HandleCommandResponse(commandId, message, messageLen);
+    }
+};
+
+/*
  * Attribute MovingState
  */
 class ReadBarrierControlMovingState : public ModelCommand
@@ -807,6 +828,27 @@ public:
     bool HandleGlobalResponse(uint8_t commandId, uint8_t * message, uint16_t messageLen) const override
     {
         DefaultResponse response;
+        return response.HandleCommandResponse(commandId, message, messageLen);
+    }
+};
+
+/*
+ * Discover attributes
+ */
+class DiscoverBasicAttributes : public ModelCommand
+{
+public:
+    DiscoverBasicAttributes() : ModelCommand("discover", kBasicClusterId, 0x0c) { ModelCommand::AddArguments(); }
+
+    uint16_t EncodeCommand(PacketBuffer * buffer, uint16_t bufferSize, uint8_t endPointId) override
+    {
+        return encodeBasicClusterDiscoverAttributes(buffer->Start(), bufferSize, endPointId);
+    }
+
+    // Global Response: DiscoverAttributesResponse
+    bool HandleGlobalResponse(uint8_t commandId, uint8_t * message, uint16_t messageLen) const override
+    {
+        DiscoverAttributesResponse response;
         return response.HandleCommandResponse(commandId, message, messageLen);
     }
 };
@@ -1433,6 +1475,27 @@ public:
 private:
     uint8_t mOptionsMask;
     uint8_t mOptionsOverride;
+};
+
+/*
+ * Discover attributes
+ */
+class DiscoverColorControlAttributes : public ModelCommand
+{
+public:
+    DiscoverColorControlAttributes() : ModelCommand("discover", kColorControlClusterId, 0x0c) { ModelCommand::AddArguments(); }
+
+    uint16_t EncodeCommand(PacketBuffer * buffer, uint16_t bufferSize, uint8_t endPointId) override
+    {
+        return encodeColorControlClusterDiscoverAttributes(buffer->Start(), bufferSize, endPointId);
+    }
+
+    // Global Response: DiscoverAttributesResponse
+    bool HandleGlobalResponse(uint8_t commandId, uint8_t * message, uint16_t messageLen) const override
+    {
+        DiscoverAttributesResponse response;
+        return response.HandleCommandResponse(commandId, message, messageLen);
+    }
 };
 
 /*
@@ -3867,6 +3930,27 @@ private:
 };
 
 /*
+ * Discover attributes
+ */
+class DiscoverDoorLockAttributes : public ModelCommand
+{
+public:
+    DiscoverDoorLockAttributes() : ModelCommand("discover", kDoorLockClusterId, 0x0c) { ModelCommand::AddArguments(); }
+
+    uint16_t EncodeCommand(PacketBuffer * buffer, uint16_t bufferSize, uint8_t endPointId) override
+    {
+        return encodeDoorLockClusterDiscoverAttributes(buffer->Start(), bufferSize, endPointId);
+    }
+
+    // Global Response: DiscoverAttributesResponse
+    bool HandleGlobalResponse(uint8_t commandId, uint8_t * message, uint16_t messageLen) const override
+    {
+        DiscoverAttributesResponse response;
+        return response.HandleCommandResponse(commandId, message, messageLen);
+    }
+};
+
+/*
  * Attribute LockState
  */
 class ReadDoorLockLockState : public ModelCommand
@@ -4265,6 +4349,27 @@ private:
 };
 
 /*
+ * Discover attributes
+ */
+class DiscoverGroupsAttributes : public ModelCommand
+{
+public:
+    DiscoverGroupsAttributes() : ModelCommand("discover", kGroupsClusterId, 0x0c) { ModelCommand::AddArguments(); }
+
+    uint16_t EncodeCommand(PacketBuffer * buffer, uint16_t bufferSize, uint8_t endPointId) override
+    {
+        return encodeGroupsClusterDiscoverAttributes(buffer->Start(), bufferSize, endPointId);
+    }
+
+    // Global Response: DiscoverAttributesResponse
+    bool HandleGlobalResponse(uint8_t commandId, uint8_t * message, uint16_t messageLen) const override
+    {
+        DiscoverAttributesResponse response;
+        return response.HandleCommandResponse(commandId, message, messageLen);
+    }
+};
+
+/*
  * Attribute NameSupport
  */
 class ReadGroupsNameSupport : public ModelCommand
@@ -4376,6 +4481,27 @@ public:
     bool HandleSpecificResponse(uint8_t commandId, uint8_t * message, uint16_t messageLen) const override
     {
         IdentifyQueryResponse response;
+        return response.HandleCommandResponse(commandId, message, messageLen);
+    }
+};
+
+/*
+ * Discover attributes
+ */
+class DiscoverIdentifyAttributes : public ModelCommand
+{
+public:
+    DiscoverIdentifyAttributes() : ModelCommand("discover", kIdentifyClusterId, 0x0c) { ModelCommand::AddArguments(); }
+
+    uint16_t EncodeCommand(PacketBuffer * buffer, uint16_t bufferSize, uint8_t endPointId) override
+    {
+        return encodeIdentifyClusterDiscoverAttributes(buffer->Start(), bufferSize, endPointId);
+    }
+
+    // Global Response: DiscoverAttributesResponse
+    bool HandleGlobalResponse(uint8_t commandId, uint8_t * message, uint16_t messageLen) const override
+    {
+        DiscoverAttributesResponse response;
         return response.HandleCommandResponse(commandId, message, messageLen);
     }
 };
@@ -4726,6 +4852,27 @@ private:
 };
 
 /*
+ * Discover attributes
+ */
+class DiscoverLevelAttributes : public ModelCommand
+{
+public:
+    DiscoverLevelAttributes() : ModelCommand("discover", kLevelClusterId, 0x0c) { ModelCommand::AddArguments(); }
+
+    uint16_t EncodeCommand(PacketBuffer * buffer, uint16_t bufferSize, uint8_t endPointId) override
+    {
+        return encodeLevelClusterDiscoverAttributes(buffer->Start(), bufferSize, endPointId);
+    }
+
+    // Global Response: DiscoverAttributesResponse
+    bool HandleGlobalResponse(uint8_t commandId, uint8_t * message, uint16_t messageLen) const override
+    {
+        DiscoverAttributesResponse response;
+        return response.HandleCommandResponse(commandId, message, messageLen);
+    }
+};
+
+/*
  * Attribute CurrentLevel
  */
 class ReadLevelCurrentLevel : public ModelCommand
@@ -4824,6 +4971,27 @@ public:
     bool HandleGlobalResponse(uint8_t commandId, uint8_t * message, uint16_t messageLen) const override
     {
         DefaultResponse response;
+        return response.HandleCommandResponse(commandId, message, messageLen);
+    }
+};
+
+/*
+ * Discover attributes
+ */
+class DiscoverOnOffAttributes : public ModelCommand
+{
+public:
+    DiscoverOnOffAttributes() : ModelCommand("discover", kOnOffClusterId, 0x0c) { ModelCommand::AddArguments(); }
+
+    uint16_t EncodeCommand(PacketBuffer * buffer, uint16_t bufferSize, uint8_t endPointId) override
+    {
+        return encodeOnOffClusterDiscoverAttributes(buffer->Start(), bufferSize, endPointId);
+    }
+
+    // Global Response: DiscoverAttributesResponse
+    bool HandleGlobalResponse(uint8_t commandId, uint8_t * message, uint16_t messageLen) const override
+    {
+        DiscoverAttributesResponse response;
         return response.HandleCommandResponse(commandId, message, messageLen);
     }
 };
@@ -5326,6 +5494,27 @@ private:
 };
 
 /*
+ * Discover attributes
+ */
+class DiscoverScenesAttributes : public ModelCommand
+{
+public:
+    DiscoverScenesAttributes() : ModelCommand("discover", kScenesClusterId, 0x0c) { ModelCommand::AddArguments(); }
+
+    uint16_t EncodeCommand(PacketBuffer * buffer, uint16_t bufferSize, uint8_t endPointId) override
+    {
+        return encodeScenesClusterDiscoverAttributes(buffer->Start(), bufferSize, endPointId);
+    }
+
+    // Global Response: DiscoverAttributesResponse
+    bool HandleGlobalResponse(uint8_t commandId, uint8_t * message, uint16_t messageLen) const override
+    {
+        DiscoverAttributesResponse response;
+        return response.HandleCommandResponse(commandId, message, messageLen);
+    }
+};
+
+/*
  * Attribute SceneCount
  */
 class ReadScenesSceneCount : public ModelCommand
@@ -5465,6 +5654,30 @@ public:
 \*----------------------------------------------------------------------------*/
 
 /*
+ * Discover attributes
+ */
+class DiscoverTemperatureMeasurementAttributes : public ModelCommand
+{
+public:
+    DiscoverTemperatureMeasurementAttributes() : ModelCommand("discover", kTempMeasurementClusterId, 0x0c)
+    {
+        ModelCommand::AddArguments();
+    }
+
+    uint16_t EncodeCommand(PacketBuffer * buffer, uint16_t bufferSize, uint8_t endPointId) override
+    {
+        return encodeTemperatureMeasurementClusterDiscoverAttributes(buffer->Start(), bufferSize, endPointId);
+    }
+
+    // Global Response: DiscoverAttributesResponse
+    bool HandleGlobalResponse(uint8_t commandId, uint8_t * message, uint16_t messageLen) const override
+    {
+        DiscoverAttributesResponse response;
+        return response.HandleCommandResponse(commandId, message, messageLen);
+    }
+};
+
+/*
  * Attribute MeasuredValue
  */
 class ReadTemperatureMeasurementMeasuredValue : public ModelCommand
@@ -5547,9 +5760,10 @@ void registerClusterBarrierControl(Commands & commands)
     const char * clusterName = "BarrierControl";
 
     commands_list clusterCommands = {
-        make_unique<BarrierControlGoToPercent>(),      make_unique<BarrierControlStop>(),
-        make_unique<ReadBarrierControlMovingState>(),  make_unique<ReadBarrierControlSafetyStatus>(),
-        make_unique<ReadBarrierControlCapabilities>(), make_unique<ReadBarrierControlBarrierPosition>(),
+        make_unique<BarrierControlGoToPercent>(),         make_unique<BarrierControlStop>(),
+        make_unique<DiscoverBarrierControlAttributes>(),  make_unique<ReadBarrierControlMovingState>(),
+        make_unique<ReadBarrierControlSafetyStatus>(),    make_unique<ReadBarrierControlCapabilities>(),
+        make_unique<ReadBarrierControlBarrierPosition>(),
     };
 
     commands.Register(clusterName, clusterCommands);
@@ -5561,6 +5775,7 @@ void registerClusterBasic(Commands & commands)
 
     commands_list clusterCommands = {
         make_unique<BasicResetToFactoryDefaults>(),
+        make_unique<DiscoverBasicAttributes>(),
         make_unique<ReadBasicZCLVersion>(),
         make_unique<ReadBasicPowerSource>(),
     };
@@ -5587,6 +5802,7 @@ void registerClusterColorControl(Commands & commands)
         make_unique<ColorControlStepHue>(),
         make_unique<ColorControlStepSaturation>(),
         make_unique<ColorControlStopMoveStep>(),
+        make_unique<DiscoverColorControlAttributes>(),
         make_unique<ReadColorControlCurrentHue>(),
         make_unique<ReadColorControlCurrentSaturation>(),
         make_unique<ReadColorControlRemainingTime>(),
@@ -5649,8 +5865,8 @@ void registerClusterDoorLock(Commands & commands)
         make_unique<DoorLockSetRFIDCode>(),          make_unique<DoorLockSetUserType>(),
         make_unique<DoorLockSetWeekdaySchedule>(),   make_unique<DoorLockSetYearDaySchedule>(),
         make_unique<DoorLockUnlockDoor>(),           make_unique<DoorLockUnlockWithTimeout>(),
-        make_unique<ReadDoorLockLockState>(),        make_unique<ReadDoorLockLockType>(),
-        make_unique<ReadDoorLockActuatorEnabled>(),
+        make_unique<DiscoverDoorLockAttributes>(),   make_unique<ReadDoorLockLockState>(),
+        make_unique<ReadDoorLockLockType>(),         make_unique<ReadDoorLockActuatorEnabled>(),
     };
 
     commands.Register(clusterName, clusterCommands);
@@ -5661,9 +5877,10 @@ void registerClusterGroups(Commands & commands)
     const char * clusterName = "Groups";
 
     commands_list clusterCommands = {
-        make_unique<GroupsAddGroup>(),        make_unique<GroupsAddGroupIfIdentifying>(), make_unique<GroupsGetGroupMembership>(),
-        make_unique<GroupsRemoveAllGroups>(), make_unique<GroupsRemoveGroup>(),           make_unique<GroupsViewGroup>(),
-        make_unique<ReadGroupsNameSupport>(),
+        make_unique<GroupsAddGroup>(),           make_unique<GroupsAddGroupIfIdentifying>(),
+        make_unique<GroupsGetGroupMembership>(), make_unique<GroupsRemoveAllGroups>(),
+        make_unique<GroupsRemoveGroup>(),        make_unique<GroupsViewGroup>(),
+        make_unique<DiscoverGroupsAttributes>(), make_unique<ReadGroupsNameSupport>(),
     };
 
     commands.Register(clusterName, clusterCommands);
@@ -5674,9 +5891,8 @@ void registerClusterIdentify(Commands & commands)
     const char * clusterName = "Identify";
 
     commands_list clusterCommands = {
-        make_unique<IdentifyIdentify>(),
-        make_unique<IdentifyIdentifyQuery>(),
-        make_unique<ReadIdentifyIdentifyTime>(),
+        make_unique<IdentifyIdentify>(),           make_unique<IdentifyIdentifyQuery>(),
+        make_unique<DiscoverIdentifyAttributes>(), make_unique<ReadIdentifyIdentifyTime>(),
         make_unique<WriteIdentifyIdentifyTime>(),
     };
 
@@ -5688,9 +5904,16 @@ void registerClusterLevel(Commands & commands)
     const char * clusterName = "Level";
 
     commands_list clusterCommands = {
-        make_unique<LevelMove>(),          make_unique<LevelMoveToLevel>(),   make_unique<LevelMoveToLevelWithOnOff>(),
-        make_unique<LevelMoveWithOnOff>(), make_unique<LevelStep>(),          make_unique<LevelStepWithOnOff>(),
-        make_unique<LevelStop>(),          make_unique<LevelStopWithOnOff>(), make_unique<ReadLevelCurrentLevel>(),
+        make_unique<LevelMove>(),
+        make_unique<LevelMoveToLevel>(),
+        make_unique<LevelMoveToLevelWithOnOff>(),
+        make_unique<LevelMoveWithOnOff>(),
+        make_unique<LevelStep>(),
+        make_unique<LevelStepWithOnOff>(),
+        make_unique<LevelStop>(),
+        make_unique<LevelStopWithOnOff>(),
+        make_unique<DiscoverLevelAttributes>(),
+        make_unique<ReadLevelCurrentLevel>(),
     };
 
     commands.Register(clusterName, clusterCommands);
@@ -5701,9 +5924,7 @@ void registerClusterOnOff(Commands & commands)
     const char * clusterName = "OnOff";
 
     commands_list clusterCommands = {
-        make_unique<OnOffOff>(),
-        make_unique<OnOffOn>(),
-        make_unique<OnOffToggle>(),
+        make_unique<OnOffOff>(),       make_unique<OnOffOn>(), make_unique<OnOffToggle>(), make_unique<DiscoverOnOffAttributes>(),
         make_unique<ReadOnOffOnOff>(),
     };
 
@@ -5717,8 +5938,9 @@ void registerClusterScenes(Commands & commands)
     commands_list clusterCommands = {
         make_unique<ScenesAddScene>(),         make_unique<ScenesGetSceneMembership>(), make_unique<ScenesRecallScene>(),
         make_unique<ScenesRemoveAllScenes>(),  make_unique<ScenesRemoveScene>(),        make_unique<ScenesStoreScene>(),
-        make_unique<ScenesViewScene>(),        make_unique<ReadScenesSceneCount>(),     make_unique<ReadScenesCurrentScene>(),
-        make_unique<ReadScenesCurrentGroup>(), make_unique<ReadScenesSceneValid>(),     make_unique<ReadScenesNameSupport>(),
+        make_unique<ScenesViewScene>(),        make_unique<DiscoverScenesAttributes>(), make_unique<ReadScenesSceneCount>(),
+        make_unique<ReadScenesCurrentScene>(), make_unique<ReadScenesCurrentGroup>(),   make_unique<ReadScenesSceneValid>(),
+        make_unique<ReadScenesNameSupport>(),
     };
 
     commands.Register(clusterName, clusterCommands);
@@ -5729,6 +5951,7 @@ void registerClusterTempMeasurement(Commands & commands)
     const char * clusterName = "TemperatureMeasurement";
 
     commands_list clusterCommands = {
+        make_unique<DiscoverTemperatureMeasurementAttributes>(),
         make_unique<ReadTemperatureMeasurementMeasuredValue>(),
         make_unique<ReadTemperatureMeasurementMinMeasuredValue>(),
         make_unique<ReadTemperatureMeasurementMaxMeasuredValue>(),
