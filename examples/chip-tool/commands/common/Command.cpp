@@ -23,8 +23,8 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 
-#include <support/logging/CHIPLogging.h>
 #include <support/SafeInt.h>
+#include <support/logging/CHIPLogging.h>
 
 bool Command::InitArguments(int argc, char ** argv)
 {
@@ -133,6 +133,14 @@ bool Command::InitArgument(size_t argIndex, const char * argValue)
         break;
     }
 
+    case ArgumentType::Number_uint64: {
+        uint64_t * value = reinterpret_cast<uint64_t *>(arg.value);
+        std::stringstream ss(argValue);
+        ss >> *value;
+        isValidArgument = (!ss.fail() && ss.eof() && *value >= arg.min && *value <= arg.max);
+        break;
+    }
+
     case ArgumentType::Number_int8: {
         int8_t * value = reinterpret_cast<int8_t *>(arg.value);
         std::stringstream ss(argValue);
@@ -151,6 +159,14 @@ bool Command::InitArgument(size_t argIndex, const char * argValue)
 
     case ArgumentType::Number_int32: {
         int32_t * value = reinterpret_cast<int32_t *>(arg.value);
+        std::stringstream ss(argValue);
+        ss >> *value;
+        isValidArgument = (!ss.fail() && ss.eof() && *value >= arg.min && *value <= arg.max);
+        break;
+    }
+
+    case ArgumentType::Number_int64: {
+        int64_t * value = reinterpret_cast<int64_t *>(arg.value);
         std::stringstream ss(argValue);
         ss >> *value;
         isValidArgument = (!ss.fail() && ss.eof() && *value >= arg.min && *value <= arg.max);
@@ -205,7 +221,7 @@ size_t Command::AddArgument(const char * name, AddressWithInterface * out)
     return mArgs.size();
 }
 
-size_t Command::AddArgument(const char * name, int64_t min, int64_t max, void * out, ArgumentType type)
+size_t Command::AddArgument(const char * name, int64_t min, uint64_t max, void * out, ArgumentType type)
 {
     Argument arg;
     arg.type  = type;
@@ -218,7 +234,7 @@ size_t Command::AddArgument(const char * name, int64_t min, int64_t max, void * 
     return mArgs.size();
 }
 
-size_t Command::AddArgument(const char * name, int64_t min, int64_t max, void * out)
+size_t Command::AddArgument(const char * name, int64_t min, uint64_t max, void * out)
 {
     Argument arg;
     arg.type  = ArgumentType::Number_uint8;
