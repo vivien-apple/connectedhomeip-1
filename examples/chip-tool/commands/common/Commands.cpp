@@ -24,6 +24,61 @@
 #include <algorithm>
 #include <string>
 
+class RendezvousServerTest : public chip::RendezvousSessionDelegate,
+                             public chip::DeviceNetworkProvisioningDelegate
+{
+public:
+    RendezvousServerTest(chip::NodeId localId)
+    {
+        chip::RendezvousParameters params;
+        params.SetSetupPINCode(12345678).SetLocalNodeId(localId).SetInetLayer(&chip::DeviceLayer::InetLayer);
+
+        mRendezvousSession = new chip::RendezvousSession(this, this);
+        if (mRendezvousSession->Init(params) != CHIP_NO_ERROR)
+        {
+            ChipLogError(chipTool, "Error setting up a test rendezvous server");
+        }
+    }
+
+    //////////// RendezvousSession callback Implementation ///////////////
+    void OnRendezvousStatusUpdate(chip::RendezvousSessionDelegate::Status status, CHIP_ERROR err) override
+    {
+        if (err != CHIP_NO_ERROR)
+        {
+            ChipLogError(chipTool, "OnRendezvousStatusUpdate: %s, status %d", chip::ErrorStr(err), status);
+        }
+
+        switch (status)
+        {
+            case RendezvousSessionDelegate::SecurePairingSuccess:
+              ChipLogProgress(chipTool, "Device completed SPAKE2+ handshake\n");
+              break;
+
+            case RendezvousSessionDelegate::NetworkProvisioningSuccess:
+              ChipLogProgress(chipTool, "Device was assigned an ip address\n");
+              break;
+
+            default:
+               break;
+        };
+    }
+
+    /**
+     * @brief
+     *   Called to provision WiFi credentials in a device
+     *
+     * @param ssid WiFi SSID
+     * @param passwd WiFi password
+     */
+    void ProvisionNetwork(const char * ssid, const char * passwd) override
+    {
+        ChipLogProgress(chipTool, "Provision WiFi\n");
+    }
+
+private:
+    chip::RendezvousSession * mRendezvousSession;
+};
+
 void Commands::Register(const char * clusterName, commands_list commandsList)
 {
     for (auto & command : commandsList)
@@ -45,6 +100,7 @@ int Commands::Run(NodeId localId, NodeId remoteId, int argc, char ** argv)
     {
 
         ChipDeviceController dc;
+        RendezvousServerTest * test;
 
         err = dc.Init(localId);
         VerifyOrExit(err == CHIP_NO_ERROR, ChipLogError(Controller, "Init failure: %s", chip::ErrorStr(err)));
@@ -52,6 +108,7 @@ int Commands::Run(NodeId localId, NodeId remoteId, int argc, char ** argv)
         err = dc.ServiceEvents();
         VerifyOrExit(err == CHIP_NO_ERROR, ChipLogError(Controller, "Init Run Loop failure: %s", chip::ErrorStr(err)));
 
+        test = new RendezvousServerTest(localId);
         err = RunCommand(dc, remoteId, argc, argv);
         SuccessOrExit(err);
 

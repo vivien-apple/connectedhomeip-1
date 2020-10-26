@@ -24,6 +24,7 @@ enum NetworkType
 {
     UDP,
     BLE,
+    TCP,
     ALL
 };
 
@@ -43,6 +44,12 @@ public:
             AddArgument("setup-pin-code", 0, 134217727, &mSetupPINCode);
             AddArgument("discriminator", 0, 4096, &mDiscriminator);
         }
+
+        if (type == NetworkType::TCP || type == NetworkType::ALL)
+        {
+            AddArgument("setup-pin-code", 0, 134217727, &mSetupPINCode);
+            AddArgument("device-remote-ip", &mRemoteAddr);
+        }
     }
 
     const char * GetNetworkName(void) const { return mName; }
@@ -57,6 +64,7 @@ private:
     const NetworkType mNetworkType;
     CHIP_ERROR ConnectBLE(ChipDeviceController * dc, NodeId remoteId);
     CHIP_ERROR ConnectUDP(ChipDeviceController * dc, NodeId remoteId);
+    CHIP_ERROR ConnectTCP(ChipDeviceController * dc, NodeId remoteId);
 
     char mName[46];
     Command::AddressWithInterface mRemoteAddr;

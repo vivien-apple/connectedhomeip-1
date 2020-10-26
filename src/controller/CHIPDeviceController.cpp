@@ -218,6 +218,14 @@ CHIP_ERROR ChipDeviceController::ConnectDevice(NodeId remoteDeviceId, Rendezvous
     {
         params.SetBleLayer(DeviceLayer::ConnectivityMgr().GetBleLayer());
     }
+#elif CONFIG_DEVICE_LAYER
+    if (!params.HasInetLayer())
+    {
+        params.SetInetLayer(&DeviceLayer::InetLayer);
+        // XXX This is a dirty hack... The IP Address should be assigned when the remote device
+        //     gets connected to a real network. This one is the SoftAP one from the QRCode
+        mDeviceAddr = params.GetIPAddress();
+    }
 #endif // CONFIG_DEVICE_LAYER && CONFIG_NETWORK_LAYER_BLE
 
     mRendezvousSession = chip::Platform::New<RendezvousSession>(this);

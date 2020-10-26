@@ -32,6 +32,13 @@ public:
     EchoBle() : EchoCommand("ble", NetworkType::BLE) {}
 };
 
+class EchoTcp : public EchoCommand
+{
+public:
+    EchoTcp() : EchoCommand("tcp", NetworkType::TCP) {}
+};
+
+
 void registerCommandsEcho(Commands & commands)
 {
     const char * clusterName = "Echo";
@@ -39,6 +46,7 @@ void registerCommandsEcho(Commands & commands)
     commands_list clusterCommands = {
         make_unique<Echo>(),
         make_unique<EchoBle>(),
+        make_unique<EchoTcp>(),
     };
 
     commands.Register(clusterName, clusterCommands);

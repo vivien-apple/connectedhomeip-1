@@ -347,6 +347,11 @@ bool isRendezvousBLE()
     return static_cast<RendezvousInformationFlags>(CONFIG_RENDEZVOUS_MODE) == RendezvousInformationFlags::kBLE;
 }
 
+bool isRendezvousWiFi()
+{
+    return static_cast<RendezvousInformationFlags>(CONFIG_RENDEZVOUS_MODE) == RendezvousInformationFlags::kWiFi;
+}
+
 bool isRendezvousBypassed()
 {
     return static_cast<RendezvousInformationFlags>(CONFIG_RENDEZVOUS_MODE) == RendezvousInformationFlags::kNone;
@@ -535,7 +540,7 @@ extern "C" void app_main()
     InitDataModelHandler();
     startServer();
 
-    if (isRendezvousBLE())
+    if (isRendezvousBLE() || isRendezvousWiFi())
     {
         rendezvousDelegate = chip::Platform::New<RendezvousDeviceDelegate>();
     }

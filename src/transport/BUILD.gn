@@ -40,6 +40,11 @@ static_library("transport") {
       "BLE.cpp",
       "BLE.h",
     ]
+  } else {
+    sources += [
+      "TCP.cpp",
+      "TCP.h",
+    ]
   }
 
   cflags = [ "-Wconversion" ]

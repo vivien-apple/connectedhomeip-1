@@ -26,6 +26,8 @@
 
 #if CONFIG_NETWORK_LAYER_BLE
 #include <transport/BLE.h>
+#else
+#include <transport/TCP.h>
 #endif // CONFIG_NETWORK_LAYER_BLE
 
 static const size_t kMax_SecureSDU_Length          = 1024;
@@ -47,15 +49,17 @@ CHIP_ERROR RendezvousSession::Init(const RendezvousParameters & params)
     VerifyOrExit(mParams.HasSetupPINCode(), err = CHIP_ERROR_INVALID_ARGUMENT);
 
     err = CHIP_ERROR_UNSUPPORTED_CHIP_FEATURE;
-#if CONFIG_NETWORK_LAYER_BLE
     {
+#if CONFIG_NETWORK_LAYER_BLE
         Transport::BLE * transport = chip::Platform::New<Transport::BLE>();
+#else
+        Transport::TCP * transport = chip::Platform::New<Transport::TCP>();
+#endif // CONFIG_NETWORK_LAYER_BLE
         err                        = transport->Init(this, mParams);
         mTransport                 = transport;
         mTransport->Retain();
         transport->Release();
     }
-#endif // CONFIG_NETWORK_LAYER_BLE
     SuccessOrExit(err);
 
     if (!mParams.IsController())
@@ -83,6 +87,7 @@ RendezvousSession::~RendezvousSession()
 
 CHIP_ERROR RendezvousSession::SendMessage(System::PacketBuffer * msgBuf)
 {
+    ChipLogProgress(chipTool, "%s", __PRETTY_FUNCTION__);
     CHIP_ERROR err = CHIP_NO_ERROR;
 
     switch (mCurrentState)
@@ -113,7 +118,9 @@ exit:
 
 CHIP_ERROR RendezvousSession::SendPairingMessage(System::PacketBuffer * msgBuf)
 {
+    ChipLogProgress(chipTool, "%s", __PRETTY_FUNCTION__);
     CHIP_ERROR err = CHIP_NO_ERROR;
+    Transport::PeerAddress peerAddress;
     PacketHeader header;
     uint16_t headerSize = 0;
 
@@ -124,7 +131,12 @@ CHIP_ERROR RendezvousSession::SendPairingMessage(System::PacketBuffer * msgBuf)
     SuccessOrExit(err);
 
     msgBuf->ConsumeHead(headerSize);
-    err = mTransport->SendMessage(header, Header::Flags(), Transport::PeerAddress::BLE(), msgBuf);
+#if CONFIG_NETWORK_LAYER_BLE
+    peerAddress = Transport::PeerAddress::BLE();
+#else
+    peerAddress = Transport::PeerAddress::TCP(mParams.GetIPAddress());
+#endif
+    err = mTransport->SendMessage(header, Header::Flags(), peerAddress, msgBuf);
     SuccessOrExit(err);
 
 exit:
@@ -133,7 +145,9 @@ exit:
 
 CHIP_ERROR RendezvousSession::SendSecureMessage(Protocols::CHIPProtocolId protocol, uint8_t msgType, System::PacketBuffer * msgBuf)
 {
+    ChipLogProgress(chipTool, "%s", __PRETTY_FUNCTION__);
     CHIP_ERROR err = CHIP_NO_ERROR;
+    Transport::PeerAddress peerAddress;
     PacketHeader packetHeader;
     PayloadHeader payloadHeader;
     MessageAuthenticationCode mac;
@@ -174,7 +188,12 @@ CHIP_ERROR RendezvousSession::SendSecureMessage(Protocols::CHIPProtocolId protoc
     VerifyOrExit(CanCastTo<uint16_t>(totalLen + taglen), err = CHIP_ERROR_INVALID_MESSAGE_LENGTH);
     msgBuf->SetDataLength(static_cast<uint16_t>(totalLen + taglen));
 
-    err = mTransport->SendMessage(packetHeader, payloadHeader.GetEncodePacketFlags(), Transport::PeerAddress::BLE(), msgBuf);
+#if CONFIG_NETWORK_LAYER_BLE
+    peerAddress = Transport::PeerAddress::BLE();
+#else
+    peerAddress = Transport::PeerAddress::TCP(mParams.GetIPAddress());
+#endif
+    err = mTransport->SendMessage(packetHeader, payloadHeader.GetEncodePacketFlags(), peerAddress, msgBuf);
     SuccessOrExit(err);
 
     mSecureMessageIndex++;

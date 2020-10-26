@@ -1,0 +1,111 @@
+/*
+ *
+ *    Copyright (c) 2020 Project CHIP Authors
+ *    All rights reserved.
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
+/**
+ *    @file
+ *      This file defines the CHIP Connection object that maintains a TCP connection.
+ *
+ */
+
+#pragma once
+
+#include <utility>
+
+#include <core/CHIPCore.h>
+#include <inet/InetInterface.h>
+#include <inet/TCPEndPoint.h>
+#include <support/DLLUtil.h>
+#include <transport/RendezvousParameters.h>
+#include <transport/RendezvousSessionDelegate.h>
+#include <transport/raw/Base.h>
+
+namespace chip {
+namespace Transport {
+
+/** Implements a transport using TCP.
+ *
+ *  TODO: TCP transport currently does NOT receive messages as defined
+ *        in the Transport::Base (i.e. no header is parsed and processed) and
+ *        instead received packets are sent raw via BLE Handler callbacks.
+ */
+class DLL_EXPORT TCP : public Base
+{
+    /**
+     *  The State of the TCP connection
+     *
+     */
+    enum class State
+    {
+        kNotReady    = 0, /**< State before initialization. */
+        kInitialized = 1, /**< State after class is connected and ready. */
+    };
+
+public:
+    ~TCP() override;
+
+    /**
+     * Initialize a BLE transport to a given peripheral or a given device name.
+     *
+     * @param delegate      the delegate that will receive BLE events
+     * @param params        BLE configuration parameters for this transport
+     */
+    CHIP_ERROR Init(RendezvousSessionDelegate * delegate, const RendezvousParameters & params);
+
+    CHIP_ERROR SendMessage(const PacketHeader & header, Header::Flags payloadFlags, const Transport::PeerAddress & address,
+                           System::PacketBuffer * msgBuf) override;
+
+    bool CanSendToPeer(const Transport::PeerAddress & address) override
+    {
+        return (mState == State::kInitialized) && (address.GetTransportType() == Type::kTcp);
+    }
+
+private:
+    // Callback handler for TCPEndPoint. TCP message receive handler.
+    // @see TCPEndpoint::OnDataReceivedFunct
+    static void OnTcpReceive(Inet::TCPEndPoint * endPoint, System::PacketBuffer * buffer);
+
+    // Callback handler for TCPEndPoint. Called when a connection has been completed.
+    // @see TCPEndpoint::OnConnectCompleteFunct
+    static void OnConnectionComplete(Inet::TCPEndPoint * endPoint, INET_ERROR err);
+
+    // Callback handler for TCPEndPoint. Called when a connection has been closed.
+    // @see TCPEndpoint::OnConnectionClosedFunct
+    static void OnConnectionClosed(Inet::TCPEndPoint * endPoint, INET_ERROR err);
+
+    // Callback handler for TCPEndPoint. Callend when a peer closes the connection.
+    // @see TCPEndpoint::OnPeerCloseFunct
+    static void OnPeerClosed(Inet::TCPEndPoint * endPoint);
+
+    // Callback handler for TCPEndPoint. Called when a connection is received on the listening port.
+    // @see TCPEndpoint::OnConnectionReceivedFunct
+    static void OnConnectionReceived(Inet::TCPEndPoint * listenEndPoint, Inet::TCPEndPoint * endPoint,
+                                     const Inet::IPAddress & peerAddress, uint16_t peerPort);
+
+    // Called on accept error
+    // @see TCPEndpoint::OnAcceptErrorFunct
+    static void OnAcceptError(Inet::TCPEndPoint * endPoint, INET_ERROR err);
+
+    State mState                            = State::kNotReady; ///< State of the BLE transport
+    Inet::TCPEndPoint * mTCPEndPoint        = nullptr;          ///< TCP endpoint used by transport
+    Inet::TCPEndPoint * mRemoteTCPEndPoint  = nullptr;          ///< Remote TCP endpoint used by transport
+    RendezvousSessionDelegate * mDelegate   = nullptr;          ///< TCP events from transport
+    RendezvousParameters mParams;                               ///< Rendezvous configuration
+};
+
+} // namespace Transport
+} // namespace chip

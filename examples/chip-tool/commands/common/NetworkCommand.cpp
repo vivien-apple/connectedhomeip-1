@@ -64,6 +64,10 @@ CHIP_ERROR NetworkCommand::Run(ChipDeviceController * dc, NodeId remoteId)
         err = ConnectUDP(dc, remoteId);
         break;
 
+    case NetworkType::TCP:
+        err = ConnectTCP(dc, remoteId);
+        break;
+
     case NetworkType::ALL:
         ChipLogError(chipTool, "Not implemented yet.");
         err = CHIP_ERROR_UNSUPPORTED_CHIP_FEATURE;
@@ -93,3 +97,16 @@ CHIP_ERROR NetworkCommand::ConnectUDP(ChipDeviceController * dc, NodeId remoteId
     return dc->ConnectDeviceWithoutSecurePairing(remoteId, mRemoteAddr.address, nullptr, onConnect, onMessage, onError, mRemotePort,
                                                  mRemoteAddr.interfaceId);
 }
+
+CHIP_ERROR NetworkCommand::ConnectTCP(ChipDeviceController * dc, NodeId remoteId)
+{
+    char hostIpStr[40];
+    mRemoteAddr.address.ToString(hostIpStr, sizeof(hostIpStr));
+    snprintf(mName, sizeof(mName), "TCP:%u - %s", mDiscriminator, hostIpStr);
+
+    chip::Inet::IPAddress addr;
+    chip::Inet::IPAddress::FromString(hostIpStr, addr);
+    RendezvousParameters params = RendezvousParameters().SetSetupPINCode(mSetupPINCode).SetDiscriminator(mDiscriminator).SetIPAddress(addr);
+    return dc->ConnectDevice(remoteId, params, NULL, onConnect, onMessage, onError);
+}
+

@@ -21,6 +21,8 @@
 
 #if CONFIG_NETWORK_LAYER_BLE
 #include <ble/Ble.h>
+#else
+#include <inet/IPAddress.h>
 #endif // CONFIG_NETWORK_LAYER_BLE
 
 #include <support/logging/CHIPLogging.h>
@@ -75,6 +77,22 @@ public:
         return *this;
     }
 #else
+    bool HasInetLayer() const { return mInetLayer != nullptr; }
+    Inet::InetLayer * GetInetLayer() const { return mInetLayer; }
+    RendezvousParameters & SetInetLayer(Inet::InetLayer * value)
+    {
+        mInetLayer = value;
+        return *this;
+    }
+
+    bool HasIPAddress() const { return mIPAddress != Inet::IPAddress::Any; }
+    Inet::IPAddress GetIPAddress() const { return mIPAddress; }
+    RendezvousParameters & SetIPAddress(const Inet::IPAddress & addr)
+    {
+        mIPAddress = addr;
+        return *this;
+    }
+
     bool HasConnectionObject() const { return false; }
 #endif // CONFIG_NETWORK_LAYER_BLE
 
@@ -86,6 +104,9 @@ private:
 #if CONFIG_NETWORK_LAYER_BLE
     Ble::BleLayer * mBleLayer               = nullptr;
     BLE_CONNECTION_OBJECT mConnectionObject = 0;
+#else
+    Inet::InetLayer * mInetLayer = nullptr;
+    Inet::IPAddress mIPAddress;
 #endif // CONFIG_NETWORK_LAYER_BLE
 };
 
