@@ -108,7 +108,10 @@ bool Command::InitArgument(size_t argIndex, const char * argValue)
         if (chip::CanCastTo<uint8_t>(tmpValue))
         {
             *value          = static_cast<uint8_t>(tmpValue);
-            isValidArgument = (!ss.fail() && ss.eof() && *value >= arg.min && *value <= arg.max);
+
+            uint64_t min =chip::CanCastTo<uint64_t>(arg.min) ? static_cast<uint64_t>(arg.min) : 0;
+            uint64_t max = arg.max;
+            isValidArgument = (!ss.fail() && ss.eof() && *value >= min && *value <= max);
         }
         else
         {
@@ -121,7 +124,10 @@ bool Command::InitArgument(size_t argIndex, const char * argValue)
         uint16_t * value = reinterpret_cast<uint16_t *>(arg.value);
         std::stringstream ss(argValue);
         ss >> *value;
-        isValidArgument = (!ss.fail() && ss.eof() && *value >= arg.min && *value <= arg.max);
+
+        uint64_t min =chip::CanCastTo<uint64_t>(arg.min) ? static_cast<uint64_t>(arg.min) : 0;
+        uint64_t max = arg.max;
+        isValidArgument = (!ss.fail() && ss.eof() && *value >= min && *value <= max);
         break;
     }
 
@@ -129,7 +135,10 @@ bool Command::InitArgument(size_t argIndex, const char * argValue)
         uint32_t * value = reinterpret_cast<uint32_t *>(arg.value);
         std::stringstream ss(argValue);
         ss >> *value;
-        isValidArgument = (!ss.fail() && ss.eof() && *value >= arg.min && *value <= arg.max);
+
+        uint64_t min =chip::CanCastTo<uint64_t>(arg.min) ? static_cast<uint64_t>(arg.min) : 0;
+        uint64_t max = arg.max;
+        isValidArgument = (!ss.fail() && ss.eof() && *value >= min && *value <= max);
         break;
     }
 
@@ -137,7 +146,10 @@ bool Command::InitArgument(size_t argIndex, const char * argValue)
         uint64_t * value = reinterpret_cast<uint64_t *>(arg.value);
         std::stringstream ss(argValue);
         ss >> *value;
-        isValidArgument = (!ss.fail() && ss.eof() && *value >= arg.min && *value <= arg.max);
+
+        uint64_t min =chip::CanCastTo<uint64_t>(arg.min) ? static_cast<uint64_t>(arg.min) : 0;
+        uint64_t max = arg.max;
+        isValidArgument = (!ss.fail() && ss.eof() && *value >= min && *value <= max);
         break;
     }
 
@@ -145,7 +157,10 @@ bool Command::InitArgument(size_t argIndex, const char * argValue)
         int8_t * value = reinterpret_cast<int8_t *>(arg.value);
         std::stringstream ss(argValue);
         ss >> *value;
-        isValidArgument = (!ss.fail() && ss.eof() && *value >= arg.min && *value <= arg.max);
+
+        int64_t min = arg.min;
+        int64_t max =chip::CanCastTo<int64_t>(arg.max) ? static_cast<int64_t>(arg.max) : INT64_MAX;
+        isValidArgument = (!ss.fail() && ss.eof() && *value >= min && *value <= max);
         break;
     }
 
@@ -153,7 +168,10 @@ bool Command::InitArgument(size_t argIndex, const char * argValue)
         int16_t * value = reinterpret_cast<int16_t *>(arg.value);
         std::stringstream ss(argValue);
         ss >> *value;
-        isValidArgument = (!ss.fail() && ss.eof() && *value >= arg.min && *value <= arg.max);
+
+        int64_t min = arg.min;
+        int64_t max =chip::CanCastTo<int64_t>(arg.max) ? static_cast<int64_t>(arg.max) : INT64_MAX;
+        isValidArgument = (!ss.fail() && ss.eof() && *value >= min && *value <= max);
         break;
     }
 
@@ -161,7 +179,10 @@ bool Command::InitArgument(size_t argIndex, const char * argValue)
         int32_t * value = reinterpret_cast<int32_t *>(arg.value);
         std::stringstream ss(argValue);
         ss >> *value;
-        isValidArgument = (!ss.fail() && ss.eof() && *value >= arg.min && *value <= arg.max);
+
+        int64_t min = arg.min;
+        int64_t max =chip::CanCastTo<int64_t>(arg.max) ? static_cast<int64_t>(arg.max) : INT64_MAX;
+        isValidArgument = (!ss.fail() && ss.eof() && *value >= min && *value <= max);
         break;
     }
 
@@ -169,7 +190,10 @@ bool Command::InitArgument(size_t argIndex, const char * argValue)
         int64_t * value = reinterpret_cast<int64_t *>(arg.value);
         std::stringstream ss(argValue);
         ss >> *value;
-        isValidArgument = (!ss.fail() && ss.eof() && *value >= arg.min && *value <= arg.max);
+
+        int64_t min = arg.min;
+        int64_t max =chip::CanCastTo<int64_t>(arg.max) ? static_cast<int64_t>(arg.max) : INT64_MAX;
+        isValidArgument = (!ss.fail() && ss.eof() && *value >= min && *value <= max);
         break;
     }
 
