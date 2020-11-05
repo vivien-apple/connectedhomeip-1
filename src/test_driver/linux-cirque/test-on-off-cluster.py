@@ -46,8 +46,6 @@ DEVICE_CONFIG = {
     }
 }
 
-CHIP_PORT = 11097
-
 CIRQUE_URL = "http://localhost:5000"
 
 
@@ -77,7 +75,7 @@ class TestOnOffCluster(CHIPVirtualHome):
         for device_id in server_ids:
             server_ip_address.add(self.get_device_thread_ip(device_id))
 
-        command = "chip-tool onoff {} {} {} 1"
+        command = "chip-tool onoff {} {} 1"
 
         for ip in server_ip_address:
             ret = self.execute_device_cmd(tool_device_id, command.format("on", ip, CHIP_PORT))
