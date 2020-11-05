@@ -34,7 +34,7 @@ logger.addHandler(sh)
 DEVICE_CONFIG = {
     'device0': {
         'type': 'CHIP-Server',
-        'base_image': 'chip_server_all_clusters',
+        'base_image': 'chip_server_lighting',
         'capability': ['Thread', 'Interactive'],
         'rcp_mode': True,
     },
@@ -75,16 +75,32 @@ class TestOnOffCluster(CHIPVirtualHome):
         for device_id in server_ids:
             server_ip_address.add(self.get_device_thread_ip(device_id))
 
-        command = "chip-tool onoff {} {} 1"
-
         for ip in server_ip_address:
-            ret = self.execute_device_cmd(tool_device_id, command.format("on", ip, CHIP_PORT))
-            self.assertEqual(ret['return_code'], '0', "{} command failure: {}".format("on", ret['output']))
-
-            ret = self.execute_device_cmd(tool_device_id, command.format("off", ip, CHIP_PORT))
-            self.assertEqual(ret['return_code'], '0', "{} command failure: {}".format("off", ret['output']))
-
+            print("Runnning on test:")
+            output = self.execute_device_cmd(
+                tool_device_id, "chip-tool onoff on {} 1".format(ip))
+            print("Runnning on test output: {}".format(output['output']))
+            self.logger.info(
+                'checking output does not contain "No response from device"')
+            self.assertFalse(self.sequenceMatch(
+                output['output'], ["No response from device."]))
         time.sleep(1)
+        for ip in server_ip_address:
+            print("Runnning off test:")
+            output = self.execute_device_cmd(
+                tool_device_id, "chip-tool onoff off {} 1".format(ip))
+            print("Runnning on test output: {}".format(output['output']))
+            self.logger.info(
+                'checking output does not contain "No response from device"')
+            self.assertFalse(self.sequenceMatch(
+                output['output'], ["No response from device."]))
+
+        for device_id in server_ids:
+            self.logger.info("checking device log for {}".format(
+                self.get_device_pretty_id(device_id)))
+            self.assertTrue(self.sequenceMatch(self.get_device_log(device_id).decode('utf-8'), ["LightingManager::InitiateAction(ON_ACTION)", "LightingManager::InitiateAction(OFF_ACTION)"]),
+                            "Datamodel test failed: cannot find matching string from device {}".format(device_id))
+
 
 if __name__ == "__main__":
     sys.exit(TestOnOffCluster(DEVICE_CONFIG).run_test())
