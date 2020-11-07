@@ -108,6 +108,9 @@ config("target_default") {
 config("optimize_zero") {
   cflags = [ "-O0" ]
   ldflags = cflags
+  ldflags += [
+    "-Wl,--gc-sections",
+  ]
 }
 
 config("optimize_default") {
