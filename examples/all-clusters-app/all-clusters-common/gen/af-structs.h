@@ -112,11 +112,6 @@ typedef struct _EndpointInformationRecord
     uint8_t version;
 } EmberAfEndpointInformationRecord;
 
-// Struct for EphemeralData
-typedef struct _EphemeralData
-{
-} EmberAfEphemeralData;
-
 // Struct for EventConfigurationPayload
 typedef struct _EventConfigurationPayload
 {
@@ -174,11 +169,6 @@ typedef struct _IasAceZoneStatusResult
     uint8_t zoneId;
     uint16_t zoneStatus;
 } EmberAfIasAceZoneStatusResult;
-
-// Struct for Identity
-typedef struct _Identity
-{
-} EmberAfIdentity;
 
 // Struct for NeighborInfo
 typedef struct _NeighborInfo
@@ -331,16 +321,6 @@ typedef struct _SeasonEntry
     uint32_t seasonStartDate;
     uint8_t weekIdRef;
 } EmberAfSeasonEntry;
-
-// Struct for Signature
-typedef struct _Signature
-{
-} EmberAfSignature;
-
-// Struct for Smac
-typedef struct _Smac
-{
-} EmberAfSmac;
 
 // Struct for SnapshotResponsePayload
 typedef struct _SnapshotResponsePayload

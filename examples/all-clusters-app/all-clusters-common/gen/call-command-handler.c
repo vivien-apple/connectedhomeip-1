@@ -25,20 +25,14 @@
 #include "util.h"
 
 EmberAfStatus emberAfBarrierControlClusterServerCommandParse(EmberAfClusterCommand * cmd);
-EmberAfStatus emberAfBasicClusterClientCommandParse(EmberAfClusterCommand * cmd);
 EmberAfStatus emberAfBasicClusterServerCommandParse(EmberAfClusterCommand * cmd);
 EmberAfStatus emberAfColorControlClusterServerCommandParse(EmberAfClusterCommand * cmd);
 EmberAfStatus emberAfDoorLockClusterServerCommandParse(EmberAfClusterCommand * cmd);
-EmberAfStatus emberAfGroupsClusterClientCommandParse(EmberAfClusterCommand * cmd);
 EmberAfStatus emberAfGroupsClusterServerCommandParse(EmberAfClusterCommand * cmd);
-EmberAfStatus emberAfIASZoneClusterClientCommandParse(EmberAfClusterCommand * cmd);
 EmberAfStatus emberAfIASZoneClusterServerCommandParse(EmberAfClusterCommand * cmd);
-EmberAfStatus emberAfIdentifyClusterClientCommandParse(EmberAfClusterCommand * cmd);
 EmberAfStatus emberAfIdentifyClusterServerCommandParse(EmberAfClusterCommand * cmd);
 EmberAfStatus emberAfLevelControlClusterServerCommandParse(EmberAfClusterCommand * cmd);
 EmberAfStatus emberAfOnOffClusterServerCommandParse(EmberAfClusterCommand * cmd);
-EmberAfStatus emberAfOnOffSwitchConfigurationClusterServerCommandParse(EmberAfClusterCommand * cmd);
-EmberAfStatus emberAfScenesClusterClientCommandParse(EmberAfClusterCommand * cmd);
 EmberAfStatus emberAfScenesClusterServerCommandParse(EmberAfClusterCommand * cmd);
 EmberAfStatus emberAfTemperatureMeasurementClusterServerCommandParse(EmberAfClusterCommand * cmd);
 
@@ -71,21 +65,6 @@ EmberAfStatus emberAfClusterSpecificCommandParse(EmberAfClusterCommand * cmd)
     {
         switch (cmd->apsFrame->clusterId)
         {
-        case ZCL_BASIC_CLUSTER_ID:
-            result = emberAfBasicClusterClientCommandParse(cmd);
-            break;
-        case ZCL_GROUPS_CLUSTER_ID:
-            result = emberAfGroupsClusterClientCommandParse(cmd);
-            break;
-        case ZCL_IAS_ZONE_CLUSTER_ID:
-            result = emberAfIASZoneClusterClientCommandParse(cmd);
-            break;
-        case ZCL_IDENTIFY_CLUSTER_ID:
-            result = emberAfIdentifyClusterClientCommandParse(cmd);
-            break;
-        case ZCL_SCENES_CLUSTER_ID:
-            result = emberAfScenesClusterClientCommandParse(cmd);
-            break;
         default:
             // Unrecognized cluster ID, error status will apply.
             break;
@@ -123,16 +102,12 @@ EmberAfStatus emberAfClusterSpecificCommandParse(EmberAfClusterCommand * cmd)
         case ZCL_ON_OFF_CLUSTER_ID:
             result = emberAfOnOffClusterServerCommandParse(cmd);
             break;
-        case ZCL_ON_OFF_SWITCH_CONFIG_CLUSTER_ID:
-            result = emberAfOnOffSwitchConfigurationClusterServerCommandParse(cmd);
-            break;
         case ZCL_SCENES_CLUSTER_ID:
             result = emberAfScenesClusterServerCommandParse(cmd);
             break;
         case ZCL_TEMP_MEASUREMENT_CLUSTER_ID:
             result = emberAfTemperatureMeasurementClusterServerCommandParse(cmd);
             break;
-
         default:
             // Unrecognized cluster ID, error status will apply.
             break;
@@ -151,7 +126,6 @@ EmberAfStatus emberAfBarrierControlClusterServerCommandParse(EmberAfClusterComma
     {
         switch (cmd->commandId)
         {
-
         case ZCL_BARRIER_CONTROL_GO_TO_PERCENT_COMMAND_ID: {
             uint32_t argOffset    = 0;
             uint8_t * percentOpen = (uint8_t *) (cmd->buffer + argOffset);
@@ -171,23 +145,6 @@ EmberAfStatus emberAfBarrierControlClusterServerCommandParse(EmberAfClusterComma
     }
     return status(wasHandled, true, cmd->mfgSpecific);
 }
-EmberAfStatus emberAfBasicClusterClientCommandParse(EmberAfClusterCommand * cmd)
-{
-    bool wasHandled = false;
-
-    if (!cmd->mfgSpecific)
-    {
-        switch (cmd->commandId)
-        {
-
-        default: {
-            // Unrecognized command ID, error status will apply.
-            break;
-        }
-        }
-    }
-    return status(wasHandled, true, cmd->mfgSpecific);
-}
 EmberAfStatus emberAfBasicClusterServerCommandParse(EmberAfClusterCommand * cmd)
 {
     bool wasHandled = false;
@@ -196,7 +153,10 @@ EmberAfStatus emberAfBasicClusterServerCommandParse(EmberAfClusterCommand * cmd)
     {
         switch (cmd->commandId)
         {
-
+        case ZCL_RESET_TO_FACTORY_DEFAULTS_COMMAND_ID: {
+            wasHandled = emberAfBasicClusterResetToFactoryDefaultsCallback();
+            break;
+        }
         default: {
             // Unrecognized command ID, error status will apply.
             break;
@@ -213,7 +173,6 @@ EmberAfStatus emberAfColorControlClusterServerCommandParse(EmberAfClusterCommand
     {
         switch (cmd->commandId)
         {
-
         case ZCL_MOVE_COLOR_COMMAND_ID: {
             uint32_t argOffset = 0;
             int16_t * rateX    = (int16_t *) (cmd->buffer + argOffset);
@@ -225,6 +184,50 @@ EmberAfStatus emberAfColorControlClusterServerCommandParse(EmberAfClusterCommand
             uint8_t * optionsOverride = (uint8_t *) (cmd->buffer + argOffset);
 
             wasHandled = emberAfColorControlClusterMoveColorCallback(*rateX, *rateY, *optionsMask, *optionsOverride);
+            break;
+        }
+        case ZCL_MOVE_COLOR_TEMPERATURE_COMMAND_ID: {
+            uint32_t argOffset            = 0;
+            EmberAfHueMoveMode * moveMode = (EmberAfHueMoveMode *) (cmd->buffer + argOffset);
+            argOffset += sizeof(EmberAfHueMoveMode);
+            uint16_t * rate = (uint16_t *) (cmd->buffer + argOffset);
+            argOffset += sizeof(uint16_t);
+            uint16_t * colorTemperatureMinimum = (uint16_t *) (cmd->buffer + argOffset);
+            argOffset += sizeof(uint16_t);
+            uint16_t * colorTemperatureMaximum = (uint16_t *) (cmd->buffer + argOffset);
+            argOffset += sizeof(uint16_t);
+            uint8_t * optionsMask = (uint8_t *) (cmd->buffer + argOffset);
+            argOffset += sizeof(uint8_t);
+            uint8_t * optionsOverride = (uint8_t *) (cmd->buffer + argOffset);
+
+            wasHandled = emberAfColorControlClusterMoveColorTemperatureCallback(
+                *moveMode, *rate, *colorTemperatureMinimum, *colorTemperatureMaximum, *optionsMask, *optionsOverride);
+            break;
+        }
+        case ZCL_MOVE_HUE_COMMAND_ID: {
+            uint32_t argOffset            = 0;
+            EmberAfHueMoveMode * moveMode = (EmberAfHueMoveMode *) (cmd->buffer + argOffset);
+            argOffset += sizeof(EmberAfHueMoveMode);
+            uint8_t * rate = (uint8_t *) (cmd->buffer + argOffset);
+            argOffset += sizeof(uint8_t);
+            uint8_t * optionsMask = (uint8_t *) (cmd->buffer + argOffset);
+            argOffset += sizeof(uint8_t);
+            uint8_t * optionsOverride = (uint8_t *) (cmd->buffer + argOffset);
+
+            wasHandled = emberAfColorControlClusterMoveHueCallback(*moveMode, *rate, *optionsMask, *optionsOverride);
+            break;
+        }
+        case ZCL_MOVE_SATURATION_COMMAND_ID: {
+            uint32_t argOffset                   = 0;
+            EmberAfSaturationMoveMode * moveMode = (EmberAfSaturationMoveMode *) (cmd->buffer + argOffset);
+            argOffset += sizeof(EmberAfSaturationMoveMode);
+            uint8_t * rate = (uint8_t *) (cmd->buffer + argOffset);
+            argOffset += sizeof(uint8_t);
+            uint8_t * optionsMask = (uint8_t *) (cmd->buffer + argOffset);
+            argOffset += sizeof(uint8_t);
+            uint8_t * optionsOverride = (uint8_t *) (cmd->buffer + argOffset);
+
+            wasHandled = emberAfColorControlClusterMoveSaturationCallback(*moveMode, *rate, *optionsMask, *optionsOverride);
             break;
         }
         case ZCL_MOVE_TO_COLOR_COMMAND_ID: {
@@ -243,6 +246,66 @@ EmberAfStatus emberAfColorControlClusterServerCommandParse(EmberAfClusterCommand
                 emberAfColorControlClusterMoveToColorCallback(*colorX, *colorY, *transitionTime, *optionsMask, *optionsOverride);
             break;
         }
+        case ZCL_MOVE_TO_COLOR_TEMPERATURE_COMMAND_ID: {
+            uint32_t argOffset          = 0;
+            uint16_t * colorTemperature = (uint16_t *) (cmd->buffer + argOffset);
+            argOffset += sizeof(uint16_t);
+            uint16_t * transitionTime = (uint16_t *) (cmd->buffer + argOffset);
+            argOffset += sizeof(uint16_t);
+            uint8_t * optionsMask = (uint8_t *) (cmd->buffer + argOffset);
+            argOffset += sizeof(uint8_t);
+            uint8_t * optionsOverride = (uint8_t *) (cmd->buffer + argOffset);
+
+            wasHandled = emberAfColorControlClusterMoveToColorTemperatureCallback(*colorTemperature, *transitionTime, *optionsMask,
+                                                                                  *optionsOverride);
+            break;
+        }
+        case ZCL_MOVE_TO_HUE_COMMAND_ID: {
+            uint32_t argOffset = 0;
+            uint8_t * hue      = (uint8_t *) (cmd->buffer + argOffset);
+            argOffset += sizeof(uint8_t);
+            EmberAfHueDirection * direction = (EmberAfHueDirection *) (cmd->buffer + argOffset);
+            argOffset += sizeof(EmberAfHueDirection);
+            uint16_t * transitionTime = (uint16_t *) (cmd->buffer + argOffset);
+            argOffset += sizeof(uint16_t);
+            uint8_t * optionsMask = (uint8_t *) (cmd->buffer + argOffset);
+            argOffset += sizeof(uint8_t);
+            uint8_t * optionsOverride = (uint8_t *) (cmd->buffer + argOffset);
+
+            wasHandled =
+                emberAfColorControlClusterMoveToHueCallback(*hue, *direction, *transitionTime, *optionsMask, *optionsOverride);
+            break;
+        }
+        case ZCL_MOVE_TO_HUE_AND_SATURATION_COMMAND_ID: {
+            uint32_t argOffset = 0;
+            uint8_t * hue      = (uint8_t *) (cmd->buffer + argOffset);
+            argOffset += sizeof(uint8_t);
+            uint8_t * saturation = (uint8_t *) (cmd->buffer + argOffset);
+            argOffset += sizeof(uint8_t);
+            uint16_t * transitionTime = (uint16_t *) (cmd->buffer + argOffset);
+            argOffset += sizeof(uint16_t);
+            uint8_t * optionsMask = (uint8_t *) (cmd->buffer + argOffset);
+            argOffset += sizeof(uint8_t);
+            uint8_t * optionsOverride = (uint8_t *) (cmd->buffer + argOffset);
+
+            wasHandled = emberAfColorControlClusterMoveToHueAndSaturationCallback(*hue, *saturation, *transitionTime, *optionsMask,
+                                                                                  *optionsOverride);
+            break;
+        }
+        case ZCL_MOVE_TO_SATURATION_COMMAND_ID: {
+            uint32_t argOffset   = 0;
+            uint8_t * saturation = (uint8_t *) (cmd->buffer + argOffset);
+            argOffset += sizeof(uint8_t);
+            uint16_t * transitionTime = (uint16_t *) (cmd->buffer + argOffset);
+            argOffset += sizeof(uint16_t);
+            uint8_t * optionsMask = (uint8_t *) (cmd->buffer + argOffset);
+            argOffset += sizeof(uint8_t);
+            uint8_t * optionsOverride = (uint8_t *) (cmd->buffer + argOffset);
+
+            wasHandled =
+                emberAfColorControlClusterMoveToSaturationCallback(*saturation, *transitionTime, *optionsMask, *optionsOverride);
+            break;
+        }
         case ZCL_STEP_COLOR_COMMAND_ID: {
             uint32_t argOffset = 0;
             int16_t * stepX    = (int16_t *) (cmd->buffer + argOffset);
@@ -257,6 +320,68 @@ EmberAfStatus emberAfColorControlClusterServerCommandParse(EmberAfClusterCommand
 
             wasHandled =
                 emberAfColorControlClusterStepColorCallback(*stepX, *stepY, *transitionTime, *optionsMask, *optionsOverride);
+            break;
+        }
+        case ZCL_STEP_COLOR_TEMPERATURE_COMMAND_ID: {
+            uint32_t argOffset            = 0;
+            EmberAfHueStepMode * stepMode = (EmberAfHueStepMode *) (cmd->buffer + argOffset);
+            argOffset += sizeof(EmberAfHueStepMode);
+            uint16_t * stepSize = (uint16_t *) (cmd->buffer + argOffset);
+            argOffset += sizeof(uint16_t);
+            uint16_t * transitionTime = (uint16_t *) (cmd->buffer + argOffset);
+            argOffset += sizeof(uint16_t);
+            uint16_t * colorTemperatureMinimum = (uint16_t *) (cmd->buffer + argOffset);
+            argOffset += sizeof(uint16_t);
+            uint16_t * colorTemperatureMaximum = (uint16_t *) (cmd->buffer + argOffset);
+            argOffset += sizeof(uint16_t);
+            uint8_t * optionsMask = (uint8_t *) (cmd->buffer + argOffset);
+            argOffset += sizeof(uint8_t);
+            uint8_t * optionsOverride = (uint8_t *) (cmd->buffer + argOffset);
+
+            wasHandled = emberAfColorControlClusterStepColorTemperatureCallback(*stepMode, *stepSize, *transitionTime,
+                                                                                *colorTemperatureMinimum, *colorTemperatureMaximum,
+                                                                                *optionsMask, *optionsOverride);
+            break;
+        }
+        case ZCL_STEP_HUE_COMMAND_ID: {
+            uint32_t argOffset            = 0;
+            EmberAfHueStepMode * stepMode = (EmberAfHueStepMode *) (cmd->buffer + argOffset);
+            argOffset += sizeof(EmberAfHueStepMode);
+            uint8_t * stepSize = (uint8_t *) (cmd->buffer + argOffset);
+            argOffset += sizeof(uint8_t);
+            uint8_t * transitionTime = (uint8_t *) (cmd->buffer + argOffset);
+            argOffset += sizeof(uint8_t);
+            uint8_t * optionsMask = (uint8_t *) (cmd->buffer + argOffset);
+            argOffset += sizeof(uint8_t);
+            uint8_t * optionsOverride = (uint8_t *) (cmd->buffer + argOffset);
+
+            wasHandled =
+                emberAfColorControlClusterStepHueCallback(*stepMode, *stepSize, *transitionTime, *optionsMask, *optionsOverride);
+            break;
+        }
+        case ZCL_STEP_SATURATION_COMMAND_ID: {
+            uint32_t argOffset                   = 0;
+            EmberAfSaturationStepMode * stepMode = (EmberAfSaturationStepMode *) (cmd->buffer + argOffset);
+            argOffset += sizeof(EmberAfSaturationStepMode);
+            uint8_t * stepSize = (uint8_t *) (cmd->buffer + argOffset);
+            argOffset += sizeof(uint8_t);
+            uint8_t * transitionTime = (uint8_t *) (cmd->buffer + argOffset);
+            argOffset += sizeof(uint8_t);
+            uint8_t * optionsMask = (uint8_t *) (cmd->buffer + argOffset);
+            argOffset += sizeof(uint8_t);
+            uint8_t * optionsOverride = (uint8_t *) (cmd->buffer + argOffset);
+
+            wasHandled = emberAfColorControlClusterStepSaturationCallback(*stepMode, *stepSize, *transitionTime, *optionsMask,
+                                                                          *optionsOverride);
+            break;
+        }
+        case ZCL_STOP_MOVE_STEP_COMMAND_ID: {
+            uint32_t argOffset    = 0;
+            uint8_t * optionsMask = (uint8_t *) (cmd->buffer + argOffset);
+            argOffset += sizeof(uint8_t);
+            uint8_t * optionsOverride = (uint8_t *) (cmd->buffer + argOffset);
+
+            wasHandled = emberAfColorControlClusterStopMoveStepCallback(*optionsMask, *optionsOverride);
             break;
         }
         default: {
@@ -275,12 +400,124 @@ EmberAfStatus emberAfDoorLockClusterServerCommandParse(EmberAfClusterCommand * c
     {
         switch (cmd->commandId)
         {
+        case ZCL_CLEAR_HOLIDAY_SCHEDULE_COMMAND_ID: {
+            uint32_t argOffset   = 0;
+            uint8_t * scheduleId = (uint8_t *) (cmd->buffer + argOffset);
 
+            wasHandled = emberAfDoorLockClusterClearHolidayScheduleCallback(*scheduleId);
+            break;
+        }
+        case ZCL_CLEAR_WEEKDAY_SCHEDULE_COMMAND_ID: {
+            uint32_t argOffset   = 0;
+            uint8_t * scheduleId = (uint8_t *) (cmd->buffer + argOffset);
+            argOffset += sizeof(uint8_t);
+            uint16_t * userId = (uint16_t *) (cmd->buffer + argOffset);
+
+            wasHandled = emberAfDoorLockClusterClearWeekdayScheduleCallback(*scheduleId, *userId);
+            break;
+        }
+        case ZCL_CLEAR_YEARDAY_SCHEDULE_COMMAND_ID: {
+            uint32_t argOffset   = 0;
+            uint8_t * scheduleId = (uint8_t *) (cmd->buffer + argOffset);
+            argOffset += sizeof(uint8_t);
+            uint16_t * userId = (uint16_t *) (cmd->buffer + argOffset);
+
+            wasHandled = emberAfDoorLockClusterClearYeardayScheduleCallback(*scheduleId, *userId);
+            break;
+        }
+        case ZCL_GET_HOLIDAY_SCHEDULE_COMMAND_ID: {
+            uint32_t argOffset   = 0;
+            uint8_t * scheduleId = (uint8_t *) (cmd->buffer + argOffset);
+
+            wasHandled = emberAfDoorLockClusterGetHolidayScheduleCallback(*scheduleId);
+            break;
+        }
+        case ZCL_GET_USER_TYPE_COMMAND_ID: {
+            uint32_t argOffset = 0;
+            uint16_t * userId  = (uint16_t *) (cmd->buffer + argOffset);
+
+            wasHandled = emberAfDoorLockClusterGetUserTypeCallback(*userId);
+            break;
+        }
+        case ZCL_GET_WEEKDAY_SCHEDULE_COMMAND_ID: {
+            uint32_t argOffset   = 0;
+            uint8_t * scheduleId = (uint8_t *) (cmd->buffer + argOffset);
+            argOffset += sizeof(uint8_t);
+            uint16_t * userId = (uint16_t *) (cmd->buffer + argOffset);
+
+            wasHandled = emberAfDoorLockClusterGetWeekdayScheduleCallback(*scheduleId, *userId);
+            break;
+        }
+        case ZCL_GET_YEARDAY_SCHEDULE_COMMAND_ID: {
+            uint32_t argOffset   = 0;
+            uint8_t * scheduleId = (uint8_t *) (cmd->buffer + argOffset);
+            argOffset += sizeof(uint8_t);
+            uint16_t * userId = (uint16_t *) (cmd->buffer + argOffset);
+
+            wasHandled = emberAfDoorLockClusterGetYeardayScheduleCallback(*scheduleId, *userId);
+            break;
+        }
         case ZCL_LOCK_DOOR_COMMAND_ID: {
             uint32_t argOffset = 0;
             uint8_t ** PIN     = (uint8_t **) (cmd->buffer + argOffset);
 
             wasHandled = emberAfDoorLockClusterLockDoorCallback(*PIN);
+            break;
+        }
+        case ZCL_SET_HOLIDAY_SCHEDULE_COMMAND_ID: {
+            uint32_t argOffset   = 0;
+            uint8_t * scheduleId = (uint8_t *) (cmd->buffer + argOffset);
+            argOffset += sizeof(uint8_t);
+            uint32_t * localStartTime = (uint32_t *) (cmd->buffer + argOffset);
+            argOffset += sizeof(uint32_t);
+            uint32_t * localEndTime = (uint32_t *) (cmd->buffer + argOffset);
+            argOffset += sizeof(uint32_t);
+            uint8_t * operatingModeDuringHoliday = (uint8_t *) (cmd->buffer + argOffset);
+
+            wasHandled = emberAfDoorLockClusterSetHolidayScheduleCallback(*scheduleId, *localStartTime, *localEndTime,
+                                                                          *operatingModeDuringHoliday);
+            break;
+        }
+        case ZCL_SET_USER_TYPE_COMMAND_ID: {
+            uint32_t argOffset = 0;
+            uint16_t * userId  = (uint16_t *) (cmd->buffer + argOffset);
+            argOffset += sizeof(uint16_t);
+            EmberAfDoorLockUserType * userType = (EmberAfDoorLockUserType *) (cmd->buffer + argOffset);
+
+            wasHandled = emberAfDoorLockClusterSetUserTypeCallback(*userId, *userType);
+            break;
+        }
+        case ZCL_SET_WEEKDAY_SCHEDULE_COMMAND_ID: {
+            uint32_t argOffset   = 0;
+            uint8_t * scheduleId = (uint8_t *) (cmd->buffer + argOffset);
+            argOffset += sizeof(uint8_t);
+            uint16_t * userId = (uint16_t *) (cmd->buffer + argOffset);
+            argOffset += sizeof(uint16_t);
+            uint8_t * daysMask = (uint8_t *) (cmd->buffer + argOffset);
+            argOffset += sizeof(uint8_t);
+            uint8_t * startHour = (uint8_t *) (cmd->buffer + argOffset);
+            argOffset += sizeof(uint8_t);
+            uint8_t * startMinute = (uint8_t *) (cmd->buffer + argOffset);
+            argOffset += sizeof(uint8_t);
+            uint8_t * endHour = (uint8_t *) (cmd->buffer + argOffset);
+            argOffset += sizeof(uint8_t);
+            uint8_t * endMinute = (uint8_t *) (cmd->buffer + argOffset);
+
+            wasHandled = emberAfDoorLockClusterSetWeekdayScheduleCallback(*scheduleId, *userId, *daysMask, *startHour, *startMinute,
+                                                                          *endHour, *endMinute);
+            break;
+        }
+        case ZCL_SET_YEARDAY_SCHEDULE_COMMAND_ID: {
+            uint32_t argOffset   = 0;
+            uint8_t * scheduleId = (uint8_t *) (cmd->buffer + argOffset);
+            argOffset += sizeof(uint8_t);
+            uint16_t * userId = (uint16_t *) (cmd->buffer + argOffset);
+            argOffset += sizeof(uint16_t);
+            uint32_t * localStartTime = (uint32_t *) (cmd->buffer + argOffset);
+            argOffset += sizeof(uint32_t);
+            uint32_t * localEndTime = (uint32_t *) (cmd->buffer + argOffset);
+
+            wasHandled = emberAfDoorLockClusterSetYeardayScheduleCallback(*scheduleId, *userId, *localStartTime, *localEndTime);
             break;
         }
         case ZCL_UNLOCK_DOOR_COMMAND_ID: {
@@ -290,61 +527,13 @@ EmberAfStatus emberAfDoorLockClusterServerCommandParse(EmberAfClusterCommand * c
             wasHandled = emberAfDoorLockClusterUnlockDoorCallback(*PIN);
             break;
         }
-        default: {
-            // Unrecognized command ID, error status will apply.
-            break;
-        }
-        }
-    }
-    return status(wasHandled, true, cmd->mfgSpecific);
-}
-EmberAfStatus emberAfGroupsClusterClientCommandParse(EmberAfClusterCommand * cmd)
-{
-    bool wasHandled = false;
-
-    if (!cmd->mfgSpecific)
-    {
-        switch (cmd->commandId)
-        {
-
-        case ZCL_ADD_GROUP_RESPONSE_COMMAND_ID: {
-            uint32_t argOffset     = 0;
-            EmberAfStatus * status = (EmberAfStatus *) (cmd->buffer + argOffset);
-            argOffset += sizeof(EmberAfStatus);
-            uint16_t * groupId = (uint16_t *) (cmd->buffer + argOffset);
-
-            wasHandled = emberAfGroupsClusterAddGroupResponseCallback(*status, *groupId);
-            break;
-        }
-        case ZCL_GET_GROUP_MEMBERSHIP_RESPONSE_COMMAND_ID: {
-            uint32_t argOffset = 0;
-            uint8_t * capacity = (uint8_t *) (cmd->buffer + argOffset);
-            argOffset += sizeof(uint8_t);
-            uint8_t * groupCount = (uint8_t *) (cmd->buffer + argOffset);
-            argOffset += sizeof(uint8_t);
-            uint16_t * groupList = (uint16_t *) (cmd->buffer + argOffset);
-
-            wasHandled = emberAfGroupsClusterGetGroupMembershipResponseCallback(*capacity, *groupCount, *groupList);
-            break;
-        }
-        case ZCL_REMOVE_GROUP_RESPONSE_COMMAND_ID: {
-            uint32_t argOffset     = 0;
-            EmberAfStatus * status = (EmberAfStatus *) (cmd->buffer + argOffset);
-            argOffset += sizeof(EmberAfStatus);
-            uint16_t * groupId = (uint16_t *) (cmd->buffer + argOffset);
-
-            wasHandled = emberAfGroupsClusterRemoveGroupResponseCallback(*status, *groupId);
-            break;
-        }
-        case ZCL_VIEW_GROUP_RESPONSE_COMMAND_ID: {
-            uint32_t argOffset     = 0;
-            EmberAfStatus * status = (EmberAfStatus *) (cmd->buffer + argOffset);
-            argOffset += sizeof(EmberAfStatus);
-            uint16_t * groupId = (uint16_t *) (cmd->buffer + argOffset);
+        case ZCL_UNLOCK_WITH_TIMEOUT_COMMAND_ID: {
+            uint32_t argOffset          = 0;
+            uint16_t * timeoutInSeconds = (uint16_t *) (cmd->buffer + argOffset);
             argOffset += sizeof(uint16_t);
-            uint8_t ** groupName = (uint8_t **) (cmd->buffer + argOffset);
+            uint8_t ** pin = (uint8_t **) (cmd->buffer + argOffset);
 
-            wasHandled = emberAfGroupsClusterViewGroupResponseCallback(*status, *groupId, *groupName);
+            wasHandled = emberAfDoorLockClusterUnlockWithTimeoutCallback(*timeoutInSeconds, *pin);
             break;
         }
         default: {
@@ -363,7 +552,6 @@ EmberAfStatus emberAfGroupsClusterServerCommandParse(EmberAfClusterCommand * cmd
     {
         switch (cmd->commandId)
         {
-
         case ZCL_ADD_GROUP_COMMAND_ID: {
             uint32_t argOffset = 0;
             uint16_t * groupId = (uint16_t *) (cmd->buffer + argOffset);
@@ -417,45 +605,6 @@ EmberAfStatus emberAfGroupsClusterServerCommandParse(EmberAfClusterCommand * cmd
     }
     return status(wasHandled, true, cmd->mfgSpecific);
 }
-EmberAfStatus emberAfIASZoneClusterClientCommandParse(EmberAfClusterCommand * cmd)
-{
-    bool wasHandled = false;
-
-    if (!cmd->mfgSpecific)
-    {
-        switch (cmd->commandId)
-        {
-
-        case ZCL_ZONE_ENROLL_REQUEST_COMMAND_ID: {
-            uint32_t argOffset            = 0;
-            EmberAfIasZoneType * zoneType = (EmberAfIasZoneType *) (cmd->buffer + argOffset);
-            argOffset += sizeof(EmberAfIasZoneType);
-            uint16_t * manufacturerCode = (uint16_t *) (cmd->buffer + argOffset);
-
-            wasHandled = emberAfIASZoneClusterZoneEnrollRequestCallback(*zoneType, *manufacturerCode);
-            break;
-        }
-        case ZCL_ZONE_STATUS_CHANGE_NOTIFICATION_COMMAND_ID: {
-            uint32_t argOffset    = 0;
-            uint16_t * zoneStatus = (uint16_t *) (cmd->buffer + argOffset);
-            argOffset += sizeof(uint16_t);
-            uint8_t * extendedStatus = (uint8_t *) (cmd->buffer + argOffset);
-            argOffset += sizeof(uint8_t);
-            uint8_t * zoneId = (uint8_t *) (cmd->buffer + argOffset);
-            argOffset += sizeof(uint8_t);
-            uint16_t * delay = (uint16_t *) (cmd->buffer + argOffset);
-
-            wasHandled = emberAfIASZoneClusterZoneStatusChangeNotificationCallback(*zoneStatus, *extendedStatus, *zoneId, *delay);
-            break;
-        }
-        default: {
-            // Unrecognized command ID, error status will apply.
-            break;
-        }
-        }
-    }
-    return status(wasHandled, true, cmd->mfgSpecific);
-}
 EmberAfStatus emberAfIASZoneClusterServerCommandParse(EmberAfClusterCommand * cmd)
 {
     bool wasHandled = false;
@@ -464,7 +613,6 @@ EmberAfStatus emberAfIASZoneClusterServerCommandParse(EmberAfClusterCommand * cm
     {
         switch (cmd->commandId)
         {
-
         case ZCL_ZONE_ENROLL_RESPONSE_COMMAND_ID: {
             uint32_t argOffset                                = 0;
             EmberAfIasEnrollResponseCode * enrollResponseCode = (EmberAfIasEnrollResponseCode *) (cmd->buffer + argOffset);
@@ -472,30 +620,6 @@ EmberAfStatus emberAfIASZoneClusterServerCommandParse(EmberAfClusterCommand * cm
             uint8_t * zoneId = (uint8_t *) (cmd->buffer + argOffset);
 
             wasHandled = emberAfIASZoneClusterZoneEnrollResponseCallback(*enrollResponseCode, *zoneId);
-            break;
-        }
-        default: {
-            // Unrecognized command ID, error status will apply.
-            break;
-        }
-        }
-    }
-    return status(wasHandled, true, cmd->mfgSpecific);
-}
-EmberAfStatus emberAfIdentifyClusterClientCommandParse(EmberAfClusterCommand * cmd)
-{
-    bool wasHandled = false;
-
-    if (!cmd->mfgSpecific)
-    {
-        switch (cmd->commandId)
-        {
-
-        case ZCL_IDENTIFY_QUERY_RESPONSE_COMMAND_ID: {
-            uint32_t argOffset = 0;
-            uint16_t * timeout = (uint16_t *) (cmd->buffer + argOffset);
-
-            wasHandled = emberAfIdentifyClusterIdentifyQueryResponseCallback(*timeout);
             break;
         }
         default: {
@@ -514,7 +638,6 @@ EmberAfStatus emberAfIdentifyClusterServerCommandParse(EmberAfClusterCommand * c
     {
         switch (cmd->commandId)
         {
-
         case ZCL_IDENTIFY_COMMAND_ID: {
             uint32_t argOffset      = 0;
             uint16_t * identifyTime = (uint16_t *) (cmd->buffer + argOffset);
@@ -542,7 +665,6 @@ EmberAfStatus emberAfLevelControlClusterServerCommandParse(EmberAfClusterCommand
     {
         switch (cmd->commandId)
         {
-
         case ZCL_MOVE_COMMAND_ID: {
             uint32_t argOffset         = 0;
             EmberAfMoveMode * moveMode = (EmberAfMoveMode *) (cmd->buffer + argOffset);
@@ -643,7 +765,6 @@ EmberAfStatus emberAfOnOffClusterServerCommandParse(EmberAfClusterCommand * cmd)
     {
         switch (cmd->commandId)
         {
-
         case ZCL_OFF_COMMAND_ID: {
             wasHandled = emberAfOnOffClusterOffCallback();
             break;
@@ -664,116 +785,6 @@ EmberAfStatus emberAfOnOffClusterServerCommandParse(EmberAfClusterCommand * cmd)
     }
     return status(wasHandled, true, cmd->mfgSpecific);
 }
-EmberAfStatus emberAfOnOffSwitchConfigurationClusterServerCommandParse(EmberAfClusterCommand * cmd)
-{
-    bool wasHandled = false;
-
-    if (!cmd->mfgSpecific)
-    {
-        switch (cmd->commandId)
-        {
-
-        default: {
-            // Unrecognized command ID, error status will apply.
-            break;
-        }
-        }
-    }
-    return status(wasHandled, true, cmd->mfgSpecific);
-}
-EmberAfStatus emberAfScenesClusterClientCommandParse(EmberAfClusterCommand * cmd)
-{
-    bool wasHandled = false;
-
-    if (!cmd->mfgSpecific)
-    {
-        switch (cmd->commandId)
-        {
-
-        case ZCL_ADD_SCENE_RESPONSE_COMMAND_ID: {
-            uint32_t argOffset     = 0;
-            EmberAfStatus * status = (EmberAfStatus *) (cmd->buffer + argOffset);
-            argOffset += sizeof(EmberAfStatus);
-            uint16_t * groupId = (uint16_t *) (cmd->buffer + argOffset);
-            argOffset += sizeof(uint16_t);
-            uint8_t * sceneId = (uint8_t *) (cmd->buffer + argOffset);
-
-            wasHandled = emberAfScenesClusterAddSceneResponseCallback(*status, *groupId, *sceneId);
-            break;
-        }
-        case ZCL_GET_SCENE_MEMBERSHIP_RESPONSE_COMMAND_ID: {
-            uint32_t argOffset     = 0;
-            EmberAfStatus * status = (EmberAfStatus *) (cmd->buffer + argOffset);
-            argOffset += sizeof(EmberAfStatus);
-            uint8_t * capacity = (uint8_t *) (cmd->buffer + argOffset);
-            argOffset += sizeof(uint8_t);
-            uint16_t * groupId = (uint16_t *) (cmd->buffer + argOffset);
-            argOffset += sizeof(uint16_t);
-            uint8_t * sceneCount = (uint8_t *) (cmd->buffer + argOffset);
-            argOffset += sizeof(uint8_t);
-            uint8_t * sceneList = (uint8_t *) (cmd->buffer + argOffset);
-
-            wasHandled =
-                emberAfScenesClusterGetSceneMembershipResponseCallback(*status, *capacity, *groupId, *sceneCount, *sceneList);
-            break;
-        }
-        case ZCL_REMOVE_ALL_SCENES_RESPONSE_COMMAND_ID: {
-            uint32_t argOffset     = 0;
-            EmberAfStatus * status = (EmberAfStatus *) (cmd->buffer + argOffset);
-            argOffset += sizeof(EmberAfStatus);
-            uint16_t * groupId = (uint16_t *) (cmd->buffer + argOffset);
-
-            wasHandled = emberAfScenesClusterRemoveAllScenesResponseCallback(*status, *groupId);
-            break;
-        }
-        case ZCL_REMOVE_SCENE_RESPONSE_COMMAND_ID: {
-            uint32_t argOffset     = 0;
-            EmberAfStatus * status = (EmberAfStatus *) (cmd->buffer + argOffset);
-            argOffset += sizeof(EmberAfStatus);
-            uint16_t * groupId = (uint16_t *) (cmd->buffer + argOffset);
-            argOffset += sizeof(uint16_t);
-            uint8_t * sceneId = (uint8_t *) (cmd->buffer + argOffset);
-
-            wasHandled = emberAfScenesClusterRemoveSceneResponseCallback(*status, *groupId, *sceneId);
-            break;
-        }
-        case ZCL_STORE_SCENE_RESPONSE_COMMAND_ID: {
-            uint32_t argOffset     = 0;
-            EmberAfStatus * status = (EmberAfStatus *) (cmd->buffer + argOffset);
-            argOffset += sizeof(EmberAfStatus);
-            uint16_t * groupId = (uint16_t *) (cmd->buffer + argOffset);
-            argOffset += sizeof(uint16_t);
-            uint8_t * sceneId = (uint8_t *) (cmd->buffer + argOffset);
-
-            wasHandled = emberAfScenesClusterStoreSceneResponseCallback(*status, *groupId, *sceneId);
-            break;
-        }
-        case ZCL_VIEW_SCENE_RESPONSE_COMMAND_ID: {
-            uint32_t argOffset     = 0;
-            EmberAfStatus * status = (EmberAfStatus *) (cmd->buffer + argOffset);
-            argOffset += sizeof(EmberAfStatus);
-            uint16_t * groupId = (uint16_t *) (cmd->buffer + argOffset);
-            argOffset += sizeof(uint16_t);
-            uint8_t * sceneId = (uint8_t *) (cmd->buffer + argOffset);
-            argOffset += sizeof(uint8_t);
-            uint16_t * transitionTime = (uint16_t *) (cmd->buffer + argOffset);
-            argOffset += sizeof(uint16_t);
-            uint8_t ** sceneName = (uint8_t **) (cmd->buffer + argOffset);
-            argOffset += sizeof(uint8_t *);
-            EmberAfSceneExtensionFieldSet * extensionFieldSets = (EmberAfSceneExtensionFieldSet *) (cmd->buffer + argOffset);
-
-            wasHandled = emberAfScenesClusterViewSceneResponseCallback(*status, *groupId, *sceneId, *transitionTime, *sceneName,
-                                                                       *extensionFieldSets);
-            break;
-        }
-        default: {
-            // Unrecognized command ID, error status will apply.
-            break;
-        }
-        }
-    }
-    return status(wasHandled, true, cmd->mfgSpecific);
-}
 EmberAfStatus emberAfScenesClusterServerCommandParse(EmberAfClusterCommand * cmd)
 {
     bool wasHandled = false;
@@ -782,7 +793,6 @@ EmberAfStatus emberAfScenesClusterServerCommandParse(EmberAfClusterCommand * cmd
     {
         switch (cmd->commandId)
         {
-
         case ZCL_ADD_SCENE_COMMAND_ID: {
             uint32_t argOffset = 0;
             uint16_t * groupId = (uint16_t *) (cmd->buffer + argOffset);
@@ -866,7 +876,6 @@ EmberAfStatus emberAfTemperatureMeasurementClusterServerCommandParse(EmberAfClus
     {
         switch (cmd->commandId)
         {
-
         default: {
             // Unrecognized command ID, error status will apply.
             break;
