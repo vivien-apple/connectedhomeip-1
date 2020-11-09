@@ -39,7 +39,6 @@
  ******************************************************************************/
 
 #include "af.h"
-#include "basic.h"
 
 #include <app/util/attribute-storage.h>
 

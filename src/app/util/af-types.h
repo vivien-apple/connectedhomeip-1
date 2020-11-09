@@ -61,7 +61,6 @@ extern "C" {
 #endif // __cplusplus
 
 #include "basic-types.h"
-#include "plugin-config.h"
 #include "types_stub.h" // For various types.
 
 #ifdef __cplusplus

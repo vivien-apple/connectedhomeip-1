@@ -45,7 +45,8 @@
 // * Copyright 2007 by Ember Corporation. All rights reserved.              *80*
 // *******************************************************************
 
-#include "identify.h"
+// this file contains all the common includes for clusters in the util
+#include <app/util/af.h>
 
 #include "common.h"
 

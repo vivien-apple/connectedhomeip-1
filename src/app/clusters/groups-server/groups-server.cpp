@@ -45,7 +45,6 @@
 // * Copyright 2010 by Ember Corporation. All rights reserved.              *80*
 // *******************************************************************
 
-#include <app/clusters/scenes/scenes.h>
 #include <app/util/af.h>
 #include <app/util/binding-table.h>
 
@@ -56,45 +55,6 @@ static bool isGroupPresent(EndpointId endpoint, GroupId groupId);
 static bool bindingGroupMatch(EndpointId endpoint, GroupId groupId, EmberBindingTableEntry * entry);
 
 static uint8_t findGroupIndex(EndpointId endpoint, GroupId groupId);
-
-void emberAfPluginGroupsServerGetGroupNameCallback(EndpointId endpoint, uint16_t groupId, uint8_t * groupName);
-
-bool emberAfPluginGroupsServerGroupNamesSupportedCallback(EndpointId endpoint);
-
-void emberAfPluginGroupsServerSetGroupNameCallback(EndpointId endpoint, uint16_t groupId, uint8_t * groupName);
-
-/** @brief Get Group Name
- *
- * This function returns the name of a group with the provided group ID, should
- * it exist.
- *
- * @param endpoint Endpoint Ver.: always
- * @param groupId Group ID Ver.: always
- * @param groupName Group Name Ver.: always
- */
-void emberAfPluginGroupsServerGetGroupNameCallback(EndpointId endpoint, uint16_t groupId, uint8_t * groupName) {}
-
-/** @brief Group Names Supported
- *
- * This function is called by the framework when it is necessary to determine
- * whether or not group names are supported.
- *
- * @param endpoint The endpoint. Ver.: always
- */
-bool emberAfPluginGroupsServerGroupNamesSupportedCallback(EndpointId endpoint)
-{
-    return false;
-}
-
-/** @brief Set Group Name
- *
- * This function sets the name of a group with the provided group ID.
- *
- * @param endpoint Endpoint Ver.: always
- * @param groupId Group ID Ver.: always
- * @param groupName Group Name Ver.: always
- */
-void emberAfPluginGroupsServerSetGroupNameCallback(EndpointId endpoint, uint16_t groupId, uint8_t * groupName) {}
 
 void emberAfGroupsClusterServerInitCallback(EndpointId endpoint)
 {

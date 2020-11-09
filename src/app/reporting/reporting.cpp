@@ -669,9 +669,9 @@ EmberStatus emAfPluginReportingRemoveEntry(uint8_t index)
     return status;
 }
 
-extern "C" void emberAfReportingAttributeChangeCallback(uint8_t endpoint, EmberAfClusterId clusterId,
-                                                        EmberAfAttributeId attributeId, uint8_t mask, uint16_t manufacturerCode,
-                                                        EmberAfAttributeType type, uint8_t * data)
+extern "C" void emberAfReportingAttributeChangeCallback(EndpointId endpoint, ClusterId clusterId, AttributeId attributeId,
+                                                        uint8_t mask, uint16_t manufacturerCode, EmberAfAttributeType type,
+                                                        uint8_t * data)
 {
     uint8_t i;
     for (i = 0; i < REPORT_TABLE_SIZE; i++)
@@ -1069,14 +1069,4 @@ uint8_t emAfPluginReportingConditionallyAddReportingEntry(EmberAfPluginReporting
         return emAfPluginReportingAddEntry(newEntry);
     }
     return 0;
-}
-
-extern "C" bool emberAfConfigureReportingResponseCallback(EmberAfClusterId clusterId, uint8_t * buffer, uint16_t bufLen)
-{
-    return false;
-}
-
-extern "C" bool emberAfReadReportingConfigurationResponseCallback(EmberAfClusterId clusterId, uint8_t * buffer, uint16_t bufLen)
-{
-    return false;
 }

@@ -41,9 +41,6 @@
 // clusters specific header
 #include "level-control.h"
 
-#include <app/clusters/on-off-server/on-off.h>
-#include <app/clusters/scenes/scenes.h>
-
 // this file contains all the common includes for clusters in the util
 #include <app/util/af.h>
 
@@ -94,11 +91,10 @@ typedef struct
     uint32_t transitionTimeMs;
     uint32_t elapsedTimeMs;
 } EmberAfLevelControlState;
-#ifdef EMBER_AF_LEVEL_CONTROL_CLUSTER_SERVER_ENDPOINT_COUNT
+
 static EmberAfLevelControlState stateTable[EMBER_AF_LEVEL_CONTROL_CLUSTER_SERVER_ENDPOINT_COUNT];
 
 static EmberAfLevelControlState * getState(EndpointId endpoint);
-#endif // EMBER_AF_LEVEL_CONTROL_CLUSTER_SERVER_ENDPOINT_COUNT
 
 static void moveToLevelHandler(uint8_t commandId, uint8_t level, uint16_t transitionTimeDs, uint8_t optionMask,
                                uint8_t optionOverride, uint16_t storedLevel);
@@ -131,11 +127,7 @@ static void deactivate(EndpointId endpoint)
 static EmberAfLevelControlState * getState(EndpointId endpoint)
 {
     uint8_t ep = emberAfFindClusterServerEndpointIndex(endpoint, ZCL_LEVEL_CONTROL_CLUSTER_ID);
-#ifdef EMBER_AF_LEVEL_CONTROL_CLUSTER_SERVER_ENDPOINT_COUNT
     return (ep == 0xFF ? NULL : &stateTable[ep]);
-#else
-    return NULL;
-#endif // EMBER_AF_LEVEL_CONTROL_CLUSTER_SERVER_ENDPOINT_COUNT
 }
 
 #if defined(ZCL_USING_LEVEL_CONTROL_CLUSTER_OPTIONS_ATTRIBUTE) && defined(EMBER_AF_PLUGIN_COLOR_CONTROL_SERVER_TEMP)

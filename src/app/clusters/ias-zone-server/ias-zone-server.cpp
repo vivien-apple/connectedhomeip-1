@@ -466,8 +466,8 @@ EmberStatus emberAfPluginIasZoneServerUpdateZoneStatus(EndpointId endpoint, uint
         // try to rejoin the network and add the message to the queue
         if (emberAfNetworkState() == EMBER_JOINED_NETWORK_NO_PARENT)
         {
-#if defined(EMBER_AF_PLUGIN_IAS_ZONE_SERVER_ENABLE_QUEUE)
             emberAfStartMoveCallback();
+#if defined(EMBER_AF_PLUGIN_IAS_ZONE_SERVER_ENABLE_QUEUE)
             // Add a new entry to the zoneUpdate buffer
             addNewEntryToQueue(&newBufferEntry);
 #endif
