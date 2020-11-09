@@ -37,7 +37,6 @@ struct spake2p_point_muladd_tv
     size_t scalar2_len;
     const uint8_t * out_point;
     size_t out_point_len;
-    int valid;
 };
 
 static const uint8_t chiptest_fcf59b3113ef_point1_1[]    = { 0x04, 0x5d, 0xe7, 0x3c, 0x3b, 0x9c, 0x5a, 0x6f, 0x62, 0x83, 0x01,

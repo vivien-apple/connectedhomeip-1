@@ -33,7 +33,6 @@ struct spake2p_point_mul_tv
     size_t scalar_len;
     const uint8_t * out_point;
     size_t out_point_len;
-    int valid;
 };
 
 static const uint8_t chiptest_0fd26a42aa63_point_1[]     = { 0x04, 0x11, 0xc6, 0x0f, 0x3c, 0x30, 0x72, 0x47, 0x4f, 0xec, 0x46,
