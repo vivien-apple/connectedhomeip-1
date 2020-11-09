@@ -1698,3 +1698,9 @@ bool emberAfReadReportingConfigurationResponseCallback(EmberAfClusterId clusterI
      return false;
 }
 
+void emberAfIasZoneClusterClientInitCallback(uint8_t endpoint) {}
+
+void emberAfIasZoneClusterServerMessageSentCallback(EmberOutgoingMessageType type, uint16_t indexOrDestination,
+                                                    EmberApsFrame * apsFrame, uint16_t msgLen, uint8_t * message,
+                                                    EmberStatus status)
+{}

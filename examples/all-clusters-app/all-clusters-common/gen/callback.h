@@ -47,6 +47,30 @@ void emberAfOnOffClusterInitCallback(uint8_t endpoint);
 void emberAfScenesClusterInitCallback(uint8_t endpoint);
 void emberAfTemperatureMeasurementClusterInitCallback(uint8_t endpoint);
 
+void emberAfBarrierControlClusterServerInitCallback(uint8_t endpoint);
+void emberAfBasicClusterServerInitCallback(uint8_t endpoint);
+void emberAfColorControlClusterServerInitCallback(uint8_t endpoint);
+void emberAfDoorLockClusterServerInitCallback(uint8_t endpoint);
+void emberAfGroupsClusterServerInitCallback(uint8_t endpoint);
+void emberAfIASZoneClusterServerInitCallback(uint8_t endpoint);
+void emberAfIdentifyClusterServerInitCallback(uint8_t endpoint);
+void emberAfLevelControlClusterServerInitCallback(uint8_t endpoint);
+void emberAfOnOffClusterServerInitCallback(uint8_t endpoint);
+void emberAfScenesClusterServerInitCallback(uint8_t endpoint);
+void emberAfTemperatureMeasurementClusterServerInitCallback(uint8_t endpoint);
+
+void emberAfBarrierControlClusterServerTickCallback(uint8_t endpoint);
+void emberAfBasicClusterServerTickCallback(uint8_t endpoint);
+void emberAfColorControlClusterServerTickCallback(uint8_t endpoint);
+void emberAfDoorLockClusterServerTickCallback(uint8_t endpoint);
+void emberAfGroupsClusterServerTickCallback(uint8_t endpoint);
+void emberAfIASZoneClusterServerTickCallback(uint8_t endpoint);
+void emberAfIdentifyClusterServerTickCallback(uint8_t endpoint);
+void emberAfLevelControlClusterServerTickCallback(uint8_t endpoint);
+void emberAfOnOffClusterServerTickCallback(uint8_t endpoint);
+void emberAfScenesClusterServerTickCallback(uint8_t endpoint);
+void emberAfTemperatureMeasurementClusterServerTickCallback(uint8_t endpoint);
+
 // Cluster Commands Callback
 
 /**
@@ -638,5 +662,16 @@ void emberAfReportingAttributeChangeCallback(uint8_t endpoint, EmberAfClusterId 
                                               uint8_t mask, uint16_t manufacturerCode, EmberAfAttributeType type, uint8_t * data);
 void emberAfOnOffClusterLevelControlEffectCallback(uint8_t endpoint, bool newValue);
 EmberAfStatus emberAfOnOffClusterSetValueCallback(uint8_t endpoint, uint8_t command, bool initiatedByLevelChange);
+void emberAfDoorLockClusterServerAttributeChangedCallback(uint8_t endpoint, EmberAfAttributeId attributeId);
+void emberAfIasZoneClusterClientInitCallback(uint8_t endpoint);
+void emberAfIasZoneClusterServerInitCallback(uint8_t endpoint);
+void emberAfIasZoneClusterServerMessageSentCallback(EmberOutgoingMessageType type, uint16_t indexOrDestination,
+                                                    EmberApsFrame * apsFrame, uint16_t msgLen, uint8_t * message,
+                                                    EmberStatus status);
+
+EmberAfStatus emberAfIasZoneClusterServerPreAttributeChangedCallback(uint8_t endpoint, EmberAfAttributeId attributeId,
+                                                                     EmberAfAttributeType attributeType, uint8_t size,
+                                                                     uint8_t * value);
+void emberAfIdentifyClusterServerAttributeChangedCallback(uint8_t endpoint, EmberAfAttributeId attributeId);
 
 #endif //__ZAP_CALLBACK__

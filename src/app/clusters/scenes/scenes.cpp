@@ -53,7 +53,6 @@ uint8_t emberAfPluginScenesServerEntriesInUse = 0;
 EmberAfSceneTableEntry emberAfPluginScenesServerSceneTable[EMBER_AF_PLUGIN_SCENES_TABLE_SIZE];
 #endif
 
-#if defined(ZCL_USING_ON_OFF_CLUSTER_SERVER) || defined(ZCL_USING_LEVEL_CONTROL_CLUSTER_SERVER) || defined(ZCL_USING_THERMOSTAT_CLUSTER_SERVER) || defined(ZCL_USING_COLOR_CONTROL_CLUSTER_SERVER) || defined(ZCL_USING_DOOR_LOCK_CLUSTER_SERVER) || defined(ZCL_USING_WINDOW_COVERING_CLUSTER_SERVER)
 static bool readServerAttribute(EndpointId endpoint, EmberAfClusterId clusterId, EmberAfAttributeId attributeId, const char * name,
                                 uint8_t * data, uint8_t size)
 {
@@ -72,7 +71,6 @@ static bool readServerAttribute(EndpointId endpoint, EmberAfClusterId clusterId,
     }
     return success;
 }
-#endif
 
 static EmberAfStatus writeServerAttribute(EndpointId endpoint, EmberAfClusterId clusterId, EmberAfAttributeId attributeId,
                                           const char * name, uint8_t * data, EmberAfAttributeType type)

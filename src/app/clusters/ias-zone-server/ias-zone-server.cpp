@@ -522,7 +522,7 @@ extern "C" void emberAfPluginIasZoneServerManageQueueEventHandler(void)
 #endif
 }
 
-void emberAfIasZoneClusterServerInitCallback(EndpointId endpoint)
+void emberAfIASZoneClusterServerInitCallback(EndpointId endpoint)
 {
     EmberAfIasZoneType zoneType;
     if (!areZoneServerAttributesTokenized(endpoint))
@@ -555,7 +555,7 @@ void emberAfIasZoneClusterServerInitCallback(EndpointId endpoint)
                                                0); // time since status occurred
 }
 
-void emberAfIasZoneClusterServerTickCallback(EndpointId endpoint)
+void emberAfIASZoneClusterServerTickCallback(EndpointId endpoint)
 {
     enrollWithClient(endpoint);
 }
