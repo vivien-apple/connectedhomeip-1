@@ -23,33 +23,30 @@ SOURCE_DIR="$(cd -P "$(dirname "$SOURCE")" >/dev/null 2>&1 && pwd)"
 REPO_DIR="$SOURCE_DIR/../../../"
 
 chip_tool_dir=$REPO_DIR/examples/chip-tool
-chip_light_dir=$REPO_DIR/examples/lighting-app/linux
+chip_app_lighting_dir=$REPO_DIR/examples/lighting-app/linux
+chip_app_all_clusters_dir=$REPO_DIR/examples/all-clusters-app/linux
 
-function build_chip_tool() {
+function build_chip_example() {
     # These files should be successfully compiled elsewhere.
     source "$REPO_DIR/scripts/activate.sh" >/dev/null
     set -x
-    cd "$chip_tool_dir"
-    gn gen out/debug >/dev/null
-    run_ninja -C out/debug
-    docker build -t chip_tool -f Dockerfile . 2>&1
-}
-
-function build_chip_lighting() {
-    source "$REPO_DIR/scripts/activate.sh" >/dev/null
-    set -x
-    cd "$chip_light_dir"
+    cd "$1"
     gn gen out/debug --args='bypass_rendezvous=true'
     run_ninja -C out/debug
-    docker build -t chip_server -f Dockerfile . 2>&1
+    docker build -t $2 -f Dockerfile . 2>&1
     set +x
 }
 
 function main() {
     pushd .
-    build_chip_tool
-    build_chip_lighting
+    build_chip_example $chip_tool_dir chip_tool
+    build_chip_example $chip_app_lighting_dir chip_server_lighting
+    build_chip_example $chip_app_all_clusters_dir chip_server_all_clusters
     popd
+    # Run lighting specific tests
+    python3 "$SOURCE_DIR/test-lighting-on-off-cluster.py"
+
+    # Run tests for the all-clusters demo app
     python3 "$SOURCE_DIR/test-on-off-cluster.py"
 }
 
