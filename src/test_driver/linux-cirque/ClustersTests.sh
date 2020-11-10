@@ -49,6 +49,7 @@ function main() {
     # Run tests for the all-clusters demo app
     python3 "$SOURCE_DIR/test-on-off-cluster.py"
     python3 "$SOURCE_DIR/test-barrier-control-cluster.py"
+    python3 "$SOURCE_DIR/test-color-control-cluster.py"
 }
 
 source "$SOURCE_DIR"/shell-helpers.sh
