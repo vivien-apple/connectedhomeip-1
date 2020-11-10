@@ -52,6 +52,7 @@ function main() {
     python3 "$SOURCE_DIR/test-color-control-cluster.py"
     python3 "$SOURCE_DIR/test-door-lock-cluster.py"
     python3 "$SOURCE_DIR/test-groups-cluster.py"
+    python3 "$SOURCE_DIR/test-identify-cluster.py"
 }
 
 source "$SOURCE_DIR"/shell-helpers.sh
