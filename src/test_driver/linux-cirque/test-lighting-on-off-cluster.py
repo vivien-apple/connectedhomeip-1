@@ -36,7 +36,7 @@ logger.addHandler(sh)
 DEVICE_CONFIG = {
     'device0': {
         'type': 'CHIP-Server',
-        'base_image': 'chip_server_all_clusters',
+        'base_image': 'chip_server_lighting',
         'capability': ['Thread', 'Interactive'],
         'rcp_mode': True,
     },
@@ -47,7 +47,6 @@ DEVICE_CONFIG = {
         'rcp_mode': True,
     }
 }
-
 
 class TestOnOffCluster(CHIPVirtualHome):
     def __init__(self, device_config):
@@ -75,18 +74,22 @@ class TestOnOffCluster(CHIPVirtualHome):
         for device_id in server_ids:
             server_ip_address.add(self.get_device_thread_ip(device_id))
 
-        commands = collections.OrderedDict()
-        commands['on'] = ""
-        commands['off'] = ""
-        commands['toggle'] = ""
-
-        command = "chip-tool onoff {} {} {} {} 1"
+        command = "chip-tool onoff {} {} {} 1"
         for ip in server_ip_address:
-            for key, value in commands.items():
-                ret = self.execute_device_cmd(tool_device_id, command.format(key, value, ip, CHIP_PORT))
-                self.assertEqual(ret['return_code'], '0', "{} command failure: {}".format(key, ret['output']))
+            ret = self.execute_device_cmd(tool_device_id, command.format("on", ip, CHIP_PORT))
+            self.assertEqual(ret['return_code'], '0', "{} command failure: {}".format("on", ret['output']))
+
+            ret = self.execute_device_cmd(tool_device_id, command.format("off", ip, CHIP_PORT))
+            self.assertEqual(ret['return_code'], '0', "{} command failure: {}".format("off", ret['output']))
 
         time.sleep(1)
+
+        for device_id in server_ids:
+            self.logger.info("checking device log for {}".format(
+                self.get_device_pretty_id(device_id)))
+            self.assertTrue(self.sequenceMatch(self.get_device_log(device_id).decode('utf-8'), ["LightingManager::InitiateAction(ON_ACTION)", "LightingManager::InitiateAction(OFF_ACTION)"]),
+                            "Datamodel test failed: cannot find matching string from device {}".format(device_id))
+
 
 if __name__ == "__main__":
     sys.exit(TestOnOffCluster(DEVICE_CONFIG).run_test())

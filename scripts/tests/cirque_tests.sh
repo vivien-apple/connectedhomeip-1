@@ -25,7 +25,7 @@ LOG_DIR=${LOG_DIR:-$(mktemp -d)}
 
 # Append test name here to add more tests for run_all_tests
 CIRQUE_TESTS=(
-    "OnOffClusterTest"
+    "ClustersTests"
 )
 
 BOLD_GREEN_TEXT="\033[1;32m"
