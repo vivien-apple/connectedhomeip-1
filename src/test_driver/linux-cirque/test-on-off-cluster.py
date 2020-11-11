@@ -82,9 +82,8 @@ class TestOnOffCluster(CHIPVirtualHome):
 
         command = "chip-tool onoff {} {} {} {} 1"
         for ip in server_ip_address:
-            for key, value in commands.items():
-                ret = self.execute_device_cmd(tool_device_id, command.format(key, value, ip, CHIP_PORT))
-                self.assertEqual(ret['return_code'], '0', "{} command failure: {}".format(key, ret['output']))
+            ret = self.execute_device_cmd(tool_device_id, command.format("on", "", ip, CHIP_PORT))
+            self.assertEqual(ret['return_code'], '0', "{} command failure: {}".format(key, ret['output']))
 
         time.sleep(1)
 
