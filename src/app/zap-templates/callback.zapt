@@ -15,13 +15,18 @@
  * @param endpoint   Ver.: always
  * @param clusterId   Ver.: always
  */
-void emberAfClusterInitCallback(uint8_t endpoint, EmberAfClusterId clusterId);
+void emberAfClusterInitCallback(CHIPEndpointId endpoint, CHIPClusterId clusterId);
 
 // Cluster Init Functions
-{{#all_user_clusters_names}}
-void emberAf{{asCamelCased name false}}ClusterInitCallback(uint8_t endpoint);
-{{/all_user_clusters_names}}
 
+{{#all_user_clusters}}
+// Cluster {{name}}
+void emberAf{{asCamelCased name false}}ClusterInitCallback(CHIPEndpointId endpoint);
+{{#if (isServer side)}}
+void emberAf{{asCamelCased name false}}ClusterServerInitCallback(CHIPEndpointId endpoint);
+void emberAf{{asCamelCased name false}}ClusterServerTickCallback(CHIPEndpointId endpoint);
+{{/if}}
+{{/all_user_clusters}}
 
 // Cluster Commands Callback
 
@@ -42,7 +47,7 @@ void emberAf{{asCamelCased name false}}ClusterInitCallback(uint8_t endpoint);
 {{#if (zcl_command_arguments_count this.id)}}
 bool emberAf{{asCamelCased parent.name false}}Cluster{{asCamelCased name false}}Callback({{#zcl_command_arguments}} {{asUnderlyingType type}} {{asSymbol label}}{{#unless (isLastElement index count)}}, {{/unless}}{{/zcl_command_arguments}});
 {{else}}
-bool emberAf{{asCamelCased parent.name false}}Cluster{{asCamelCased name false}}Callback(void);
+bool emberAf{{asCamelCased parent.name false}}Cluster{{asCamelCased name false}}Callback();
 {{/if}}
 
 
