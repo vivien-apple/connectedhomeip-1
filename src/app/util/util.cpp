@@ -48,6 +48,10 @@
 //#include "app/framework/util/time-util.h"
 //#include "hal/micro/crc.h"
 
+#ifdef EMBER_AF_PLUGIN_REPORTING
+#include <app/reporting/reporting.h>
+#endif // EMBER_AF_PLUGIN_REPORTING
+
 using namespace chip;
 
 // TODO: Need to figure out what needs to happen wrt HAL tokens here, but for
@@ -307,10 +311,12 @@ void emberAfStackDown(void)
         // && emberNetworkState() == EMBER_NO_NETWORK
     )
     {
+#ifdef EMBER_AF_PLUGIN_REPORTING
         // the report table should be cleared when the stack comes down.
         // going to a new network means new report devices should be discovered.
         // if the table isnt cleared the device keeps trying to send messages.
         emberAfClearReportTableCallback();
+#endif // EMBER_AF_PLUGIN_REPORTING
     }
 
     emberAfRegistrationAbortCallback();
