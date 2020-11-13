@@ -49,15 +49,6 @@ void __attribute__((weak)) emberAfTemperatureMeasurementClusterInitCallback(CHIP
 
 // Cluster Command callback
 
-/**
- * @brief Basic Cluster ResetToFactoryDefaults Command callback
- */
-
-bool __attribute__((weak)) emberAfBasicClusterResetToFactoryDefaultsCallback()
-{
-    return false;
-}
-
 //
 // Non-Cluster Related Callbacks
 //
