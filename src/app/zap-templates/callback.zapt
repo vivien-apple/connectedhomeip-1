@@ -32,7 +32,6 @@ void emberAfClusterInitCallback(chip::EndpointId endpoint, chip::ClusterId clust
  *
  * @param endpoint    Endpoint that is being initialized
  */
-{{#all_user_clusters_names}}
 void emberAf{{asCamelCased name false}}ClusterInitCallback(chip::EndpointId endpoint);
 
 /** @brief {{name}} Cluster {{asCamelCased side false}} Init
