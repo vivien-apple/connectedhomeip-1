@@ -200,7 +200,7 @@ EmberAfDifferenceType emberAfGetDifference(uint8_t * pData, EmberAfDifferenceTyp
         value2 = value2 << 8;
 #if (BIGENDIAN_CPU)
         value2 += pData[i];
-#else  // BIGENDIAN
+#else // BIGENDIAN
         value2 += pData[dataSize - i - 1];
 #endif // BIGENDIAN
     }
@@ -844,7 +844,7 @@ EmberStatus emberAfSendDefaultResponseWithCallback(const EmberAfClusterCommand *
     appResponseLength = 0;
     frameControl      = static_cast<uint8_t>(ZCL_GLOBAL_COMMAND |
                                         (cmd->direction == ZCL_DIRECTION_CLIENT_TO_SERVER ? ZCL_FRAME_CONTROL_SERVER_TO_CLIENT
-                                                                                          : ZCL_FRAME_CONTROL_CLIENT_TO_SERVER));
+                                                                                               : ZCL_FRAME_CONTROL_CLIENT_TO_SERVER));
 
     if (!cmd->mfgSpecific)
     {
@@ -870,7 +870,7 @@ EmberStatus emberAfSendDefaultResponse(const EmberAfClusterCommand * cmd, EmberA
 }
 
 bool emberAfDetermineIfLinkSecurityIsRequired(CommandId commandId, bool incoming, bool broadcast, EmberAfProfileId profileId,
-                                              EmberAfClusterId clusterId, ChipNodeId remoteNodeId)
+                                              ClusterId clusterId, ChipNodeId remoteNodeId)
 {
     (void) afNoSecurityForDefaultResponse; // remove warning if not used
 
@@ -1314,8 +1314,8 @@ void slabAssert(const char * file, int line)
     }
 }
 
-#define ENCODED_8BIT_CHANPG_PAGE_MASK 0xE0         // top 3 bits
-#define ENCODED_8BIT_CHANPG_PAGE_MASK_PAGE_0 0x00  // 0b000xxxxx
+#define ENCODED_8BIT_CHANPG_PAGE_MASK 0xE0 // top 3 bits
+#define ENCODED_8BIT_CHANPG_PAGE_MASK_PAGE_0 0x00 // 0b000xxxxx
 #define ENCODED_8BIT_CHANPG_PAGE_MASK_PAGE_28 0x80 // 0b100xxxxx
 #define ENCODED_8BIT_CHANPG_PAGE_MASK_PAGE_29 0xA0 // 0b101xxxxx
 #define ENCODED_8BIT_CHANPG_PAGE_MASK_PAGE_30 0xC0 // 0b110xxxxx

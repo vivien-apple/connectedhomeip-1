@@ -99,7 +99,9 @@ int TestMdns()
     std::thread t([&mtx, &done, &retVal]() {
         {
             std::lock_guard<std::mutex> localLock(mtx);
-            nlTestSuite theSuite = { "CHIP DeviceLayer mdns tests", &sTests[0], nullptr, nullptr };
+            nlTestSuite theSuite = {
+                "CHIP DeviceLayer mdns tests", &sTests[0], nullptr, nullptr, nullptr, nullptr, 0, 0, 0, 0, false
+            };
 
             nlTestRunner(&theSuite, nullptr);
             retVal = nlTestRunnerStats(&theSuite);

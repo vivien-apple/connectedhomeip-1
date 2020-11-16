@@ -4,6 +4,7 @@
 #pragma once
 
 #include <stdint.h>
+#include "basic-types.h"
 #include "enums.h"
 
 {{#zcl_structs}}
