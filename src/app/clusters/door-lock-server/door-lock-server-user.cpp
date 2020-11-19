@@ -153,7 +153,7 @@ static void printUserTables(void)
 }
 
 // Returns status byte for use in SetPinResponse and SetRfidResponse commands.
-static uint8_t setUser(uint16_t userId, uint8_t userStatus, uint8_t userType, uint8_t * code,
+static uint8_t setUser(uint16_t userId, EmberAfDoorLockUserStatus userStatus, EmberAfDoorLockUserType userType, uint8_t * code,
                        EmberAfPluginDoorLockServerUser * userTable, uint8_t userTableSize)
 {
     bool success = false;
@@ -231,7 +231,7 @@ bool emberAfDoorLockClusterGetUserTypeCallback(uint16_t userId)
     return true;
 }
 
-bool emberAfDoorLockClusterSetUserTypeCallback(uint16_t userId, uint8_t userType)
+bool emberAfDoorLockClusterSetUserTypeCallback(uint16_t userId, EmberAfDoorLockUserType userType)
 {
     // TODO: Need to validate userType.  https://github.com/project-chip/connectedhomeip/issues/3580
     uint8_t status = (emAfPluginDoorLockServerSetPinUserType(userId, static_cast<EmberAfDoorLockUserType>(userType))
@@ -264,7 +264,8 @@ bool emAfPluginDoorLockServerSetPinUserType(uint16_t userId, EmberAfDoorLockUser
 // ------------------------------------------------------------------------------
 // PIN handling
 
-bool emberAfDoorLockClusterSetPinCallback(uint16_t userId, uint8_t userStatus, uint8_t userType, uint8_t * pin)
+bool emberAfDoorLockClusterSetPinCallback(uint16_t userId, EmberAfDoorLockUserStatus userStatus, EmberAfDoorLockUserType userType,
+                                          uint8_t * pin)
 {
     // send response
     uint8_t status = setUser(userId, userStatus, userType, pin, pinUserTable, EMBER_AF_PLUGIN_DOOR_LOCK_SERVER_PIN_USER_TABLE_SIZE);
@@ -385,7 +386,8 @@ bool emberAfDoorLockClusterClearAllPinsCallback(void)
 // ------------------------------------------------------------------------------
 // RFID handling
 
-bool emberAfDoorLockClusterSetRfidCallback(uint16_t userId, uint8_t userStatus, uint8_t userType, uint8_t * rfid)
+bool emberAfDoorLockClusterSetRfidCallback(uint16_t userId, EmberAfDoorLockUserStatus userStatus, EmberAfDoorLockUserType userType,
+                                           uint8_t * rfid)
 {
     uint8_t status =
         setUser(userId, userStatus, userType, rfid, rfidUserTable, EMBER_AF_PLUGIN_DOOR_LOCK_SERVER_RFID_USER_TABLE_SIZE);

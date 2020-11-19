@@ -420,7 +420,8 @@ bool emberAfColorControlClusterMoveToHueAndSaturationCallback(uint8_t hue, uint8
     return true;
 }
 
-bool emberAfColorControlClusterMoveHueCallback(uint8_t moveMode, uint8_t rate, uint8_t optionsMask, uint8_t optionsOverride)
+bool emberAfColorControlClusterMoveHueCallback(EmberAfHueMoveMode moveMode, uint8_t rate, uint8_t optionsMask,
+                                               uint8_t optionsOverride)
 {
     EndpointId endpoint = emberAfCurrentEndpoint();
 
@@ -479,7 +480,8 @@ bool emberAfColorControlClusterMoveHueCallback(uint8_t moveMode, uint8_t rate, u
     return true;
 }
 
-bool emberAfColorControlClusterMoveSaturationCallback(uint8_t moveMode, uint8_t rate, uint8_t optionsMask, uint8_t optionsOverride)
+bool emberAfColorControlClusterMoveSaturationCallback(EmberAfSaturationMoveMode moveMode, uint8_t rate, uint8_t optionsMask,
+                                                      uint8_t optionsOverride)
 {
     EndpointId endpoint = emberAfCurrentEndpoint();
 
@@ -536,8 +538,8 @@ bool emberAfColorControlClusterMoveSaturationCallback(uint8_t moveMode, uint8_t 
     return true;
 }
 
-bool emberAfColorControlClusterMoveToHueCallback(uint8_t hue, uint8_t hueMoveMode, uint16_t transitionTime, uint8_t optionsMask,
-                                                 uint8_t optionsOverride)
+bool emberAfColorControlClusterMoveToHueCallback(uint8_t hue, EmberAfHueDirection hueMoveMode, uint16_t transitionTime,
+                                                 uint8_t optionsMask, uint8_t optionsOverride)
 {
     EndpointId endpoint = emberAfCurrentEndpoint();
 
@@ -682,8 +684,8 @@ bool emberAfColorControlClusterMoveToSaturationCallback(uint8_t saturation, uint
     return true;
 }
 
-bool emberAfColorControlClusterStepHueCallback(uint8_t stepMode, uint8_t stepSize, uint8_t transitionTime, uint8_t optionsMask,
-                                               uint8_t optionsOverride)
+bool emberAfColorControlClusterStepHueCallback(EmberAfHueStepMode stepMode, uint8_t stepSize, uint8_t transitionTime,
+                                               uint8_t optionsMask, uint8_t optionsOverride)
 {
     EndpointId endpoint = emberAfCurrentEndpoint();
 
@@ -744,7 +746,7 @@ bool emberAfColorControlClusterStepHueCallback(uint8_t stepMode, uint8_t stepSiz
     return true;
 }
 
-bool emberAfColorControlClusterStepSaturationCallback(uint8_t stepMode, uint8_t stepSize, uint8_t transitionTime,
+bool emberAfColorControlClusterStepSaturationCallback(EmberAfSaturationStepMode stepMode, uint8_t stepSize, uint8_t transitionTime,
                                                       uint8_t optionsMask, uint8_t optionsOverride)
 {
     EndpointId endpoint = emberAfCurrentEndpoint();
@@ -1171,9 +1173,9 @@ bool emberAfColorControlClusterMoveToColorTemperatureCallback(uint16_t colorTemp
     return true;
 }
 
-bool emberAfColorControlClusterMoveColorTemperatureCallback(uint8_t moveMode, uint16_t rate, uint16_t colorTemperatureMinimum,
-                                                            uint16_t colorTemperatureMaximum, uint8_t optionsMask,
-                                                            uint8_t optionsOverride)
+bool emberAfColorControlClusterMoveColorTemperatureCallback(EmberAfHueMoveMode moveMode, uint16_t rate,
+                                                            uint16_t colorTemperatureMinimum, uint16_t colorTemperatureMaximum,
+                                                            uint8_t optionsMask, uint8_t optionsOverride)
 {
     EndpointId endpoint = emberAfCurrentEndpoint();
 
@@ -1255,7 +1257,7 @@ bool emberAfColorControlClusterMoveColorTemperatureCallback(uint8_t moveMode, ui
     return true;
 }
 
-bool emberAfColorControlClusterStepColorTemperatureCallback(uint8_t stepMode, uint16_t stepSize, uint16_t transitionTime,
+bool emberAfColorControlClusterStepColorTemperatureCallback(EmberAfHueStepMode stepMode, uint16_t stepSize, uint16_t transitionTime,
                                                             uint16_t colorTemperatureMinimum, uint16_t colorTemperatureMaximum,
                                                             uint8_t optionsMask, uint8_t optionsOverride)
 {
