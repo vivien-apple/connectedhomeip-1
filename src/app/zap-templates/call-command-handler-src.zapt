@@ -102,7 +102,24 @@ EmberAfStatus emberAf{{asCamelCased name false}}Cluster{{asCamelCased side false
             {{#if (zcl_command_arguments_count this.id)}}
             uint32_t argOffset = 0;
             {{#zcl_command_arguments}}
+            {{#if isArray}}
+            uint8_t ** {{asSymbol label}} = (uint8_t **)(cmd->buffer + argOffset);
+            {{else if (isStrEqual label "endpoint")}}
+            {{ident}}chip::EndpointId {{asSymbol label}};
+            EndpointId * {{asSymbol label}} = (EndpointId *)(cmd->buffer + argOffset);
+            {{else if (isStrEqual label "endpointId")}}
+            EndpointId * {{asSymbol label}} = (EndpointId *)(cmd->buffer + argOffset);
+            {{else if (isStrEqual type "CLUSTER_ID")}}
+            ClusterId * {{asSymbol label}} = (ClusterId *)(cmd->buffer + argOffset);
+            {{else if (isStrEqual type "ATTRIBUTE_ID")}}
+            AttributeId * {{asSymbol label}} = (AttributeId *)(cmd->buffer + argOffset);
+            {{else if (isStrEqual label "groupId")}}
+            GroupId * {{asSymbol label}} = (GroupId *)(cmd->buffer + argOffset);
+            {{else if (isStrEqual label "commandId")}}
+            CommandId * {{asSymbol label}} = (CommandId *)(cmd->buffer + argOffset);
+            {{else}}
             {{asUnderlyingType type}} * {{asSymbol label}} = ({{asUnderlyingType type}} *)(cmd->buffer + argOffset);
+            {{/if}}
             {{#unless (isLastElement index count)}}
             argOffset+= sizeof({{asUnderlyingType type}});
             {{/unless}}
