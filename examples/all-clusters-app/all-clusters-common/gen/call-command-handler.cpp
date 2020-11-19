@@ -283,7 +283,7 @@ EmberAfStatus emberAfGroupsClusterClientCommandParse(EmberAfClusterCommand * cmd
             status = emberAfGetInt8u(cmd->buffer, payloadOffset, cmd->bufLen);
             payloadOffset += 1u;
             groupId    = emberAfGetInt16u(cmd->buffer, payloadOffset, cmd->bufLen);
-            wasHandled = emberAfGroupsClusterAddGroupResponseCallback(status, groupId);
+            wasHandled = emberAfGroupsClusterAddGroupResponseCallback((EmberAfStatus) status, groupId);
             break;
         }
         case ZCL_VIEW_GROUP_RESPONSE_COMMAND_ID: {
@@ -309,7 +309,7 @@ EmberAfStatus emberAfGroupsClusterClientCommandParse(EmberAfClusterCommand * cmd
                 return EMBER_ZCL_STATUS_MALFORMED_COMMAND;
             }
             groupName  = emberAfGetString(cmd->buffer, payloadOffset, cmd->bufLen);
-            wasHandled = emberAfGroupsClusterViewGroupResponseCallback(status, groupId, groupName);
+            wasHandled = emberAfGroupsClusterViewGroupResponseCallback((EmberAfStatus) status, groupId, groupName);
             break;
         }
         case ZCL_GET_GROUP_MEMBERSHIP_RESPONSE_COMMAND_ID: {
@@ -342,7 +342,7 @@ EmberAfStatus emberAfGroupsClusterClientCommandParse(EmberAfClusterCommand * cmd
             status = emberAfGetInt8u(cmd->buffer, payloadOffset, cmd->bufLen);
             payloadOffset += 1u;
             groupId    = emberAfGetInt16u(cmd->buffer, payloadOffset, cmd->bufLen);
-            wasHandled = emberAfGroupsClusterRemoveGroupResponseCallback(status, groupId);
+            wasHandled = emberAfGroupsClusterRemoveGroupResponseCallback((EmberAfStatus) status, groupId);
             break;
         }
         default: {
@@ -476,7 +476,7 @@ EmberAfStatus emberAfScenesClusterClientCommandParse(EmberAfClusterCommand * cmd
             groupId = emberAfGetInt16u(cmd->buffer, payloadOffset, cmd->bufLen);
             payloadOffset += 2u;
             sceneId    = emberAfGetInt8u(cmd->buffer, payloadOffset, cmd->bufLen);
-            wasHandled = emberAfScenesClusterAddSceneResponseCallback(status, groupId, sceneId);
+            wasHandled = emberAfScenesClusterAddSceneResponseCallback((EmberAfStatus) status, groupId, sceneId);
             break;
         }
         case ZCL_VIEW_SCENE_RESPONSE_COMMAND_ID: {
@@ -537,8 +537,8 @@ EmberAfStatus emberAfScenesClusterClientCommandParse(EmberAfClusterCommand * cmd
             {
                 extensionFieldSets = NULL;
             }
-            wasHandled = emberAfScenesClusterViewSceneResponseCallback(status, groupId, sceneId, transitionTime, sceneName,
-                                                                       extensionFieldSets);
+            wasHandled = emberAfScenesClusterViewSceneResponseCallback((EmberAfStatus) status, groupId, sceneId, transitionTime,
+                                                                       sceneName, extensionFieldSets);
             break;
         }
         case ZCL_REMOVE_SCENE_RESPONSE_COMMAND_ID: {
@@ -556,7 +556,7 @@ EmberAfStatus emberAfScenesClusterClientCommandParse(EmberAfClusterCommand * cmd
             groupId = emberAfGetInt16u(cmd->buffer, payloadOffset, cmd->bufLen);
             payloadOffset += 2u;
             sceneId    = emberAfGetInt8u(cmd->buffer, payloadOffset, cmd->bufLen);
-            wasHandled = emberAfScenesClusterRemoveSceneResponseCallback(status, groupId, sceneId);
+            wasHandled = emberAfScenesClusterRemoveSceneResponseCallback((EmberAfStatus) status, groupId, sceneId);
             break;
         }
         case ZCL_REMOVE_ALL_SCENES_RESPONSE_COMMAND_ID: {
@@ -571,7 +571,7 @@ EmberAfStatus emberAfScenesClusterClientCommandParse(EmberAfClusterCommand * cmd
             status = emberAfGetInt8u(cmd->buffer, payloadOffset, cmd->bufLen);
             payloadOffset += 1u;
             groupId    = emberAfGetInt16u(cmd->buffer, payloadOffset, cmd->bufLen);
-            wasHandled = emberAfScenesClusterRemoveAllScenesResponseCallback(status, groupId);
+            wasHandled = emberAfScenesClusterRemoveAllScenesResponseCallback((EmberAfStatus) status, groupId);
             break;
         }
         case ZCL_STORE_SCENE_RESPONSE_COMMAND_ID: {
@@ -589,7 +589,7 @@ EmberAfStatus emberAfScenesClusterClientCommandParse(EmberAfClusterCommand * cmd
             groupId = emberAfGetInt16u(cmd->buffer, payloadOffset, cmd->bufLen);
             payloadOffset += 2u;
             sceneId    = emberAfGetInt8u(cmd->buffer, payloadOffset, cmd->bufLen);
-            wasHandled = emberAfScenesClusterStoreSceneResponseCallback(status, groupId, sceneId);
+            wasHandled = emberAfScenesClusterStoreSceneResponseCallback((EmberAfStatus) status, groupId, sceneId);
             break;
         }
         case ZCL_GET_SCENE_MEMBERSHIP_RESPONSE_COMMAND_ID: {
@@ -638,7 +638,8 @@ EmberAfStatus emberAfScenesClusterClientCommandParse(EmberAfClusterCommand * cmd
             {
                 sceneList = NULL;
             }
-            wasHandled = emberAfScenesClusterGetSceneMembershipResponseCallback(status, capacity, groupId, sceneCount, sceneList);
+            wasHandled = emberAfScenesClusterGetSceneMembershipResponseCallback((EmberAfStatus) status, capacity, groupId,
+                                                                                sceneCount, sceneList);
             break;
         }
         default: {
@@ -926,7 +927,7 @@ EmberAfStatus emberAfLevelControlClusterServerCommandParse(EmberAfClusterCommand
             {
                 optionOverride = emberAfGetInt8u(cmd->buffer, payloadOffset, cmd->bufLen);
             }
-            wasHandled = emberAfLevelControlClusterMoveCallback(moveMode, rate, optionMask, optionOverride);
+            wasHandled = emberAfLevelControlClusterMoveCallback((EmberAfMoveMode) moveMode, rate, optionMask, optionOverride);
             break;
         }
         case ZCL_STEP_COMMAND_ID: {
@@ -976,7 +977,8 @@ EmberAfStatus emberAfLevelControlClusterServerCommandParse(EmberAfClusterCommand
             {
                 optionOverride = emberAfGetInt8u(cmd->buffer, payloadOffset, cmd->bufLen);
             }
-            wasHandled = emberAfLevelControlClusterStepCallback(stepMode, stepSize, transitionTime, optionMask, optionOverride);
+            wasHandled = emberAfLevelControlClusterStepCallback((EmberAfStepMode) stepMode, stepSize, transitionTime, optionMask,
+                                                                optionOverride);
             break;
         }
         case ZCL_STOP_COMMAND_ID: {
@@ -1035,7 +1037,7 @@ EmberAfStatus emberAfLevelControlClusterServerCommandParse(EmberAfClusterCommand
             moveMode = emberAfGetInt8u(cmd->buffer, payloadOffset, cmd->bufLen);
             payloadOffset += 1u;
             rate       = emberAfGetInt8u(cmd->buffer, payloadOffset, cmd->bufLen);
-            wasHandled = emberAfLevelControlClusterMoveWithOnOffCallback(moveMode, rate);
+            wasHandled = emberAfLevelControlClusterMoveWithOnOffCallback((EmberAfMoveMode) moveMode, rate);
             break;
         }
         case ZCL_STEP_WITH_ON_OFF_COMMAND_ID: {
@@ -1053,7 +1055,7 @@ EmberAfStatus emberAfLevelControlClusterServerCommandParse(EmberAfClusterCommand
             stepSize = emberAfGetInt8u(cmd->buffer, payloadOffset, cmd->bufLen);
             payloadOffset += 1u;
             transitionTime = emberAfGetInt16u(cmd->buffer, payloadOffset, cmd->bufLen);
-            wasHandled     = emberAfLevelControlClusterStepWithOnOffCallback(stepMode, stepSize, transitionTime);
+            wasHandled     = emberAfLevelControlClusterStepWithOnOffCallback((EmberAfStepMode) stepMode, stepSize, transitionTime);
             break;
         }
         case ZCL_STOP_WITH_ON_OFF_COMMAND_ID: {
@@ -1178,7 +1180,8 @@ EmberAfStatus emberAfDoorLockClusterServerCommandParse(EmberAfClusterCommand * c
                 return EMBER_ZCL_STATUS_MALFORMED_COMMAND;
             }
             pin        = emberAfGetString(cmd->buffer, payloadOffset, cmd->bufLen);
-            wasHandled = emberAfDoorLockClusterSetPinCallback(userId, userStatus, userType, pin);
+            wasHandled = emberAfDoorLockClusterSetPinCallback(userId, (EmberAfDoorLockUserStatus) userStatus,
+                                                              (EmberAfDoorLockUserType) userType, pin);
             break;
         }
         case ZCL_GET_PIN_COMMAND_ID: {
@@ -1380,7 +1383,7 @@ EmberAfStatus emberAfDoorLockClusterServerCommandParse(EmberAfClusterCommand * c
             userId = emberAfGetInt16u(cmd->buffer, payloadOffset, cmd->bufLen);
             payloadOffset += 2u;
             userType   = emberAfGetInt8u(cmd->buffer, payloadOffset, cmd->bufLen);
-            wasHandled = emberAfDoorLockClusterSetUserTypeCallback(userId, userType);
+            wasHandled = emberAfDoorLockClusterSetUserTypeCallback(userId, (EmberAfDoorLockUserType) userType);
             break;
         }
         case ZCL_GET_USER_TYPE_COMMAND_ID: {
@@ -1425,7 +1428,8 @@ EmberAfStatus emberAfDoorLockClusterServerCommandParse(EmberAfClusterCommand * c
                 return EMBER_ZCL_STATUS_MALFORMED_COMMAND;
             }
             id         = emberAfGetString(cmd->buffer, payloadOffset, cmd->bufLen);
-            wasHandled = emberAfDoorLockClusterSetRfidCallback(userId, userStatus, userType, id);
+            wasHandled = emberAfDoorLockClusterSetRfidCallback(userId, (EmberAfDoorLockUserStatus) userStatus,
+                                                               (EmberAfDoorLockUserType) userType, id);
             break;
         }
         case ZCL_GET_RFID_COMMAND_ID: {
@@ -1555,7 +1559,8 @@ EmberAfStatus emberAfColorControlClusterServerCommandParse(EmberAfClusterCommand
             {
                 optionsOverride = emberAfGetInt8u(cmd->buffer, payloadOffset, cmd->bufLen);
             }
-            wasHandled = emberAfColorControlClusterMoveToHueCallback(hue, direction, transitionTime, optionsMask, optionsOverride);
+            wasHandled = emberAfColorControlClusterMoveToHueCallback(hue, (EmberAfHueDirection) direction, transitionTime,
+                                                                     optionsMask, optionsOverride);
             break;
         }
         case ZCL_MOVE_HUE_COMMAND_ID: {
@@ -1598,7 +1603,8 @@ EmberAfStatus emberAfColorControlClusterServerCommandParse(EmberAfClusterCommand
             {
                 optionsOverride = emberAfGetInt8u(cmd->buffer, payloadOffset, cmd->bufLen);
             }
-            wasHandled = emberAfColorControlClusterMoveHueCallback(moveMode, rate, optionsMask, optionsOverride);
+            wasHandled =
+                emberAfColorControlClusterMoveHueCallback((EmberAfHueMoveMode) moveMode, rate, optionsMask, optionsOverride);
             break;
         }
         case ZCL_STEP_HUE_COMMAND_ID: {
@@ -1648,8 +1654,8 @@ EmberAfStatus emberAfColorControlClusterServerCommandParse(EmberAfClusterCommand
             {
                 optionsOverride = emberAfGetInt8u(cmd->buffer, payloadOffset, cmd->bufLen);
             }
-            wasHandled =
-                emberAfColorControlClusterStepHueCallback(stepMode, stepSize, transitionTime, optionsMask, optionsOverride);
+            wasHandled = emberAfColorControlClusterStepHueCallback((EmberAfHueStepMode) stepMode, stepSize, transitionTime,
+                                                                   optionsMask, optionsOverride);
             break;
         }
         case ZCL_MOVE_TO_SATURATION_COMMAND_ID: {
@@ -1736,7 +1742,8 @@ EmberAfStatus emberAfColorControlClusterServerCommandParse(EmberAfClusterCommand
             {
                 optionsOverride = emberAfGetInt8u(cmd->buffer, payloadOffset, cmd->bufLen);
             }
-            wasHandled = emberAfColorControlClusterMoveSaturationCallback(moveMode, rate, optionsMask, optionsOverride);
+            wasHandled = emberAfColorControlClusterMoveSaturationCallback((EmberAfSaturationMoveMode) moveMode, rate, optionsMask,
+                                                                          optionsOverride);
             break;
         }
         case ZCL_STEP_SATURATION_COMMAND_ID: {
@@ -1786,8 +1793,8 @@ EmberAfStatus emberAfColorControlClusterServerCommandParse(EmberAfClusterCommand
             {
                 optionsOverride = emberAfGetInt8u(cmd->buffer, payloadOffset, cmd->bufLen);
             }
-            wasHandled =
-                emberAfColorControlClusterStepSaturationCallback(stepMode, stepSize, transitionTime, optionsMask, optionsOverride);
+            wasHandled = emberAfColorControlClusterStepSaturationCallback((EmberAfSaturationStepMode) stepMode, stepSize,
+                                                                          transitionTime, optionsMask, optionsOverride);
             break;
         }
         case ZCL_MOVE_TO_HUE_AND_SATURATION_COMMAND_ID: {
@@ -2112,8 +2119,9 @@ EmberAfStatus emberAfColorControlClusterServerCommandParse(EmberAfClusterCommand
             {
                 optionsOverride = emberAfGetInt8u(cmd->buffer, payloadOffset, cmd->bufLen);
             }
-            wasHandled = emberAfColorControlClusterMoveColorTemperatureCallback(
-                moveMode, rate, colorTemperatureMinimum, colorTemperatureMaximum, optionsMask, optionsOverride);
+            wasHandled =
+                emberAfColorControlClusterMoveColorTemperatureCallback((EmberAfHueMoveMode) moveMode, rate, colorTemperatureMinimum,
+                                                                       colorTemperatureMaximum, optionsMask, optionsOverride);
             break;
         }
         case ZCL_STEP_COLOR_TEMPERATURE_COMMAND_ID: {
@@ -2178,7 +2186,8 @@ EmberAfStatus emberAfColorControlClusterServerCommandParse(EmberAfClusterCommand
                 optionsOverride = emberAfGetInt8u(cmd->buffer, payloadOffset, cmd->bufLen);
             }
             wasHandled = emberAfColorControlClusterStepColorTemperatureCallback(
-                stepMode, stepSize, transitionTime, colorTemperatureMinimum, colorTemperatureMaximum, optionsMask, optionsOverride);
+                (EmberAfHueStepMode) stepMode, stepSize, transitionTime, colorTemperatureMinimum, colorTemperatureMaximum,
+                optionsMask, optionsOverride);
             break;
         }
         default: {
@@ -2210,7 +2219,7 @@ EmberAfStatus emberAfIasZoneClusterServerCommandParse(EmberAfClusterCommand * cm
             enrollResponseCode = emberAfGetInt8u(cmd->buffer, payloadOffset, cmd->bufLen);
             payloadOffset += 1u;
             zoneId     = emberAfGetInt8u(cmd->buffer, payloadOffset, cmd->bufLen);
-            wasHandled = emberAfIasZoneClusterZoneEnrollResponseCallback(enrollResponseCode, zoneId);
+            wasHandled = emberAfIasZoneClusterZoneEnrollResponseCallback((EmberAfIasEnrollResponseCode) enrollResponseCode, zoneId);
             break;
         }
         default: {

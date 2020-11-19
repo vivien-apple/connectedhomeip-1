@@ -1974,7 +1974,7 @@ bool emberAfGroupsClusterAddGroupIfIdentifyingCallback(chip::GroupId groupId, ui
  * @param status   Ver.: always
  * @param groupId   Ver.: always
  */
-bool emberAfGroupsClusterAddGroupResponseCallback(uint8_t status, chip::GroupId groupId);
+bool emberAfGroupsClusterAddGroupResponseCallback(EmberAfStatus status, chip::GroupId groupId);
 /** @brief Groups Cluster Client Attribute Changed
  *
  * Client Attribute Changed
@@ -2084,7 +2084,7 @@ bool emberAfGroupsClusterRemoveGroupCallback(chip::GroupId groupId);
  * @param status   Ver.: always
  * @param groupId   Ver.: always
  */
-bool emberAfGroupsClusterRemoveGroupResponseCallback(uint8_t status, chip::GroupId groupId);
+bool emberAfGroupsClusterRemoveGroupResponseCallback(EmberAfStatus status, chip::GroupId groupId);
 /** @brief Groups Cluster Server Attribute Changed
  *
  * Server Attribute Changed
@@ -2172,7 +2172,7 @@ bool emberAfGroupsClusterViewGroupCallback(chip::GroupId groupId);
  * @param groupId   Ver.: always
  * @param groupName   Ver.: always
  */
-bool emberAfGroupsClusterViewGroupResponseCallback(uint8_t status, chip::GroupId groupId, uint8_t * groupName);
+bool emberAfGroupsClusterViewGroupResponseCallback(EmberAfStatus status, chip::GroupId groupId, uint8_t * groupName);
 
 /** @} END Groups Cluster Callbacks */
 
@@ -2207,7 +2207,7 @@ bool emberAfScenesClusterAddSceneCallback(chip::GroupId groupId, uint8_t sceneId
  * @param groupId   Ver.: always
  * @param sceneId   Ver.: always
  */
-bool emberAfScenesClusterAddSceneResponseCallback(uint8_t status, chip::GroupId groupId, uint8_t sceneId);
+bool emberAfScenesClusterAddSceneResponseCallback(EmberAfStatus status, chip::GroupId groupId, uint8_t sceneId);
 /** @brief Scenes Cluster Client Attribute Changed
  *
  * Client Attribute Changed
@@ -2341,7 +2341,7 @@ bool emberAfScenesClusterEnhancedViewSceneCallback(chip::GroupId groupId, uint8_
  * @param sceneName   Ver.: always
  * @param extensionFieldSets   Ver.: always
  */
-bool emberAfScenesClusterEnhancedViewSceneResponseCallback(uint8_t status, chip::GroupId groupId, uint8_t sceneId,
+bool emberAfScenesClusterEnhancedViewSceneResponseCallback(EmberAfStatus status, chip::GroupId groupId, uint8_t sceneId,
                                                            uint16_t transitionTime, uint8_t * sceneName,
                                                            uint8_t * extensionFieldSets);
 /** @brief Scenes Cluster Get Scene Membership
@@ -2361,7 +2361,7 @@ bool emberAfScenesClusterGetSceneMembershipCallback(chip::GroupId groupId);
  * @param sceneCount   Ver.: always
  * @param sceneList   Ver.: always
  */
-bool emberAfScenesClusterGetSceneMembershipResponseCallback(uint8_t status, uint8_t capacity, chip::GroupId groupId,
+bool emberAfScenesClusterGetSceneMembershipResponseCallback(EmberAfStatus status, uint8_t capacity, chip::GroupId groupId,
                                                             uint8_t sceneCount, uint8_t * sceneList);
 /** @brief Scenes Cluster Recall Scene
  *
@@ -2386,7 +2386,7 @@ bool emberAfScenesClusterRemoveAllScenesCallback(chip::GroupId groupId);
  * @param status   Ver.: always
  * @param groupId   Ver.: always
  */
-bool emberAfScenesClusterRemoveAllScenesResponseCallback(uint8_t status, chip::GroupId groupId);
+bool emberAfScenesClusterRemoveAllScenesResponseCallback(EmberAfStatus status, chip::GroupId groupId);
 /** @brief Scenes Cluster Remove Scene
  *
  *
@@ -2403,7 +2403,7 @@ bool emberAfScenesClusterRemoveSceneCallback(chip::GroupId groupId, uint8_t scen
  * @param groupId   Ver.: always
  * @param sceneId   Ver.: always
  */
-bool emberAfScenesClusterRemoveSceneResponseCallback(uint8_t status, chip::GroupId groupId, uint8_t sceneId);
+bool emberAfScenesClusterRemoveSceneResponseCallback(EmberAfStatus status, chip::GroupId groupId, uint8_t sceneId);
 /** @brief Scenes Cluster Server Attribute Changed
  *
  * Server Attribute Changed
@@ -2492,7 +2492,7 @@ bool emberAfScenesClusterStoreSceneCallback(chip::GroupId groupId, uint8_t scene
  * @param groupId   Ver.: always
  * @param sceneId   Ver.: always
  */
-bool emberAfScenesClusterStoreSceneResponseCallback(uint8_t status, chip::GroupId groupId, uint8_t sceneId);
+bool emberAfScenesClusterStoreSceneResponseCallback(EmberAfStatus status, chip::GroupId groupId, uint8_t sceneId);
 /** @brief Scenes Cluster View Scene
  *
  *
@@ -2512,8 +2512,8 @@ bool emberAfScenesClusterViewSceneCallback(chip::GroupId groupId, uint8_t sceneI
  * @param sceneName   Ver.: always
  * @param extensionFieldSets   Ver.: always
  */
-bool emberAfScenesClusterViewSceneResponseCallback(uint8_t status, chip::GroupId groupId, uint8_t sceneId, uint16_t transitionTime,
-                                                   uint8_t * sceneName, uint8_t * extensionFieldSets);
+bool emberAfScenesClusterViewSceneResponseCallback(EmberAfStatus status, chip::GroupId groupId, uint8_t sceneId,
+                                                   uint16_t transitionTime, uint8_t * sceneName, uint8_t * extensionFieldSets);
 /** @} END Scenes Cluster Callbacks */
 
 /** @name On/off Cluster Callbacks */
@@ -2971,7 +2971,7 @@ void emberAfLevelControlClusterClientTickCallback(chip::EndpointId endpoint);
  * @param optionMask   Ver.: since zcl6-errata-14-0129-15
  * @param optionOverride   Ver.: since zcl6-errata-14-0129-15
  */
-bool emberAfLevelControlClusterMoveCallback(uint8_t moveMode, uint8_t rate, uint8_t optionMask, uint8_t optionOverride);
+bool emberAfLevelControlClusterMoveCallback(EmberAfMoveMode moveMode, uint8_t rate, uint8_t optionMask, uint8_t optionOverride);
 /** @brief Level Control Cluster Move To Level
  *
  *
@@ -2998,7 +2998,7 @@ bool emberAfLevelControlClusterMoveToLevelWithOnOffCallback(uint8_t level, uint1
  * @param moveMode   Ver.: always
  * @param rate   Ver.: always
  */
-bool emberAfLevelControlClusterMoveWithOnOffCallback(uint8_t moveMode, uint8_t rate);
+bool emberAfLevelControlClusterMoveWithOnOffCallback(EmberAfMoveMode moveMode, uint8_t rate);
 /** @brief Level Control Cluster Server Attribute Changed
  *
  * Server Attribute Changed
@@ -3082,7 +3082,7 @@ void emberAfLevelControlClusterServerTickCallback(chip::EndpointId endpoint);
  * @param optionMask   Ver.: since zcl6-errata-14-0129-15
  * @param optionOverride   Ver.: since zcl6-errata-14-0129-15
  */
-bool emberAfLevelControlClusterStepCallback(uint8_t stepMode, uint8_t stepSize, uint16_t transitionTime, uint8_t optionMask,
+bool emberAfLevelControlClusterStepCallback(EmberAfStepMode stepMode, uint8_t stepSize, uint16_t transitionTime, uint8_t optionMask,
                                             uint8_t optionOverride);
 /** @brief Level Control Cluster Step With On Off
  *
@@ -3092,7 +3092,7 @@ bool emberAfLevelControlClusterStepCallback(uint8_t stepMode, uint8_t stepSize, 
  * @param stepSize   Ver.: always
  * @param transitionTime   Ver.: always
  */
-bool emberAfLevelControlClusterStepWithOnOffCallback(uint8_t stepMode, uint8_t stepSize, uint16_t transitionTime);
+bool emberAfLevelControlClusterStepWithOnOffCallback(EmberAfStepMode stepMode, uint8_t stepSize, uint16_t transitionTime);
 /** @brief Level Control Cluster Stop
  *
  *
@@ -6395,7 +6395,8 @@ bool emberAfDoorLockClusterSetHolidayScheduleResponseCallback(uint8_t status);
  * @param userType   Ver.: always
  * @param pin   Ver.: always
  */
-bool emberAfDoorLockClusterSetPinCallback(uint16_t userId, uint8_t userStatus, uint8_t userType, uint8_t * pin);
+bool emberAfDoorLockClusterSetPinCallback(uint16_t userId, EmberAfDoorLockUserStatus userStatus, EmberAfDoorLockUserType userType,
+                                          uint8_t * pin);
 /** @brief Door Lock Cluster Set Pin Response
  *
  *
@@ -6412,7 +6413,8 @@ bool emberAfDoorLockClusterSetPinResponseCallback(uint8_t status);
  * @param userType   Ver.: always
  * @param id   Ver.: always
  */
-bool emberAfDoorLockClusterSetRfidCallback(uint16_t userId, uint8_t userStatus, uint8_t userType, uint8_t * id);
+bool emberAfDoorLockClusterSetRfidCallback(uint16_t userId, EmberAfDoorLockUserStatus userStatus, EmberAfDoorLockUserType userType,
+                                           uint8_t * id);
 /** @brief Door Lock Cluster Set Rfid Response
  *
  *
@@ -6442,7 +6444,7 @@ bool emberAfDoorLockClusterSetUserStatusResponseCallback(uint8_t status);
  * @param userId   Ver.: always
  * @param userType   Ver.: always
  */
-bool emberAfDoorLockClusterSetUserTypeCallback(uint16_t userId, uint8_t userType);
+bool emberAfDoorLockClusterSetUserTypeCallback(uint16_t userId, EmberAfDoorLockUserType userType);
 /** @brief Door Lock Cluster Set User Type Response
  *
  *
@@ -7876,9 +7878,9 @@ bool emberAfColorControlClusterMoveColorCallback(int16_t rateX, int16_t rateY, u
  * @param optionsMask   Ver.: since zcl6-errata-14-0129-15
  * @param optionsOverride   Ver.: since zcl6-errata-14-0129-15
  */
-bool emberAfColorControlClusterMoveColorTemperatureCallback(uint8_t moveMode, uint16_t rate, uint16_t colorTemperatureMinimum,
-                                                            uint16_t colorTemperatureMaximum, uint8_t optionsMask,
-                                                            uint8_t optionsOverride);
+bool emberAfColorControlClusterMoveColorTemperatureCallback(EmberAfHueMoveMode moveMode, uint16_t rate,
+                                                            uint16_t colorTemperatureMinimum, uint16_t colorTemperatureMaximum,
+                                                            uint8_t optionsMask, uint8_t optionsOverride);
 /** @brief Color Control Cluster Move Hue
  *
  *
@@ -7888,7 +7890,8 @@ bool emberAfColorControlClusterMoveColorTemperatureCallback(uint8_t moveMode, ui
  * @param optionsMask   Ver.: since zcl6-errata-14-0129-15
  * @param optionsOverride   Ver.: since zcl6-errata-14-0129-15
  */
-bool emberAfColorControlClusterMoveHueCallback(uint8_t moveMode, uint8_t rate, uint8_t optionsMask, uint8_t optionsOverride);
+bool emberAfColorControlClusterMoveHueCallback(EmberAfHueMoveMode moveMode, uint8_t rate, uint8_t optionsMask,
+                                               uint8_t optionsOverride);
 /** @brief Color Control Cluster Move Saturation
  *
  *
@@ -7898,7 +7901,8 @@ bool emberAfColorControlClusterMoveHueCallback(uint8_t moveMode, uint8_t rate, u
  * @param optionsMask   Ver.: since zcl6-errata-14-0129-15
  * @param optionsOverride   Ver.: since zcl6-errata-14-0129-15
  */
-bool emberAfColorControlClusterMoveSaturationCallback(uint8_t moveMode, uint8_t rate, uint8_t optionsMask, uint8_t optionsOverride);
+bool emberAfColorControlClusterMoveSaturationCallback(EmberAfSaturationMoveMode moveMode, uint8_t rate, uint8_t optionsMask,
+                                                      uint8_t optionsOverride);
 /** @brief Color Control Cluster Move To Color
  *
  *
@@ -7944,8 +7948,8 @@ bool emberAfColorControlClusterMoveToHueAndSaturationCallback(uint8_t hue, uint8
  * @param optionsMask   Ver.: since zcl6-errata-14-0129-15
  * @param optionsOverride   Ver.: since zcl6-errata-14-0129-15
  */
-bool emberAfColorControlClusterMoveToHueCallback(uint8_t hue, uint8_t direction, uint16_t transitionTime, uint8_t optionsMask,
-                                                 uint8_t optionsOverride);
+bool emberAfColorControlClusterMoveToHueCallback(uint8_t hue, EmberAfHueDirection direction, uint16_t transitionTime,
+                                                 uint8_t optionsMask, uint8_t optionsOverride);
 /** @brief Color Control Cluster Move To Saturation
  *
  *
@@ -8054,7 +8058,7 @@ bool emberAfColorControlClusterStepColorCallback(int16_t stepX, int16_t stepY, u
  * @param optionsMask   Ver.: since zcl6-errata-14-0129-15
  * @param optionsOverride   Ver.: since zcl6-errata-14-0129-15
  */
-bool emberAfColorControlClusterStepColorTemperatureCallback(uint8_t stepMode, uint16_t stepSize, uint16_t transitionTime,
+bool emberAfColorControlClusterStepColorTemperatureCallback(EmberAfHueStepMode stepMode, uint16_t stepSize, uint16_t transitionTime,
                                                             uint16_t colorTemperatureMinimum, uint16_t colorTemperatureMaximum,
                                                             uint8_t optionsMask, uint8_t optionsOverride);
 /** @brief Color Control Cluster Step Hue
@@ -8067,8 +8071,8 @@ bool emberAfColorControlClusterStepColorTemperatureCallback(uint8_t stepMode, ui
  * @param optionsMask   Ver.: since zcl6-errata-14-0129-15
  * @param optionsOverride   Ver.: since zcl6-errata-14-0129-15
  */
-bool emberAfColorControlClusterStepHueCallback(uint8_t stepMode, uint8_t stepSize, uint8_t transitionTime, uint8_t optionsMask,
-                                               uint8_t optionsOverride);
+bool emberAfColorControlClusterStepHueCallback(EmberAfHueStepMode stepMode, uint8_t stepSize, uint8_t transitionTime,
+                                               uint8_t optionsMask, uint8_t optionsOverride);
 /** @brief Color Control Cluster Step Saturation
  *
  *
@@ -8079,7 +8083,7 @@ bool emberAfColorControlClusterStepHueCallback(uint8_t stepMode, uint8_t stepSiz
  * @param optionsMask   Ver.: since zcl6-errata-14-0129-15
  * @param optionsOverride   Ver.: since zcl6-errata-14-0129-15
  */
-bool emberAfColorControlClusterStepSaturationCallback(uint8_t stepMode, uint8_t stepSize, uint8_t transitionTime,
+bool emberAfColorControlClusterStepSaturationCallback(EmberAfSaturationStepMode stepMode, uint8_t stepSize, uint8_t transitionTime,
                                                       uint8_t optionsMask, uint8_t optionsOverride);
 /** @brief Color Control Cluster Stop Move Step
  *
@@ -14160,7 +14164,7 @@ bool emberAfIasZoneClusterZoneEnrollRequestCallback(uint16_t zoneType, uint16_t 
  * @param enrollResponseCode   Ver.: always
  * @param zoneId   Ver.: always
  */
-bool emberAfIasZoneClusterZoneEnrollResponseCallback(uint8_t enrollResponseCode, uint8_t zoneId);
+bool emberAfIasZoneClusterZoneEnrollResponseCallback(EmberAfIasEnrollResponseCode enrollResponseCode, uint8_t zoneId);
 /** @brief IAS Zone Cluster Zone Status Change Notification
  *
  *
