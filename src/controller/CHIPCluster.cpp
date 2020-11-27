@@ -44,7 +44,8 @@ void ClusterBase::Dissociate()
     mDevice = nullptr;
 }
 
-CHIP_ERROR ClusterBase::SendCommand(CommandEncoder commandEncoder, uint16_t maxCmdLen, Callback::Callback<> * responseHandler)
+CHIP_ERROR ClusterBase::SendCommand(CommandEncoder commandEncoder, uint16_t maxCmdLen,
+                                    Callback::Callback<Device::DataModelResponseFn> * responseHandler)
 {
     CHIP_ERROR err         = CHIP_NO_ERROR;
     uint16_t encodedLength = 0;
@@ -83,7 +84,8 @@ exit:
 }
 
 CHIP_ERROR ClusterBase::RequestAttributeReporting(RequestEncoder requestEncoder, uint16_t maxCmdLen, uint16_t minInterval,
-                                                  uint16_t maxInterval, Callback::Callback<> * reportHandler)
+                                                  uint16_t maxInterval,
+                                                  Callback::Callback<Device::DataModelResponseFn> * reportHandler)
 {
     CHIP_ERROR err         = CHIP_NO_ERROR;
     uint16_t encodedLength = 0;

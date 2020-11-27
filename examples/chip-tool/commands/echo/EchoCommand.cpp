@@ -23,10 +23,9 @@ using namespace ::chip;
 namespace {
 static const char PAYLOAD[] = "Message from Standalone CHIP echo client!";
 
-bool IsIdenticalMessage(System::PacketBufferHandle & buffer)
+bool IsIdenticalMessage(uint8_t * msgBuf, uint16_t msgLen)
 {
-    size_t dataLen = buffer->DataLength();
-    return (dataLen + 1 == sizeof PAYLOAD) && (memcmp(buffer->Start(), PAYLOAD, dataLen) == 0);
+    return (msgLen + 1 == sizeof PAYLOAD) && (memcmp(msgBuf, PAYLOAD, msgLen) == 0);
 }
 } // namespace
 
@@ -47,13 +46,13 @@ uint16_t EchoCommand::Encode(PacketBufferHandle & buffer, uint16_t bufferSize)
     return payloadLen;
 }
 
-bool EchoCommand::Decode(PacketBufferHandle & buffer) const
+bool EchoCommand::Decode(uint8_t * msgBuf, uint16_t msgLen, uint8_t frameControl, uint8_t commandId) const
 {
-    bool success = IsIdenticalMessage(buffer);
+    bool success = IsIdenticalMessage(msgBuf, msgLen);
 
     if (!success)
     {
-        ChipLogError(chipTool, "Echo: Error \nSend: %s \nRecv: %.*s", PAYLOAD, buffer->DataLength(), buffer->Start());
+        ChipLogError(chipTool, "Echo: Error \nSend: %s \nRecv: %.*s", PAYLOAD, msgLen, msgBuf);
     }
 
     return success;

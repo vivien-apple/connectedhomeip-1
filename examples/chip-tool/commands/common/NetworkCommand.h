@@ -26,8 +26,8 @@ class NetworkCommand : public Command, public chip::Controller::DeviceStatusDele
 public:
     NetworkCommand(const char * commandName) : Command(commandName) {}
 
-    virtual uint16_t Encode(PacketBufferHandle & buffer, uint16_t bufferSize) = 0;
-    virtual bool Decode(PacketBufferHandle & buffer) const                    = 0;
+    virtual uint16_t Encode(PacketBufferHandle & buffer, uint16_t bufferSize)                             = 0;
+    virtual bool Decode(uint8_t * msgBuf, uint16_t msgLen, uint8_t frameControl, uint8_t commandId) const = 0;
 
     /////////// Command Interface /////////
     CHIP_ERROR Run(PersistentStorage & storage, NodeId localId, NodeId remoteId) override;
@@ -36,7 +36,7 @@ public:
     void OnMessage(PacketBufferHandle buffer) override;
     void OnStatusChange(void) override;
 
-    static void CallbackFn(void * context);
+    static void CallbackFn(void * context, uint8_t * msgBuf, uint16_t msgLen, uint8_t frameControl, uint8_t commandId);
 
 private:
     CHIP_ERROR RunInternal(NodeId remoteId);
@@ -45,4 +45,6 @@ private:
     void PrintBuffer(PacketBufferHandle & buffer) const;
 
     ChipDeviceCommissioner mCommissioner;
+
+    chip::Callback::Callback<chip::Controller::Device::DataModelResponseFn> * cb;
 };

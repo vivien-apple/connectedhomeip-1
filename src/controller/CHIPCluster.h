@@ -56,7 +56,8 @@ protected:
      * @param[in] maxCmdLen         Maximum length expected for the encoded command
      * @param[in] responseHandler   The handler function that's called on receiving command response
      */
-    CHIP_ERROR SendCommand(CommandEncoder commandEncoder, uint16_t maxCmdLen, Callback::Callback<> * responseHandler);
+    CHIP_ERROR SendCommand(CommandEncoder commandEncoder, uint16_t maxCmdLen,
+                           Callback::Callback<Device::DataModelResponseFn> * responseHandler);
 
     typedef uint16_t (*RequestEncoder)(uint8_t * request, uint16_t maxLen, uint8_t seqNumber, EndpointId endpoint,
                                        uint16_t minInterval, uint16_t maxInterval);
@@ -76,7 +77,7 @@ protected:
      *                              Reference: chip::Callback::Cancel()
      */
     CHIP_ERROR RequestAttributeReporting(RequestEncoder requestEncoder, uint16_t maxCmdLen, uint16_t minInterval,
-                                         uint16_t maxInterval, Callback::Callback<> * reportHandler);
+                                         uint16_t maxInterval, Callback::Callback<Device::DataModelResponseFn> * reportHandler);
 
     const ClusterId mClusterId;
     Device * mDevice;

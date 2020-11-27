@@ -39,7 +39,7 @@ public:
 
     /////////// NetworkCommand Interface /////////
     uint16_t Encode(PacketBufferHandle & buffer, uint16_t bufferSize) override;
-    bool Decode(PacketBufferHandle & buffer) const override;
+    bool Decode(uint8_t * msgBuf, uint16_t msgLen, uint8_t frameControl, uint8_t commandId) const override;
 
     virtual uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) = 0;
     virtual bool HandleGlobalResponse(uint8_t commandId, uint8_t * message, uint16_t messageLen) const { return false; }

@@ -64,21 +64,12 @@ exit:
     return err;
 }
 
-typedef void (*CallFn)(void *);
-
-void NetworkCommand::CallbackFn(void * context)
-{
-    ChipLogError(chipTool, "Callback has fired");
-    NetworkCommand * command = reinterpret_cast<NetworkCommand *>(context);
-    command->UpdateWaitForResponse(false);
-}
-
-Callback::Callback<CallFn> * cb;
 CHIP_ERROR NetworkCommand::RunCommandInternal(ChipDevice * device)
 {
-    CHIP_ERROR err      = CHIP_NO_ERROR;
-    cb = new Callback::Callback<CallFn>(CallbackFn, this);
-    uint16_t payloadLen = 0;
+    CHIP_ERROR err          = CHIP_NO_ERROR;
+    cb                      = new Callback::Callback<Controller::Device::DataModelResponseFn>(CallbackFn, this);
+    uint16_t payloadLen     = 0;
+    const uint8_t seqNumber = 1; // '1' is hardcoded into clusters/Commands.h while sending commands
 
     PacketBufferHandle buffer = PacketBuffer::NewWithAvailableSize(kMaxBufferSize);
     VerifyOrExit(!buffer.IsNull(), err = CHIP_ERROR_NO_MEMORY);
@@ -95,17 +86,28 @@ CHIP_ERROR NetworkCommand::RunCommandInternal(ChipDevice * device)
     err = device->SendMessage(buffer.Release_ForNow());
     VerifyOrExit(err == CHIP_NO_ERROR, ChipLogError(chipTool, "Failed to send message: %s", ErrorStr(err)));
 
-    device->AddResponseHandler(cb, 2);
+    device->AddResponseHandler(cb, seqNumber);
 
 exit:
     return err;
+}
+
+void NetworkCommand::CallbackFn(void * context, uint8_t * msgBuf, uint16_t msgLen, uint8_t frameControl, uint8_t commandId)
+{
+    ChipLogDetail(chipTool, "Callback: Received %zu bytes", msgLen);
+    ChipLogDetail(chipTool, "FrameControl: 0x%02x, commandId: 0x%02x", frameControl, commandId);
+
+    NetworkCommand * command = reinterpret_cast<NetworkCommand *>(context);
+    command->SetCommandExitStatus(command->Decode(msgBuf, msgLen, frameControl, commandId));
+    command->UpdateWaitForResponse(false);
 }
 
 void NetworkCommand::OnMessage(PacketBufferHandle buffer)
 {
     ChipLogDetail(chipTool, "OnMessage: Received %zu bytes", buffer->DataLength());
 
-    SetCommandExitStatus(Decode(buffer));
+    SetCommandExitStatus(Decode(buffer->Start(), buffer->DataLength(), 0 /* frameControl */, 0 /* commandId */));
+    UpdateWaitForResponse(false);
 }
 
 void NetworkCommand::OnStatusChange(void)
@@ -120,7 +122,7 @@ void NetworkCommand::PrintBuffer(PacketBufferHandle & buffer) const
     fprintf(stderr, "SENDING: %zu ", data_len);
     for (size_t i = 0; i < data_len; ++i)
     {
-        fprintf(stderr, "%d ", buffer->Start()[i]);
+        fprintf(stderr, "%02x ", buffer->Start()[i]);
     }
     fprintf(stderr, "\n");
 }

@@ -52,6 +52,8 @@ public:
     Device() : mActive(false), mState(ConnectionState::NotConnected) {}
     ~Device() {}
 
+    typedef void (*DataModelResponseFn)(void *, uint8_t *, uint16_t, uint8_t, uint8_t);
+
     /**
      * @brief
      *   Set the delegate object which will be called when a message is received.
@@ -200,8 +202,8 @@ public:
 
     SecurePairingSessionSerializable & GetPairing() { return mPairing; }
 
-    void AddResponseHandler(Callback::Callback<> * onResponse, uint8_t seqNumber);
-    void AddReportHandler(Callback::Callback<> * onReport, uint8_t seqNumber);
+    void AddResponseHandler(Callback::Callback<DataModelResponseFn> * onResponse, uint8_t seqNumber);
+    void AddReportHandler(Callback::Callback<DataModelResponseFn> * onReport, uint8_t seqNumber);
 
 private:
     enum class ConnectionState
@@ -257,6 +259,44 @@ private:
      *   does not have an active secure channel.
      */
     CHIP_ERROR LoadSecureSessionParameters();
+
+    /**
+     * @brief
+     *  This function parse the message into an APS frame and extracts the corresponding
+     *  sequence number on success.
+     *
+     * @param[in]   msgBuf          The received message
+     * @param[out]  message         The extracted message
+     *
+     * @return Returns the msgLen on success, 0 on error
+     */
+    uint16_t ProcessMessage(System::PacketBufferHandle & msgBuf, uint8_t *& message);
+
+    /**
+     * @brief
+     *  This function iterates over the list of outstanding response callbacks for this
+     *  device and execute any callbacks matching the given seqNumber.
+     *
+     * @param[in]  seqNumber       The sequence number from the APS frame
+     * @param[in]  commandId       The command id from the APS frame
+     * @param[in]  isGlobalCommand The frame control byte from the APS frame
+     *
+     * @return bool   true is a matching callback has been found
+     */
+    bool ProcessResponseCallbacks(uint8_t * msgBuf, uint16_t msgLen, uint8_t frameControl, uint8_t seqNumber, uint8_t commandId);
+
+    /**
+     * @brief
+     *  This function iterates over the list of outstanding report callbacks for this
+     *  device and execute any callbacks matching the given seqNumber.
+     *
+     * @param[in]  seqNumber       The sequence number from the APS frame
+     * @param[in]  commandId       The command id from the APS frame
+     * @param[in]  isGlobalCommand The frame control byte from the APS frame
+     *
+     * @return bool   true is a matching callback has been found
+     */
+    bool ProcessReportCallbacks(uint8_t * msgBuf, uint16_t msgLen, uint8_t frameControl, uint8_t seqNumber, uint8_t commandId);
 };
 
 /**

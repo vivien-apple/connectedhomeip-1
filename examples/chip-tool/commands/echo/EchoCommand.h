@@ -27,5 +27,5 @@ public:
 
     /////////// NetworkCommand Interface /////////
     uint16_t Encode(PacketBufferHandle & buffer, uint16_t bufferSize) override;
-    bool Decode(PacketBufferHandle & buffer) const override;
+    bool Decode(uint8_t * msgBuf, uint16_t msgLen, uint8_t frameControl, uint8_t commandId) const override;
 };

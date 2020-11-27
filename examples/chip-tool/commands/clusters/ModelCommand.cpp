@@ -44,40 +44,14 @@ uint16_t ModelCommand::Encode(PacketBufferHandle & buffer, uint16_t bufferSize)
     return EncodeCommand(buffer, bufferSize, mEndPointId);
 }
 
-bool ModelCommand::Decode(PacketBufferHandle & buffer) const
+bool ModelCommand::Decode(uint8_t * msgBuf, uint16_t msgLen, uint8_t frameControl, uint8_t commandId) const
 {
-    EmberApsFrame frame;
-    uint8_t * message;
-    uint16_t messageLen;
-    uint8_t frameControl;
-    uint8_t sequenceNumber;
-    uint8_t commandId;
-    bool success = false;
-
-    if (extractApsFrame(buffer->Start(), buffer->DataLength(), &frame) == 0)
+    if (!isValidFrame(frameControl))
     {
-        ChipLogError(chipTool, "APS frame processing failure!");
-        ExitNow();
+        ChipLogError(chipTool, "Unexpected frame control byte: 0x%02x", frameControl);
+        return false;
     }
-    ChipLogDetail(chipTool, "APS frame processing success!");
 
-    messageLen = extractMessage(buffer->Start(), buffer->DataLength(), &message);
-    VerifyOrExit(messageLen >= 3, ChipLogError(chipTool, "Unexpected response length: %d", messageLen));
-
-    frameControl   = chip::Encoding::Read8(message);
-    sequenceNumber = chip::Encoding::Read8(message);
-    commandId      = chip::Encoding::Read8(message);
-    messageLen     = static_cast<uint16_t>(messageLen - 3);
-
-    VerifyOrExit(isValidFrame(frameControl), ChipLogError(chipTool, "Unexpected frame control byte: 0x%02x", frameControl));
-    VerifyOrExit(sequenceNumber == 1, ChipLogError(chipTool, "Unexpected sequence number: %d", sequenceNumber));
-    VerifyOrExit(mEndPointId == frame.sourceEndpoint,
-                 ChipLogError(chipTool, "Unexpected endpoint id '0x%02x'", frame.sourceEndpoint));
-    VerifyOrExit(mClusterId == frame.clusterId, ChipLogError(chipTool, "Unexpected cluster id '0x%04x'", frame.clusterId));
-
-    success = isGlobalCommand(frameControl) ? HandleGlobalResponse(commandId, message, messageLen)
-                                            : HandleSpecificResponse(commandId, message, messageLen);
-
-exit:
-    return success;
+    return isGlobalCommand(frameControl) ? HandleGlobalResponse(commandId, msgBuf, msgLen)
+                                         : HandleSpecificResponse(commandId, msgBuf, msgLen);
 }

@@ -46,19 +46,30 @@ using namespace chip::System;
 using namespace chip::Callback;
 
 namespace {
-constexpr uint8_t kZCLGlobalCmdFrameControlHeader  = 8;
-constexpr uint8_t kZCLClusterCmdFrameControlHeader = 9;
-
-bool isValidFrame(uint8_t frameControl)
+/**
+ * A data model message has nonzero length and always has a first byte whose
+ * value is one of: 0x00, 0x01, 0x02, 0x03.  See chipZclEncodeZclHeader for the
+ * construction of the message and in particular the first byte.
+ *
+ * Echo messages should generally not have a first byte with those values, so we
+ * can use that to try to distinguish between the two.
+ */
+bool maybeIsDataModelMessage(const chip::System::PacketBufferHandle & buffer)
 {
-    // Bit 3 of the frame control byte set means direction is server to client.
-    return (frameControl == kZCLGlobalCmdFrameControlHeader || frameControl == kZCLClusterCmdFrameControlHeader);
+    const size_t data_len      = buffer->DataLength();
+    const uint8_t * data       = buffer->Start();
+    bool maybeDataModelMessage = true;
+
+    // Has to have nonzero length.
+    VerifyOrExit(data_len > 0, maybeDataModelMessage = false);
+
+    // Has to have a valid first byte value.
+    VerifyOrExit(data[0] < 0x04, maybeDataModelMessage = false);
+
+exit:
+    return maybeDataModelMessage;
 }
 
-bool isGlobalCommand(uint8_t frameControl)
-{
-    return (frameControl == kZCLGlobalCmdFrameControlHeader);
-}
 } // namespace
 
 namespace chip {
@@ -193,66 +204,96 @@ void Device::OnMessageReceived(const PacketHeader & header, const PayloadHeader 
 {
     if (mState == ConnectionState::SecureConnected)
     {
-        EmberApsFrame frame;
-        if (extractApsFrame(msgBuf->Start(), msgBuf->DataLength(), &frame) == 0)
-        {
-            ChipLogError(Controller, "APS frame processing failure!");
-            return;
-        }
-
         uint8_t * message;
-        uint16_t msgLen = extractMessage(msgBuf->Start(), msgBuf->DataLength(), &message);
-        if (msgLen < 3)
+        uint16_t msgLen = ProcessMessage(msgBuf, message);
+        if (msgLen)
         {
-            ChipLogError(Controller, "Unexpected response length: %d", msgLen);
-            return;
+            // TODO: The following callback processing will need further work
+            //       1. The response needs to be parsed as per cluster definition. The response callback
+            //          should carry the parsed response values.
+            //       2. The reports callbacks should also be called with the parsed reports.
+            //       3. The callbacks would be tracked using exchange context. On receiving the
+            //          message, the exchange context in the message should be matched against
+            //          the registered callbacks.
+            // GitHub issue: https://github.com/project-chip/connectedhomeip/issues/3910
+            uint8_t frameControl = chip::Encoding::Read8(message);
+            uint8_t seqNumber    = chip::Encoding::Read8(message);
+            uint8_t commandId    = chip::Encoding::Read8(message);
+
+            ProcessResponseCallbacks(message, msgLen, frameControl, seqNumber, commandId);
+            ProcessReportCallbacks(message, msgLen, frameControl, seqNumber, commandId);
         }
-
-        uint8_t frameControl = chip::Encoding::Read8(message);
-        uint8_t seqNumber    = chip::Encoding::Read8(message);
-        uint8_t commandId    = chip::Encoding::Read8(message);
-        if (!isValidFrame(frameControl))
+        else if (mStatusDelegate != nullptr)
         {
-            ChipLogError(Controller, "Unexpected frame control byte: 0x%02x", frameControl);
-            return;
-        }
-
-        (void) commandId;
-        (void) isGlobalCommand(frameControl);
-
-        // TODO: The following callback processing will need further work
-        //       1. The response needs to be parsed as per cluster definition. The response callback
-        //          should carry the parsed response values.
-        //       2. The reports callbacks should also be called with the parsed reports.
-        //       3. The callbacks would be tracked using exchange context. On receiving the
-        //          message, the exchange context in the message should be matched against
-        //          the registered callbacks.
-        // GitHub issue: https://github.com/project-chip/connectedhomeip/issues/3910
-        Cancelable * ca = &mResponses;
-        while (ca->mNext != &mResponses)
-        {
-            Callback::Callback<> * cb = Callback::Callback<>::FromCancelable(ca->mNext);
-            if (cb != nullptr && ca->mNext->mInfoScalar == seqNumber)
-            {
-                ChipLogProgress(Controller, "Dispatching response callback %p", cb);
-                cb->Cancel();
-                cb->mCall(cb->mContext);
-            }
-            ca = ca->mNext;
-        }
-
-        ca = &mReports;
-        while (ca->mNext != &mReports)
-        {
-            Callback::Callback<> * cb = Callback::Callback<>::FromCancelable(ca->mNext);
-            if (cb != nullptr && ca->mNext->mInfoScalar == seqNumber)
-            {
-                ChipLogProgress(Controller, "Dispatching report callback %p", cb);
-                cb->mCall(cb->mContext);
-            }
-            ca = ca->mNext;
+            mStatusDelegate->OnMessage(std::move(msgBuf));
         }
     }
+}
+
+uint16_t Device::ProcessMessage(System::PacketBufferHandle & msgBuf, uint8_t *& message)
+{
+    // FIXME: Long-term we shouldn't be guessing what sort of message this is
+    // based on the message bytes.  We're doing this for now to support both
+    // data model messages and text echo messages, but in the long term we
+    // should either do echo via a data model command or do echo on a separate
+    // port from data model processing.
+    if (!maybeIsDataModelMessage(msgBuf))
+    {
+        return 0;
+    }
+
+    EmberApsFrame frame;
+    if (extractApsFrame(msgBuf->Start(), msgBuf->DataLength(), &frame) == 0)
+    {
+        ChipLogError(Controller, "APS frame processing failure!");
+        return 0;
+    }
+
+    uint16_t msgLen = extractMessage(msgBuf->Start(), msgBuf->DataLength(), &message);
+    if (msgLen < 3)
+    {
+        ChipLogError(Controller, "Unexpected response length: %d", msgLen);
+        return 0;
+    }
+
+    return msgLen;
+}
+
+bool Device::ProcessResponseCallbacks(uint8_t * msgBuf, uint16_t msgLen, uint8_t frameControl, uint8_t seqNumber, uint8_t commandId)
+{
+    Cancelable * ca = &mResponses;
+    while (ca->mNext != &mResponses)
+    {
+        Callback::Callback<DataModelResponseFn> * cb = Callback::Callback<DataModelResponseFn>::FromCancelable(ca->mNext);
+        if (cb != nullptr && ca->mNext->mInfoScalar == seqNumber)
+        {
+            ChipLogProgress(Controller, "Dispatching response callback %p", cb);
+            cb->Cancel();
+            cb->mCall(cb->mContext, msgBuf, msgLen, frameControl, commandId);
+            return true;
+        }
+        ca = ca->mNext;
+    }
+
+    return false;
+}
+
+bool Device::ProcessReportCallbacks(uint8_t * msgBuf, uint16_t msgLen, uint8_t frameControl, uint8_t seqNumber, uint8_t commandId)
+{
+    Cancelable * ca = &mReports;
+    while (ca->mNext != &mReports)
+    {
+        Callback::Callback<DataModelResponseFn> * cb = Callback::Callback<DataModelResponseFn>::FromCancelable(ca->mNext);
+        if (cb != nullptr && ca->mNext->mInfoScalar == seqNumber)
+        {
+            ChipLogProgress(Controller, "Dispatching report callback %p", cb);
+            cb->mCall(cb->mContext, msgBuf, msgLen, frameControl, commandId);
+            return true;
+        }
+        ca = ca->mNext;
+    }
+
+    return false;
 }
 
 CHIP_ERROR Device::LoadSecureSessionParameters()
@@ -294,14 +335,14 @@ bool Device::GetIpAddress(Inet::IPAddress & addr) const
     return mState == ConnectionState::SecureConnected;
 }
 
-void Device::AddResponseHandler(Callback::Callback<> * onResponse, uint8_t seqNumber)
+void Device::AddResponseHandler(Callback::Callback<DataModelResponseFn> * onResponse, uint8_t seqNumber)
 {
     Callback::Cancelable * cancelable = onResponse->Cancel();
     cancelable->mInfoScalar           = seqNumber;
     mResponses.Enqueue(cancelable);
 }
 
-void Device::AddReportHandler(Callback::Callback<> * onReport, uint8_t seqNumber)
+void Device::AddReportHandler(Callback::Callback<DataModelResponseFn> * onReport, uint8_t seqNumber)
 {
     Callback::Cancelable * cancelable = onReport->Cancel();
     cancelable->mInfoScalar           = seqNumber;

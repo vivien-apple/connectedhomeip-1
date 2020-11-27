@@ -26,33 +26,34 @@ namespace Controller {
 //       https://github.com/project-chip/connectedhomeip/issues/965
 constexpr uint16_t kMaxOnOffMessageLength = 64;
 
-CHIP_ERROR OnOffCluster::On(Callback::Callback<> * onCompletion)
+CHIP_ERROR OnOffCluster::On(Callback::Callback<Device::DataModelResponseFn> * onCompletion)
 {
     return SendCommand(encodeOnOffClusterOnCommand, kMaxOnOffMessageLength, onCompletion);
 }
 
-CHIP_ERROR OnOffCluster::Off(Callback::Callback<> * onCompletion)
+CHIP_ERROR OnOffCluster::Off(Callback::Callback<Device::DataModelResponseFn> * onCompletion)
 {
     return SendCommand(encodeOnOffClusterOffCommand, kMaxOnOffMessageLength, onCompletion);
 }
 
-CHIP_ERROR OnOffCluster::Toggle(Callback::Callback<> * onCompletion)
+CHIP_ERROR OnOffCluster::Toggle(Callback::Callback<Device::DataModelResponseFn> * onCompletion)
 {
     return SendCommand(encodeOnOffClusterToggleCommand, kMaxOnOffMessageLength, onCompletion);
 }
 
-CHIP_ERROR OnOffCluster::ReadAttributeOnOff(Callback::Callback<> * onCompletion)
+CHIP_ERROR OnOffCluster::ReadAttributeOnOff(Callback::Callback<Device::DataModelResponseFn> * onCompletion)
 {
     return SendCommand(encodeOnOffClusterReadOnOffAttribute, kMaxOnOffMessageLength, onCompletion);
 }
 
-CHIP_ERROR OnOffCluster::ReportAttributeOnOff(Callback::Callback<> * onChange, uint16_t minInterval, uint16_t maxInterval)
+CHIP_ERROR OnOffCluster::ReportAttributeOnOff(Callback::Callback<Device::DataModelResponseFn> * onChange, uint16_t minInterval,
+                                              uint16_t maxInterval)
 {
     return RequestAttributeReporting(encodeOnOffClusterReportOnOffAttribute, kMaxOnOffMessageLength, minInterval, maxInterval,
                                      onChange);
 }
 
-CHIP_ERROR OnOffCluster::ReadAttributeClusterRevision(Callback::Callback<> * onCompletion)
+CHIP_ERROR OnOffCluster::ReadAttributeClusterRevision(Callback::Callback<Device::DataModelResponseFn> * onCompletion)
 {
     return CHIP_NO_ERROR;
 }
