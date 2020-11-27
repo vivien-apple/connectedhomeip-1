@@ -30,6 +30,7 @@
 #include <platform/CHIPDeviceLayer.h>
 #endif
 
+#include <app/chip-zcl-zpro-codec.h>
 #include <core/CHIPCore.h>
 #include <core/CHIPEncoding.h>
 #include <core/CHIPSafeCasts.h>
@@ -43,6 +44,22 @@
 using namespace chip::Inet;
 using namespace chip::System;
 using namespace chip::Callback;
+
+namespace {
+constexpr uint8_t kZCLGlobalCmdFrameControlHeader  = 8;
+constexpr uint8_t kZCLClusterCmdFrameControlHeader = 9;
+
+bool isValidFrame(uint8_t frameControl)
+{
+    // Bit 3 of the frame control byte set means direction is server to client.
+    return (frameControl == kZCLGlobalCmdFrameControlHeader || frameControl == kZCLClusterCmdFrameControlHeader);
+}
+
+bool isGlobalCommand(uint8_t frameControl)
+{
+    return (frameControl == kZCLGlobalCmdFrameControlHeader);
+}
+} // namespace
 
 namespace chip {
 namespace Controller {
@@ -176,10 +193,32 @@ void Device::OnMessageReceived(const PacketHeader & header, const PayloadHeader 
 {
     if (mState == ConnectionState::SecureConnected)
     {
-        if (mStatusDelegate != nullptr)
+        EmberApsFrame frame;
+        if (extractApsFrame(msgBuf->Start(), msgBuf->DataLength(), &frame) == 0)
         {
-            mStatusDelegate->OnMessage(std::move(msgBuf));
+            ChipLogError(Controller, "APS frame processing failure!");
+            return;
         }
+
+        uint8_t * message;
+        uint16_t msgLen = extractMessage(msgBuf->Start(), msgBuf->DataLength(), &message);
+        if (msgLen < 3)
+        {
+            ChipLogError(Controller, "Unexpected response length: %d", msgLen);
+            return;
+        }
+
+        uint8_t frameControl = chip::Encoding::Read8(message);
+        uint8_t seqNumber    = chip::Encoding::Read8(message);
+        uint8_t commandId    = chip::Encoding::Read8(message);
+        if (!isValidFrame(frameControl))
+        {
+            ChipLogError(Controller, "Unexpected frame control byte: 0x%02x", frameControl);
+            return;
+        }
+
+        (void) commandId;
+        (void) isGlobalCommand(frameControl);
 
         // TODO: The following callback processing will need further work
         //       1. The response needs to be parsed as per cluster definition. The response callback
@@ -189,33 +228,29 @@ void Device::OnMessageReceived(const PacketHeader & header, const PayloadHeader 
         //          message, the exchange context in the message should be matched against
         //          the registered callbacks.
         // GitHub issue: https://github.com/project-chip/connectedhomeip/issues/3910
-        Cancelable * ca = mResponses.mNext;
-        while (ca != &mResponses)
+        Cancelable * ca = &mResponses;
+        while (ca->mNext != &mResponses)
         {
-            Callback::Callback<> * cb = Callback::Callback<>::FromCancelable(ca);
-            // Let's advance to the next cancelable, as the current one will get removed
-            // from the list (and once removed, its next will point to itself)
-            ca = ca->mNext;
-            if (cb != nullptr)
+            Callback::Callback<> * cb = Callback::Callback<>::FromCancelable(ca->mNext);
+            if (cb != nullptr && ca->mNext->mInfoScalar == seqNumber)
             {
                 ChipLogProgress(Controller, "Dispatching response callback %p", cb);
                 cb->Cancel();
                 cb->mCall(cb->mContext);
             }
+            ca = ca->mNext;
         }
 
-        ca = mReports.mNext;
-        while (ca != &mReports)
+        ca = &mReports;
+        while (ca->mNext != &mReports)
         {
-            Callback::Callback<> * cb = Callback::Callback<>::FromCancelable(ca);
-            // Let's advance to the next cancelable, as the current one might get removed
-            // from the list in the callback (and if removed, its next will point to itself)
-            ca = ca->mNext;
-            if (cb != nullptr)
+            Callback::Callback<> * cb = Callback::Callback<>::FromCancelable(ca->mNext);
+            if (cb != nullptr && ca->mNext->mInfoScalar == seqNumber)
             {
                 ChipLogProgress(Controller, "Dispatching report callback %p", cb);
                 cb->mCall(cb->mContext);
             }
+            ca = ca->mNext;
         }
     }
 }
@@ -259,27 +294,17 @@ bool Device::GetIpAddress(Inet::IPAddress & addr) const
     return mState == ConnectionState::SecureConnected;
 }
 
-void Device::AddResponseHandler(EndpointId endpoint, ClusterId cluster, Callback::Callback<> * onResponse)
+void Device::AddResponseHandler(Callback::Callback<> * onResponse, uint8_t seqNumber)
 {
-    CallbackInfo info                 = { endpoint, cluster };
     Callback::Cancelable * cancelable = onResponse->Cancel();
-
-    nlSTATIC_ASSERT_PRINT(sizeof(info) <= sizeof(cancelable->mInfoScalar), "Size of CallbackInfo should be <= size of mInfoScalar");
-
-    cancelable->mInfoScalar = 0;
-    memmove(&cancelable->mInfoScalar, &info, sizeof(info));
+    cancelable->mInfoScalar           = seqNumber;
     mResponses.Enqueue(cancelable);
 }
 
-void Device::AddReportHandler(EndpointId endpoint, ClusterId cluster, Callback::Callback<> * onReport)
+void Device::AddReportHandler(Callback::Callback<> * onReport, uint8_t seqNumber)
 {
-    CallbackInfo info                 = { endpoint, cluster };
     Callback::Cancelable * cancelable = onReport->Cancel();
-
-    nlSTATIC_ASSERT_PRINT(sizeof(info) <= sizeof(cancelable->mInfoScalar), "Size of CallbackInfo should be <= size of mInfoScalar");
-
-    cancelable->mInfoScalar = 0;
-    memmove(&cancelable->mInfoScalar, &info, sizeof(info));
+    cancelable->mInfoScalar           = seqNumber;
     mReports.Enqueue(cancelable);
 }
 

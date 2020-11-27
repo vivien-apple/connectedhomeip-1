@@ -64,9 +64,20 @@ exit:
     return err;
 }
 
+typedef void (*CallFn)(void *);
+
+void NetworkCommand::CallbackFn(void * context)
+{
+    ChipLogError(chipTool, "Callback has fired");
+    NetworkCommand * command = reinterpret_cast<NetworkCommand *>(context);
+    command->UpdateWaitForResponse(false);
+}
+
+Callback::Callback<CallFn> * cb;
 CHIP_ERROR NetworkCommand::RunCommandInternal(ChipDevice * device)
 {
     CHIP_ERROR err      = CHIP_NO_ERROR;
+    cb = new Callback::Callback<CallFn>(CallbackFn, this);
     uint16_t payloadLen = 0;
 
     PacketBufferHandle buffer = PacketBuffer::NewWithAvailableSize(kMaxBufferSize);
@@ -84,6 +95,8 @@ CHIP_ERROR NetworkCommand::RunCommandInternal(ChipDevice * device)
     err = device->SendMessage(buffer.Release_ForNow());
     VerifyOrExit(err == CHIP_NO_ERROR, ChipLogError(chipTool, "Failed to send message: %s", ErrorStr(err)));
 
+    device->AddResponseHandler(cb, 2);
+
 exit:
     return err;
 }
@@ -93,7 +106,6 @@ void NetworkCommand::OnMessage(PacketBufferHandle buffer)
     ChipLogDetail(chipTool, "OnMessage: Received %zu bytes", buffer->DataLength());
 
     SetCommandExitStatus(Decode(buffer));
-    UpdateWaitForResponse(false);
 }
 
 void NetworkCommand::OnStatusChange(void)

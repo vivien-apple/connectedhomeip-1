@@ -37,7 +37,7 @@ using namespace chip;
 
 #define READ_ATTRIBUTES(name, cluster_id)                                                                                          \
     uint16_t attr_id_count = sizeof(attr_ids) / sizeof(attr_ids[0]);                                                               \
-    uint16_t result = encodeReadAttributesCommand(buffer, buf_length, destination_endpoint, cluster_id, attr_ids, attr_id_count);  \
+    uint16_t result = encodeReadAttributesCommand(buffer, buf_length, seqNumber, destination_endpoint, cluster_id, attr_ids, attr_id_count);  \
     if (result == 0)                                                                                                               \
     {                                                                                                                              \
         ChipLogError(Zcl, "Error encoding %s command", name);                                                                      \
@@ -47,7 +47,7 @@ using namespace chip;
 
 #define WRITE_ATTRIBUTE(name, cluster_id, value)                                                                                   \
     BufBound buf = BufBound(buffer, buf_length);                                                                                   \
-    if (_encodeGlobalCommand(buf, destination_endpoint, cluster_id, 0x02))                                                         \
+    if (_encodeGlobalCommand(buf, seqNumber, destination_endpoint, cluster_id, 0x02))                                                         \
     {                                                                                                                              \
         buf.Put16(attr_id);                                                                                                        \
         buf.Put(attr_type);                                                                                                        \
@@ -78,7 +78,7 @@ using namespace chip;
 
 #define REPORT_ATTRIBUTE(name, cluster_id, isAnalog, value)                                                                        \
     BufBound buf = BufBound(buffer, buf_length);                                                                                   \
-    if (_encodeGlobalCommand(buf, destination_endpoint, cluster_id, 0x06))                                                         \
+    if (_encodeGlobalCommand(buf, seqNumber, destination_endpoint, cluster_id, 0x06))                                                         \
     {                                                                                                                              \
         uint8_t direction = 0x00;                                                                                                  \
         buf.Put(direction);                                                                                                        \
@@ -131,7 +131,7 @@ using namespace chip;
 
 #define DISCOVER_ATTRIBUTES(name, cluster_id)                                                                                      \
     BufBound buf = BufBound(buffer, buf_length);                                                                                   \
-    if (_encodeGlobalCommand(buf, destination_endpoint, cluster_id, 0x0c))                                                         \
+    if (_encodeGlobalCommand(buf, seqNumber, destination_endpoint, cluster_id, 0x0c))                                                         \
     {                                                                                                                              \
         /* Discover all attributes */                                                                                              \
         buf.Put16(0x0000);                                                                                                         \
@@ -148,7 +148,7 @@ using namespace chip;
 
 #define COMMAND_HEADER(name, cluster_id, command_id)                                                                               \
     BufBound buf    = BufBound(buffer, buf_length);                                                                                \
-    uint16_t result = _encodeClusterSpecificCommand(buf, destination_endpoint, cluster_id, command_id);                            \
+    uint16_t result = _encodeClusterSpecificCommand(buf, seqNumber, destination_endpoint, cluster_id, command_id);                            \
     if (result == 0)                                                                                                               \
     {                                                                                                                              \
         ChipLogError(Zcl, "Error encoding %s command", name);                                                                      \
@@ -253,49 +253,48 @@ uint16_t encodeApsFrame(uint8_t * buffer, uint16_t buf_length, EmberApsFrame * a
                             apsFrame->groupId, apsFrame->sequence, apsFrame->radius, !buffer);
 }
 
-uint16_t _encodeCommand(BufBound & buf, EndpointId destination_endpoint, ClusterId cluster_id, CommandId command,
+uint16_t _encodeCommand(BufBound & buf, uint8_t seqNumber, EndpointId destination_endpoint, ClusterId cluster_id, CommandId command,
                         uint8_t frame_control)
 {
     CHECK_FRAME_LENGTH(buf.Size(), "Buffer is empty");
 
-    uint8_t seq_num            = 1; // Transaction sequence number.  Just pick something.
     EndpointId source_endpoint = 1; // Pick source endpoint as 1 for now.
 
     if (doEncodeApsFrame(buf, cluster_id, source_endpoint, destination_endpoint, 0, 0, 0, 0, false))
     {
         buf.Put(frame_control);
-        buf.Put(seq_num);
+        buf.Put(seqNumber);
         buf.Put(command);
     }
 
     return buf.Fit() && CanCastTo<uint16_t>(buf.Needed()) ? static_cast<uint16_t>(buf.Needed()) : 0;
 }
 
-uint16_t _encodeClusterSpecificCommand(BufBound & buf, EndpointId destination_endpoint, ClusterId cluster_id, CommandId command)
+uint16_t _encodeClusterSpecificCommand(BufBound & buf, uint8_t seqNumber, EndpointId destination_endpoint, ClusterId cluster_id, CommandId command)
 {
     // This is a cluster-specific command so low two bits are 0b01.  The command
     // is standard, so does not need a manufacturer code, and we're sending
     // client to server, so all the remaining bits are 0.
     uint8_t frame_control = 0x01;
 
-    return _encodeCommand(buf, destination_endpoint, cluster_id, command, frame_control);
+    return _encodeCommand(buf, seqNumber, destination_endpoint, cluster_id, command, frame_control);
 }
 
-uint16_t _encodeGlobalCommand(BufBound & buf, EndpointId destination_endpoint, ClusterId cluster_id, CommandId command)
+uint16_t _encodeGlobalCommand(BufBound & buf, uint8_t seqNumber, EndpointId destination_endpoint, ClusterId cluster_id, CommandId command)
 {
     // This is a global command, so the low bits are 0b00.  The command is
     // standard, so does not need a manufacturer code, and we're sending client
     // to server, so all the remaining bits are 0.
     uint8_t frame_control = 0x00;
 
-    return _encodeCommand(buf, destination_endpoint, cluster_id, command, frame_control);
+    return _encodeCommand(buf, seqNumber, destination_endpoint, cluster_id, command, frame_control);
 }
 
-uint16_t encodeReadAttributesCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint, ClusterId cluster_id,
+uint16_t encodeReadAttributesCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint, ClusterId cluster_id,
                                      const uint16_t * attr_ids, uint16_t attr_id_count)
 {
     BufBound buf = BufBound(buffer, buf_length);
-    if (_encodeGlobalCommand(buf, destination_endpoint, cluster_id, 0x00))
+    if (_encodeGlobalCommand(buf, seqNumber, destination_endpoint, cluster_id, 0x00))
     {
         for (uint16_t i = 0; i < attr_id_count; ++i)
         {
@@ -327,7 +326,7 @@ uint16_t encodeReadAttributesCommand(uint8_t * buffer, uint16_t buf_length, Endp
 /*
  * Command GoToPercent
  */
-uint16_t encodeBarrierControlClusterGoToPercentCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint,
+uint16_t encodeBarrierControlClusterGoToPercentCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint,
                                                        uint8_t percentOpen)
 {
     const char * kName = "BarrierControlGoToPercent";
@@ -339,14 +338,14 @@ uint16_t encodeBarrierControlClusterGoToPercentCommand(uint8_t * buffer, uint16_
 /*
  * Command Stop
  */
-uint16_t encodeBarrierControlClusterStopCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint)
+uint16_t encodeBarrierControlClusterStopCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint)
 {
     const char * kName = "BarrierControlStop";
     COMMAND_HEADER(kName, BARRIER_CONTROL_CLUSTER_ID, 0x01);
     COMMAND_FOOTER(kName);
 }
 
-uint16_t encodeBarrierControlClusterDiscoverAttributes(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint)
+uint16_t encodeBarrierControlClusterDiscoverAttributes(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint)
 {
     DISCOVER_ATTRIBUTES("DiscoverBarrierControlAttributes", BARRIER_CONTROL_CLUSTER_ID);
 }
@@ -354,13 +353,13 @@ uint16_t encodeBarrierControlClusterDiscoverAttributes(uint8_t * buffer, uint16_
 /*
  * Attribute MovingState
  */
-uint16_t encodeBarrierControlClusterReadMovingStateAttribute(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint)
+uint16_t encodeBarrierControlClusterReadMovingStateAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x0001 };
     READ_ATTRIBUTES("ReadBarrierControlMovingState", BARRIER_CONTROL_CLUSTER_ID);
 }
 
-uint16_t encodeBarrierControlClusterReportMovingStateAttribute(uint8_t * buffer, uint16_t buf_length,
+uint16_t encodeBarrierControlClusterReportMovingStateAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
                                                                EndpointId destination_endpoint, uint16_t min_interval,
                                                                uint16_t max_interval)
 {
@@ -372,14 +371,14 @@ uint16_t encodeBarrierControlClusterReportMovingStateAttribute(uint8_t * buffer,
 /*
  * Attribute SafetyStatus
  */
-uint16_t encodeBarrierControlClusterReadSafetyStatusAttribute(uint8_t * buffer, uint16_t buf_length,
+uint16_t encodeBarrierControlClusterReadSafetyStatusAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
                                                               EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x0002 };
     READ_ATTRIBUTES("ReadBarrierControlSafetyStatus", BARRIER_CONTROL_CLUSTER_ID);
 }
 
-uint16_t encodeBarrierControlClusterReportSafetyStatusAttribute(uint8_t * buffer, uint16_t buf_length,
+uint16_t encodeBarrierControlClusterReportSafetyStatusAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
                                                                 EndpointId destination_endpoint, uint16_t min_interval,
                                                                 uint16_t max_interval)
 {
@@ -391,7 +390,7 @@ uint16_t encodeBarrierControlClusterReportSafetyStatusAttribute(uint8_t * buffer
 /*
  * Attribute Capabilities
  */
-uint16_t encodeBarrierControlClusterReadCapabilitiesAttribute(uint8_t * buffer, uint16_t buf_length,
+uint16_t encodeBarrierControlClusterReadCapabilitiesAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
                                                               EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x0003 };
@@ -401,14 +400,14 @@ uint16_t encodeBarrierControlClusterReadCapabilitiesAttribute(uint8_t * buffer, 
 /*
  * Attribute BarrierPosition
  */
-uint16_t encodeBarrierControlClusterReadBarrierPositionAttribute(uint8_t * buffer, uint16_t buf_length,
+uint16_t encodeBarrierControlClusterReadBarrierPositionAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
                                                                  EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x000A };
     READ_ATTRIBUTES("ReadBarrierControlBarrierPosition", BARRIER_CONTROL_CLUSTER_ID);
 }
 
-uint16_t encodeBarrierControlClusterReportBarrierPositionAttribute(uint8_t * buffer, uint16_t buf_length,
+uint16_t encodeBarrierControlClusterReportBarrierPositionAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
                                                                    EndpointId destination_endpoint, uint16_t min_interval,
                                                                    uint16_t max_interval, uint8_t change)
 {
@@ -434,14 +433,14 @@ uint16_t encodeBarrierControlClusterReportBarrierPositionAttribute(uint8_t * buf
 /*
  * Command ResetToFactoryDefaults
  */
-uint16_t encodeBasicClusterResetToFactoryDefaultsCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint)
+uint16_t encodeBasicClusterResetToFactoryDefaultsCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint)
 {
     const char * kName = "BasicResetToFactoryDefaults";
     COMMAND_HEADER(kName, BASIC_CLUSTER_ID, 0x00);
     COMMAND_FOOTER(kName);
 }
 
-uint16_t encodeBasicClusterDiscoverAttributes(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint)
+uint16_t encodeBasicClusterDiscoverAttributes(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint)
 {
     DISCOVER_ATTRIBUTES("DiscoverBasicAttributes", BASIC_CLUSTER_ID);
 }
@@ -449,7 +448,7 @@ uint16_t encodeBasicClusterDiscoverAttributes(uint8_t * buffer, uint16_t buf_len
 /*
  * Attribute ZCLVersion
  */
-uint16_t encodeBasicClusterReadZCLVersionAttribute(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint)
+uint16_t encodeBasicClusterReadZCLVersionAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x0000 };
     READ_ATTRIBUTES("ReadBasicZCLVersion", BASIC_CLUSTER_ID);
@@ -458,7 +457,7 @@ uint16_t encodeBasicClusterReadZCLVersionAttribute(uint8_t * buffer, uint16_t bu
 /*
  * Attribute PowerSource
  */
-uint16_t encodeBasicClusterReadPowerSourceAttribute(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint)
+uint16_t encodeBasicClusterReadPowerSourceAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x0007 };
     READ_ATTRIBUTES("ReadBasicPowerSource", BASIC_CLUSTER_ID);
@@ -531,7 +530,7 @@ uint16_t encodeBasicClusterReadPowerSourceAttribute(uint8_t * buffer, uint16_t b
 /*
  * Command MoveColor
  */
-uint16_t encodeColorControlClusterMoveColorCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint,
+uint16_t encodeColorControlClusterMoveColorCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint,
                                                    int16_t rateX, int16_t rateY, uint8_t optionsMask, uint8_t optionsOverride)
 {
     const char * kName = "ColorControlMoveColor";
@@ -546,7 +545,7 @@ uint16_t encodeColorControlClusterMoveColorCommand(uint8_t * buffer, uint16_t bu
 /*
  * Command MoveColorTemperature
  */
-uint16_t encodeColorControlClusterMoveColorTemperatureCommand(uint8_t * buffer, uint16_t buf_length,
+uint16_t encodeColorControlClusterMoveColorTemperatureCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
                                                               EndpointId destination_endpoint, uint8_t moveMode, uint16_t rate,
                                                               uint16_t colorTemperatureMinimumMireds,
                                                               uint16_t colorTemperatureMaximumMireds, uint8_t optionsMask,
@@ -566,7 +565,7 @@ uint16_t encodeColorControlClusterMoveColorTemperatureCommand(uint8_t * buffer, 
 /*
  * Command MoveHue
  */
-uint16_t encodeColorControlClusterMoveHueCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint,
+uint16_t encodeColorControlClusterMoveHueCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint,
                                                  uint8_t moveMode, uint8_t rate, uint8_t optionsMask, uint8_t optionsOverride)
 {
     const char * kName = "ColorControlMoveHue";
@@ -581,7 +580,7 @@ uint16_t encodeColorControlClusterMoveHueCommand(uint8_t * buffer, uint16_t buf_
 /*
  * Command MoveSaturation
  */
-uint16_t encodeColorControlClusterMoveSaturationCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint,
+uint16_t encodeColorControlClusterMoveSaturationCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint,
                                                         uint8_t moveMode, uint8_t rate, uint8_t optionsMask,
                                                         uint8_t optionsOverride)
 {
@@ -597,7 +596,7 @@ uint16_t encodeColorControlClusterMoveSaturationCommand(uint8_t * buffer, uint16
 /*
  * Command MoveToColor
  */
-uint16_t encodeColorControlClusterMoveToColorCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint,
+uint16_t encodeColorControlClusterMoveToColorCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint,
                                                      uint16_t colorX, uint16_t colorY, uint16_t transitionTime, uint8_t optionsMask,
                                                      uint8_t optionsOverride)
 {
@@ -614,7 +613,7 @@ uint16_t encodeColorControlClusterMoveToColorCommand(uint8_t * buffer, uint16_t 
 /*
  * Command MoveToColorTemperature
  */
-uint16_t encodeColorControlClusterMoveToColorTemperatureCommand(uint8_t * buffer, uint16_t buf_length,
+uint16_t encodeColorControlClusterMoveToColorTemperatureCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
                                                                 EndpointId destination_endpoint, uint16_t colorTemperatureMireds,
                                                                 uint16_t transitionTime, uint8_t optionsMask,
                                                                 uint8_t optionsOverride)
@@ -631,7 +630,7 @@ uint16_t encodeColorControlClusterMoveToColorTemperatureCommand(uint8_t * buffer
 /*
  * Command MoveToHue
  */
-uint16_t encodeColorControlClusterMoveToHueCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint,
+uint16_t encodeColorControlClusterMoveToHueCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint,
                                                    uint8_t hue, uint8_t direction, uint16_t transitionTime, uint8_t optionsMask,
                                                    uint8_t optionsOverride)
 {
@@ -648,7 +647,7 @@ uint16_t encodeColorControlClusterMoveToHueCommand(uint8_t * buffer, uint16_t bu
 /*
  * Command MoveToHueAndSaturation
  */
-uint16_t encodeColorControlClusterMoveToHueAndSaturationCommand(uint8_t * buffer, uint16_t buf_length,
+uint16_t encodeColorControlClusterMoveToHueAndSaturationCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
                                                                 EndpointId destination_endpoint, uint8_t hue, uint8_t saturation,
                                                                 uint16_t transitionTime, uint8_t optionsMask,
                                                                 uint8_t optionsOverride)
@@ -666,7 +665,7 @@ uint16_t encodeColorControlClusterMoveToHueAndSaturationCommand(uint8_t * buffer
 /*
  * Command MoveToSaturation
  */
-uint16_t encodeColorControlClusterMoveToSaturationCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint,
+uint16_t encodeColorControlClusterMoveToSaturationCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint,
                                                           uint8_t saturation, uint16_t transitionTime, uint8_t optionsMask,
                                                           uint8_t optionsOverride)
 {
@@ -682,7 +681,7 @@ uint16_t encodeColorControlClusterMoveToSaturationCommand(uint8_t * buffer, uint
 /*
  * Command StepColor
  */
-uint16_t encodeColorControlClusterStepColorCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint,
+uint16_t encodeColorControlClusterStepColorCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint,
                                                    int16_t stepX, int16_t stepY, uint16_t transitionTime, uint8_t optionsMask,
                                                    uint8_t optionsOverride)
 {
@@ -699,7 +698,7 @@ uint16_t encodeColorControlClusterStepColorCommand(uint8_t * buffer, uint16_t bu
 /*
  * Command StepColorTemperature
  */
-uint16_t encodeColorControlClusterStepColorTemperatureCommand(uint8_t * buffer, uint16_t buf_length,
+uint16_t encodeColorControlClusterStepColorTemperatureCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
                                                               EndpointId destination_endpoint, uint8_t stepMode, uint16_t stepSize,
                                                               uint16_t transitionTime, uint16_t colorTemperatureMinimumMireds,
                                                               uint16_t colorTemperatureMaximumMireds, uint8_t optionsMask,
@@ -720,7 +719,7 @@ uint16_t encodeColorControlClusterStepColorTemperatureCommand(uint8_t * buffer, 
 /*
  * Command StepHue
  */
-uint16_t encodeColorControlClusterStepHueCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint,
+uint16_t encodeColorControlClusterStepHueCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint,
                                                  uint8_t stepMode, uint8_t stepSize, uint8_t transitionTime, uint8_t optionsMask,
                                                  uint8_t optionsOverride)
 {
@@ -737,7 +736,7 @@ uint16_t encodeColorControlClusterStepHueCommand(uint8_t * buffer, uint16_t buf_
 /*
  * Command StepSaturation
  */
-uint16_t encodeColorControlClusterStepSaturationCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint,
+uint16_t encodeColorControlClusterStepSaturationCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint,
                                                         uint8_t stepMode, uint8_t stepSize, uint8_t transitionTime,
                                                         uint8_t optionsMask, uint8_t optionsOverride)
 {
@@ -754,7 +753,7 @@ uint16_t encodeColorControlClusterStepSaturationCommand(uint8_t * buffer, uint16
 /*
  * Command StopMoveStep
  */
-uint16_t encodeColorControlClusterStopMoveStepCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint,
+uint16_t encodeColorControlClusterStopMoveStepCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint,
                                                       uint8_t optionsMask, uint8_t optionsOverride)
 {
     const char * kName = "ColorControlStopMoveStep";
@@ -764,7 +763,7 @@ uint16_t encodeColorControlClusterStopMoveStepCommand(uint8_t * buffer, uint16_t
     COMMAND_FOOTER(kName);
 }
 
-uint16_t encodeColorControlClusterDiscoverAttributes(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint)
+uint16_t encodeColorControlClusterDiscoverAttributes(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint)
 {
     DISCOVER_ATTRIBUTES("DiscoverColorControlAttributes", COLOR_CONTROL_CLUSTER_ID);
 }
@@ -772,13 +771,13 @@ uint16_t encodeColorControlClusterDiscoverAttributes(uint8_t * buffer, uint16_t 
 /*
  * Attribute CurrentHue
  */
-uint16_t encodeColorControlClusterReadCurrentHueAttribute(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint)
+uint16_t encodeColorControlClusterReadCurrentHueAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x0000 };
     READ_ATTRIBUTES("ReadColorControlCurrentHue", COLOR_CONTROL_CLUSTER_ID);
 }
 
-uint16_t encodeColorControlClusterReportCurrentHueAttribute(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint,
+uint16_t encodeColorControlClusterReportCurrentHueAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint,
                                                             uint16_t min_interval, uint16_t max_interval, uint8_t change)
 {
     uint16_t attr_id  = 0x0000;
@@ -789,14 +788,14 @@ uint16_t encodeColorControlClusterReportCurrentHueAttribute(uint8_t * buffer, ui
 /*
  * Attribute CurrentSaturation
  */
-uint16_t encodeColorControlClusterReadCurrentSaturationAttribute(uint8_t * buffer, uint16_t buf_length,
+uint16_t encodeColorControlClusterReadCurrentSaturationAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
                                                                  EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x0001 };
     READ_ATTRIBUTES("ReadColorControlCurrentSaturation", COLOR_CONTROL_CLUSTER_ID);
 }
 
-uint16_t encodeColorControlClusterReportCurrentSaturationAttribute(uint8_t * buffer, uint16_t buf_length,
+uint16_t encodeColorControlClusterReportCurrentSaturationAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
                                                                    EndpointId destination_endpoint, uint16_t min_interval,
                                                                    uint16_t max_interval, uint8_t change)
 {
@@ -808,7 +807,7 @@ uint16_t encodeColorControlClusterReportCurrentSaturationAttribute(uint8_t * buf
 /*
  * Attribute RemainingTime
  */
-uint16_t encodeColorControlClusterReadRemainingTimeAttribute(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint)
+uint16_t encodeColorControlClusterReadRemainingTimeAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x0002 };
     READ_ATTRIBUTES("ReadColorControlRemainingTime", COLOR_CONTROL_CLUSTER_ID);
@@ -817,13 +816,13 @@ uint16_t encodeColorControlClusterReadRemainingTimeAttribute(uint8_t * buffer, u
 /*
  * Attribute CurrentX
  */
-uint16_t encodeColorControlClusterReadCurrentXAttribute(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint)
+uint16_t encodeColorControlClusterReadCurrentXAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x0003 };
     READ_ATTRIBUTES("ReadColorControlCurrentX", COLOR_CONTROL_CLUSTER_ID);
 }
 
-uint16_t encodeColorControlClusterReportCurrentXAttribute(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint,
+uint16_t encodeColorControlClusterReportCurrentXAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint,
                                                           uint16_t min_interval, uint16_t max_interval, uint16_t change)
 {
     uint16_t attr_id  = 0x0003;
@@ -834,13 +833,13 @@ uint16_t encodeColorControlClusterReportCurrentXAttribute(uint8_t * buffer, uint
 /*
  * Attribute CurrentY
  */
-uint16_t encodeColorControlClusterReadCurrentYAttribute(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint)
+uint16_t encodeColorControlClusterReadCurrentYAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x0004 };
     READ_ATTRIBUTES("ReadColorControlCurrentY", COLOR_CONTROL_CLUSTER_ID);
 }
 
-uint16_t encodeColorControlClusterReportCurrentYAttribute(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint,
+uint16_t encodeColorControlClusterReportCurrentYAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint,
                                                           uint16_t min_interval, uint16_t max_interval, uint16_t change)
 {
     uint16_t attr_id  = 0x0004;
@@ -851,14 +850,14 @@ uint16_t encodeColorControlClusterReportCurrentYAttribute(uint8_t * buffer, uint
 /*
  * Attribute ColorTemperatureMireds
  */
-uint16_t encodeColorControlClusterReadColorTemperatureMiredsAttribute(uint8_t * buffer, uint16_t buf_length,
+uint16_t encodeColorControlClusterReadColorTemperatureMiredsAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
                                                                       EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x0007 };
     READ_ATTRIBUTES("ReadColorControlColorTemperatureMireds", COLOR_CONTROL_CLUSTER_ID);
 }
 
-uint16_t encodeColorControlClusterReportColorTemperatureMiredsAttribute(uint8_t * buffer, uint16_t buf_length,
+uint16_t encodeColorControlClusterReportColorTemperatureMiredsAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
                                                                         EndpointId destination_endpoint, uint16_t min_interval,
                                                                         uint16_t max_interval, uint16_t change)
 {
@@ -870,7 +869,7 @@ uint16_t encodeColorControlClusterReportColorTemperatureMiredsAttribute(uint8_t 
 /*
  * Attribute ColorMode
  */
-uint16_t encodeColorControlClusterReadColorModeAttribute(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint)
+uint16_t encodeColorControlClusterReadColorModeAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x0008 };
     READ_ATTRIBUTES("ReadColorControlColorMode", COLOR_CONTROL_CLUSTER_ID);
@@ -879,13 +878,13 @@ uint16_t encodeColorControlClusterReadColorModeAttribute(uint8_t * buffer, uint1
 /*
  * Attribute Options
  */
-uint16_t encodeColorControlClusterReadOptionsAttribute(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint)
+uint16_t encodeColorControlClusterReadOptionsAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x000F };
     READ_ATTRIBUTES("ReadColorControlOptions", COLOR_CONTROL_CLUSTER_ID);
 }
 
-uint16_t encodeColorControlClusterWriteOptionsAttribute(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint,
+uint16_t encodeColorControlClusterWriteOptionsAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint,
                                                         uint8_t options)
 {
     uint16_t attr_id  = 0x000F;
@@ -896,7 +895,7 @@ uint16_t encodeColorControlClusterWriteOptionsAttribute(uint8_t * buffer, uint16
 /*
  * Attribute NumberOfPrimaries
  */
-uint16_t encodeColorControlClusterReadNumberOfPrimariesAttribute(uint8_t * buffer, uint16_t buf_length,
+uint16_t encodeColorControlClusterReadNumberOfPrimariesAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
                                                                  EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x0010 };
@@ -906,7 +905,7 @@ uint16_t encodeColorControlClusterReadNumberOfPrimariesAttribute(uint8_t * buffe
 /*
  * Attribute Primary1X
  */
-uint16_t encodeColorControlClusterReadPrimary1XAttribute(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint)
+uint16_t encodeColorControlClusterReadPrimary1XAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x0011 };
     READ_ATTRIBUTES("ReadColorControlPrimary1X", COLOR_CONTROL_CLUSTER_ID);
@@ -915,7 +914,7 @@ uint16_t encodeColorControlClusterReadPrimary1XAttribute(uint8_t * buffer, uint1
 /*
  * Attribute Primary1Y
  */
-uint16_t encodeColorControlClusterReadPrimary1YAttribute(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint)
+uint16_t encodeColorControlClusterReadPrimary1YAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x0012 };
     READ_ATTRIBUTES("ReadColorControlPrimary1Y", COLOR_CONTROL_CLUSTER_ID);
@@ -924,7 +923,7 @@ uint16_t encodeColorControlClusterReadPrimary1YAttribute(uint8_t * buffer, uint1
 /*
  * Attribute Primary1Intensity
  */
-uint16_t encodeColorControlClusterReadPrimary1IntensityAttribute(uint8_t * buffer, uint16_t buf_length,
+uint16_t encodeColorControlClusterReadPrimary1IntensityAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
                                                                  EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x0013 };
@@ -934,7 +933,7 @@ uint16_t encodeColorControlClusterReadPrimary1IntensityAttribute(uint8_t * buffe
 /*
  * Attribute Primary2X
  */
-uint16_t encodeColorControlClusterReadPrimary2XAttribute(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint)
+uint16_t encodeColorControlClusterReadPrimary2XAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x0015 };
     READ_ATTRIBUTES("ReadColorControlPrimary2X", COLOR_CONTROL_CLUSTER_ID);
@@ -943,7 +942,7 @@ uint16_t encodeColorControlClusterReadPrimary2XAttribute(uint8_t * buffer, uint1
 /*
  * Attribute Primary2Y
  */
-uint16_t encodeColorControlClusterReadPrimary2YAttribute(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint)
+uint16_t encodeColorControlClusterReadPrimary2YAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x0016 };
     READ_ATTRIBUTES("ReadColorControlPrimary2Y", COLOR_CONTROL_CLUSTER_ID);
@@ -952,7 +951,7 @@ uint16_t encodeColorControlClusterReadPrimary2YAttribute(uint8_t * buffer, uint1
 /*
  * Attribute Primary2Intensity
  */
-uint16_t encodeColorControlClusterReadPrimary2IntensityAttribute(uint8_t * buffer, uint16_t buf_length,
+uint16_t encodeColorControlClusterReadPrimary2IntensityAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
                                                                  EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x0017 };
@@ -962,7 +961,7 @@ uint16_t encodeColorControlClusterReadPrimary2IntensityAttribute(uint8_t * buffe
 /*
  * Attribute Primary3X
  */
-uint16_t encodeColorControlClusterReadPrimary3XAttribute(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint)
+uint16_t encodeColorControlClusterReadPrimary3XAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x0019 };
     READ_ATTRIBUTES("ReadColorControlPrimary3X", COLOR_CONTROL_CLUSTER_ID);
@@ -971,7 +970,7 @@ uint16_t encodeColorControlClusterReadPrimary3XAttribute(uint8_t * buffer, uint1
 /*
  * Attribute Primary3Y
  */
-uint16_t encodeColorControlClusterReadPrimary3YAttribute(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint)
+uint16_t encodeColorControlClusterReadPrimary3YAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x001A };
     READ_ATTRIBUTES("ReadColorControlPrimary3Y", COLOR_CONTROL_CLUSTER_ID);
@@ -980,7 +979,7 @@ uint16_t encodeColorControlClusterReadPrimary3YAttribute(uint8_t * buffer, uint1
 /*
  * Attribute Primary3Intensity
  */
-uint16_t encodeColorControlClusterReadPrimary3IntensityAttribute(uint8_t * buffer, uint16_t buf_length,
+uint16_t encodeColorControlClusterReadPrimary3IntensityAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
                                                                  EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x001B };
@@ -990,7 +989,7 @@ uint16_t encodeColorControlClusterReadPrimary3IntensityAttribute(uint8_t * buffe
 /*
  * Attribute Primary4X
  */
-uint16_t encodeColorControlClusterReadPrimary4XAttribute(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint)
+uint16_t encodeColorControlClusterReadPrimary4XAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x0020 };
     READ_ATTRIBUTES("ReadColorControlPrimary4X", COLOR_CONTROL_CLUSTER_ID);
@@ -999,7 +998,7 @@ uint16_t encodeColorControlClusterReadPrimary4XAttribute(uint8_t * buffer, uint1
 /*
  * Attribute Primary4Y
  */
-uint16_t encodeColorControlClusterReadPrimary4YAttribute(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint)
+uint16_t encodeColorControlClusterReadPrimary4YAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x0021 };
     READ_ATTRIBUTES("ReadColorControlPrimary4Y", COLOR_CONTROL_CLUSTER_ID);
@@ -1008,7 +1007,7 @@ uint16_t encodeColorControlClusterReadPrimary4YAttribute(uint8_t * buffer, uint1
 /*
  * Attribute Primary4Intensity
  */
-uint16_t encodeColorControlClusterReadPrimary4IntensityAttribute(uint8_t * buffer, uint16_t buf_length,
+uint16_t encodeColorControlClusterReadPrimary4IntensityAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
                                                                  EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x0022 };
@@ -1018,7 +1017,7 @@ uint16_t encodeColorControlClusterReadPrimary4IntensityAttribute(uint8_t * buffe
 /*
  * Attribute Primary5X
  */
-uint16_t encodeColorControlClusterReadPrimary5XAttribute(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint)
+uint16_t encodeColorControlClusterReadPrimary5XAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x0024 };
     READ_ATTRIBUTES("ReadColorControlPrimary5X", COLOR_CONTROL_CLUSTER_ID);
@@ -1027,7 +1026,7 @@ uint16_t encodeColorControlClusterReadPrimary5XAttribute(uint8_t * buffer, uint1
 /*
  * Attribute Primary5Y
  */
-uint16_t encodeColorControlClusterReadPrimary5YAttribute(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint)
+uint16_t encodeColorControlClusterReadPrimary5YAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x0025 };
     READ_ATTRIBUTES("ReadColorControlPrimary5Y", COLOR_CONTROL_CLUSTER_ID);
@@ -1036,7 +1035,7 @@ uint16_t encodeColorControlClusterReadPrimary5YAttribute(uint8_t * buffer, uint1
 /*
  * Attribute Primary5Intensity
  */
-uint16_t encodeColorControlClusterReadPrimary5IntensityAttribute(uint8_t * buffer, uint16_t buf_length,
+uint16_t encodeColorControlClusterReadPrimary5IntensityAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
                                                                  EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x0026 };
@@ -1046,7 +1045,7 @@ uint16_t encodeColorControlClusterReadPrimary5IntensityAttribute(uint8_t * buffe
 /*
  * Attribute Primary6X
  */
-uint16_t encodeColorControlClusterReadPrimary6XAttribute(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint)
+uint16_t encodeColorControlClusterReadPrimary6XAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x0028 };
     READ_ATTRIBUTES("ReadColorControlPrimary6X", COLOR_CONTROL_CLUSTER_ID);
@@ -1055,7 +1054,7 @@ uint16_t encodeColorControlClusterReadPrimary6XAttribute(uint8_t * buffer, uint1
 /*
  * Attribute Primary6Y
  */
-uint16_t encodeColorControlClusterReadPrimary6YAttribute(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint)
+uint16_t encodeColorControlClusterReadPrimary6YAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x0029 };
     READ_ATTRIBUTES("ReadColorControlPrimary6Y", COLOR_CONTROL_CLUSTER_ID);
@@ -1064,7 +1063,7 @@ uint16_t encodeColorControlClusterReadPrimary6YAttribute(uint8_t * buffer, uint1
 /*
  * Attribute Primary6Intensity
  */
-uint16_t encodeColorControlClusterReadPrimary6IntensityAttribute(uint8_t * buffer, uint16_t buf_length,
+uint16_t encodeColorControlClusterReadPrimary6IntensityAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
                                                                  EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x002A };
@@ -1074,7 +1073,7 @@ uint16_t encodeColorControlClusterReadPrimary6IntensityAttribute(uint8_t * buffe
 /*
  * Attribute EnhancedCurrentHue
  */
-uint16_t encodeColorControlClusterReadEnhancedCurrentHueAttribute(uint8_t * buffer, uint16_t buf_length,
+uint16_t encodeColorControlClusterReadEnhancedCurrentHueAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
                                                                   EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x4000 };
@@ -1084,7 +1083,7 @@ uint16_t encodeColorControlClusterReadEnhancedCurrentHueAttribute(uint8_t * buff
 /*
  * Attribute EnhancedColorMode
  */
-uint16_t encodeColorControlClusterReadEnhancedColorModeAttribute(uint8_t * buffer, uint16_t buf_length,
+uint16_t encodeColorControlClusterReadEnhancedColorModeAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
                                                                  EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x4001 };
@@ -1094,7 +1093,7 @@ uint16_t encodeColorControlClusterReadEnhancedColorModeAttribute(uint8_t * buffe
 /*
  * Attribute ColorLoopActive
  */
-uint16_t encodeColorControlClusterReadColorLoopActiveAttribute(uint8_t * buffer, uint16_t buf_length,
+uint16_t encodeColorControlClusterReadColorLoopActiveAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
                                                                EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x4002 };
@@ -1104,7 +1103,7 @@ uint16_t encodeColorControlClusterReadColorLoopActiveAttribute(uint8_t * buffer,
 /*
  * Attribute ColorLoopDirection
  */
-uint16_t encodeColorControlClusterReadColorLoopDirectionAttribute(uint8_t * buffer, uint16_t buf_length,
+uint16_t encodeColorControlClusterReadColorLoopDirectionAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
                                                                   EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x4003 };
@@ -1114,7 +1113,7 @@ uint16_t encodeColorControlClusterReadColorLoopDirectionAttribute(uint8_t * buff
 /*
  * Attribute ColorLoopTime
  */
-uint16_t encodeColorControlClusterReadColorLoopTimeAttribute(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint)
+uint16_t encodeColorControlClusterReadColorLoopTimeAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x4004 };
     READ_ATTRIBUTES("ReadColorControlColorLoopTime", COLOR_CONTROL_CLUSTER_ID);
@@ -1123,7 +1122,7 @@ uint16_t encodeColorControlClusterReadColorLoopTimeAttribute(uint8_t * buffer, u
 /*
  * Attribute ColorLoopStartEnhancedHue
  */
-uint16_t encodeColorControlClusterReadColorLoopStartEnhancedHueAttribute(uint8_t * buffer, uint16_t buf_length,
+uint16_t encodeColorControlClusterReadColorLoopStartEnhancedHueAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
                                                                          EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x4005 };
@@ -1133,7 +1132,7 @@ uint16_t encodeColorControlClusterReadColorLoopStartEnhancedHueAttribute(uint8_t
 /*
  * Attribute ColorLoopStoredEnhancedHue
  */
-uint16_t encodeColorControlClusterReadColorLoopStoredEnhancedHueAttribute(uint8_t * buffer, uint16_t buf_length,
+uint16_t encodeColorControlClusterReadColorLoopStoredEnhancedHueAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
                                                                           EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x4006 };
@@ -1143,7 +1142,7 @@ uint16_t encodeColorControlClusterReadColorLoopStoredEnhancedHueAttribute(uint8_
 /*
  * Attribute ColorCapabilities
  */
-uint16_t encodeColorControlClusterReadColorCapabilitiesAttribute(uint8_t * buffer, uint16_t buf_length,
+uint16_t encodeColorControlClusterReadColorCapabilitiesAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
                                                                  EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x400A };
@@ -1153,7 +1152,7 @@ uint16_t encodeColorControlClusterReadColorCapabilitiesAttribute(uint8_t * buffe
 /*
  * Attribute ColorTempPhysicalMinMireds
  */
-uint16_t encodeColorControlClusterReadColorTempPhysicalMinMiredsAttribute(uint8_t * buffer, uint16_t buf_length,
+uint16_t encodeColorControlClusterReadColorTempPhysicalMinMiredsAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
                                                                           EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x400B };
@@ -1163,7 +1162,7 @@ uint16_t encodeColorControlClusterReadColorTempPhysicalMinMiredsAttribute(uint8_
 /*
  * Attribute ColorTempPhysicalMaxMireds
  */
-uint16_t encodeColorControlClusterReadColorTempPhysicalMaxMiredsAttribute(uint8_t * buffer, uint16_t buf_length,
+uint16_t encodeColorControlClusterReadColorTempPhysicalMaxMiredsAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
                                                                           EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x400C };
@@ -1173,7 +1172,7 @@ uint16_t encodeColorControlClusterReadColorTempPhysicalMaxMiredsAttribute(uint8_
 /*
  * Attribute CoupleColorTempToLevelMinMireds
  */
-uint16_t encodeColorControlClusterReadCoupleColorTempToLevelMinMiredsAttribute(uint8_t * buffer, uint16_t buf_length,
+uint16_t encodeColorControlClusterReadCoupleColorTempToLevelMinMiredsAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
                                                                                EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x400D };
@@ -1183,14 +1182,14 @@ uint16_t encodeColorControlClusterReadCoupleColorTempToLevelMinMiredsAttribute(u
 /*
  * Attribute StartUpColorTemperatureMireds
  */
-uint16_t encodeColorControlClusterReadStartUpColorTemperatureMiredsAttribute(uint8_t * buffer, uint16_t buf_length,
+uint16_t encodeColorControlClusterReadStartUpColorTemperatureMiredsAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
                                                                              EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x4010 };
     READ_ATTRIBUTES("ReadColorControlStartUpColorTemperatureMireds", COLOR_CONTROL_CLUSTER_ID);
 }
 
-uint16_t encodeColorControlClusterWriteStartUpColorTemperatureMiredsAttribute(uint8_t * buffer, uint16_t buf_length,
+uint16_t encodeColorControlClusterWriteStartUpColorTemperatureMiredsAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
                                                                               EndpointId destination_endpoint,
                                                                               uint16_t startUpColorTemperatureMireds)
 {
@@ -1260,7 +1259,7 @@ uint16_t encodeColorControlClusterWriteStartUpColorTemperatureMiredsAttribute(ui
 /*
  * Command ClearAllPINCodes
  */
-uint16_t encodeDoorLockClusterClearAllPINCodesCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint)
+uint16_t encodeDoorLockClusterClearAllPINCodesCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint)
 {
     const char * kName = "DoorLockClearAllPINCodes";
     COMMAND_HEADER(kName, DOOR_LOCK_CLUSTER_ID, 0x08);
@@ -1270,7 +1269,7 @@ uint16_t encodeDoorLockClusterClearAllPINCodesCommand(uint8_t * buffer, uint16_t
 /*
  * Command ClearAllRFIDCodes
  */
-uint16_t encodeDoorLockClusterClearAllRFIDCodesCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint)
+uint16_t encodeDoorLockClusterClearAllRFIDCodesCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint)
 {
     const char * kName = "DoorLockClearAllRFIDCodes";
     COMMAND_HEADER(kName, DOOR_LOCK_CLUSTER_ID, 0x19);
@@ -1280,7 +1279,7 @@ uint16_t encodeDoorLockClusterClearAllRFIDCodesCommand(uint8_t * buffer, uint16_
 /*
  * Command ClearHolidaySchedule
  */
-uint16_t encodeDoorLockClusterClearHolidayScheduleCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint,
+uint16_t encodeDoorLockClusterClearHolidayScheduleCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint,
                                                           uint8_t holidayScheduleID)
 {
     const char * kName = "DoorLockClearHolidaySchedule";
@@ -1292,7 +1291,7 @@ uint16_t encodeDoorLockClusterClearHolidayScheduleCommand(uint8_t * buffer, uint
 /*
  * Command ClearPINCode
  */
-uint16_t encodeDoorLockClusterClearPINCodeCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint,
+uint16_t encodeDoorLockClusterClearPINCodeCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint,
                                                   uint16_t userID)
 {
     const char * kName = "DoorLockClearPINCode";
@@ -1304,7 +1303,7 @@ uint16_t encodeDoorLockClusterClearPINCodeCommand(uint8_t * buffer, uint16_t buf
 /*
  * Command ClearRFIDCode
  */
-uint16_t encodeDoorLockClusterClearRFIDCodeCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint,
+uint16_t encodeDoorLockClusterClearRFIDCodeCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint,
                                                    uint16_t userID)
 {
     const char * kName = "DoorLockClearRFIDCode";
@@ -1316,7 +1315,7 @@ uint16_t encodeDoorLockClusterClearRFIDCodeCommand(uint8_t * buffer, uint16_t bu
 /*
  * Command ClearWeekdaySchedule
  */
-uint16_t encodeDoorLockClusterClearWeekdayScheduleCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint,
+uint16_t encodeDoorLockClusterClearWeekdayScheduleCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint,
                                                           uint8_t scheduleID, uint16_t userID)
 {
     const char * kName = "DoorLockClearWeekdaySchedule";
@@ -1329,7 +1328,7 @@ uint16_t encodeDoorLockClusterClearWeekdayScheduleCommand(uint8_t * buffer, uint
 /*
  * Command ClearYearDaySchedule
  */
-uint16_t encodeDoorLockClusterClearYearDayScheduleCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint,
+uint16_t encodeDoorLockClusterClearYearDayScheduleCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint,
                                                           uint8_t scheduleID, uint16_t userID)
 {
     const char * kName = "DoorLockClearYearDaySchedule";
@@ -1342,7 +1341,7 @@ uint16_t encodeDoorLockClusterClearYearDayScheduleCommand(uint8_t * buffer, uint
 /*
  * Command GetHolidaySchedule
  */
-uint16_t encodeDoorLockClusterGetHolidayScheduleCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint,
+uint16_t encodeDoorLockClusterGetHolidayScheduleCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint,
                                                         uint8_t holidayScheduleID)
 {
     const char * kName = "DoorLockGetHolidaySchedule";
@@ -1354,7 +1353,7 @@ uint16_t encodeDoorLockClusterGetHolidayScheduleCommand(uint8_t * buffer, uint16
 /*
  * Command GetPINCode
  */
-uint16_t encodeDoorLockClusterGetPINCodeCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint,
+uint16_t encodeDoorLockClusterGetPINCodeCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint,
                                                 uint16_t userID)
 {
     const char * kName = "DoorLockGetPINCode";
@@ -1366,7 +1365,7 @@ uint16_t encodeDoorLockClusterGetPINCodeCommand(uint8_t * buffer, uint16_t buf_l
 /*
  * Command GetRFIDCode
  */
-uint16_t encodeDoorLockClusterGetRFIDCodeCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint,
+uint16_t encodeDoorLockClusterGetRFIDCodeCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint,
                                                  uint16_t userID)
 {
     const char * kName = "DoorLockGetRFIDCode";
@@ -1378,7 +1377,7 @@ uint16_t encodeDoorLockClusterGetRFIDCodeCommand(uint8_t * buffer, uint16_t buf_
 /*
  * Command GetUserType
  */
-uint16_t encodeDoorLockClusterGetUserTypeCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint,
+uint16_t encodeDoorLockClusterGetUserTypeCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint,
                                                  uint16_t userID)
 {
     const char * kName = "DoorLockGetUserType";
@@ -1390,7 +1389,7 @@ uint16_t encodeDoorLockClusterGetUserTypeCommand(uint8_t * buffer, uint16_t buf_
 /*
  * Command GetWeekdaySchedule
  */
-uint16_t encodeDoorLockClusterGetWeekdayScheduleCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint,
+uint16_t encodeDoorLockClusterGetWeekdayScheduleCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint,
                                                         uint8_t scheduleID, uint16_t userID)
 {
     const char * kName = "DoorLockGetWeekdaySchedule";
@@ -1403,7 +1402,7 @@ uint16_t encodeDoorLockClusterGetWeekdayScheduleCommand(uint8_t * buffer, uint16
 /*
  * Command GetYearDaySchedule
  */
-uint16_t encodeDoorLockClusterGetYearDayScheduleCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint,
+uint16_t encodeDoorLockClusterGetYearDayScheduleCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint,
                                                         uint8_t scheduleID, uint16_t userID)
 {
     const char * kName = "DoorLockGetYearDaySchedule";
@@ -1416,7 +1415,7 @@ uint16_t encodeDoorLockClusterGetYearDayScheduleCommand(uint8_t * buffer, uint16
 /*
  * Command LockDoor
  */
-uint16_t encodeDoorLockClusterLockDoorCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint,
+uint16_t encodeDoorLockClusterLockDoorCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint,
                                               char * pINOrRFIDCode)
 {
     const char * kName = "DoorLockLockDoor";
@@ -1428,7 +1427,7 @@ uint16_t encodeDoorLockClusterLockDoorCommand(uint8_t * buffer, uint16_t buf_len
 /*
  * Command SetHolidaySchedule
  */
-uint16_t encodeDoorLockClusterSetHolidayScheduleCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint,
+uint16_t encodeDoorLockClusterSetHolidayScheduleCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint,
                                                         uint8_t holidayScheduleID, uint32_t localStartTime, uint32_t localEndTime,
                                                         uint8_t operatingModeDuringHoliday)
 {
@@ -1444,7 +1443,7 @@ uint16_t encodeDoorLockClusterSetHolidayScheduleCommand(uint8_t * buffer, uint16
 /*
  * Command SetPINCode
  */
-uint16_t encodeDoorLockClusterSetPINCodeCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint,
+uint16_t encodeDoorLockClusterSetPINCodeCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint,
                                                 uint16_t userID, uint8_t userStatus, uint8_t userType, char * pIN)
 {
     const char * kName = "DoorLockSetPINCode";
@@ -1459,7 +1458,7 @@ uint16_t encodeDoorLockClusterSetPINCodeCommand(uint8_t * buffer, uint16_t buf_l
 /*
  * Command SetRFIDCode
  */
-uint16_t encodeDoorLockClusterSetRFIDCodeCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint,
+uint16_t encodeDoorLockClusterSetRFIDCodeCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint,
                                                  uint16_t userID, uint8_t userStatus, uint8_t userType, char * rFIDCode)
 {
     const char * kName = "DoorLockSetRFIDCode";
@@ -1474,7 +1473,7 @@ uint16_t encodeDoorLockClusterSetRFIDCodeCommand(uint8_t * buffer, uint16_t buf_
 /*
  * Command SetUserType
  */
-uint16_t encodeDoorLockClusterSetUserTypeCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint,
+uint16_t encodeDoorLockClusterSetUserTypeCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint,
                                                  uint16_t userID, uint8_t userType)
 {
     const char * kName = "DoorLockSetUserType";
@@ -1487,7 +1486,7 @@ uint16_t encodeDoorLockClusterSetUserTypeCommand(uint8_t * buffer, uint16_t buf_
 /*
  * Command SetWeekdaySchedule
  */
-uint16_t encodeDoorLockClusterSetWeekdayScheduleCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint,
+uint16_t encodeDoorLockClusterSetWeekdayScheduleCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint,
                                                         uint8_t scheduleID, uint16_t userID, uint8_t daysMask, uint8_t startHour,
                                                         uint8_t startMinute, uint8_t endHour, uint8_t endMinute)
 {
@@ -1506,7 +1505,7 @@ uint16_t encodeDoorLockClusterSetWeekdayScheduleCommand(uint8_t * buffer, uint16
 /*
  * Command SetYearDaySchedule
  */
-uint16_t encodeDoorLockClusterSetYearDayScheduleCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint,
+uint16_t encodeDoorLockClusterSetYearDayScheduleCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint,
                                                         uint8_t scheduleID, uint16_t userID, uint32_t localStartTime,
                                                         uint32_t localEndTime)
 {
@@ -1522,7 +1521,7 @@ uint16_t encodeDoorLockClusterSetYearDayScheduleCommand(uint8_t * buffer, uint16
 /*
  * Command UnlockDoor
  */
-uint16_t encodeDoorLockClusterUnlockDoorCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint,
+uint16_t encodeDoorLockClusterUnlockDoorCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint,
                                                 char * pINOrRFIDCode)
 {
     const char * kName = "DoorLockUnlockDoor";
@@ -1534,7 +1533,7 @@ uint16_t encodeDoorLockClusterUnlockDoorCommand(uint8_t * buffer, uint16_t buf_l
 /*
  * Command UnlockWithTimeout
  */
-uint16_t encodeDoorLockClusterUnlockWithTimeoutCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint,
+uint16_t encodeDoorLockClusterUnlockWithTimeoutCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint,
                                                        uint16_t timeoutInSeconds, char * pINOrRFIDCode)
 {
     const char * kName = "DoorLockUnlockWithTimeout";
@@ -1544,7 +1543,7 @@ uint16_t encodeDoorLockClusterUnlockWithTimeoutCommand(uint8_t * buffer, uint16_
     COMMAND_FOOTER(kName);
 }
 
-uint16_t encodeDoorLockClusterDiscoverAttributes(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint)
+uint16_t encodeDoorLockClusterDiscoverAttributes(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint)
 {
     DISCOVER_ATTRIBUTES("DiscoverDoorLockAttributes", DOOR_LOCK_CLUSTER_ID);
 }
@@ -1552,13 +1551,13 @@ uint16_t encodeDoorLockClusterDiscoverAttributes(uint8_t * buffer, uint16_t buf_
 /*
  * Attribute LockState
  */
-uint16_t encodeDoorLockClusterReadLockStateAttribute(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint)
+uint16_t encodeDoorLockClusterReadLockStateAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x0000 };
     READ_ATTRIBUTES("ReadDoorLockLockState", DOOR_LOCK_CLUSTER_ID);
 }
 
-uint16_t encodeDoorLockClusterReportLockStateAttribute(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint,
+uint16_t encodeDoorLockClusterReportLockStateAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint,
                                                        uint16_t min_interval, uint16_t max_interval)
 {
     uint16_t attr_id  = 0x0000;
@@ -1569,7 +1568,7 @@ uint16_t encodeDoorLockClusterReportLockStateAttribute(uint8_t * buffer, uint16_
 /*
  * Attribute LockType
  */
-uint16_t encodeDoorLockClusterReadLockTypeAttribute(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint)
+uint16_t encodeDoorLockClusterReadLockTypeAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x0001 };
     READ_ATTRIBUTES("ReadDoorLockLockType", DOOR_LOCK_CLUSTER_ID);
@@ -1578,7 +1577,7 @@ uint16_t encodeDoorLockClusterReadLockTypeAttribute(uint8_t * buffer, uint16_t b
 /*
  * Attribute ActuatorEnabled
  */
-uint16_t encodeDoorLockClusterReadActuatorEnabledAttribute(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint)
+uint16_t encodeDoorLockClusterReadActuatorEnabledAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x0002 };
     READ_ATTRIBUTES("ReadDoorLockActuatorEnabled", DOOR_LOCK_CLUSTER_ID);
@@ -1609,7 +1608,7 @@ uint16_t encodeDoorLockClusterReadActuatorEnabledAttribute(uint8_t * buffer, uin
 /*
  * Command AddGroup
  */
-uint16_t encodeGroupsClusterAddGroupCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint, GroupId groupId,
+uint16_t encodeGroupsClusterAddGroupCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint, GroupId groupId,
                                             char * groupName)
 {
     const char * kName = "GroupsAddGroup";
@@ -1622,7 +1621,7 @@ uint16_t encodeGroupsClusterAddGroupCommand(uint8_t * buffer, uint16_t buf_lengt
 /*
  * Command AddGroupIfIdentifying
  */
-uint16_t encodeGroupsClusterAddGroupIfIdentifyingCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint,
+uint16_t encodeGroupsClusterAddGroupIfIdentifyingCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint,
                                                          GroupId groupId, char * groupName)
 {
     const char * kName = "GroupsAddGroupIfIdentifying";
@@ -1635,7 +1634,7 @@ uint16_t encodeGroupsClusterAddGroupIfIdentifyingCommand(uint8_t * buffer, uint1
 /*
  * Command GetGroupMembership
  */
-uint16_t encodeGroupsClusterGetGroupMembershipCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint,
+uint16_t encodeGroupsClusterGetGroupMembershipCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint,
                                                       uint8_t groupCount, uint16_t groupList)
 {
     const char * kName = "GroupsGetGroupMembership";
@@ -1648,7 +1647,7 @@ uint16_t encodeGroupsClusterGetGroupMembershipCommand(uint8_t * buffer, uint16_t
 /*
  * Command RemoveAllGroups
  */
-uint16_t encodeGroupsClusterRemoveAllGroupsCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint)
+uint16_t encodeGroupsClusterRemoveAllGroupsCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint)
 {
     const char * kName = "GroupsRemoveAllGroups";
     COMMAND_HEADER(kName, GROUPS_CLUSTER_ID, 0x04);
@@ -1658,7 +1657,7 @@ uint16_t encodeGroupsClusterRemoveAllGroupsCommand(uint8_t * buffer, uint16_t bu
 /*
  * Command RemoveGroup
  */
-uint16_t encodeGroupsClusterRemoveGroupCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint,
+uint16_t encodeGroupsClusterRemoveGroupCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint,
                                                GroupId groupId)
 {
     const char * kName = "GroupsRemoveGroup";
@@ -1670,7 +1669,7 @@ uint16_t encodeGroupsClusterRemoveGroupCommand(uint8_t * buffer, uint16_t buf_le
 /*
  * Command ViewGroup
  */
-uint16_t encodeGroupsClusterViewGroupCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint,
+uint16_t encodeGroupsClusterViewGroupCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint,
                                              GroupId groupId)
 {
     const char * kName = "GroupsViewGroup";
@@ -1679,7 +1678,7 @@ uint16_t encodeGroupsClusterViewGroupCommand(uint8_t * buffer, uint16_t buf_leng
     COMMAND_FOOTER(kName);
 }
 
-uint16_t encodeGroupsClusterDiscoverAttributes(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint)
+uint16_t encodeGroupsClusterDiscoverAttributes(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint)
 {
     DISCOVER_ATTRIBUTES("DiscoverGroupsAttributes", GROUPS_CLUSTER_ID);
 }
@@ -1687,7 +1686,7 @@ uint16_t encodeGroupsClusterDiscoverAttributes(uint8_t * buffer, uint16_t buf_le
 /*
  * Attribute NameSupport
  */
-uint16_t encodeGroupsClusterReadNameSupportAttribute(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint)
+uint16_t encodeGroupsClusterReadNameSupportAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x0000 };
     READ_ATTRIBUTES("ReadGroupsNameSupport", GROUPS_CLUSTER_ID);
@@ -1712,7 +1711,7 @@ uint16_t encodeGroupsClusterReadNameSupportAttribute(uint8_t * buffer, uint16_t 
 /*
  * Command ZoneEnrollResponse
  */
-uint16_t encodeIASZoneClusterZoneEnrollResponseCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint,
+uint16_t encodeIASZoneClusterZoneEnrollResponseCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint,
                                                        uint8_t enrollResponseCode, uint8_t zoneID)
 {
     const char * kName = "IASZoneZoneEnrollResponse";
@@ -1722,7 +1721,7 @@ uint16_t encodeIASZoneClusterZoneEnrollResponseCommand(uint8_t * buffer, uint16_
     COMMAND_FOOTER(kName);
 }
 
-uint16_t encodeIASZoneClusterDiscoverAttributes(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint)
+uint16_t encodeIASZoneClusterDiscoverAttributes(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint)
 {
     DISCOVER_ATTRIBUTES("DiscoverIASZoneAttributes", IAS_ZONE_CLUSTER_ID);
 }
@@ -1730,7 +1729,7 @@ uint16_t encodeIASZoneClusterDiscoverAttributes(uint8_t * buffer, uint16_t buf_l
 /*
  * Attribute ZoneState
  */
-uint16_t encodeIASZoneClusterReadZoneStateAttribute(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint)
+uint16_t encodeIASZoneClusterReadZoneStateAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x0000 };
     READ_ATTRIBUTES("ReadIASZoneZoneState", IAS_ZONE_CLUSTER_ID);
@@ -1739,7 +1738,7 @@ uint16_t encodeIASZoneClusterReadZoneStateAttribute(uint8_t * buffer, uint16_t b
 /*
  * Attribute ZoneType
  */
-uint16_t encodeIASZoneClusterReadZoneTypeAttribute(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint)
+uint16_t encodeIASZoneClusterReadZoneTypeAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x0001 };
     READ_ATTRIBUTES("ReadIASZoneZoneType", IAS_ZONE_CLUSTER_ID);
@@ -1748,7 +1747,7 @@ uint16_t encodeIASZoneClusterReadZoneTypeAttribute(uint8_t * buffer, uint16_t bu
 /*
  * Attribute ZoneStatus
  */
-uint16_t encodeIASZoneClusterReadZoneStatusAttribute(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint)
+uint16_t encodeIASZoneClusterReadZoneStatusAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x0002 };
     READ_ATTRIBUTES("ReadIASZoneZoneStatus", IAS_ZONE_CLUSTER_ID);
@@ -1757,13 +1756,13 @@ uint16_t encodeIASZoneClusterReadZoneStatusAttribute(uint8_t * buffer, uint16_t 
 /*
  * Attribute IASCIEAddress
  */
-uint16_t encodeIASZoneClusterReadIASCIEAddressAttribute(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint)
+uint16_t encodeIASZoneClusterReadIASCIEAddressAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x0010 };
     READ_ATTRIBUTES("ReadIASZoneIASCIEAddress", IAS_ZONE_CLUSTER_ID);
 }
 
-uint16_t encodeIASZoneClusterWriteIASCIEAddressAttribute(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint,
+uint16_t encodeIASZoneClusterWriteIASCIEAddressAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint,
                                                          uint64_t iASCIEAddress)
 {
     uint16_t attr_id  = 0x0010;
@@ -1774,7 +1773,7 @@ uint16_t encodeIASZoneClusterWriteIASCIEAddressAttribute(uint8_t * buffer, uint1
 /*
  * Attribute ZoneID
  */
-uint16_t encodeIASZoneClusterReadZoneIDAttribute(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint)
+uint16_t encodeIASZoneClusterReadZoneIDAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x0011 };
     READ_ATTRIBUTES("ReadIASZoneZoneID", IAS_ZONE_CLUSTER_ID);
@@ -1798,7 +1797,7 @@ uint16_t encodeIASZoneClusterReadZoneIDAttribute(uint8_t * buffer, uint16_t buf_
 /*
  * Command Identify
  */
-uint16_t encodeIdentifyClusterIdentifyCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint,
+uint16_t encodeIdentifyClusterIdentifyCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint,
                                               uint16_t identifyTime)
 {
     const char * kName = "IdentifyIdentify";
@@ -1810,14 +1809,14 @@ uint16_t encodeIdentifyClusterIdentifyCommand(uint8_t * buffer, uint16_t buf_len
 /*
  * Command IdentifyQuery
  */
-uint16_t encodeIdentifyClusterIdentifyQueryCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint)
+uint16_t encodeIdentifyClusterIdentifyQueryCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint)
 {
     const char * kName = "IdentifyIdentifyQuery";
     COMMAND_HEADER(kName, IDENTIFY_CLUSTER_ID, 0x01);
     COMMAND_FOOTER(kName);
 }
 
-uint16_t encodeIdentifyClusterDiscoverAttributes(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint)
+uint16_t encodeIdentifyClusterDiscoverAttributes(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint)
 {
     DISCOVER_ATTRIBUTES("DiscoverIdentifyAttributes", IDENTIFY_CLUSTER_ID);
 }
@@ -1825,13 +1824,13 @@ uint16_t encodeIdentifyClusterDiscoverAttributes(uint8_t * buffer, uint16_t buf_
 /*
  * Attribute IdentifyTime
  */
-uint16_t encodeIdentifyClusterReadIdentifyTimeAttribute(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint)
+uint16_t encodeIdentifyClusterReadIdentifyTimeAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x0000 };
     READ_ATTRIBUTES("ReadIdentifyIdentifyTime", IDENTIFY_CLUSTER_ID);
 }
 
-uint16_t encodeIdentifyClusterWriteIdentifyTimeAttribute(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint,
+uint16_t encodeIdentifyClusterWriteIdentifyTimeAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint,
                                                          uint16_t identifyTime)
 {
     uint16_t attr_id  = 0x0000;
@@ -1862,7 +1861,7 @@ uint16_t encodeIdentifyClusterWriteIdentifyTimeAttribute(uint8_t * buffer, uint1
 /*
  * Command Move
  */
-uint16_t encodeLevelClusterMoveCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint, uint8_t moveMode,
+uint16_t encodeLevelClusterMoveCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint, uint8_t moveMode,
                                        uint8_t rate, uint8_t optionsMask, uint8_t optionsOverride)
 {
     const char * kName = "LevelMove";
@@ -1877,7 +1876,7 @@ uint16_t encodeLevelClusterMoveCommand(uint8_t * buffer, uint16_t buf_length, En
 /*
  * Command MoveToLevel
  */
-uint16_t encodeLevelClusterMoveToLevelCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint, uint8_t level,
+uint16_t encodeLevelClusterMoveToLevelCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint, uint8_t level,
                                               uint16_t transitionTime, uint8_t optionsMask, uint8_t optionsOverride)
 {
     const char * kName = "LevelMoveToLevel";
@@ -1892,7 +1891,7 @@ uint16_t encodeLevelClusterMoveToLevelCommand(uint8_t * buffer, uint16_t buf_len
 /*
  * Command MoveToLevelWithOnOff
  */
-uint16_t encodeLevelClusterMoveToLevelWithOnOffCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint,
+uint16_t encodeLevelClusterMoveToLevelWithOnOffCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint,
                                                        uint8_t level, uint16_t transitionTime, uint8_t optionsMask,
                                                        uint8_t optionsOverride)
 {
@@ -1908,7 +1907,7 @@ uint16_t encodeLevelClusterMoveToLevelWithOnOffCommand(uint8_t * buffer, uint16_
 /*
  * Command MoveWithOnOff
  */
-uint16_t encodeLevelClusterMoveWithOnOffCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint,
+uint16_t encodeLevelClusterMoveWithOnOffCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint,
                                                 uint8_t moveMode, uint8_t rate, uint8_t optionsMask, uint8_t optionsOverride)
 {
     const char * kName = "LevelMoveWithOnOff";
@@ -1923,7 +1922,7 @@ uint16_t encodeLevelClusterMoveWithOnOffCommand(uint8_t * buffer, uint16_t buf_l
 /*
  * Command Step
  */
-uint16_t encodeLevelClusterStepCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint, uint8_t stepMode,
+uint16_t encodeLevelClusterStepCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint, uint8_t stepMode,
                                        uint8_t stepSize, uint16_t transitionTime, uint8_t optionsMask, uint8_t optionsOverride)
 {
     const char * kName = "LevelStep";
@@ -1939,7 +1938,7 @@ uint16_t encodeLevelClusterStepCommand(uint8_t * buffer, uint16_t buf_length, En
 /*
  * Command StepWithOnOff
  */
-uint16_t encodeLevelClusterStepWithOnOffCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint,
+uint16_t encodeLevelClusterStepWithOnOffCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint,
                                                 uint8_t stepMode, uint8_t stepSize, uint16_t transitionTime, uint8_t optionsMask,
                                                 uint8_t optionsOverride)
 {
@@ -1956,7 +1955,7 @@ uint16_t encodeLevelClusterStepWithOnOffCommand(uint8_t * buffer, uint16_t buf_l
 /*
  * Command Stop
  */
-uint16_t encodeLevelClusterStopCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint, uint8_t optionsMask,
+uint16_t encodeLevelClusterStopCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint, uint8_t optionsMask,
                                        uint8_t optionsOverride)
 {
     const char * kName = "LevelStop";
@@ -1969,7 +1968,7 @@ uint16_t encodeLevelClusterStopCommand(uint8_t * buffer, uint16_t buf_length, En
 /*
  * Command StopWithOnOff
  */
-uint16_t encodeLevelClusterStopWithOnOffCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint,
+uint16_t encodeLevelClusterStopWithOnOffCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint,
                                                 uint8_t optionsMask, uint8_t optionsOverride)
 {
     const char * kName = "LevelStopWithOnOff";
@@ -1979,7 +1978,7 @@ uint16_t encodeLevelClusterStopWithOnOffCommand(uint8_t * buffer, uint16_t buf_l
     COMMAND_FOOTER(kName);
 }
 
-uint16_t encodeLevelClusterDiscoverAttributes(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint)
+uint16_t encodeLevelClusterDiscoverAttributes(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint)
 {
     DISCOVER_ATTRIBUTES("DiscoverLevelAttributes", LEVEL_CLUSTER_ID);
 }
@@ -1987,13 +1986,13 @@ uint16_t encodeLevelClusterDiscoverAttributes(uint8_t * buffer, uint16_t buf_len
 /*
  * Attribute CurrentLevel
  */
-uint16_t encodeLevelClusterReadCurrentLevelAttribute(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint)
+uint16_t encodeLevelClusterReadCurrentLevelAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x0000 };
     READ_ATTRIBUTES("ReadLevelCurrentLevel", LEVEL_CLUSTER_ID);
 }
 
-uint16_t encodeLevelClusterReportCurrentLevelAttribute(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint,
+uint16_t encodeLevelClusterReportCurrentLevelAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint,
                                                        uint16_t min_interval, uint16_t max_interval, uint8_t change)
 {
     uint16_t attr_id  = 0x0000;
@@ -2019,7 +2018,7 @@ uint16_t encodeLevelClusterReportCurrentLevelAttribute(uint8_t * buffer, uint16_
 /*
  * Command Off
  */
-uint16_t encodeOnOffClusterOffCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint)
+uint16_t encodeOnOffClusterOffCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint)
 {
     const char * kName = "OnOffOff";
     COMMAND_HEADER(kName, ON_OFF_CLUSTER_ID, 0x00);
@@ -2029,7 +2028,7 @@ uint16_t encodeOnOffClusterOffCommand(uint8_t * buffer, uint16_t buf_length, End
 /*
  * Command On
  */
-uint16_t encodeOnOffClusterOnCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint)
+uint16_t encodeOnOffClusterOnCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint)
 {
     const char * kName = "OnOffOn";
     COMMAND_HEADER(kName, ON_OFF_CLUSTER_ID, 0x01);
@@ -2039,14 +2038,14 @@ uint16_t encodeOnOffClusterOnCommand(uint8_t * buffer, uint16_t buf_length, Endp
 /*
  * Command Toggle
  */
-uint16_t encodeOnOffClusterToggleCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint)
+uint16_t encodeOnOffClusterToggleCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint)
 {
     const char * kName = "OnOffToggle";
     COMMAND_HEADER(kName, ON_OFF_CLUSTER_ID, 0x02);
     COMMAND_FOOTER(kName);
 }
 
-uint16_t encodeOnOffClusterDiscoverAttributes(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint)
+uint16_t encodeOnOffClusterDiscoverAttributes(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint)
 {
     DISCOVER_ATTRIBUTES("DiscoverOnOffAttributes", ON_OFF_CLUSTER_ID);
 }
@@ -2054,13 +2053,13 @@ uint16_t encodeOnOffClusterDiscoverAttributes(uint8_t * buffer, uint16_t buf_len
 /*
  * Attribute OnOff
  */
-uint16_t encodeOnOffClusterReadOnOffAttribute(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint)
+uint16_t encodeOnOffClusterReadOnOffAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x0000 };
     READ_ATTRIBUTES("ReadOnOffOnOff", ON_OFF_CLUSTER_ID);
 }
 
-uint16_t encodeOnOffClusterReportOnOffAttribute(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint,
+uint16_t encodeOnOffClusterReportOnOffAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint,
                                                 uint16_t min_interval, uint16_t max_interval)
 {
     uint16_t attr_id  = 0x0000;
@@ -2100,7 +2099,7 @@ uint16_t encodeOnOffClusterReportOnOffAttribute(uint8_t * buffer, uint16_t buf_l
 /*
  * Command AddScene
  */
-uint16_t encodeScenesClusterAddSceneCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint, GroupId groupID,
+uint16_t encodeScenesClusterAddSceneCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint, GroupId groupID,
                                             uint8_t sceneID, uint16_t transitionTime, char * sceneName, ClusterId clusterId,
                                             char * extensionFieldSet)
 {
@@ -2118,7 +2117,7 @@ uint16_t encodeScenesClusterAddSceneCommand(uint8_t * buffer, uint16_t buf_lengt
 /*
  * Command GetSceneMembership
  */
-uint16_t encodeScenesClusterGetSceneMembershipCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint,
+uint16_t encodeScenesClusterGetSceneMembershipCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint,
                                                       GroupId groupID)
 {
     const char * kName = "ScenesGetSceneMembership";
@@ -2130,7 +2129,7 @@ uint16_t encodeScenesClusterGetSceneMembershipCommand(uint8_t * buffer, uint16_t
 /*
  * Command RecallScene
  */
-uint16_t encodeScenesClusterRecallSceneCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint,
+uint16_t encodeScenesClusterRecallSceneCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint,
                                                GroupId groupID, uint8_t sceneID, uint16_t transitionTime)
 {
     const char * kName = "ScenesRecallScene";
@@ -2144,7 +2143,7 @@ uint16_t encodeScenesClusterRecallSceneCommand(uint8_t * buffer, uint16_t buf_le
 /*
  * Command RemoveAllScenes
  */
-uint16_t encodeScenesClusterRemoveAllScenesCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint,
+uint16_t encodeScenesClusterRemoveAllScenesCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint,
                                                    GroupId groupID)
 {
     const char * kName = "ScenesRemoveAllScenes";
@@ -2156,7 +2155,7 @@ uint16_t encodeScenesClusterRemoveAllScenesCommand(uint8_t * buffer, uint16_t bu
 /*
  * Command RemoveScene
  */
-uint16_t encodeScenesClusterRemoveSceneCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint,
+uint16_t encodeScenesClusterRemoveSceneCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint,
                                                GroupId groupID, uint8_t sceneID)
 {
     const char * kName = "ScenesRemoveScene";
@@ -2169,7 +2168,7 @@ uint16_t encodeScenesClusterRemoveSceneCommand(uint8_t * buffer, uint16_t buf_le
 /*
  * Command StoreScene
  */
-uint16_t encodeScenesClusterStoreSceneCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint,
+uint16_t encodeScenesClusterStoreSceneCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint,
                                               GroupId groupID, uint8_t sceneID)
 {
     const char * kName = "ScenesStoreScene";
@@ -2182,7 +2181,7 @@ uint16_t encodeScenesClusterStoreSceneCommand(uint8_t * buffer, uint16_t buf_len
 /*
  * Command ViewScene
  */
-uint16_t encodeScenesClusterViewSceneCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint,
+uint16_t encodeScenesClusterViewSceneCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint,
                                              GroupId groupID, uint8_t sceneID)
 {
     const char * kName = "ScenesViewScene";
@@ -2192,7 +2191,7 @@ uint16_t encodeScenesClusterViewSceneCommand(uint8_t * buffer, uint16_t buf_leng
     COMMAND_FOOTER(kName);
 }
 
-uint16_t encodeScenesClusterDiscoverAttributes(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint)
+uint16_t encodeScenesClusterDiscoverAttributes(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint)
 {
     DISCOVER_ATTRIBUTES("DiscoverScenesAttributes", SCENES_CLUSTER_ID);
 }
@@ -2200,7 +2199,7 @@ uint16_t encodeScenesClusterDiscoverAttributes(uint8_t * buffer, uint16_t buf_le
 /*
  * Attribute SceneCount
  */
-uint16_t encodeScenesClusterReadSceneCountAttribute(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint)
+uint16_t encodeScenesClusterReadSceneCountAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x0000 };
     READ_ATTRIBUTES("ReadScenesSceneCount", SCENES_CLUSTER_ID);
@@ -2209,7 +2208,7 @@ uint16_t encodeScenesClusterReadSceneCountAttribute(uint8_t * buffer, uint16_t b
 /*
  * Attribute CurrentScene
  */
-uint16_t encodeScenesClusterReadCurrentSceneAttribute(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint)
+uint16_t encodeScenesClusterReadCurrentSceneAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x0001 };
     READ_ATTRIBUTES("ReadScenesCurrentScene", SCENES_CLUSTER_ID);
@@ -2218,7 +2217,7 @@ uint16_t encodeScenesClusterReadCurrentSceneAttribute(uint8_t * buffer, uint16_t
 /*
  * Attribute CurrentGroup
  */
-uint16_t encodeScenesClusterReadCurrentGroupAttribute(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint)
+uint16_t encodeScenesClusterReadCurrentGroupAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x0002 };
     READ_ATTRIBUTES("ReadScenesCurrentGroup", SCENES_CLUSTER_ID);
@@ -2227,7 +2226,7 @@ uint16_t encodeScenesClusterReadCurrentGroupAttribute(uint8_t * buffer, uint16_t
 /*
  * Attribute SceneValid
  */
-uint16_t encodeScenesClusterReadSceneValidAttribute(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint)
+uint16_t encodeScenesClusterReadSceneValidAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x0003 };
     READ_ATTRIBUTES("ReadScenesSceneValid", SCENES_CLUSTER_ID);
@@ -2236,7 +2235,7 @@ uint16_t encodeScenesClusterReadSceneValidAttribute(uint8_t * buffer, uint16_t b
 /*
  * Attribute NameSupport
  */
-uint16_t encodeScenesClusterReadNameSupportAttribute(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint)
+uint16_t encodeScenesClusterReadNameSupportAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x0004 };
     READ_ATTRIBUTES("ReadScenesNameSupport", SCENES_CLUSTER_ID);
@@ -2256,7 +2255,7 @@ uint16_t encodeScenesClusterReadNameSupportAttribute(uint8_t * buffer, uint16_t 
 | * MaxMeasuredValue                                                  | 0x0002 |
 \*----------------------------------------------------------------------------*/
 
-uint16_t encodeTemperatureMeasurementClusterDiscoverAttributes(uint8_t * buffer, uint16_t buf_length,
+uint16_t encodeTemperatureMeasurementClusterDiscoverAttributes(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
                                                                EndpointId destination_endpoint)
 {
     DISCOVER_ATTRIBUTES("DiscoverTemperatureMeasurementAttributes", TEMPERATURE_MEASUREMENT_CLUSTER_ID);
@@ -2265,14 +2264,14 @@ uint16_t encodeTemperatureMeasurementClusterDiscoverAttributes(uint8_t * buffer,
 /*
  * Attribute MeasuredValue
  */
-uint16_t encodeTemperatureMeasurementClusterReadMeasuredValueAttribute(uint8_t * buffer, uint16_t buf_length,
+uint16_t encodeTemperatureMeasurementClusterReadMeasuredValueAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
                                                                        EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x0000 };
     READ_ATTRIBUTES("ReadTemperatureMeasurementMeasuredValue", TEMPERATURE_MEASUREMENT_CLUSTER_ID);
 }
 
-uint16_t encodeTemperatureMeasurementClusterReportMeasuredValueAttribute(uint8_t * buffer, uint16_t buf_length,
+uint16_t encodeTemperatureMeasurementClusterReportMeasuredValueAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
                                                                          EndpointId destination_endpoint, uint16_t min_interval,
                                                                          uint16_t max_interval, int16_t change)
 {
@@ -2284,7 +2283,7 @@ uint16_t encodeTemperatureMeasurementClusterReportMeasuredValueAttribute(uint8_t
 /*
  * Attribute MinMeasuredValue
  */
-uint16_t encodeTemperatureMeasurementClusterReadMinMeasuredValueAttribute(uint8_t * buffer, uint16_t buf_length,
+uint16_t encodeTemperatureMeasurementClusterReadMinMeasuredValueAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
                                                                           EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x0001 };
@@ -2294,7 +2293,7 @@ uint16_t encodeTemperatureMeasurementClusterReadMinMeasuredValueAttribute(uint8_
 /*
  * Attribute MaxMeasuredValue
  */
-uint16_t encodeTemperatureMeasurementClusterReadMaxMeasuredValueAttribute(uint8_t * buffer, uint16_t buf_length,
+uint16_t encodeTemperatureMeasurementClusterReadMaxMeasuredValueAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
                                                                           EndpointId destination_endpoint)
 {
     uint16_t attr_ids[] = { 0x0002 };

@@ -36,6 +36,8 @@ public:
     void OnMessage(PacketBufferHandle buffer) override;
     void OnStatusChange(void) override;
 
+    static void CallbackFn(void * context);
+
 private:
     CHIP_ERROR RunInternal(NodeId remoteId);
     CHIP_ERROR RunCommandInternal(ChipDevice * device);

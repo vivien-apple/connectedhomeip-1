@@ -200,8 +200,8 @@ public:
 
     SecurePairingSessionSerializable & GetPairing() { return mPairing; }
 
-    void AddResponseHandler(EndpointId endpoint, ClusterId cluster, Callback::Callback<> * onResponse);
-    void AddReportHandler(EndpointId endpoint, ClusterId cluster, Callback::Callback<> * onReport);
+    void AddResponseHandler(Callback::Callback<> * onResponse, uint8_t seqNumber);
+    void AddReportHandler(Callback::Callback<> * onReport, uint8_t seqNumber);
 
 private:
     enum class ConnectionState

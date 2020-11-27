@@ -56,7 +56,7 @@ CHIP_ERROR ClusterBase::SendCommand(CommandEncoder commandEncoder, uint16_t maxC
     message = System::PacketBuffer::NewWithAvailableSize(maxCmdLen);
     VerifyOrExit(!message.IsNull(), err = CHIP_ERROR_NO_MEMORY);
 
-    encodedLength = commandEncoder(message->Start(), message->AvailableDataLength(), mEndpoint);
+    encodedLength = commandEncoder(message->Start(), message->AvailableDataLength(), mSeqNumber, mEndpoint);
     VerifyOrExit(encodedLength != 0, err = CHIP_ERROR_INTERNAL);
     VerifyOrExit(encodedLength <= maxCmdLen, err = CHIP_ERROR_INTERNAL);
 
@@ -68,8 +68,10 @@ CHIP_ERROR ClusterBase::SendCommand(CommandEncoder commandEncoder, uint16_t maxC
 
     if (responseHandler != nullptr)
     {
-        mDevice->AddResponseHandler(mEndpoint, mClusterId, responseHandler);
+        mDevice->AddResponseHandler(responseHandler, mSeqNumber);
     }
+
+    mSeqNumber++;
 
 exit:
     if (err != CHIP_NO_ERROR)
@@ -93,7 +95,8 @@ CHIP_ERROR ClusterBase::RequestAttributeReporting(RequestEncoder requestEncoder,
     message = System::PacketBuffer::NewWithAvailableSize(maxCmdLen);
     VerifyOrExit(!message.IsNull(), err = CHIP_ERROR_NO_MEMORY);
 
-    encodedLength = requestEncoder(message->Start(), message->AvailableDataLength(), mEndpoint, minInterval, maxInterval);
+    encodedLength =
+        requestEncoder(message->Start(), message->AvailableDataLength(), mSeqNumber, mEndpoint, minInterval, maxInterval);
     VerifyOrExit(encodedLength != 0, err = CHIP_ERROR_INTERNAL);
     VerifyOrExit(encodedLength <= maxCmdLen, err = CHIP_ERROR_INTERNAL);
 
@@ -105,8 +108,10 @@ CHIP_ERROR ClusterBase::RequestAttributeReporting(RequestEncoder requestEncoder,
 
     if (reportHandler != nullptr)
     {
-        mDevice->AddReportHandler(mEndpoint, mClusterId, reportHandler);
+        mDevice->AddReportHandler(reportHandler, mSeqNumber);
     }
+
+    mSeqNumber++;
 
 exit:
     if (err != CHIP_NO_ERROR)

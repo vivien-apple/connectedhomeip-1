@@ -934,7 +934,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeBarrierControlClusterGoToPercentCommand(buffer->Start(), bufferSize, endPointId, mPercentOpen);
+        return encodeBarrierControlClusterGoToPercentCommand(buffer->Start(), bufferSize, 1, endPointId, mPercentOpen);
     }
 
     // Global Response: DefaultResponse
@@ -958,7 +958,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeBarrierControlClusterStopCommand(buffer->Start(), bufferSize, endPointId);
+        return encodeBarrierControlClusterStopCommand(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: DefaultResponse
@@ -979,7 +979,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeBarrierControlClusterDiscoverAttributes(buffer->Start(), bufferSize, endPointId);
+        return encodeBarrierControlClusterDiscoverAttributes(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: DiscoverAttributesResponse
@@ -1004,7 +1004,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeBarrierControlClusterReadMovingStateAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeBarrierControlClusterReadMovingStateAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -1028,7 +1028,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeBarrierControlClusterReportMovingStateAttribute(buffer->Start(), bufferSize, endPointId, mMinInterval,
+        return encodeBarrierControlClusterReportMovingStateAttribute(buffer->Start(), bufferSize, 1, endPointId, mMinInterval,
                                                                      mMaxInterval);
     }
 
@@ -1058,7 +1058,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeBarrierControlClusterReadSafetyStatusAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeBarrierControlClusterReadSafetyStatusAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -1082,7 +1082,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeBarrierControlClusterReportSafetyStatusAttribute(buffer->Start(), bufferSize, endPointId, mMinInterval,
+        return encodeBarrierControlClusterReportSafetyStatusAttribute(buffer->Start(), bufferSize, 1, endPointId, mMinInterval,
                                                                       mMaxInterval);
     }
 
@@ -1112,7 +1112,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeBarrierControlClusterReadCapabilitiesAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeBarrierControlClusterReadCapabilitiesAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -1137,7 +1137,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeBarrierControlClusterReadBarrierPositionAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeBarrierControlClusterReadBarrierPositionAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -1162,7 +1162,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeBarrierControlClusterReportBarrierPositionAttribute(buffer->Start(), bufferSize, endPointId, mMinInterval,
+        return encodeBarrierControlClusterReportBarrierPositionAttribute(buffer->Start(), bufferSize, 1, endPointId, mMinInterval,
                                                                          mMaxInterval, mChange);
     }
 
@@ -1206,7 +1206,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeBasicClusterResetToFactoryDefaultsCommand(buffer->Start(), bufferSize, endPointId);
+        return encodeBasicClusterResetToFactoryDefaultsCommand(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: DefaultResponse
@@ -1227,7 +1227,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeBasicClusterDiscoverAttributes(buffer->Start(), bufferSize, endPointId);
+        return encodeBasicClusterDiscoverAttributes(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: DiscoverAttributesResponse
@@ -1252,7 +1252,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeBasicClusterReadZCLVersionAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeBasicClusterReadZCLVersionAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -1277,7 +1277,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeBasicClusterReadPowerSourceAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeBasicClusterReadPowerSourceAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -1369,7 +1369,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeColorControlClusterMoveColorCommand(buffer->Start(), bufferSize, endPointId, mRateX, mRateY, mOptionsMask,
+        return encodeColorControlClusterMoveColorCommand(buffer->Start(), bufferSize, 1, endPointId, mRateX, mRateY, mOptionsMask,
                                                          mOptionsOverride);
     }
 
@@ -1406,7 +1406,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeColorControlClusterMoveColorTemperatureCommand(buffer->Start(), bufferSize, endPointId, mMoveMode, mRate,
+        return encodeColorControlClusterMoveColorTemperatureCommand(buffer->Start(), bufferSize, 1, endPointId, mMoveMode, mRate,
                                                                     mColorTemperatureMinimumMireds, mColorTemperatureMaximumMireds,
                                                                     mOptionsMask, mOptionsOverride);
     }
@@ -1444,7 +1444,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeColorControlClusterMoveHueCommand(buffer->Start(), bufferSize, endPointId, mMoveMode, mRate, mOptionsMask,
+        return encodeColorControlClusterMoveHueCommand(buffer->Start(), bufferSize, 1, endPointId, mMoveMode, mRate, mOptionsMask,
                                                        mOptionsOverride);
     }
 
@@ -1479,7 +1479,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeColorControlClusterMoveSaturationCommand(buffer->Start(), bufferSize, endPointId, mMoveMode, mRate,
+        return encodeColorControlClusterMoveSaturationCommand(buffer->Start(), bufferSize, 1, endPointId, mMoveMode, mRate,
                                                               mOptionsMask, mOptionsOverride);
     }
 
@@ -1515,7 +1515,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeColorControlClusterMoveToColorCommand(buffer->Start(), bufferSize, endPointId, mColorX, mColorY,
+        return encodeColorControlClusterMoveToColorCommand(buffer->Start(), bufferSize, 1, endPointId, mColorX, mColorY,
                                                            mTransitionTime, mOptionsMask, mOptionsOverride);
     }
 
@@ -1552,7 +1552,7 @@ public:
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
         return encodeColorControlClusterMoveToColorTemperatureCommand(
-            buffer->Start(), bufferSize, endPointId, mColorTemperatureMireds, mTransitionTime, mOptionsMask, mOptionsOverride);
+            buffer->Start(), bufferSize, 1, endPointId, mColorTemperatureMireds, mTransitionTime, mOptionsMask, mOptionsOverride);
     }
 
     // Global Response: DefaultResponse
@@ -1587,8 +1587,8 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeColorControlClusterMoveToHueCommand(buffer->Start(), bufferSize, endPointId, mHue, mDirection, mTransitionTime,
-                                                         mOptionsMask, mOptionsOverride);
+        return encodeColorControlClusterMoveToHueCommand(buffer->Start(), bufferSize, 1, endPointId, mHue, mDirection,
+                                                         mTransitionTime, mOptionsMask, mOptionsOverride);
     }
 
     // Global Response: DefaultResponse
@@ -1624,7 +1624,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeColorControlClusterMoveToHueAndSaturationCommand(buffer->Start(), bufferSize, endPointId, mHue, mSaturation,
+        return encodeColorControlClusterMoveToHueAndSaturationCommand(buffer->Start(), bufferSize, 1, endPointId, mHue, mSaturation,
                                                                       mTransitionTime, mOptionsMask, mOptionsOverride);
     }
 
@@ -1660,7 +1660,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeColorControlClusterMoveToSaturationCommand(buffer->Start(), bufferSize, endPointId, mSaturation,
+        return encodeColorControlClusterMoveToSaturationCommand(buffer->Start(), bufferSize, 1, endPointId, mSaturation,
                                                                 mTransitionTime, mOptionsMask, mOptionsOverride);
     }
 
@@ -1696,8 +1696,8 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeColorControlClusterStepColorCommand(buffer->Start(), bufferSize, endPointId, mStepX, mStepY, mTransitionTime,
-                                                         mOptionsMask, mOptionsOverride);
+        return encodeColorControlClusterStepColorCommand(buffer->Start(), bufferSize, 1, endPointId, mStepX, mStepY,
+                                                         mTransitionTime, mOptionsMask, mOptionsOverride);
     }
 
     // Global Response: DefaultResponse
@@ -1735,8 +1735,8 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeColorControlClusterStepColorTemperatureCommand(buffer->Start(), bufferSize, endPointId, mStepMode, mStepSize,
-                                                                    mTransitionTime, mColorTemperatureMinimumMireds,
+        return encodeColorControlClusterStepColorTemperatureCommand(buffer->Start(), bufferSize, 1, endPointId, mStepMode,
+                                                                    mStepSize, mTransitionTime, mColorTemperatureMinimumMireds,
                                                                     mColorTemperatureMaximumMireds, mOptionsMask, mOptionsOverride);
     }
 
@@ -1775,7 +1775,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeColorControlClusterStepHueCommand(buffer->Start(), bufferSize, endPointId, mStepMode, mStepSize,
+        return encodeColorControlClusterStepHueCommand(buffer->Start(), bufferSize, 1, endPointId, mStepMode, mStepSize,
                                                        mTransitionTime, mOptionsMask, mOptionsOverride);
     }
 
@@ -1812,7 +1812,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeColorControlClusterStepSaturationCommand(buffer->Start(), bufferSize, endPointId, mStepMode, mStepSize,
+        return encodeColorControlClusterStepSaturationCommand(buffer->Start(), bufferSize, 1, endPointId, mStepMode, mStepSize,
                                                               mTransitionTime, mOptionsMask, mOptionsOverride);
     }
 
@@ -1846,7 +1846,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeColorControlClusterStopMoveStepCommand(buffer->Start(), bufferSize, endPointId, mOptionsMask,
+        return encodeColorControlClusterStopMoveStepCommand(buffer->Start(), bufferSize, 1, endPointId, mOptionsMask,
                                                             mOptionsOverride);
     }
 
@@ -1872,7 +1872,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeColorControlClusterDiscoverAttributes(buffer->Start(), bufferSize, endPointId);
+        return encodeColorControlClusterDiscoverAttributes(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: DiscoverAttributesResponse
@@ -1897,7 +1897,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadCurrentHueAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeColorControlClusterReadCurrentHueAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -1922,7 +1922,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReportCurrentHueAttribute(buffer->Start(), bufferSize, endPointId, mMinInterval,
+        return encodeColorControlClusterReportCurrentHueAttribute(buffer->Start(), bufferSize, 1, endPointId, mMinInterval,
                                                                   mMaxInterval, mChange);
     }
 
@@ -1953,7 +1953,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadCurrentSaturationAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeColorControlClusterReadCurrentSaturationAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -1978,7 +1978,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReportCurrentSaturationAttribute(buffer->Start(), bufferSize, endPointId, mMinInterval,
+        return encodeColorControlClusterReportCurrentSaturationAttribute(buffer->Start(), bufferSize, 1, endPointId, mMinInterval,
                                                                          mMaxInterval, mChange);
     }
 
@@ -2009,7 +2009,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadRemainingTimeAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeColorControlClusterReadRemainingTimeAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2034,7 +2034,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadCurrentXAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeColorControlClusterReadCurrentXAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2059,8 +2059,8 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReportCurrentXAttribute(buffer->Start(), bufferSize, endPointId, mMinInterval, mMaxInterval,
-                                                                mChange);
+        return encodeColorControlClusterReportCurrentXAttribute(buffer->Start(), bufferSize, 1, endPointId, mMinInterval,
+                                                                mMaxInterval, mChange);
     }
 
     // Global Response: ConfigureReportingResponse
@@ -2090,7 +2090,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadCurrentYAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeColorControlClusterReadCurrentYAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2115,8 +2115,8 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReportCurrentYAttribute(buffer->Start(), bufferSize, endPointId, mMinInterval, mMaxInterval,
-                                                                mChange);
+        return encodeColorControlClusterReportCurrentYAttribute(buffer->Start(), bufferSize, 1, endPointId, mMinInterval,
+                                                                mMaxInterval, mChange);
     }
 
     // Global Response: ConfigureReportingResponse
@@ -2146,7 +2146,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadColorTemperatureMiredsAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeColorControlClusterReadColorTemperatureMiredsAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2171,8 +2171,8 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReportColorTemperatureMiredsAttribute(buffer->Start(), bufferSize, endPointId, mMinInterval,
-                                                                              mMaxInterval, mChange);
+        return encodeColorControlClusterReportColorTemperatureMiredsAttribute(buffer->Start(), bufferSize, 1, endPointId,
+                                                                              mMinInterval, mMaxInterval, mChange);
     }
 
     // Global Response: ConfigureReportingResponse
@@ -2202,7 +2202,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadColorModeAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeColorControlClusterReadColorModeAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2227,7 +2227,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadOptionsAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeColorControlClusterReadOptionsAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2250,7 +2250,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeColorControlClusterWriteOptionsAttribute(buffer->Start(), bufferSize, endPointId, mOptions);
+        return encodeColorControlClusterWriteOptionsAttribute(buffer->Start(), bufferSize, 1, endPointId, mOptions);
     }
 
     // Global Response: WriteAttributesResponse
@@ -2278,7 +2278,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadNumberOfPrimariesAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeColorControlClusterReadNumberOfPrimariesAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2303,7 +2303,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadPrimary1XAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeColorControlClusterReadPrimary1XAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2328,7 +2328,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadPrimary1YAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeColorControlClusterReadPrimary1YAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2353,7 +2353,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadPrimary1IntensityAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeColorControlClusterReadPrimary1IntensityAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2378,7 +2378,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadPrimary2XAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeColorControlClusterReadPrimary2XAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2403,7 +2403,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadPrimary2YAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeColorControlClusterReadPrimary2YAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2428,7 +2428,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadPrimary2IntensityAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeColorControlClusterReadPrimary2IntensityAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2453,7 +2453,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadPrimary3XAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeColorControlClusterReadPrimary3XAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2478,7 +2478,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadPrimary3YAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeColorControlClusterReadPrimary3YAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2503,7 +2503,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadPrimary3IntensityAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeColorControlClusterReadPrimary3IntensityAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2528,7 +2528,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadPrimary4XAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeColorControlClusterReadPrimary4XAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2553,7 +2553,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadPrimary4YAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeColorControlClusterReadPrimary4YAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2578,7 +2578,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadPrimary4IntensityAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeColorControlClusterReadPrimary4IntensityAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2603,7 +2603,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadPrimary5XAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeColorControlClusterReadPrimary5XAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2628,7 +2628,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadPrimary5YAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeColorControlClusterReadPrimary5YAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2653,7 +2653,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadPrimary5IntensityAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeColorControlClusterReadPrimary5IntensityAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2678,7 +2678,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadPrimary6XAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeColorControlClusterReadPrimary6XAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2703,7 +2703,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadPrimary6YAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeColorControlClusterReadPrimary6YAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2728,7 +2728,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadPrimary6IntensityAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeColorControlClusterReadPrimary6IntensityAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2753,7 +2753,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadEnhancedCurrentHueAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeColorControlClusterReadEnhancedCurrentHueAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2778,7 +2778,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadEnhancedColorModeAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeColorControlClusterReadEnhancedColorModeAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2803,7 +2803,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadColorLoopActiveAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeColorControlClusterReadColorLoopActiveAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2828,7 +2828,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadColorLoopDirectionAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeColorControlClusterReadColorLoopDirectionAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2853,7 +2853,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadColorLoopTimeAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeColorControlClusterReadColorLoopTimeAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2878,7 +2878,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadColorLoopStartEnhancedHueAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeColorControlClusterReadColorLoopStartEnhancedHueAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2903,7 +2903,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadColorLoopStoredEnhancedHueAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeColorControlClusterReadColorLoopStoredEnhancedHueAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2928,7 +2928,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadColorCapabilitiesAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeColorControlClusterReadColorCapabilitiesAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2953,7 +2953,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadColorTempPhysicalMinMiredsAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeColorControlClusterReadColorTempPhysicalMinMiredsAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2978,7 +2978,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadColorTempPhysicalMaxMiredsAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeColorControlClusterReadColorTempPhysicalMaxMiredsAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -3003,7 +3003,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadCoupleColorTempToLevelMinMiredsAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeColorControlClusterReadCoupleColorTempToLevelMinMiredsAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -3028,7 +3028,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadStartUpColorTemperatureMiredsAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeColorControlClusterReadStartUpColorTemperatureMiredsAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -3051,7 +3051,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeColorControlClusterWriteStartUpColorTemperatureMiredsAttribute(buffer->Start(), bufferSize, endPointId,
+        return encodeColorControlClusterWriteStartUpColorTemperatureMiredsAttribute(buffer->Start(), bufferSize, 1, endPointId,
                                                                                     mStartUpColorTemperatureMireds);
     }
 
@@ -3728,7 +3728,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeDoorLockClusterClearAllPINCodesCommand(buffer->Start(), bufferSize, endPointId);
+        return encodeDoorLockClusterClearAllPINCodesCommand(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: DefaultResponse
@@ -3756,7 +3756,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeDoorLockClusterClearAllRFIDCodesCommand(buffer->Start(), bufferSize, endPointId);
+        return encodeDoorLockClusterClearAllRFIDCodesCommand(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: DefaultResponse
@@ -3788,7 +3788,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeDoorLockClusterClearHolidayScheduleCommand(buffer->Start(), bufferSize, endPointId, mHolidayScheduleID);
+        return encodeDoorLockClusterClearHolidayScheduleCommand(buffer->Start(), bufferSize, 1, endPointId, mHolidayScheduleID);
     }
 
     // Global Response: DefaultResponse
@@ -3823,7 +3823,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeDoorLockClusterClearPINCodeCommand(buffer->Start(), bufferSize, endPointId, mUserID);
+        return encodeDoorLockClusterClearPINCodeCommand(buffer->Start(), bufferSize, 1, endPointId, mUserID);
     }
 
     // Global Response: DefaultResponse
@@ -3858,7 +3858,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeDoorLockClusterClearRFIDCodeCommand(buffer->Start(), bufferSize, endPointId, mUserID);
+        return encodeDoorLockClusterClearRFIDCodeCommand(buffer->Start(), bufferSize, 1, endPointId, mUserID);
     }
 
     // Global Response: DefaultResponse
@@ -3894,7 +3894,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeDoorLockClusterClearWeekdayScheduleCommand(buffer->Start(), bufferSize, endPointId, mScheduleID, mUserID);
+        return encodeDoorLockClusterClearWeekdayScheduleCommand(buffer->Start(), bufferSize, 1, endPointId, mScheduleID, mUserID);
     }
 
     // Global Response: DefaultResponse
@@ -3931,7 +3931,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeDoorLockClusterClearYearDayScheduleCommand(buffer->Start(), bufferSize, endPointId, mScheduleID, mUserID);
+        return encodeDoorLockClusterClearYearDayScheduleCommand(buffer->Start(), bufferSize, 1, endPointId, mScheduleID, mUserID);
     }
 
     // Global Response: DefaultResponse
@@ -3967,7 +3967,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeDoorLockClusterGetHolidayScheduleCommand(buffer->Start(), bufferSize, endPointId, mHolidayScheduleID);
+        return encodeDoorLockClusterGetHolidayScheduleCommand(buffer->Start(), bufferSize, 1, endPointId, mHolidayScheduleID);
     }
 
     // Global Response: DefaultResponse
@@ -4002,7 +4002,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeDoorLockClusterGetPINCodeCommand(buffer->Start(), bufferSize, endPointId, mUserID);
+        return encodeDoorLockClusterGetPINCodeCommand(buffer->Start(), bufferSize, 1, endPointId, mUserID);
     }
 
     // Global Response: DefaultResponse
@@ -4037,7 +4037,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeDoorLockClusterGetRFIDCodeCommand(buffer->Start(), bufferSize, endPointId, mUserID);
+        return encodeDoorLockClusterGetRFIDCodeCommand(buffer->Start(), bufferSize, 1, endPointId, mUserID);
     }
 
     // Global Response: DefaultResponse
@@ -4072,7 +4072,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeDoorLockClusterGetUserTypeCommand(buffer->Start(), bufferSize, endPointId, mUserID);
+        return encodeDoorLockClusterGetUserTypeCommand(buffer->Start(), bufferSize, 1, endPointId, mUserID);
     }
 
     // Global Response: DefaultResponse
@@ -4108,7 +4108,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeDoorLockClusterGetWeekdayScheduleCommand(buffer->Start(), bufferSize, endPointId, mScheduleID, mUserID);
+        return encodeDoorLockClusterGetWeekdayScheduleCommand(buffer->Start(), bufferSize, 1, endPointId, mScheduleID, mUserID);
     }
 
     // Global Response: DefaultResponse
@@ -4145,7 +4145,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeDoorLockClusterGetYearDayScheduleCommand(buffer->Start(), bufferSize, endPointId, mScheduleID, mUserID);
+        return encodeDoorLockClusterGetYearDayScheduleCommand(buffer->Start(), bufferSize, 1, endPointId, mScheduleID, mUserID);
     }
 
     // Global Response: DefaultResponse
@@ -4181,7 +4181,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeDoorLockClusterLockDoorCommand(buffer->Start(), bufferSize, endPointId, mPINOrRFIDCode);
+        return encodeDoorLockClusterLockDoorCommand(buffer->Start(), bufferSize, 1, endPointId, mPINOrRFIDCode);
     }
 
     // Global Response: DefaultResponse
@@ -4219,7 +4219,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeDoorLockClusterSetHolidayScheduleCommand(buffer->Start(), bufferSize, endPointId, mHolidayScheduleID,
+        return encodeDoorLockClusterSetHolidayScheduleCommand(buffer->Start(), bufferSize, 1, endPointId, mHolidayScheduleID,
                                                               mLocalStartTime, mLocalEndTime, mOperatingModeDuringHoliday);
     }
 
@@ -4261,7 +4261,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeDoorLockClusterSetPINCodeCommand(buffer->Start(), bufferSize, endPointId, mUserID, mUserStatus, mUserType,
+        return encodeDoorLockClusterSetPINCodeCommand(buffer->Start(), bufferSize, 1, endPointId, mUserID, mUserStatus, mUserType,
                                                       mPIN);
     }
 
@@ -4303,7 +4303,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeDoorLockClusterSetRFIDCodeCommand(buffer->Start(), bufferSize, endPointId, mUserID, mUserStatus, mUserType,
+        return encodeDoorLockClusterSetRFIDCodeCommand(buffer->Start(), bufferSize, 1, endPointId, mUserID, mUserStatus, mUserType,
                                                        mRFIDCode);
     }
 
@@ -4343,7 +4343,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeDoorLockClusterSetUserTypeCommand(buffer->Start(), bufferSize, endPointId, mUserID, mUserType);
+        return encodeDoorLockClusterSetUserTypeCommand(buffer->Start(), bufferSize, 1, endPointId, mUserID, mUserType);
     }
 
     // Global Response: DefaultResponse
@@ -4385,7 +4385,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeDoorLockClusterSetWeekdayScheduleCommand(buffer->Start(), bufferSize, endPointId, mScheduleID, mUserID,
+        return encodeDoorLockClusterSetWeekdayScheduleCommand(buffer->Start(), bufferSize, 1, endPointId, mScheduleID, mUserID,
                                                               mDaysMask, mStartHour, mStartMinute, mEndHour, mEndMinute);
     }
 
@@ -4430,7 +4430,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeDoorLockClusterSetYearDayScheduleCommand(buffer->Start(), bufferSize, endPointId, mScheduleID, mUserID,
+        return encodeDoorLockClusterSetYearDayScheduleCommand(buffer->Start(), bufferSize, 1, endPointId, mScheduleID, mUserID,
                                                               mLocalStartTime, mLocalEndTime);
     }
 
@@ -4469,7 +4469,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeDoorLockClusterUnlockDoorCommand(buffer->Start(), bufferSize, endPointId, mPINOrRFIDCode);
+        return encodeDoorLockClusterUnlockDoorCommand(buffer->Start(), bufferSize, 1, endPointId, mPINOrRFIDCode);
     }
 
     // Global Response: DefaultResponse
@@ -4505,7 +4505,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeDoorLockClusterUnlockWithTimeoutCommand(buffer->Start(), bufferSize, endPointId, mTimeoutInSeconds,
+        return encodeDoorLockClusterUnlockWithTimeoutCommand(buffer->Start(), bufferSize, 1, endPointId, mTimeoutInSeconds,
                                                              mPINOrRFIDCode);
     }
 
@@ -4538,7 +4538,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeDoorLockClusterDiscoverAttributes(buffer->Start(), bufferSize, endPointId);
+        return encodeDoorLockClusterDiscoverAttributes(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: DiscoverAttributesResponse
@@ -4563,7 +4563,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeDoorLockClusterReadLockStateAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeDoorLockClusterReadLockStateAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -4587,7 +4587,8 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeDoorLockClusterReportLockStateAttribute(buffer->Start(), bufferSize, endPointId, mMinInterval, mMaxInterval);
+        return encodeDoorLockClusterReportLockStateAttribute(buffer->Start(), bufferSize, 1, endPointId, mMinInterval,
+                                                             mMaxInterval);
     }
 
     // Global Response: ConfigureReportingResponse
@@ -4616,7 +4617,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeDoorLockClusterReadLockTypeAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeDoorLockClusterReadLockTypeAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -4641,7 +4642,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeDoorLockClusterReadActuatorEnabledAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeDoorLockClusterReadActuatorEnabledAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -4808,7 +4809,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeGroupsClusterAddGroupCommand(buffer->Start(), bufferSize, endPointId, mGroupId, mGroupName);
+        return encodeGroupsClusterAddGroupCommand(buffer->Start(), bufferSize, 1, endPointId, mGroupId, mGroupName);
     }
 
     // Global Response: DefaultResponse
@@ -4845,7 +4846,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeGroupsClusterAddGroupIfIdentifyingCommand(buffer->Start(), bufferSize, endPointId, mGroupId, mGroupName);
+        return encodeGroupsClusterAddGroupIfIdentifyingCommand(buffer->Start(), bufferSize, 1, endPointId, mGroupId, mGroupName);
     }
 
     // Global Response: DefaultResponse
@@ -4877,7 +4878,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeGroupsClusterGetGroupMembershipCommand(buffer->Start(), bufferSize, endPointId, mGroupCount, mGroupList);
+        return encodeGroupsClusterGetGroupMembershipCommand(buffer->Start(), bufferSize, 1, endPointId, mGroupCount, mGroupList);
     }
 
     // Global Response: DefaultResponse
@@ -4909,7 +4910,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeGroupsClusterRemoveAllGroupsCommand(buffer->Start(), bufferSize, endPointId);
+        return encodeGroupsClusterRemoveAllGroupsCommand(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: DefaultResponse
@@ -4934,7 +4935,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeGroupsClusterRemoveGroupCommand(buffer->Start(), bufferSize, endPointId, mGroupId);
+        return encodeGroupsClusterRemoveGroupCommand(buffer->Start(), bufferSize, 1, endPointId, mGroupId);
     }
 
     // Global Response: DefaultResponse
@@ -4969,7 +4970,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeGroupsClusterViewGroupCommand(buffer->Start(), bufferSize, endPointId, mGroupId);
+        return encodeGroupsClusterViewGroupCommand(buffer->Start(), bufferSize, 1, endPointId, mGroupId);
     }
 
     // Global Response: DefaultResponse
@@ -5000,7 +5001,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeGroupsClusterDiscoverAttributes(buffer->Start(), bufferSize, endPointId);
+        return encodeGroupsClusterDiscoverAttributes(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: DiscoverAttributesResponse
@@ -5025,7 +5026,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeGroupsClusterReadNameSupportAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeGroupsClusterReadNameSupportAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -5062,7 +5063,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeIASZoneClusterDiscoverAttributes(buffer->Start(), bufferSize, endPointId);
+        return encodeIASZoneClusterDiscoverAttributes(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: DiscoverAttributesResponse
@@ -5087,7 +5088,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeIASZoneClusterReadZoneStateAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeIASZoneClusterReadZoneStateAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -5112,7 +5113,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeIASZoneClusterReadZoneTypeAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeIASZoneClusterReadZoneTypeAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -5137,7 +5138,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeIASZoneClusterReadZoneStatusAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeIASZoneClusterReadZoneStatusAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -5162,7 +5163,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeIASZoneClusterReadIASCIEAddressAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeIASZoneClusterReadIASCIEAddressAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -5185,7 +5186,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeIASZoneClusterWriteIASCIEAddressAttribute(buffer->Start(), bufferSize, endPointId, mIASCIEAddress);
+        return encodeIASZoneClusterWriteIASCIEAddressAttribute(buffer->Start(), bufferSize, 1, endPointId, mIASCIEAddress);
     }
 
     // Global Response: WriteAttributesResponse
@@ -5213,7 +5214,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeIASZoneClusterReadZoneIDAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeIASZoneClusterReadZoneIDAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -5274,7 +5275,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeIdentifyClusterIdentifyCommand(buffer->Start(), bufferSize, endPointId, mIdentifyTime);
+        return encodeIdentifyClusterIdentifyCommand(buffer->Start(), bufferSize, 1, endPointId, mIdentifyTime);
     }
 
     // Global Response: DefaultResponse
@@ -5298,7 +5299,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeIdentifyClusterIdentifyQueryCommand(buffer->Start(), bufferSize, endPointId);
+        return encodeIdentifyClusterIdentifyQueryCommand(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: DefaultResponse
@@ -5326,7 +5327,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeIdentifyClusterDiscoverAttributes(buffer->Start(), bufferSize, endPointId);
+        return encodeIdentifyClusterDiscoverAttributes(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: DiscoverAttributesResponse
@@ -5351,7 +5352,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeIdentifyClusterReadIdentifyTimeAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeIdentifyClusterReadIdentifyTimeAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -5374,7 +5375,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeIdentifyClusterWriteIdentifyTimeAttribute(buffer->Start(), bufferSize, endPointId, mIdentifyTime);
+        return encodeIdentifyClusterWriteIdentifyTimeAttribute(buffer->Start(), bufferSize, 1, endPointId, mIdentifyTime);
     }
 
     // Global Response: WriteAttributesResponse
@@ -5425,7 +5426,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeLevelClusterMoveCommand(buffer->Start(), bufferSize, endPointId, mMoveMode, mRate, mOptionsMask,
+        return encodeLevelClusterMoveCommand(buffer->Start(), bufferSize, 1, endPointId, mMoveMode, mRate, mOptionsMask,
                                              mOptionsOverride);
     }
 
@@ -5460,8 +5461,8 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeLevelClusterMoveToLevelCommand(buffer->Start(), bufferSize, endPointId, mLevel, mTransitionTime, mOptionsMask,
-                                                    mOptionsOverride);
+        return encodeLevelClusterMoveToLevelCommand(buffer->Start(), bufferSize, 1, endPointId, mLevel, mTransitionTime,
+                                                    mOptionsMask, mOptionsOverride);
     }
 
     // Global Response: DefaultResponse
@@ -5495,7 +5496,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeLevelClusterMoveToLevelWithOnOffCommand(buffer->Start(), bufferSize, endPointId, mLevel, mTransitionTime,
+        return encodeLevelClusterMoveToLevelWithOnOffCommand(buffer->Start(), bufferSize, 1, endPointId, mLevel, mTransitionTime,
                                                              mOptionsMask, mOptionsOverride);
     }
 
@@ -5530,7 +5531,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeLevelClusterMoveWithOnOffCommand(buffer->Start(), bufferSize, endPointId, mMoveMode, mRate, mOptionsMask,
+        return encodeLevelClusterMoveWithOnOffCommand(buffer->Start(), bufferSize, 1, endPointId, mMoveMode, mRate, mOptionsMask,
                                                       mOptionsOverride);
     }
 
@@ -5566,7 +5567,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeLevelClusterStepCommand(buffer->Start(), bufferSize, endPointId, mStepMode, mStepSize, mTransitionTime,
+        return encodeLevelClusterStepCommand(buffer->Start(), bufferSize, 1, endPointId, mStepMode, mStepSize, mTransitionTime,
                                              mOptionsMask, mOptionsOverride);
     }
 
@@ -5603,7 +5604,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeLevelClusterStepWithOnOffCommand(buffer->Start(), bufferSize, endPointId, mStepMode, mStepSize,
+        return encodeLevelClusterStepWithOnOffCommand(buffer->Start(), bufferSize, 1, endPointId, mStepMode, mStepSize,
                                                       mTransitionTime, mOptionsMask, mOptionsOverride);
     }
 
@@ -5637,7 +5638,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeLevelClusterStopCommand(buffer->Start(), bufferSize, endPointId, mOptionsMask, mOptionsOverride);
+        return encodeLevelClusterStopCommand(buffer->Start(), bufferSize, 1, endPointId, mOptionsMask, mOptionsOverride);
     }
 
     // Global Response: DefaultResponse
@@ -5667,7 +5668,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeLevelClusterStopWithOnOffCommand(buffer->Start(), bufferSize, endPointId, mOptionsMask, mOptionsOverride);
+        return encodeLevelClusterStopWithOnOffCommand(buffer->Start(), bufferSize, 1, endPointId, mOptionsMask, mOptionsOverride);
     }
 
     // Global Response: DefaultResponse
@@ -5692,7 +5693,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeLevelClusterDiscoverAttributes(buffer->Start(), bufferSize, endPointId);
+        return encodeLevelClusterDiscoverAttributes(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: DiscoverAttributesResponse
@@ -5717,7 +5718,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeLevelClusterReadCurrentLevelAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeLevelClusterReadCurrentLevelAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -5742,7 +5743,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeLevelClusterReportCurrentLevelAttribute(buffer->Start(), bufferSize, endPointId, mMinInterval, mMaxInterval,
+        return encodeLevelClusterReportCurrentLevelAttribute(buffer->Start(), bufferSize, 1, endPointId, mMinInterval, mMaxInterval,
                                                              mChange);
     }
 
@@ -5784,7 +5785,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeOnOffClusterOffCommand(buffer->Start(), bufferSize, endPointId);
+        return encodeOnOffClusterOffCommand(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: DefaultResponse
@@ -5805,7 +5806,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeOnOffClusterOnCommand(buffer->Start(), bufferSize, endPointId);
+        return encodeOnOffClusterOnCommand(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: DefaultResponse
@@ -5826,7 +5827,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeOnOffClusterToggleCommand(buffer->Start(), bufferSize, endPointId);
+        return encodeOnOffClusterToggleCommand(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: DefaultResponse
@@ -5847,7 +5848,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeOnOffClusterDiscoverAttributes(buffer->Start(), bufferSize, endPointId);
+        return encodeOnOffClusterDiscoverAttributes(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: DiscoverAttributesResponse
@@ -5872,7 +5873,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeOnOffClusterReadOnOffAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeOnOffClusterReadOnOffAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -5896,7 +5897,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeOnOffClusterReportOnOffAttribute(buffer->Start(), bufferSize, endPointId, mMinInterval, mMaxInterval);
+        return encodeOnOffClusterReportOnOffAttribute(buffer->Start(), bufferSize, 1, endPointId, mMinInterval, mMaxInterval);
     }
 
     // Global Response: ConfigureReportingResponse
@@ -6173,7 +6174,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeScenesClusterAddSceneCommand(buffer->Start(), bufferSize, endPointId, mGroupID, mSceneID, mTransitionTime,
+        return encodeScenesClusterAddSceneCommand(buffer->Start(), bufferSize, 1, endPointId, mGroupID, mSceneID, mTransitionTime,
                                                   mSceneName, mClusterId, mExtensionFieldSet);
     }
 
@@ -6214,7 +6215,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeScenesClusterGetSceneMembershipCommand(buffer->Start(), bufferSize, endPointId, mGroupID);
+        return encodeScenesClusterGetSceneMembershipCommand(buffer->Start(), bufferSize, 1, endPointId, mGroupID);
     }
 
     // Global Response: DefaultResponse
@@ -6251,7 +6252,8 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeScenesClusterRecallSceneCommand(buffer->Start(), bufferSize, endPointId, mGroupID, mSceneID, mTransitionTime);
+        return encodeScenesClusterRecallSceneCommand(buffer->Start(), bufferSize, 1, endPointId, mGroupID, mSceneID,
+                                                     mTransitionTime);
     }
 
     // Global Response: DefaultResponse
@@ -6281,7 +6283,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeScenesClusterRemoveAllScenesCommand(buffer->Start(), bufferSize, endPointId, mGroupID);
+        return encodeScenesClusterRemoveAllScenesCommand(buffer->Start(), bufferSize, 1, endPointId, mGroupID);
     }
 
     // Global Response: DefaultResponse
@@ -6317,7 +6319,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeScenesClusterRemoveSceneCommand(buffer->Start(), bufferSize, endPointId, mGroupID, mSceneID);
+        return encodeScenesClusterRemoveSceneCommand(buffer->Start(), bufferSize, 1, endPointId, mGroupID, mSceneID);
     }
 
     // Global Response: DefaultResponse
@@ -6354,7 +6356,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeScenesClusterStoreSceneCommand(buffer->Start(), bufferSize, endPointId, mGroupID, mSceneID);
+        return encodeScenesClusterStoreSceneCommand(buffer->Start(), bufferSize, 1, endPointId, mGroupID, mSceneID);
     }
 
     // Global Response: DefaultResponse
@@ -6391,7 +6393,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeScenesClusterViewSceneCommand(buffer->Start(), bufferSize, endPointId, mGroupID, mSceneID);
+        return encodeScenesClusterViewSceneCommand(buffer->Start(), bufferSize, 1, endPointId, mGroupID, mSceneID);
     }
 
     // Global Response: DefaultResponse
@@ -6423,7 +6425,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeScenesClusterDiscoverAttributes(buffer->Start(), bufferSize, endPointId);
+        return encodeScenesClusterDiscoverAttributes(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: DiscoverAttributesResponse
@@ -6448,7 +6450,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeScenesClusterReadSceneCountAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeScenesClusterReadSceneCountAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -6473,7 +6475,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeScenesClusterReadCurrentSceneAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeScenesClusterReadCurrentSceneAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -6498,7 +6500,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeScenesClusterReadCurrentGroupAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeScenesClusterReadCurrentGroupAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -6523,7 +6525,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeScenesClusterReadSceneValidAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeScenesClusterReadSceneValidAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -6548,7 +6550,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeScenesClusterReadNameSupportAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeScenesClusterReadNameSupportAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -6586,7 +6588,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeTemperatureMeasurementClusterDiscoverAttributes(buffer->Start(), bufferSize, endPointId);
+        return encodeTemperatureMeasurementClusterDiscoverAttributes(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: DiscoverAttributesResponse
@@ -6611,7 +6613,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeTemperatureMeasurementClusterReadMeasuredValueAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeTemperatureMeasurementClusterReadMeasuredValueAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -6636,7 +6638,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeTemperatureMeasurementClusterReportMeasuredValueAttribute(buffer->Start(), bufferSize, endPointId,
+        return encodeTemperatureMeasurementClusterReportMeasuredValueAttribute(buffer->Start(), bufferSize, 1, endPointId,
                                                                                mMinInterval, mMaxInterval, mChange);
     }
 
@@ -6667,7 +6669,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeTemperatureMeasurementClusterReadMinMeasuredValueAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeTemperatureMeasurementClusterReadMinMeasuredValueAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse
@@ -6692,7 +6694,7 @@ public:
 
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
-        return encodeTemperatureMeasurementClusterReadMaxMeasuredValueAttribute(buffer->Start(), bufferSize, endPointId);
+        return encodeTemperatureMeasurementClusterReadMaxMeasuredValueAttribute(buffer->Start(), bufferSize, 1, endPointId);
     }
 
     // Global Response: ReadAttributesResponse

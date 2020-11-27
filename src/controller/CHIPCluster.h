@@ -45,7 +45,7 @@ public:
 protected:
     ClusterBase(uint16_t cluster) : mClusterId(cluster) {}
 
-    typedef uint16_t (*CommandEncoder)(uint8_t * command, uint16_t maxLen, EndpointId endpoint);
+    typedef uint16_t (*CommandEncoder)(uint8_t * command, uint16_t maxLen, uint8_t seqNumber, EndpointId endpoint);
 
     /**
      * @brief
@@ -58,8 +58,8 @@ protected:
      */
     CHIP_ERROR SendCommand(CommandEncoder commandEncoder, uint16_t maxCmdLen, Callback::Callback<> * responseHandler);
 
-    typedef uint16_t (*RequestEncoder)(uint8_t * request, uint16_t maxLen, EndpointId endpoint, uint16_t minInterval,
-                                       uint16_t maxInterval);
+    typedef uint16_t (*RequestEncoder)(uint8_t * request, uint16_t maxLen, uint8_t seqNumber, EndpointId endpoint,
+                                       uint16_t minInterval, uint16_t maxInterval);
 
     /**
      * @brief
@@ -81,6 +81,7 @@ protected:
     const ClusterId mClusterId;
     Device * mDevice;
     EndpointId mEndpoint;
+    uint8_t mSeqNumber = 0;
 };
 
 } // namespace Controller
