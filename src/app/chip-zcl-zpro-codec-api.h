@@ -156,6 +156,12 @@ uint16_t encodeBasicClusterResetToFactoryDefaultsCommand(uint8_t * buffer, uint1
 
 /**
  * @brief
+ *    Encode a manufacturer specific ping command for Basic server into buffer including the APS frame
+ */
+uint16_t encodeBasicClusterMfgSpecificPingCommand(uint8_t * buffer, uint16_t buf_length, chip::EndpointId destination_endpoint);
+
+/**
+ * @brief
  *    Encode a discover command for  server into buffer including the APS frame
  */
 uint16_t encodeBasicClusterDiscoverAttributes(uint8_t * buffer, uint16_t buf_length, chip::EndpointId destination_endpoint);

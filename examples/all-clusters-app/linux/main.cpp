@@ -68,3 +68,9 @@ exit:
     }
     return 0;
 }
+
+bool emberAfBasicClusterMfgSpecificPingCallback(void)
+{
+    emberAfSendDefaultResponse(emberAfCurrentCommand(), EMBER_ZCL_STATUS_SUCCESS);
+    return true;
+}

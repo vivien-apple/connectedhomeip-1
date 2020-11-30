@@ -1183,10 +1183,10 @@ private:
 | Cluster Basic                                                       | 0x0000 |
 |------------------------------------------------------------------------------|
 | Responses:                                                          |        |
-|                                                                     |        |
 |------------------------------------------------------------------------------|
 | Commands:                                                           |        |
 | * ResetToFactoryDefaults                                            |   0x00 |
+| * MfgSpecificPing                                                   |   0x00 |
 |------------------------------------------------------------------------------|
 | Attributes:                                                         |        |
 | * ZCLVersion                                                        | 0x0000 |
@@ -1207,6 +1207,27 @@ public:
     uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
     {
         return encodeBasicClusterResetToFactoryDefaultsCommand(buffer->Start(), bufferSize, endPointId);
+    }
+
+    // Global Response: DefaultResponse
+    bool HandleGlobalResponse(uint8_t commandId, uint8_t * message, uint16_t messageLen) const override
+    {
+        DefaultResponse response;
+        return response.HandleCommandResponse(commandId, message, messageLen);
+    }
+};
+
+/*
+ * Command MfgSpecificPing
+ */
+class BasicMfgSpecificPing : public ModelCommand
+{
+public:
+    BasicMfgSpecificPing() : ModelCommand("ping", kBasicClusterId, 0x00) { ModelCommand::AddArguments(); }
+
+    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    {
+        return encodeBasicClusterMfgSpecificPingCommand(buffer->Start(), bufferSize, endPointId);
     }
 
     // Global Response: DefaultResponse
@@ -6726,10 +6747,8 @@ void registerClusterBasic(Commands & commands)
     const char * clusterName = "Basic";
 
     commands_list clusterCommands = {
-        make_unique<BasicResetToFactoryDefaults>(),
-        make_unique<DiscoverBasicAttributes>(),
-        make_unique<ReadBasicZCLVersion>(),
-        make_unique<ReadBasicPowerSource>(),
+        make_unique<BasicResetToFactoryDefaults>(), make_unique<BasicMfgSpecificPing>(), make_unique<DiscoverBasicAttributes>(),
+        make_unique<ReadBasicZCLVersion>(),         make_unique<ReadBasicPowerSource>(),
     };
 
     commands.Register(clusterName, clusterCommands);

@@ -146,6 +146,7 @@
 #define ZCL_SAMPLE_MFG_SPECIFIC_TOGGLE_WITH_TRANSITION_COMMAND_ID 0x02  // Ver.: always mfgCode: 0x1002
 #define ZCL_SAMPLE_MFG_SPECIFIC_ON_WITH_TRANSITION2_COMMAND_ID 0x01     // Ver.: always mfgCode: 0x1049
 #define ZCL_SAMPLE_MFG_SPECIFIC_TOGGLE_WITH_TRANSITION2_COMMAND_ID 0x02 // Ver.: always mfgCode: 0x1049
+#define ZCL_MFG_SPECIFIC_PING_COMMAND_ID 0x00
 
 // Command types for cluster: Level Control
 // Cluster specification level: zcl-7.0-07-5123-07

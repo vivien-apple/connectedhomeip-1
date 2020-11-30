@@ -21,18 +21,20 @@
 using namespace ::chip;
 
 namespace {
-constexpr uint8_t kZCLGlobalCmdFrameControlHeader  = 8;
-constexpr uint8_t kZCLClusterCmdFrameControlHeader = 9;
+constexpr uint8_t kZCLGlobalCmdFrameControlHeader            = 8;
+constexpr uint8_t kZCLClusterCmdFrameControlHeader           = 9;
+constexpr uint8_t kZCLGlobalMfgSpecificCmdFrameControlHeader = 12;
 
 bool isValidFrame(uint8_t frameControl)
 {
     // Bit 3 of the frame control byte set means direction is server to client.
-    return (frameControl == kZCLGlobalCmdFrameControlHeader || frameControl == kZCLClusterCmdFrameControlHeader);
+    return (frameControl == kZCLGlobalCmdFrameControlHeader || frameControl == kZCLClusterCmdFrameControlHeader ||
+            kZCLGlobalMfgSpecificCmdFrameControlHeader);
 }
 
 bool isGlobalCommand(uint8_t frameControl)
 {
-    return (frameControl == kZCLGlobalCmdFrameControlHeader);
+    return (frameControl == kZCLGlobalCmdFrameControlHeader || frameControl == kZCLGlobalMfgSpecificCmdFrameControlHeader);
 }
 } // namespace
 
@@ -50,6 +52,7 @@ bool ModelCommand::Decode(PacketBufferHandle & buffer) const
     uint8_t * message;
     uint16_t messageLen;
     uint8_t frameControl;
+    uint16_t mfgCode = 0x0000;
     uint8_t sequenceNumber;
     uint8_t commandId;
     bool success = false;
@@ -62,9 +65,16 @@ bool ModelCommand::Decode(PacketBufferHandle & buffer) const
     ChipLogDetail(chipTool, "APS frame processing success!");
 
     messageLen = extractMessage(buffer->Start(), buffer->DataLength(), &message);
-    VerifyOrExit(messageLen >= 3, ChipLogError(chipTool, "Unexpected response length: %d", messageLen));
+    VerifyOrExit(messageLen >= 1, ChipLogError(chipTool, "Unexpected response length: %d", messageLen));
 
-    frameControl   = chip::Encoding::Read8(message);
+    frameControl = chip::Encoding::Read8(message);
+    if (frameControl & (1u << 2))
+    {
+        VerifyOrExit(messageLen >= 5, ChipLogError(chipTool, "Unexpected response length: %d", messageLen));
+        mfgCode    = chip::Encoding::LittleEndian::Read16(message);
+        messageLen = static_cast<uint16_t>(messageLen - 2);
+    }
+    VerifyOrExit(messageLen >= 3, ChipLogError(chipTool, "Unexpected response length: %d", messageLen));
     sequenceNumber = chip::Encoding::Read8(message);
     commandId      = chip::Encoding::Read8(message);
     messageLen     = static_cast<uint16_t>(messageLen - 3);

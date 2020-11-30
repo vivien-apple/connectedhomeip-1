@@ -87,7 +87,7 @@ extern void PairingComplete(NodeId assignedNodeId, NodeId peerNodeId, SecurePair
 
 const char * TAG = "all-clusters-app";
 
-static DeviceCallbacks EchoCallbacks;
+static DeviceCallbacks ServerCallbacks;
 RendezvousDeviceDelegate * rendezvousDelegate = nullptr;
 
 namespace {
@@ -468,7 +468,7 @@ extern "C" void app_main()
 
     CHIPDeviceManager & deviceMgr = CHIPDeviceManager::GetInstance();
 
-    err = deviceMgr.Init(&EchoCallbacks);
+    err = deviceMgr.Init(&ServerCallbacks);
     if (err != CHIP_NO_ERROR)
     {
         ESP_LOGE(TAG, "device.Init() failed: %s", ErrorStr(err));
@@ -484,7 +484,7 @@ extern "C" void app_main()
     bluetoothLED.Init();
     wifiLED.Init();
 
-    // Start the Echo Server
+    // Start the Server
     InitDataModelHandler();
 
     if (isRendezvousBLE())

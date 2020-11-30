@@ -2654,6 +2654,13 @@ bool emberAfOnOffClusterSampleMfgSpecificToggleWithTransition2Callback(void);
  *
  */
 bool emberAfOnOffClusterSampleMfgSpecificToggleWithTransitionCallback(void);
+
+/** @brief Basic Cluster Mfg Specific Ping
+ *
+ *
+ *
+ */
+bool emberAfBasicClusterMfgSpecificPingCallback(void);
 /** @brief On/off Cluster Server Attribute Changed
  *
  * Server Attribute Changed
