@@ -65,14 +65,15 @@ extern "C" {
  * @brief
  *    Encode an go-to-percent command for BarrierControl server into buffer including the APS frame
  */
-uint16_t encodeBarrierControlClusterGoToPercentCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint,
-                                                       uint8_t percentOpen);
+uint16_t encodeBarrierControlClusterGoToPercentCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                                       chip::EndpointId destination_endpoint, uint8_t percentOpen);
 
 /**
  * @brief
  *    Encode an stop command for BarrierControl server into buffer including the APS frame
  */
-uint16_t encodeBarrierControlClusterStopCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint);
+uint16_t encodeBarrierControlClusterStopCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                                chip::EndpointId destination_endpoint);
 
 /**
  * @brief
@@ -156,21 +157,31 @@ uint16_t encodeBasicClusterResetToFactoryDefaultsCommand(uint8_t * buffer, uint1
 
 /**
  * @brief
+ *    Encode a manufacturer specific echo command for Basic server into buffer including the APS frame
+ */
+uint16_t encodeBasicClusterMfgSpecificEchoCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                                  chip::EndpointId destination_endpoint, char * msg);
+
+/**
+ * @brief
  *    Encode a discover command for  server into buffer including the APS frame
  */
-uint16_t encodeBasicClusterDiscoverAttributes(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint);
+uint16_t encodeBasicClusterDiscoverAttributes(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                              chip::EndpointId destination_endpoint);
 
 /**
  * @brief
  *    Encode a read command for the zclversion attribute for  server into buffer including the APS frame
  */
-uint16_t encodeBasicClusterReadZCLVersionAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint);
+uint16_t encodeBasicClusterReadZCLVersionAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                                   chip::EndpointId destination_endpoint);
 
 /**
  * @brief
  *    Encode a read command for the power-source attribute for  server into buffer including the APS frame
  */
-uint16_t encodeBasicClusterReadPowerSourceAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint);
+uint16_t encodeBasicClusterReadPowerSourceAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                                    chip::EndpointId destination_endpoint);
 
 /*----------------------------------------------------------------------------*\
 | Cluster ColorControl                                                | 0x0300 |
@@ -240,8 +251,9 @@ uint16_t encodeBasicClusterReadPowerSourceAttribute(uint8_t * buffer, uint16_t b
  * @brief
  *    Encode an move-color command for ColorControl server into buffer including the APS frame
  */
-uint16_t encodeColorControlClusterMoveColorCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint,
-                                                   int16_t rateX, int16_t rateY, uint8_t optionsMask, uint8_t optionsOverride);
+uint16_t encodeColorControlClusterMoveColorCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                                   chip::EndpointId destination_endpoint, int16_t rateX, int16_t rateY,
+                                                   uint8_t optionsMask, uint8_t optionsOverride);
 
 /**
  * @brief
@@ -257,8 +269,9 @@ uint16_t encodeColorControlClusterMoveColorTemperatureCommand(uint8_t * buffer, 
  * @brief
  *    Encode an move-hue command for ColorControl server into buffer including the APS frame
  */
-uint16_t encodeColorControlClusterMoveHueCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint,
-                                                 uint8_t moveMode, uint8_t rate, uint8_t optionsMask, uint8_t optionsOverride);
+uint16_t encodeColorControlClusterMoveHueCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                                 chip::EndpointId destination_endpoint, uint8_t moveMode, uint8_t rate,
+                                                 uint8_t optionsMask, uint8_t optionsOverride);
 
 /**
  * @brief
@@ -272,9 +285,9 @@ uint16_t encodeColorControlClusterMoveSaturationCommand(uint8_t * buffer, uint16
  * @brief
  *    Encode an move-to-color command for ColorControl server into buffer including the APS frame
  */
-uint16_t encodeColorControlClusterMoveToColorCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint,
-                                                     uint16_t colorX, uint16_t colorY, uint16_t transitionTime, uint8_t optionsMask,
-                                                     uint8_t optionsOverride);
+uint16_t encodeColorControlClusterMoveToColorCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                                     chip::EndpointId destination_endpoint, uint16_t colorX, uint16_t colorY,
+                                                     uint16_t transitionTime, uint8_t optionsMask, uint8_t optionsOverride);
 
 /**
  * @brief
@@ -289,9 +302,9 @@ uint16_t encodeColorControlClusterMoveToColorTemperatureCommand(uint8_t * buffer
  * @brief
  *    Encode an move-to-hue command for ColorControl server into buffer including the APS frame
  */
-uint16_t encodeColorControlClusterMoveToHueCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint,
-                                                   uint8_t hue, uint8_t direction, uint16_t transitionTime, uint8_t optionsMask,
-                                                   uint8_t optionsOverride);
+uint16_t encodeColorControlClusterMoveToHueCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                                   chip::EndpointId destination_endpoint, uint8_t hue, uint8_t direction,
+                                                   uint16_t transitionTime, uint8_t optionsMask, uint8_t optionsOverride);
 
 /**
  * @brief
@@ -314,9 +327,9 @@ uint16_t encodeColorControlClusterMoveToSaturationCommand(uint8_t * buffer, uint
  * @brief
  *    Encode an step-color command for ColorControl server into buffer including the APS frame
  */
-uint16_t encodeColorControlClusterStepColorCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint,
-                                                   int16_t stepX, int16_t stepY, uint16_t transitionTime, uint8_t optionsMask,
-                                                   uint8_t optionsOverride);
+uint16_t encodeColorControlClusterStepColorCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                                   chip::EndpointId destination_endpoint, int16_t stepX, int16_t stepY,
+                                                   uint16_t transitionTime, uint8_t optionsMask, uint8_t optionsOverride);
 
 /**
  * @brief
@@ -333,9 +346,9 @@ uint16_t encodeColorControlClusterStepColorTemperatureCommand(uint8_t * buffer, 
  * @brief
  *    Encode an step-hue command for ColorControl server into buffer including the APS frame
  */
-uint16_t encodeColorControlClusterStepHueCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint,
-                                                 uint8_t stepMode, uint8_t stepSize, uint8_t transitionTime, uint8_t optionsMask,
-                                                 uint8_t optionsOverride);
+uint16_t encodeColorControlClusterStepHueCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                                 chip::EndpointId destination_endpoint, uint8_t stepMode, uint8_t stepSize,
+                                                 uint8_t transitionTime, uint8_t optionsMask, uint8_t optionsOverride);
 
 /**
  * @brief
@@ -349,14 +362,16 @@ uint16_t encodeColorControlClusterStepSaturationCommand(uint8_t * buffer, uint16
  * @brief
  *    Encode an stop-move-step command for ColorControl server into buffer including the APS frame
  */
-uint16_t encodeColorControlClusterStopMoveStepCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint,
-                                                      uint8_t optionsMask, uint8_t optionsOverride);
+uint16_t encodeColorControlClusterStopMoveStepCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                                      chip::EndpointId destination_endpoint, uint8_t optionsMask,
+                                                      uint8_t optionsOverride);
 
 /**
  * @brief
  *    Encode a discover command for  server into buffer including the APS frame
  */
-uint16_t encodeColorControlClusterDiscoverAttributes(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint);
+uint16_t encodeColorControlClusterDiscoverAttributes(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                                     chip::EndpointId destination_endpoint);
 
 /**
  * @brief
@@ -669,21 +684,24 @@ uint16_t encodeColorControlClusterReadColorTempPhysicalMaxMiredsAttribute(uint8_
  * @brief
  *    Encode a read command for the couple-color-temp-to-level-min-mireds attribute for  server into buffer including the APS frame
  */
-uint16_t encodeColorControlClusterReadCoupleColorTempToLevelMinMiredsAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+uint16_t encodeColorControlClusterReadCoupleColorTempToLevelMinMiredsAttribute(uint8_t * buffer, uint16_t buf_length,
+                                                                               uint8_t seqNumber,
                                                                                chip::EndpointId destination_endpoint);
 
 /**
  * @brief
  *    Encode a read command for the start-up-color-temperature-mireds attribute for  server into buffer including the APS frame
  */
-uint16_t encodeColorControlClusterReadStartUpColorTemperatureMiredsAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+uint16_t encodeColorControlClusterReadStartUpColorTemperatureMiredsAttribute(uint8_t * buffer, uint16_t buf_length,
+                                                                             uint8_t seqNumber,
                                                                              chip::EndpointId destination_endpoint);
 
 /**
  * @brief
  *    Encode a write command for the start-up-color-temperature-mireds attribute for  server into buffer including the APS frame
  */
-uint16_t encodeColorControlClusterWriteStartUpColorTemperatureMiredsAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+uint16_t encodeColorControlClusterWriteStartUpColorTemperatureMiredsAttribute(uint8_t * buffer, uint16_t buf_length,
+                                                                              uint8_t seqNumber,
                                                                               chip::EndpointId destination_endpoint,
                                                                               uint16_t startUpColorTemperatureMireds);
 
@@ -749,7 +767,8 @@ uint16_t encodeColorControlClusterWriteStartUpColorTemperatureMiredsAttribute(ui
  * @brief
  *    Encode an clear-all-pincodes command for DoorLock server into buffer including the APS frame
  */
-uint16_t encodeDoorLockClusterClearAllPINCodesCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint);
+uint16_t encodeDoorLockClusterClearAllPINCodesCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                                      chip::EndpointId destination_endpoint);
 
 /**
  * @brief
@@ -769,15 +788,15 @@ uint16_t encodeDoorLockClusterClearHolidayScheduleCommand(uint8_t * buffer, uint
  * @brief
  *    Encode an clear-pincode command for DoorLock server into buffer including the APS frame
  */
-uint16_t encodeDoorLockClusterClearPINCodeCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint,
-                                                  uint16_t userID);
+uint16_t encodeDoorLockClusterClearPINCodeCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                                  chip::EndpointId destination_endpoint, uint16_t userID);
 
 /**
  * @brief
  *    Encode an clear-rfidcode command for DoorLock server into buffer including the APS frame
  */
-uint16_t encodeDoorLockClusterClearRFIDCodeCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint,
-                                                   uint16_t userID);
+uint16_t encodeDoorLockClusterClearRFIDCodeCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                                   chip::EndpointId destination_endpoint, uint16_t userID);
 
 /**
  * @brief
@@ -806,22 +825,22 @@ uint16_t encodeDoorLockClusterGetHolidayScheduleCommand(uint8_t * buffer, uint16
  * @brief
  *    Encode an get-pincode command for DoorLock server into buffer including the APS frame
  */
-uint16_t encodeDoorLockClusterGetPINCodeCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint,
-                                                uint16_t userID);
+uint16_t encodeDoorLockClusterGetPINCodeCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                                chip::EndpointId destination_endpoint, uint16_t userID);
 
 /**
  * @brief
  *    Encode an get-rfidcode command for DoorLock server into buffer including the APS frame
  */
-uint16_t encodeDoorLockClusterGetRFIDCodeCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint,
-                                                 uint16_t userID);
+uint16_t encodeDoorLockClusterGetRFIDCodeCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                                 chip::EndpointId destination_endpoint, uint16_t userID);
 
 /**
  * @brief
  *    Encode an get-user-type command for DoorLock server into buffer including the APS frame
  */
-uint16_t encodeDoorLockClusterGetUserTypeCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint,
-                                                 uint16_t userID);
+uint16_t encodeDoorLockClusterGetUserTypeCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                                 chip::EndpointId destination_endpoint, uint16_t userID);
 
 /**
  * @brief
@@ -841,8 +860,8 @@ uint16_t encodeDoorLockClusterGetYearDayScheduleCommand(uint8_t * buffer, uint16
  * @brief
  *    Encode an lock-door command for DoorLock server into buffer including the APS frame
  */
-uint16_t encodeDoorLockClusterLockDoorCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint,
-                                              char * pINOrRFIDCode);
+uint16_t encodeDoorLockClusterLockDoorCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                              chip::EndpointId destination_endpoint, char * pINOrRFIDCode);
 
 /**
  * @brief
@@ -857,22 +876,24 @@ uint16_t encodeDoorLockClusterSetHolidayScheduleCommand(uint8_t * buffer, uint16
  * @brief
  *    Encode an set-pincode command for DoorLock server into buffer including the APS frame
  */
-uint16_t encodeDoorLockClusterSetPINCodeCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint,
-                                                uint16_t userID, uint8_t userStatus, uint8_t userType, char * pIN);
+uint16_t encodeDoorLockClusterSetPINCodeCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                                chip::EndpointId destination_endpoint, uint16_t userID, uint8_t userStatus,
+                                                uint8_t userType, char * pIN);
 
 /**
  * @brief
  *    Encode an set-rfidcode command for DoorLock server into buffer including the APS frame
  */
-uint16_t encodeDoorLockClusterSetRFIDCodeCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint,
-                                                 uint16_t userID, uint8_t userStatus, uint8_t userType, char * rFIDCode);
+uint16_t encodeDoorLockClusterSetRFIDCodeCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                                 chip::EndpointId destination_endpoint, uint16_t userID, uint8_t userStatus,
+                                                 uint8_t userType, char * rFIDCode);
 
 /**
  * @brief
  *    Encode an set-user-type command for DoorLock server into buffer including the APS frame
  */
-uint16_t encodeDoorLockClusterSetUserTypeCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint,
-                                                 uint16_t userID, uint8_t userType);
+uint16_t encodeDoorLockClusterSetUserTypeCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                                 chip::EndpointId destination_endpoint, uint16_t userID, uint8_t userType);
 
 /**
  * @brief
@@ -895,40 +916,45 @@ uint16_t encodeDoorLockClusterSetYearDayScheduleCommand(uint8_t * buffer, uint16
  * @brief
  *    Encode an unlock-door command for DoorLock server into buffer including the APS frame
  */
-uint16_t encodeDoorLockClusterUnlockDoorCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint,
-                                                char * pINOrRFIDCode);
+uint16_t encodeDoorLockClusterUnlockDoorCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                                chip::EndpointId destination_endpoint, char * pINOrRFIDCode);
 
 /**
  * @brief
  *    Encode an unlock-with-timeout command for DoorLock server into buffer including the APS frame
  */
-uint16_t encodeDoorLockClusterUnlockWithTimeoutCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint,
-                                                       uint16_t timeoutInSeconds, char * pINOrRFIDCode);
+uint16_t encodeDoorLockClusterUnlockWithTimeoutCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                                       chip::EndpointId destination_endpoint, uint16_t timeoutInSeconds,
+                                                       char * pINOrRFIDCode);
 
 /**
  * @brief
  *    Encode a discover command for  server into buffer including the APS frame
  */
-uint16_t encodeDoorLockClusterDiscoverAttributes(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint);
+uint16_t encodeDoorLockClusterDiscoverAttributes(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                                 chip::EndpointId destination_endpoint);
 
 /**
  * @brief
  *    Encode a read command for the lock-state attribute for  server into buffer including the APS frame
  */
-uint16_t encodeDoorLockClusterReadLockStateAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint);
+uint16_t encodeDoorLockClusterReadLockStateAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                                     chip::EndpointId destination_endpoint);
 
 /**
  * @brief
  *    Encode a report command for the lock-state attribute for  server into buffer including the APS frame
  */
-uint16_t encodeDoorLockClusterReportLockStateAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint,
-                                                       uint16_t min_interval, uint16_t max_interval);
+uint16_t encodeDoorLockClusterReportLockStateAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                                       chip::EndpointId destination_endpoint, uint16_t min_interval,
+                                                       uint16_t max_interval);
 
 /**
  * @brief
  *    Encode a read command for the lock-type attribute for  server into buffer including the APS frame
  */
-uint16_t encodeDoorLockClusterReadLockTypeAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint);
+uint16_t encodeDoorLockClusterReadLockTypeAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                                    chip::EndpointId destination_endpoint);
 
 /**
  * @brief
@@ -963,8 +989,8 @@ uint16_t encodeDoorLockClusterReadActuatorEnabledAttribute(uint8_t * buffer, uin
  * @brief
  *    Encode an add-group command for Groups server into buffer including the APS frame
  */
-uint16_t encodeGroupsClusterAddGroupCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint,
-                                            chip::GroupId groupId, char * groupName);
+uint16_t encodeGroupsClusterAddGroupCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                            chip::EndpointId destination_endpoint, chip::GroupId groupId, char * groupName);
 
 /**
  * @brief
@@ -978,40 +1004,44 @@ uint16_t encodeGroupsClusterAddGroupIfIdentifyingCommand(uint8_t * buffer, uint1
  * @brief
  *    Encode an get-group-membership command for Groups server into buffer including the APS frame
  */
-uint16_t encodeGroupsClusterGetGroupMembershipCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint,
-                                                      uint8_t groupCount, uint16_t groupList);
+uint16_t encodeGroupsClusterGetGroupMembershipCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                                      chip::EndpointId destination_endpoint, uint8_t groupCount,
+                                                      uint16_t groupList);
 
 /**
  * @brief
  *    Encode an remove-all-groups command for Groups server into buffer including the APS frame
  */
-uint16_t encodeGroupsClusterRemoveAllGroupsCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint);
+uint16_t encodeGroupsClusterRemoveAllGroupsCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                                   chip::EndpointId destination_endpoint);
 
 /**
  * @brief
  *    Encode an remove-group command for Groups server into buffer including the APS frame
  */
-uint16_t encodeGroupsClusterRemoveGroupCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint,
-                                               chip::GroupId groupId);
+uint16_t encodeGroupsClusterRemoveGroupCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                               chip::EndpointId destination_endpoint, chip::GroupId groupId);
 
 /**
  * @brief
  *    Encode an view-group command for Groups server into buffer including the APS frame
  */
-uint16_t encodeGroupsClusterViewGroupCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint,
-                                             chip::GroupId groupId);
+uint16_t encodeGroupsClusterViewGroupCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                             chip::EndpointId destination_endpoint, chip::GroupId groupId);
 
 /**
  * @brief
  *    Encode a discover command for  server into buffer including the APS frame
  */
-uint16_t encodeGroupsClusterDiscoverAttributes(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint);
+uint16_t encodeGroupsClusterDiscoverAttributes(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                               chip::EndpointId destination_endpoint);
 
 /**
  * @brief
  *    Encode a read command for the name-support attribute for  server into buffer including the APS frame
  */
-uint16_t encodeGroupsClusterReadNameSupportAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint);
+uint16_t encodeGroupsClusterReadNameSupportAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                                     chip::EndpointId destination_endpoint);
 
 /*----------------------------------------------------------------------------*\
 | Cluster IASZone                                                     | 0x0500 |
@@ -1033,32 +1063,37 @@ uint16_t encodeGroupsClusterReadNameSupportAttribute(uint8_t * buffer, uint16_t 
  * @brief
  *    Encode an zone-enroll-response command for IASZone server into buffer including the APS frame
  */
-uint16_t encodeIASZoneClusterZoneEnrollResponseCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint,
-                                                       uint8_t enrollResponseCode, uint8_t zoneID);
+uint16_t encodeIASZoneClusterZoneEnrollResponseCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                                       chip::EndpointId destination_endpoint, uint8_t enrollResponseCode,
+                                                       uint8_t zoneID);
 
 /**
  * @brief
  *    Encode a discover command for  server into buffer including the APS frame
  */
-uint16_t encodeIASZoneClusterDiscoverAttributes(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint);
+uint16_t encodeIASZoneClusterDiscoverAttributes(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                                chip::EndpointId destination_endpoint);
 
 /**
  * @brief
  *    Encode a read command for the zone-state attribute for  server into buffer including the APS frame
  */
-uint16_t encodeIASZoneClusterReadZoneStateAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint);
+uint16_t encodeIASZoneClusterReadZoneStateAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                                    chip::EndpointId destination_endpoint);
 
 /**
  * @brief
  *    Encode a read command for the zone-type attribute for  server into buffer including the APS frame
  */
-uint16_t encodeIASZoneClusterReadZoneTypeAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint);
+uint16_t encodeIASZoneClusterReadZoneTypeAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                                   chip::EndpointId destination_endpoint);
 
 /**
  * @brief
  *    Encode a read command for the zone-status attribute for  server into buffer including the APS frame
  */
-uint16_t encodeIASZoneClusterReadZoneStatusAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint);
+uint16_t encodeIASZoneClusterReadZoneStatusAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                                     chip::EndpointId destination_endpoint);
 
 /**
  * @brief
@@ -1078,7 +1113,8 @@ uint16_t encodeIASZoneClusterWriteIASCIEAddressAttribute(uint8_t * buffer, uint1
  * @brief
  *    Encode a read command for the zone-id attribute for  server into buffer including the APS frame
  */
-uint16_t encodeIASZoneClusterReadZoneIDAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint);
+uint16_t encodeIASZoneClusterReadZoneIDAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                                 chip::EndpointId destination_endpoint);
 
 /*----------------------------------------------------------------------------*\
 | Cluster Identify                                                    | 0x0003 |
@@ -1099,20 +1135,22 @@ uint16_t encodeIASZoneClusterReadZoneIDAttribute(uint8_t * buffer, uint16_t buf_
  * @brief
  *    Encode an identify command for Identify server into buffer including the APS frame
  */
-uint16_t encodeIdentifyClusterIdentifyCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint,
-                                              uint16_t identifyTime);
+uint16_t encodeIdentifyClusterIdentifyCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                              chip::EndpointId destination_endpoint, uint16_t identifyTime);
 
 /**
  * @brief
  *    Encode an identify-query command for Identify server into buffer including the APS frame
  */
-uint16_t encodeIdentifyClusterIdentifyQueryCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint);
+uint16_t encodeIdentifyClusterIdentifyQueryCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                                   chip::EndpointId destination_endpoint);
 
 /**
  * @brief
  *    Encode a discover command for  server into buffer including the APS frame
  */
-uint16_t encodeIdentifyClusterDiscoverAttributes(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint);
+uint16_t encodeIdentifyClusterDiscoverAttributes(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                                 chip::EndpointId destination_endpoint);
 
 /**
  * @brief
@@ -1152,79 +1190,86 @@ uint16_t encodeIdentifyClusterWriteIdentifyTimeAttribute(uint8_t * buffer, uint1
  * @brief
  *    Encode an move command for Level server into buffer including the APS frame
  */
-uint16_t encodeLevelClusterMoveCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint,
-                                       uint8_t moveMode, uint8_t rate, uint8_t optionsMask, uint8_t optionsOverride);
+uint16_t encodeLevelClusterMoveCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                       chip::EndpointId destination_endpoint, uint8_t moveMode, uint8_t rate, uint8_t optionsMask,
+                                       uint8_t optionsOverride);
 
 /**
  * @brief
  *    Encode an move-to-level command for Level server into buffer including the APS frame
  */
-uint16_t encodeLevelClusterMoveToLevelCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint,
-                                              uint8_t level, uint16_t transitionTime, uint8_t optionsMask, uint8_t optionsOverride);
+uint16_t encodeLevelClusterMoveToLevelCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                              chip::EndpointId destination_endpoint, uint8_t level, uint16_t transitionTime,
+                                              uint8_t optionsMask, uint8_t optionsOverride);
 
 /**
  * @brief
  *    Encode an move-to-level-with-on-off command for Level server into buffer including the APS frame
  */
-uint16_t encodeLevelClusterMoveToLevelWithOnOffCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint,
-                                                       uint8_t level, uint16_t transitionTime, uint8_t optionsMask,
-                                                       uint8_t optionsOverride);
+uint16_t encodeLevelClusterMoveToLevelWithOnOffCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                                       chip::EndpointId destination_endpoint, uint8_t level,
+                                                       uint16_t transitionTime, uint8_t optionsMask, uint8_t optionsOverride);
 
 /**
  * @brief
  *    Encode an move-with-on-off command for Level server into buffer including the APS frame
  */
-uint16_t encodeLevelClusterMoveWithOnOffCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint,
-                                                uint8_t moveMode, uint8_t rate, uint8_t optionsMask, uint8_t optionsOverride);
+uint16_t encodeLevelClusterMoveWithOnOffCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                                chip::EndpointId destination_endpoint, uint8_t moveMode, uint8_t rate,
+                                                uint8_t optionsMask, uint8_t optionsOverride);
 
 /**
  * @brief
  *    Encode an step command for Level server into buffer including the APS frame
  */
-uint16_t encodeLevelClusterStepCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint,
-                                       uint8_t stepMode, uint8_t stepSize, uint16_t transitionTime, uint8_t optionsMask,
-                                       uint8_t optionsOverride);
+uint16_t encodeLevelClusterStepCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                       chip::EndpointId destination_endpoint, uint8_t stepMode, uint8_t stepSize,
+                                       uint16_t transitionTime, uint8_t optionsMask, uint8_t optionsOverride);
 
 /**
  * @brief
  *    Encode an step-with-on-off command for Level server into buffer including the APS frame
  */
-uint16_t encodeLevelClusterStepWithOnOffCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint,
-                                                uint8_t stepMode, uint8_t stepSize, uint16_t transitionTime, uint8_t optionsMask,
-                                                uint8_t optionsOverride);
+uint16_t encodeLevelClusterStepWithOnOffCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                                chip::EndpointId destination_endpoint, uint8_t stepMode, uint8_t stepSize,
+                                                uint16_t transitionTime, uint8_t optionsMask, uint8_t optionsOverride);
 
 /**
  * @brief
  *    Encode an stop command for Level server into buffer including the APS frame
  */
-uint16_t encodeLevelClusterStopCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint,
-                                       uint8_t optionsMask, uint8_t optionsOverride);
+uint16_t encodeLevelClusterStopCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                       chip::EndpointId destination_endpoint, uint8_t optionsMask, uint8_t optionsOverride);
 
 /**
  * @brief
  *    Encode an stop-with-on-off command for Level server into buffer including the APS frame
  */
-uint16_t encodeLevelClusterStopWithOnOffCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint,
-                                                uint8_t optionsMask, uint8_t optionsOverride);
+uint16_t encodeLevelClusterStopWithOnOffCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                                chip::EndpointId destination_endpoint, uint8_t optionsMask,
+                                                uint8_t optionsOverride);
 
 /**
  * @brief
  *    Encode a discover command for  server into buffer including the APS frame
  */
-uint16_t encodeLevelClusterDiscoverAttributes(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint);
+uint16_t encodeLevelClusterDiscoverAttributes(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                              chip::EndpointId destination_endpoint);
 
 /**
  * @brief
  *    Encode a read command for the current-level attribute for  server into buffer including the APS frame
  */
-uint16_t encodeLevelClusterReadCurrentLevelAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint);
+uint16_t encodeLevelClusterReadCurrentLevelAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                                     chip::EndpointId destination_endpoint);
 
 /**
  * @brief
  *    Encode a report command for the current-level attribute for  server into buffer including the APS frame
  */
-uint16_t encodeLevelClusterReportCurrentLevelAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint,
-                                                       uint16_t min_interval, uint16_t max_interval, uint8_t change);
+uint16_t encodeLevelClusterReportCurrentLevelAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                                       chip::EndpointId destination_endpoint, uint16_t min_interval,
+                                                       uint16_t max_interval, uint8_t change);
 
 /*----------------------------------------------------------------------------*\
 | Cluster OnOff                                                       | 0x0006 |
@@ -1245,38 +1290,44 @@ uint16_t encodeLevelClusterReportCurrentLevelAttribute(uint8_t * buffer, uint16_
  * @brief
  *    Encode an off command for OnOff server into buffer including the APS frame
  */
-uint16_t encodeOnOffClusterOffCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint);
+uint16_t encodeOnOffClusterOffCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                      chip::EndpointId destination_endpoint);
 
 /**
  * @brief
  *    Encode an on command for OnOff server into buffer including the APS frame
  */
-uint16_t encodeOnOffClusterOnCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint);
+uint16_t encodeOnOffClusterOnCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                     chip::EndpointId destination_endpoint);
 
 /**
  * @brief
  *    Encode an toggle command for OnOff server into buffer including the APS frame
  */
-uint16_t encodeOnOffClusterToggleCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint);
+uint16_t encodeOnOffClusterToggleCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                         chip::EndpointId destination_endpoint);
 
 /**
  * @brief
  *    Encode a discover command for  server into buffer including the APS frame
  */
-uint16_t encodeOnOffClusterDiscoverAttributes(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint);
+uint16_t encodeOnOffClusterDiscoverAttributes(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                              chip::EndpointId destination_endpoint);
 
 /**
  * @brief
  *    Encode a read command for the on-off attribute for  server into buffer including the APS frame
  */
-uint16_t encodeOnOffClusterReadOnOffAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint);
+uint16_t encodeOnOffClusterReadOnOffAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                              chip::EndpointId destination_endpoint);
 
 /**
  * @brief
  *    Encode a report command for the on-off attribute for  server into buffer including the APS frame
  */
-uint16_t encodeOnOffClusterReportOnOffAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint,
-                                                uint16_t min_interval, uint16_t max_interval);
+uint16_t encodeOnOffClusterReportOnOffAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                                chip::EndpointId destination_endpoint, uint16_t min_interval,
+                                                uint16_t max_interval);
 
 /*----------------------------------------------------------------------------*\
 | Cluster Scenes                                                      | 0x0005 |
@@ -1311,87 +1362,95 @@ uint16_t encodeOnOffClusterReportOnOffAttribute(uint8_t * buffer, uint16_t buf_l
  * @brief
  *    Encode an add-scene command for Scenes server into buffer including the APS frame
  */
-uint16_t encodeScenesClusterAddSceneCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint,
-                                            chip::GroupId groupID, uint8_t sceneID, uint16_t transitionTime, char * sceneName,
-                                            chip::ClusterId clusterId, char * extensionFieldSet);
+uint16_t encodeScenesClusterAddSceneCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                            chip::EndpointId destination_endpoint, chip::GroupId groupID, uint8_t sceneID,
+                                            uint16_t transitionTime, char * sceneName, chip::ClusterId clusterId,
+                                            char * extensionFieldSet);
 
 /**
  * @brief
  *    Encode an get-scene-membership command for Scenes server into buffer including the APS frame
  */
-uint16_t encodeScenesClusterGetSceneMembershipCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint,
-                                                      chip::GroupId groupID);
+uint16_t encodeScenesClusterGetSceneMembershipCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                                      chip::EndpointId destination_endpoint, chip::GroupId groupID);
 
 /**
  * @brief
  *    Encode an recall-scene command for Scenes server into buffer including the APS frame
  */
-uint16_t encodeScenesClusterRecallSceneCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint,
-                                               chip::GroupId groupID, uint8_t sceneID, uint16_t transitionTime);
+uint16_t encodeScenesClusterRecallSceneCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                               chip::EndpointId destination_endpoint, chip::GroupId groupID, uint8_t sceneID,
+                                               uint16_t transitionTime);
 
 /**
  * @brief
  *    Encode an remove-all-scenes command for Scenes server into buffer including the APS frame
  */
-uint16_t encodeScenesClusterRemoveAllScenesCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint,
-                                                   chip::GroupId groupID);
+uint16_t encodeScenesClusterRemoveAllScenesCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                                   chip::EndpointId destination_endpoint, chip::GroupId groupID);
 
 /**
  * @brief
  *    Encode an remove-scene command for Scenes server into buffer including the APS frame
  */
-uint16_t encodeScenesClusterRemoveSceneCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint,
-                                               chip::GroupId groupID, uint8_t sceneID);
+uint16_t encodeScenesClusterRemoveSceneCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                               chip::EndpointId destination_endpoint, chip::GroupId groupID, uint8_t sceneID);
 
 /**
  * @brief
  *    Encode an store-scene command for Scenes server into buffer including the APS frame
  */
-uint16_t encodeScenesClusterStoreSceneCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint,
-                                              chip::GroupId groupID, uint8_t sceneID);
+uint16_t encodeScenesClusterStoreSceneCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                              chip::EndpointId destination_endpoint, chip::GroupId groupID, uint8_t sceneID);
 
 /**
  * @brief
  *    Encode an view-scene command for Scenes server into buffer including the APS frame
  */
-uint16_t encodeScenesClusterViewSceneCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint,
-                                             chip::GroupId groupID, uint8_t sceneID);
+uint16_t encodeScenesClusterViewSceneCommand(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                             chip::EndpointId destination_endpoint, chip::GroupId groupID, uint8_t sceneID);
 
 /**
  * @brief
  *    Encode a discover command for  server into buffer including the APS frame
  */
-uint16_t encodeScenesClusterDiscoverAttributes(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint);
+uint16_t encodeScenesClusterDiscoverAttributes(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                               chip::EndpointId destination_endpoint);
 
 /**
  * @brief
  *    Encode a read command for the scene-count attribute for  server into buffer including the APS frame
  */
-uint16_t encodeScenesClusterReadSceneCountAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint);
+uint16_t encodeScenesClusterReadSceneCountAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                                    chip::EndpointId destination_endpoint);
 
 /**
  * @brief
  *    Encode a read command for the current-scene attribute for  server into buffer including the APS frame
  */
-uint16_t encodeScenesClusterReadCurrentSceneAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint);
+uint16_t encodeScenesClusterReadCurrentSceneAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                                      chip::EndpointId destination_endpoint);
 
 /**
  * @brief
  *    Encode a read command for the current-group attribute for  server into buffer including the APS frame
  */
-uint16_t encodeScenesClusterReadCurrentGroupAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint);
+uint16_t encodeScenesClusterReadCurrentGroupAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                                      chip::EndpointId destination_endpoint);
 
 /**
  * @brief
  *    Encode a read command for the scene-valid attribute for  server into buffer including the APS frame
  */
-uint16_t encodeScenesClusterReadSceneValidAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint);
+uint16_t encodeScenesClusterReadSceneValidAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                                    chip::EndpointId destination_endpoint);
 
 /**
  * @brief
  *    Encode a read command for the name-support attribute for  server into buffer including the APS frame
  */
-uint16_t encodeScenesClusterReadNameSupportAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber, chip::EndpointId destination_endpoint);
+uint16_t encodeScenesClusterReadNameSupportAttribute(uint8_t * buffer, uint16_t buf_length, uint8_t seqNumber,
+                                                     chip::EndpointId destination_endpoint);
 
 /*----------------------------------------------------------------------------*\
 | Cluster TemperatureMeasurement                                      | 0x0402 |

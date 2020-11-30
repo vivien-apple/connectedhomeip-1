@@ -182,7 +182,18 @@ EmberAfStatus emberAfClusterSpecificCommandParse(EmberAfClusterCommand * cmd)
 EmberAfStatus emberAfBasicClusterServerCommandParse(EmberAfClusterCommand * cmd)
 {
     bool wasHandled = false;
-    if (!cmd->mfgSpecific)
+    if (cmd->mfgSpecific)
+    {
+        if (cmd->mfgCode == 0x1002 && cmd->commandId == ZCL_MFG_SPECIFIC_ECHO_COMMAND_ID)
+        {
+            uint16_t payloadOffset = cmd->payloadStartIndex;
+            uint8_t * msg; // Ver.: always
+            // Command is not a fixed length
+            msg        = emberAfGetString(cmd->buffer, payloadOffset, cmd->bufLen);
+            wasHandled = emberAfBasicClusterMfgSpecificEcho(msg);
+        }
+    }
+    else
     {
         switch (cmd->commandId)
         {

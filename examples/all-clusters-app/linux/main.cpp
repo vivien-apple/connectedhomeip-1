@@ -68,3 +68,18 @@ exit:
     }
     return 0;
 }
+
+bool emberAfBasicClusterMfgSpecificEcho(uint8_t * msg)
+{
+    // Send back the same string as a response
+    emberAfFillExternalManufacturerSpecificBuffer((ZCL_CLUSTER_SPECIFIC_COMMAND | ZCL_FRAME_CONTROL_SERVER_TO_CLIENT),
+                                                  ZCL_BASIC_CLUSTER_ID, 0x1002, ZCL_MFG_SPECIFIC_ECHO_RESPONSE_COMMAND_ID, "S", msg,
+                                                  emberAfStringLength(msg));
+    EmberStatus sendStatus = emberAfSendResponse();
+    if (EMBER_SUCCESS != sendStatus)
+    {
+        emberAfBasicClusterPrintln("Basic Mfg Command: failed to send echo response: 0x%x", "echo", sendStatus);
+    }
+
+    return true;
+}
