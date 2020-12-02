@@ -44,26 +44,14 @@ void ClusterBase::Dissociate()
     mDevice = nullptr;
 }
 
-CHIP_ERROR ClusterBase::SendCommand(CommandEncoder commandEncoder, uint16_t maxCmdLen, Callback::Callback<> * responseHandler)
+CHIP_ERROR ClusterBase::SendCommand(System::PacketBufferHandle & command, Callback::Callback<> * responseHandler)
 {
-    CHIP_ERROR err         = CHIP_NO_ERROR;
-    uint16_t encodedLength = 0;
-    System::PacketBufferHandle message;
+    CHIP_ERROR err = CHIP_NO_ERROR;
 
-    VerifyOrExit(commandEncoder != nullptr, err = CHIP_ERROR_INVALID_ARGUMENT);
+    VerifyOrExit(!command.IsNull(), err = CHIP_ERROR_INVALID_ARGUMENT);
     VerifyOrExit(mDevice != nullptr, err = CHIP_ERROR_INCORRECT_STATE);
 
-    message = System::PacketBuffer::NewWithAvailableSize(maxCmdLen);
-    VerifyOrExit(!message.IsNull(), err = CHIP_ERROR_NO_MEMORY);
-
-    encodedLength = commandEncoder(message->Start(), message->AvailableDataLength(), mEndpoint);
-    VerifyOrExit(encodedLength != 0, err = CHIP_ERROR_INTERNAL);
-    VerifyOrExit(encodedLength <= maxCmdLen, err = CHIP_ERROR_INTERNAL);
-
-    message->SetDataLength(encodedLength);
-    VerifyOrExit(message->DataLength() >= encodedLength, err = CHIP_ERROR_NO_MEMORY);
-
-    err = mDevice->SendMessage(std::move(message));
+    err = mDevice->SendMessage(std::move(command));
     SuccessOrExit(err);
 
     if (responseHandler != nullptr)
@@ -80,40 +68,14 @@ exit:
     return err;
 }
 
-CHIP_ERROR ClusterBase::RequestAttributeReporting(RequestEncoder requestEncoder, uint16_t maxCmdLen, uint16_t minInterval,
-                                                  uint16_t maxInterval, Callback::Callback<> * reportHandler)
+CHIP_ERROR ClusterBase::RequestAttributeReporting(Callback::Callback<> * reportHandler)
 {
-    CHIP_ERROR err         = CHIP_NO_ERROR;
-    uint16_t encodedLength = 0;
-    System::PacketBufferHandle message;
+    CHIP_ERROR err = CHIP_NO_ERROR;
 
-    VerifyOrExit(requestEncoder != nullptr, err = CHIP_ERROR_INVALID_ARGUMENT);
-    VerifyOrExit(mDevice != nullptr, err = CHIP_ERROR_INCORRECT_STATE);
-
-    message = System::PacketBuffer::NewWithAvailableSize(maxCmdLen);
-    VerifyOrExit(!message.IsNull(), err = CHIP_ERROR_NO_MEMORY);
-
-    encodedLength = requestEncoder(message->Start(), message->AvailableDataLength(), mEndpoint, minInterval, maxInterval);
-    VerifyOrExit(encodedLength != 0, err = CHIP_ERROR_INTERNAL);
-    VerifyOrExit(encodedLength <= maxCmdLen, err = CHIP_ERROR_INTERNAL);
-
-    message->SetDataLength(encodedLength);
-    VerifyOrExit(message->DataLength() >= encodedLength, err = CHIP_ERROR_NO_MEMORY);
-
-    err = mDevice->SendMessage(std::move(message));
-    SuccessOrExit(err);
-
-    if (reportHandler != nullptr)
-    {
-        mDevice->AddReportHandler(mEndpoint, mClusterId, reportHandler);
-    }
+    VerifyOrExit(reportHandler != nullptr, err = CHIP_ERROR_INVALID_ARGUMENT);
+    mDevice->AddReportHandler(mEndpoint, mClusterId, reportHandler);
 
 exit:
-    if (err != CHIP_NO_ERROR)
-    {
-        ChipLogError(Controller, "Failed in requesting attribute reporting. Err %d", err);
-    }
-
     return err;
 }
 

@@ -2,7 +2,48 @@
     "name": "CHIP templates",
     "version": "chip-v1",
     "helpers": ["helper-chip.js"],
+    "override": "override.js",
+    "partials": [
+        {
+            "name": "clusters_header",
+            "path": "partials/clusters_header.zapt"
+        },
+        {
+            "name": "cluster_header",
+            "path": "partials/cluster_header.zapt"
+        }
+    ],
     "templates": [
+        {
+            "path": "CHIPClustersObjc.zapt",
+            "name": "CHIP Clusters Objc Wrappers header",
+            "output": "CHIPClustersObjc.h"
+        },
+        {
+            "path": "CHIPClustersObjc-src.zapt",
+            "name": "CHIP Clusters Objc Wrappers",
+            "output": "CHIPClustersObjc.mm"
+        },
+        {
+            "path": "encoder-src.zapt",
+            "name": "CHIP ZCL ZPRO codec api",
+            "output": "encoder.cpp"
+        },
+        {
+            "path": "chip-zcl-zpro-codec-api.zapt",
+            "name": "CHIP ZCL ZPRO codec api",
+            "output": "chip-zcl-zpro-codec-api.h"
+        },
+        {
+            "path": "Clusters.zapt",
+            "name": "CHIP Clusters header",
+            "output": "Clusters.h"
+        },
+        {
+            "path": "Clusters-src.zapt",
+            "name": "CHIP Clusters",
+            "output": "Clusters.cpp"
+        },
         {
             "path": "af-structs.zapt",
             "name": "ZCL af-structs header",

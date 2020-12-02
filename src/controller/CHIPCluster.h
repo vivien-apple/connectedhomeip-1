@@ -45,38 +45,27 @@ public:
 protected:
     ClusterBase(uint16_t cluster) : mClusterId(cluster) {}
 
-    typedef uint16_t (*CommandEncoder)(uint8_t * command, uint16_t maxLen, EndpointId endpoint);
-
     /**
      * @brief
      *   Send the command, constructed using the given encoder, to the device. Add a callback
      *   handler, that'll be called when the response is received from the device.
      *
-     * @param[in] commandEncoder    The function that encodes the command
-     * @param[in] maxCmdLen         Maximum length expected for the encoded command
+     * @param[in] command           The encoded command
      * @param[in] responseHandler   The handler function that's called on receiving command response
      */
-    CHIP_ERROR SendCommand(CommandEncoder commandEncoder, uint16_t maxCmdLen, Callback::Callback<> * responseHandler);
-
-    typedef uint16_t (*RequestEncoder)(uint8_t * request, uint16_t maxLen, EndpointId endpoint, uint16_t minInterval,
-                                       uint16_t maxInterval);
+    CHIP_ERROR SendCommand(System::PacketBufferHandle & command, Callback::Callback<> * responseHandler);
 
     /**
      * @brief
      *   Request attribute reports from the device. The request constructed using the given encoder. Add a callback
      *   handler, that'll be called when the reports are received from the device.
      *
-     * @param[in] requestEncoder    The function that encodes the report request
-     * @param[in] maxCmdLen         Maximum length expected for the encoded command
-     * @param[in] minInterval       The minimum time interval between reports
-     * @param[in] maxInterval       The maximum time interval between reports
      * @param[in] reportHandler     The handler function that's called on receiving attribute reports
      *                              The reporting handler continues to be called as long as the callback
      *                              is active. The user can stop the reporting by cancelling the callback.
      *                              Reference: chip::Callback::Cancel()
      */
-    CHIP_ERROR RequestAttributeReporting(RequestEncoder requestEncoder, uint16_t maxCmdLen, uint16_t minInterval,
-                                         uint16_t maxInterval, Callback::Callback<> * reportHandler);
+    CHIP_ERROR RequestAttributeReporting(Callback::Callback<> * reportHandler);
 
     const ClusterId mClusterId;
     Device * mDevice;

@@ -1,0 +1,35 @@
+{{pad '/*' 78 '-'}}*\
+{{pad (concat "| Cluster " (asCamelCased name false)) 70 ' '}}{{pad (concat "| " (asHex code 4)) 9 ' '}}|
+{{pad "|" 79 '-'}}|
+{{pad "| Responses: " 70 ' '}}{{pad "| " 9 ' '}}|
+{{#all_user_cluster_commands}}
+{{#if (isStrEqual clusterName parent.name)}}
+{{#if (isClient clusterSide) }}
+{{#if (isResponse name) }}
+{{pad (concat "| * " (asCamelCased name false)) 70 ' '}}{{pad (concat "|   " (asHex code 2)) 9 ' '}}|
+{{/if}}
+{{/if}}
+{{/if}}
+{{/all_user_cluster_commands}}
+{{pad "|" 70 ' '}}{{pad "|" 9 ' '}}|
+{{pad "|" 79 '-'}}|
+{{pad "| Commands: " 70 ' '}}{{pad "| " 9 ' '}}|
+{{#all_user_cluster_commands}}
+{{#if (isClient clusterSide)}}
+{{#if (isStrEqual clusterName parent.name)}}
+{{#unless (isResponse name) }}
+{{pad (concat "| * " (asCamelCased name false)) 70 ' '}}{{pad (concat "|   " (asHex code 2)) 9 ' '}}|
+{{/unless}}
+{{/if}}
+{{/if}}
+{{/all_user_cluster_commands}}
+{{pad "|" 79 '-'}}|
+{{pad "| Attributes: " 70 ' '}}{{pad "| " 9 ' '}}|
+{{#user_all_attributes}}
+{{#if (isServer side)}}
+{{#if (isNumEqual clusterCode parent.code)}}
+{{pad (concat "| * " (asCamelCased name false)) 70 ' '}}{{pad (concat "| " (asHex attributeCode 4)) 9 ' '}}|
+{{/if}}
+{{/if}}
+{{/user_all_attributes}}
+{{pad '\*' 78 '-'}}*/

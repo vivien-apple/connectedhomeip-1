@@ -1,0 +1,74 @@
+{{chip_header}}
+
+// Prevent multiple inclusion
+#pragma once
+
+#include <app/util/basic-types.h>
+#include <stdint.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+{{> clusters_header}}
+
+{{#all_user_clusters}}
+{{#if (isEnabled enabled)}}
+{{#if (isServer side)}}
+
+{{> cluster_header}}
+
+{{#all_user_cluster_commands}}
+{{#unless (isResponse name)}}
+{{#if (isClient clusterSide)}}
+{{#if (isStrEqual clusterName parent.name)}}
+/**
+ * @brief
+ *    Encode an {{asType name}} command for {{clusterName}} server into buffer including the APS frame
+ */
+uint16_t encode{{asCamelCased clusterName false}}Cluster{{asType name}}Command(uint8_t * buffer, uint16_t buf_length, chip::EndpointId destination_endpoint{{#command_arguments}}, {{asChipUnderlyingType type false}} {{asCamelCased label}}{{/command_arguments}});
+
+{{/if}}
+{{/if}}
+{{/unless}}
+{{/all_user_cluster_commands}}
+/**
+ * @brief
+ *    Encode a {{name}} server discover command into buffer including the APS frame
+ */
+uint16_t encode{{asCamelCased name false}}ClusterDiscoverAttributes(uint8_t * buffer, uint16_t buf_length, chip::EndpointId destination_endpoint);
+
+{{#user_all_attributes}}
+{{#if (isServer side)}}
+{{#if (isNumEqual clusterCode parent.code)}}
+/**
+ * @brief
+ *    Encode a {{parent.name}} server read command for the {{name}} attribute into buffer including the APS frame
+ */
+uint16_t encode{{asCamelCased parent.name false}}ClusterRead{{asCamelCased name false}}Attribute(uint8_t * buffer, uint16_t buf_length, chip::EndpointId destination_endpoint);
+
+{{#if (isNumEqual writable 1)}}
+/**
+ * @brief
+ *    Encode a {{parent.name}} server write command for the {{name}} attribute into buffer including the APS frame
+ */
+uint16_t encode{{asCamelCased parent.name false}}ClusterWrite{{asCamelCased name false}}Attribute(uint8_t * buffer, uint16_t buf_length, chip::EndpointId destination_endpoint, {{asChipUnderlyingType type isArray}} {{asCamelCased name}});
+
+{{/if}}
+{{#if (isNumEqual reportable.included 1)}}
+/**
+ * @brief
+ *    Encode a {{parent.name}} server report command for the {{name}} attribute into buffer including the APS frame
+ */
+uint16_t encode{{asCamelCased parent.name false}}ClusterReport{{asCamelCased name false}}Attribute(uint8_t * buffer, uint16_t buf_length, chip::EndpointId destination_endpoint, uint16_t min_interval, uint16_t max_interval);
+
+{{/if}}
+{{/if}}
+{{/if}}
+{{/user_all_attributes}}
+{{/if}}
+{{/if}}
+{{/all_user_clusters}}
+#ifdef __cplusplus
+} // extern "C"
+#endif

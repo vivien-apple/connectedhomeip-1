@@ -1,0 +1,132 @@
+{{chip_header}}
+
+#import <Foundation/Foundation.h>
+
+#import "CHIPCallbackBridge.h"
+#import "CHIPDevice.h"
+#import "CHIPDevice_Internal.h"
+#import "CHIPClustersObjc.h"
+
+#include <controller/CHIPClusters.h>
+
+{{#all_user_clusters}}
+{{#if (isEnabled enabled)}}
+{{#if (isServer side)}}
+
+@interface CHIP{{asCamelCased name false}} ()
+
+@property (readonly) chip::Controller::{{asCamelCased name false}}Cluster cppCluster;
+@property (readonly, nonatomic) dispatch_queue_t callbackQueue;
+@end
+
+@implementation CHIP{{asCamelCased name false}}
+
+- (instancetype)initWithDevice:(CHIPDevice *)device endpoint:(chip::EndpointId)endpoint queue:(dispatch_queue_t)queue
+{
+    CHIP_ERROR err = _cppCluster.Associate([device internalDevice], endpoint);
+
+    if (err != CHIP_NO_ERROR) {
+        return nil;
+    }
+
+    if (self = [super init]) {
+        _callbackQueue = queue;
+    }
+    return self;
+}
+
+{{#all_user_cluster_commands}}
+{{#unless (isResponse name)}}
+{{#if (isStrEqual clusterName parent.name)}}
+{{#if (isCommandAvailable parent.side incoming outgoing commandSource name)}}
+- (BOOL){{asCamelCased name false}}:(CHIPDeviceCallback)onCompletion{{#command_arguments}} {{asCamelCased name}}:({{asChipUnderlyingType type false}}){{asCamelCased name}}{{/command_arguments}}
+{
+  CHIPCallbackBridge * callback = new CHIPCallbackBridge(onCompletion, _callbackQueue);
+    if (!callback) {
+        return NO;
+    }
+
+    CHIP_ERROR err = self.cppCluster.{{asCamelCased name false}}(callback{{#command_arguments}}, {{asCamelCased name}}{{/command_arguments}});
+    if (err != CHIP_NO_ERROR) {
+        callback->Cancel();
+        delete callback;
+        return NO;
+    }
+    return YES;
+}
+{{/if}}
+{{/if}}
+{{/unless}}
+{{/all_user_cluster_commands}}
+
+{{#user_all_attributes}}
+{{#if (isNumEqual clusterCode parent.code)}}
+{{#if (isStrEqual side parent.side)}}
+- (BOOL)ReadAttribute{{asCamelCased name false}}:(CHIPDeviceCallback)onCompletion
+{
+    CHIPCallbackBridge * callback = new CHIPCallbackBridge(onCompletion, _callbackQueue);
+    if (!callback) {
+        return NO;
+    }
+
+    CHIP_ERROR err = self.cppCluster.ReadAttribute{{asCamelCased name false}}(callback);
+    if (err != CHIP_NO_ERROR) {
+        callback->Cancel();
+        delete callback;
+        return NO;
+    }
+    return YES;
+}
+
+{{#if (isNumEqual writable 1)}}
+- (BOOL)WriteAttribute{{asCamelCased name false}}:(CHIPDeviceCallback)onCompletion value:({{asChipUnderlyingType type false}})value
+{
+    CHIPCallbackBridge * callback = new CHIPCallbackBridge(onCompletion, _callbackQueue);
+    if (!callback) {
+        return NO;
+    }
+
+    CHIP_ERROR err = self.cppCluster.WriteAttribute{{asCamelCased name false}}(callback, value);
+    if (err != CHIP_NO_ERROR) {
+        callback->Cancel();
+        delete callback;
+        return NO;
+    }
+    return YES;
+}
+
+{{/if}}
+{{#if (isNumEqual reportable.included 1)}}
+- (BOOL)ReportAttribute{{asCamelCased name false}}:(CHIPDeviceCallback)onCompletion minInterval:(uint16_t)minInterval maxInterval:(uint16_t)maxInterval onChange:(CHIPDeviceCallback)onChange
+{
+    CHIPCallbackBridge * callback = new CHIPCallbackBridge(onCompletion, _callbackQueue);
+    if (!callback) {
+        return NO;
+    }
+
+    CHIPCallbackBridge * change = new CHIPCallbackBridge(onChange, _callbackQueue);
+    if (!change) {
+        return NO;
+    }
+
+    CHIP_ERROR err = self.cppCluster.ReportAttribute{{asCamelCased name false}}(callback, minInterval, maxInterval, change);
+    if (err != CHIP_NO_ERROR) {
+        callback->Cancel();
+        change->Cancel();
+        delete callback;
+        delete change;
+        return NO;
+    }
+    return YES;
+}
+
+{{/if}}
+{{/if}}
+{{/if}}
+{{/user_all_attributes}}
+
+@end
+
+{{/if}}
+{{/if}}
+{{/all_user_clusters}}

@@ -1,0 +1,54 @@
+{{chip_header}}
+
+#ifndef CHIP_CLUSTERS_H
+#define CHIP_CLUSTERS_H
+
+#import <CHIP/CHIPDeviceCallback.h>
+#import <Foundation/Foundation.h>
+
+@class CHIPDevice;
+
+{{#all_user_clusters}}
+{{#if (isEnabled enabled)}}
+{{#if (isServer side)}}
+
+NS_ASSUME_NONNULL_BEGIN
+
+@interface CHIP{{asCamelCased name false}} : NSObject
+
+- (nullable instancetype)initWithDevice:(CHIPDevice *)device endpoint:(uint8_t)endpoint queue:(dispatch_queue_t)queue;
+{{#all_user_cluster_commands}}
+{{#unless (isResponse name)}}
+{{#if (isStrEqual clusterName parent.name)}}
+{{#if (isCommandAvailable parent.side incoming outgoing commandSource name)}}
+- (BOOL){{asCamelCased name false}}:(CHIPDeviceCallback)onCompletion{{#command_arguments}} {{asCamelCased name}}:({{asChipUnderlyingType type false}}){{asCamelCased name}}{{/command_arguments}};
+{{/if}}
+{{/if}}
+{{/unless}}
+{{/all_user_cluster_commands}}
+
+{{#user_all_attributes}}
+{{#if (isNumEqual clusterCode parent.code)}}
+{{#if (isStrEqual side parent.side)}}
+- (BOOL)ReadAttribute{{asCamelCased name false}}:(CHIPDeviceCallback)onCompletion;
+{{#if (isNumEqual writable 1)}}
+- (BOOL)WriteAttribute{{asCamelCased name false}}:(CHIPDeviceCallback)onCompletion value:({{asChipUnderlyingType type false}})value;
+{{/if}}
+{{#if (isNumEqual reportable.included 1)}}
+- (BOOL)ReportAttribute{{asCamelCased name false}}:(CHIPDeviceCallback)onCompletion minInterval:(uint16_t)minInterval maxInterval:(uint16_t)maxInterval onChange:(CHIPDeviceCallback)onChange;
+{{/if}}
+{{/if}}
+{{/if}}
+{{/user_all_attributes}}
+
+- (instancetype)init NS_UNAVAILABLE;
++ (instancetype)new NS_UNAVAILABLE;
+
+@end
+
+NS_ASSUME_NONNULL_END
+{{/if}}
+{{/if}}
+{{/all_user_clusters}}
+
+#endif /* CHIP_CLUSTERS_H */
