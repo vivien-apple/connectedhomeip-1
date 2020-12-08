@@ -26,6 +26,7 @@
 #include <limits>
 
 #include <app/util/basic-types.h>
+#include <controller/CHIPClusters.h>
 #include <support/SafeInt.h>
 
 #define CHECK_MESSAGE_LENGTH(value)                                                                                                \
@@ -932,9 +933,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeBarrierControlClusterBarrierControlGoToPercentCommand(buffer->Start(), bufferSize, endPointId, mPercentOpen);
+        chip::Controller::BarrierControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.BarrierControlGoToPercent(nullptr, mPercentOpen);
     }
 
     // Global Response: DefaultResponse
@@ -956,9 +959,11 @@ class BarrierControlStop : public ModelCommand
 public:
     BarrierControlStop() : ModelCommand("barrier-control-stop", kBarrierControlClusterId, 0x01) { ModelCommand::AddArguments(); }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeBarrierControlClusterBarrierControlStopCommand(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::BarrierControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.BarrierControlStop(nullptr);
     }
 
     // Global Response: DefaultResponse
@@ -977,9 +982,11 @@ class DiscoverBarrierControlAttributes : public ModelCommand
 public:
     DiscoverBarrierControlAttributes() : ModelCommand("discover", kBarrierControlClusterId, 0x0c) { ModelCommand::AddArguments(); }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeBarrierControlClusterDiscoverAttributes(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::BarrierControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.DiscoverAttributes(nullptr);
     }
 
     // Global Response: DiscoverAttributesResponse
@@ -1002,9 +1009,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeBarrierControlClusterReadBarrierMovingStateAttribute(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::BarrierControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributeBarrierMovingState(nullptr);
     }
 
     // Global Response: ReadAttributesResponse
@@ -1027,9 +1036,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeBarrierControlClusterReadBarrierSafetyStatusAttribute(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::BarrierControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributeBarrierSafetyStatus(nullptr);
     }
 
     // Global Response: ReadAttributesResponse
@@ -1052,9 +1063,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeBarrierControlClusterReadBarrierCapabilitiesAttribute(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::BarrierControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributeBarrierCapabilities(nullptr);
     }
 
     // Global Response: ReadAttributesResponse
@@ -1077,9 +1090,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeBarrierControlClusterReadBarrierPositionAttribute(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::BarrierControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributeBarrierPosition(nullptr);
     }
 
     // Global Response: ReadAttributesResponse
@@ -1116,9 +1131,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeBasicClusterResetToFactoryDefaultsCommand(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::BasicCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ResetToFactoryDefaults(nullptr);
     }
 
     // Global Response: DefaultResponse
@@ -1137,9 +1154,11 @@ class BasicMfgSpecificPing : public ModelCommand
 public:
     BasicMfgSpecificPing() : ModelCommand("ping", kBasicClusterId, 0x00) { ModelCommand::AddArguments(); }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeBasicClusterMfgSpecificPingCommand(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::BasicCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.MfgSpecificPing(nullptr);
     }
 
     // Global Response: DefaultResponse
@@ -1158,9 +1177,11 @@ class DiscoverBasicAttributes : public ModelCommand
 public:
     DiscoverBasicAttributes() : ModelCommand("discover", kBasicClusterId, 0x0c) { ModelCommand::AddArguments(); }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeBasicClusterDiscoverAttributes(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::BasicCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.DiscoverAttributes(nullptr);
     }
 
     // Global Response: DiscoverAttributesResponse
@@ -1183,9 +1204,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeBasicClusterReadZclVersionAttribute(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::BasicCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributeZclVersion(nullptr);
     }
 
     // Global Response: ReadAttributesResponse
@@ -1208,9 +1231,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeBasicClusterReadPowerSourceAttribute(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::BasicCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributePowerSource(nullptr);
     }
 
     // Global Response: ReadAttributesResponse
@@ -1297,10 +1322,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeColorControlClusterMoveColorCommand(buffer->Start(), bufferSize, endPointId, mRateX, mRateY, mOptionsMask,
-                                                         mOptionsOverride);
+        chip::Controller::ColorControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.MoveColor(nullptr, mRateX, mRateY, mOptionsMask, mOptionsOverride);
     }
 
     // Global Response: DefaultResponse
@@ -1334,11 +1360,12 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeColorControlClusterMoveColorTemperatureCommand(buffer->Start(), bufferSize, endPointId, mMoveMode, mRate,
-                                                                    mColorTemperatureMinimum, mColorTemperatureMaximum,
-                                                                    mOptionsMask, mOptionsOverride);
+        chip::Controller::ColorControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.MoveColorTemperature(nullptr, mMoveMode, mRate, mColorTemperatureMinimum, mColorTemperatureMaximum,
+                                            mOptionsMask, mOptionsOverride);
     }
 
     // Global Response: DefaultResponse
@@ -1372,10 +1399,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeColorControlClusterMoveHueCommand(buffer->Start(), bufferSize, endPointId, mMoveMode, mRate, mOptionsMask,
-                                                       mOptionsOverride);
+        chip::Controller::ColorControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.MoveHue(nullptr, mMoveMode, mRate, mOptionsMask, mOptionsOverride);
     }
 
     // Global Response: DefaultResponse
@@ -1407,10 +1435,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeColorControlClusterMoveSaturationCommand(buffer->Start(), bufferSize, endPointId, mMoveMode, mRate,
-                                                              mOptionsMask, mOptionsOverride);
+        chip::Controller::ColorControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.MoveSaturation(nullptr, mMoveMode, mRate, mOptionsMask, mOptionsOverride);
     }
 
     // Global Response: DefaultResponse
@@ -1443,10 +1472,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeColorControlClusterMoveToColorCommand(buffer->Start(), bufferSize, endPointId, mColorX, mColorY,
-                                                           mTransitionTime, mOptionsMask, mOptionsOverride);
+        chip::Controller::ColorControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.MoveToColor(nullptr, mColorX, mColorY, mTransitionTime, mOptionsMask, mOptionsOverride);
     }
 
     // Global Response: DefaultResponse
@@ -1479,10 +1509,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeColorControlClusterMoveToColorTemperatureCommand(buffer->Start(), bufferSize, endPointId, mColorTemperature,
-                                                                      mTransitionTime, mOptionsMask, mOptionsOverride);
+        chip::Controller::ColorControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.MoveToColorTemperature(nullptr, mColorTemperature, mTransitionTime, mOptionsMask, mOptionsOverride);
     }
 
     // Global Response: DefaultResponse
@@ -1515,10 +1546,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeColorControlClusterMoveToHueCommand(buffer->Start(), bufferSize, endPointId, mHue, mDirection, mTransitionTime,
-                                                         mOptionsMask, mOptionsOverride);
+        chip::Controller::ColorControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.MoveToHue(nullptr, mHue, mDirection, mTransitionTime, mOptionsMask, mOptionsOverride);
     }
 
     // Global Response: DefaultResponse
@@ -1552,10 +1584,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeColorControlClusterMoveToHueAndSaturationCommand(buffer->Start(), bufferSize, endPointId, mHue, mSaturation,
-                                                                      mTransitionTime, mOptionsMask, mOptionsOverride);
+        chip::Controller::ColorControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.MoveToHueAndSaturation(nullptr, mHue, mSaturation, mTransitionTime, mOptionsMask, mOptionsOverride);
     }
 
     // Global Response: DefaultResponse
@@ -1588,10 +1621,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeColorControlClusterMoveToSaturationCommand(buffer->Start(), bufferSize, endPointId, mSaturation,
-                                                                mTransitionTime, mOptionsMask, mOptionsOverride);
+        chip::Controller::ColorControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.MoveToSaturation(nullptr, mSaturation, mTransitionTime, mOptionsMask, mOptionsOverride);
     }
 
     // Global Response: DefaultResponse
@@ -1624,10 +1658,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeColorControlClusterStepColorCommand(buffer->Start(), bufferSize, endPointId, mStepX, mStepY, mTransitionTime,
-                                                         mOptionsMask, mOptionsOverride);
+        chip::Controller::ColorControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.StepColor(nullptr, mStepX, mStepY, mTransitionTime, mOptionsMask, mOptionsOverride);
     }
 
     // Global Response: DefaultResponse
@@ -1663,11 +1698,12 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeColorControlClusterStepColorTemperatureCommand(buffer->Start(), bufferSize, endPointId, mStepMode, mStepSize,
-                                                                    mTransitionTime, mColorTemperatureMinimum,
-                                                                    mColorTemperatureMaximum, mOptionsMask, mOptionsOverride);
+        chip::Controller::ColorControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.StepColorTemperature(nullptr, mStepMode, mStepSize, mTransitionTime, mColorTemperatureMinimum,
+                                            mColorTemperatureMaximum, mOptionsMask, mOptionsOverride);
     }
 
     // Global Response: DefaultResponse
@@ -1703,10 +1739,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeColorControlClusterStepHueCommand(buffer->Start(), bufferSize, endPointId, mStepMode, mStepSize,
-                                                       mTransitionTime, mOptionsMask, mOptionsOverride);
+        chip::Controller::ColorControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.StepHue(nullptr, mStepMode, mStepSize, mTransitionTime, mOptionsMask, mOptionsOverride);
     }
 
     // Global Response: DefaultResponse
@@ -1740,10 +1777,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeColorControlClusterStepSaturationCommand(buffer->Start(), bufferSize, endPointId, mStepMode, mStepSize,
-                                                              mTransitionTime, mOptionsMask, mOptionsOverride);
+        chip::Controller::ColorControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.StepSaturation(nullptr, mStepMode, mStepSize, mTransitionTime, mOptionsMask, mOptionsOverride);
     }
 
     // Global Response: DefaultResponse
@@ -1774,10 +1812,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeColorControlClusterStopMoveStepCommand(buffer->Start(), bufferSize, endPointId, mOptionsMask,
-                                                            mOptionsOverride);
+        chip::Controller::ColorControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.StopMoveStep(nullptr, mOptionsMask, mOptionsOverride);
     }
 
     // Global Response: DefaultResponse
@@ -1800,9 +1839,11 @@ class DiscoverColorControlAttributes : public ModelCommand
 public:
     DiscoverColorControlAttributes() : ModelCommand("discover", kColorControlClusterId, 0x0c) { ModelCommand::AddArguments(); }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeColorControlClusterDiscoverAttributes(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::ColorControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.DiscoverAttributes(nullptr);
     }
 
     // Global Response: DiscoverAttributesResponse
@@ -1825,9 +1866,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadCurrentHueAttribute(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::ColorControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributeCurrentHue(nullptr);
     }
 
     // Global Response: ReadAttributesResponse
@@ -1850,10 +1893,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReportCurrentHueAttribute(buffer->Start(), bufferSize, endPointId, mMinInterval,
-                                                                  mMaxInterval, mChange);
+        chip::Controller::ColorControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReportAttributeCurrentHue(nullptr, mMinInterval, mMaxInterval, mChange, nullptr);
     }
 
     // Global Response: ConfigureReportingResponse
@@ -1881,9 +1925,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadCurrentSaturationAttribute(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::ColorControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributeCurrentSaturation(nullptr);
     }
 
     // Global Response: ReadAttributesResponse
@@ -1906,10 +1952,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReportCurrentSaturationAttribute(buffer->Start(), bufferSize, endPointId, mMinInterval,
-                                                                         mMaxInterval, mChange);
+        chip::Controller::ColorControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReportAttributeCurrentSaturation(nullptr, mMinInterval, mMaxInterval, mChange, nullptr);
     }
 
     // Global Response: ConfigureReportingResponse
@@ -1937,9 +1984,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadRemainingTimeAttribute(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::ColorControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributeRemainingTime(nullptr);
     }
 
     // Global Response: ReadAttributesResponse
@@ -1962,9 +2011,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadCurrentXAttribute(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::ColorControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributeCurrentX(nullptr);
     }
 
     // Global Response: ReadAttributesResponse
@@ -1987,10 +2038,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReportCurrentXAttribute(buffer->Start(), bufferSize, endPointId, mMinInterval, mMaxInterval,
-                                                                mChange);
+        chip::Controller::ColorControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReportAttributeCurrentX(nullptr, mMinInterval, mMaxInterval, mChange, nullptr);
     }
 
     // Global Response: ConfigureReportingResponse
@@ -2018,9 +2070,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadCurrentYAttribute(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::ColorControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributeCurrentY(nullptr);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2043,10 +2097,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReportCurrentYAttribute(buffer->Start(), bufferSize, endPointId, mMinInterval, mMaxInterval,
-                                                                mChange);
+        chip::Controller::ColorControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReportAttributeCurrentY(nullptr, mMinInterval, mMaxInterval, mChange, nullptr);
     }
 
     // Global Response: ConfigureReportingResponse
@@ -2074,9 +2129,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadColorTemperatureAttribute(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::ColorControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributeColorTemperature(nullptr);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2099,10 +2156,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReportColorTemperatureAttribute(buffer->Start(), bufferSize, endPointId, mMinInterval,
-                                                                        mMaxInterval, mChange);
+        chip::Controller::ColorControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReportAttributeColorTemperature(nullptr, mMinInterval, mMaxInterval, mChange, nullptr);
     }
 
     // Global Response: ConfigureReportingResponse
@@ -2130,9 +2188,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadColorModeAttribute(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::ColorControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributeColorMode(nullptr);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2155,9 +2215,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadNumberOfPrimariesAttribute(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::ColorControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributeNumberOfPrimaries(nullptr);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2180,9 +2242,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadPrimary1XAttribute(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::ColorControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributePrimary1X(nullptr);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2205,9 +2269,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadPrimary1YAttribute(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::ColorControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributePrimary1Y(nullptr);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2230,9 +2296,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadPrimary1IntensityAttribute(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::ColorControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributePrimary1Intensity(nullptr);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2255,9 +2323,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadPrimary2XAttribute(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::ColorControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributePrimary2X(nullptr);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2280,9 +2350,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadPrimary2YAttribute(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::ColorControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributePrimary2Y(nullptr);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2305,9 +2377,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadPrimary2IntensityAttribute(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::ColorControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributePrimary2Intensity(nullptr);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2330,9 +2404,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadPrimary3XAttribute(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::ColorControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributePrimary3X(nullptr);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2355,9 +2431,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadPrimary3YAttribute(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::ColorControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributePrimary3Y(nullptr);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2380,9 +2458,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadPrimary3IntensityAttribute(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::ColorControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributePrimary3Intensity(nullptr);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2405,9 +2485,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadPrimary4XAttribute(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::ColorControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributePrimary4X(nullptr);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2430,9 +2512,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadPrimary4YAttribute(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::ColorControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributePrimary4Y(nullptr);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2455,9 +2539,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadPrimary4IntensityAttribute(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::ColorControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributePrimary4Intensity(nullptr);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2480,9 +2566,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadPrimary5XAttribute(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::ColorControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributePrimary5X(nullptr);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2505,9 +2593,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadPrimary5YAttribute(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::ColorControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributePrimary5Y(nullptr);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2530,9 +2620,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadPrimary5IntensityAttribute(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::ColorControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributePrimary5Intensity(nullptr);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2555,9 +2647,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadPrimary6XAttribute(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::ColorControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributePrimary6X(nullptr);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2580,9 +2674,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadPrimary6YAttribute(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::ColorControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributePrimary6Y(nullptr);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2605,9 +2701,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadPrimary6IntensityAttribute(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::ColorControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributePrimary6Intensity(nullptr);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2630,9 +2728,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadEnhancedCurrentHueAttribute(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::ColorControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributeEnhancedCurrentHue(nullptr);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2655,9 +2755,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadEnhancedColorModeAttribute(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::ColorControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributeEnhancedColorMode(nullptr);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2680,9 +2782,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadColorLoopActiveAttribute(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::ColorControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributeColorLoopActive(nullptr);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2705,9 +2809,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadColorLoopDirectionAttribute(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::ColorControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributeColorLoopDirection(nullptr);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2730,9 +2836,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadColorLoopTimeAttribute(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::ColorControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributeColorLoopTime(nullptr);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2755,9 +2863,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadColorCapabilitiesAttribute(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::ColorControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributeColorCapabilities(nullptr);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2780,9 +2890,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadColorTempPhysicalMinAttribute(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::ColorControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributeColorTempPhysicalMin(nullptr);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2805,9 +2917,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadColorTempPhysicalMaxAttribute(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::ColorControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributeColorTempPhysicalMax(nullptr);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2830,9 +2944,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadCoupleColorTempToLevelMinMiredsAttribute(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::ColorControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributeCoupleColorTempToLevelMinMireds(nullptr);
     }
 
     // Global Response: ReadAttributesResponse
@@ -2855,9 +2971,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeColorControlClusterReadStartUpColorTemperatureMiredsAttribute(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::ColorControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributeStartUpColorTemperatureMireds(nullptr);
     }
 
     // Global Response: ReadAttributesResponse
@@ -3528,9 +3646,11 @@ class DoorLockClearAllPins : public ModelCommand
 public:
     DoorLockClearAllPins() : ModelCommand("clear-all-pins", kDoorLockClusterId, 0x08) { ModelCommand::AddArguments(); }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeDoorLockClusterClearAllPinsCommand(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::DoorLockCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ClearAllPins(nullptr);
     }
 
     // Global Response: DefaultResponse
@@ -3556,9 +3676,11 @@ class DoorLockClearAllRfids : public ModelCommand
 public:
     DoorLockClearAllRfids() : ModelCommand("clear-all-rfids", kDoorLockClusterId, 0x19) { ModelCommand::AddArguments(); }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeDoorLockClusterClearAllRfidsCommand(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::DoorLockCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ClearAllRfids(nullptr);
     }
 
     // Global Response: DefaultResponse
@@ -3588,9 +3710,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeDoorLockClusterClearHolidayScheduleCommand(buffer->Start(), bufferSize, endPointId, mHolidayScheduleID);
+        chip::Controller::DoorLockCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ClearHolidaySchedule(nullptr, mHolidayScheduleID);
     }
 
     // Global Response: DefaultResponse
@@ -3623,9 +3747,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeDoorLockClusterClearPinCommand(buffer->Start(), bufferSize, endPointId, mUserID);
+        chip::Controller::DoorLockCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ClearPin(nullptr, mUserID);
     }
 
     // Global Response: DefaultResponse
@@ -3658,9 +3784,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeDoorLockClusterClearRfidCommand(buffer->Start(), bufferSize, endPointId, mUserID);
+        chip::Controller::DoorLockCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ClearRfid(nullptr, mUserID);
     }
 
     // Global Response: DefaultResponse
@@ -3694,9 +3822,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeDoorLockClusterClearWeekdayScheduleCommand(buffer->Start(), bufferSize, endPointId, mScheduleID, mUserID);
+        chip::Controller::DoorLockCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ClearWeekdaySchedule(nullptr, mScheduleID, mUserID);
     }
 
     // Global Response: DefaultResponse
@@ -3731,9 +3861,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeDoorLockClusterClearYeardayScheduleCommand(buffer->Start(), bufferSize, endPointId, mScheduleID, mUserID);
+        chip::Controller::DoorLockCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ClearYeardaySchedule(nullptr, mScheduleID, mUserID);
     }
 
     // Global Response: DefaultResponse
@@ -3767,9 +3899,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeDoorLockClusterGetHolidayScheduleCommand(buffer->Start(), bufferSize, endPointId, mHolidayScheduleID);
+        chip::Controller::DoorLockCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.GetHolidaySchedule(nullptr, mHolidayScheduleID);
     }
 
     // Global Response: DefaultResponse
@@ -3802,9 +3936,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeDoorLockClusterGetPinCommand(buffer->Start(), bufferSize, endPointId, mUserID);
+        chip::Controller::DoorLockCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.GetPin(nullptr, mUserID);
     }
 
     // Global Response: DefaultResponse
@@ -3837,9 +3973,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeDoorLockClusterGetRfidCommand(buffer->Start(), bufferSize, endPointId, mUserID);
+        chip::Controller::DoorLockCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.GetRfid(nullptr, mUserID);
     }
 
     // Global Response: DefaultResponse
@@ -3872,9 +4010,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeDoorLockClusterGetUserTypeCommand(buffer->Start(), bufferSize, endPointId, mUserID);
+        chip::Controller::DoorLockCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.GetUserType(nullptr, mUserID);
     }
 
     // Global Response: DefaultResponse
@@ -3908,9 +4048,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeDoorLockClusterGetWeekdayScheduleCommand(buffer->Start(), bufferSize, endPointId, mScheduleID, mUserID);
+        chip::Controller::DoorLockCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.GetWeekdaySchedule(nullptr, mScheduleID, mUserID);
     }
 
     // Global Response: DefaultResponse
@@ -3945,9 +4087,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeDoorLockClusterGetYeardayScheduleCommand(buffer->Start(), bufferSize, endPointId, mScheduleID, mUserID);
+        chip::Controller::DoorLockCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.GetYeardaySchedule(nullptr, mScheduleID, mUserID);
     }
 
     // Global Response: DefaultResponse
@@ -3981,9 +4125,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeDoorLockClusterLockDoorCommand(buffer->Start(), bufferSize, endPointId, mPINOrRFIDCode);
+        chip::Controller::DoorLockCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.LockDoor(nullptr, mPINOrRFIDCode);
     }
 
     // Global Response: DefaultResponse
@@ -4019,10 +4165,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeDoorLockClusterSetHolidayScheduleCommand(buffer->Start(), bufferSize, endPointId, mHolidayScheduleID,
-                                                              mLocalStartTime, mLocalEndTime, mOperatingModeDuringHoliday);
+        chip::Controller::DoorLockCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.SetHolidaySchedule(nullptr, mHolidayScheduleID, mLocalStartTime, mLocalEndTime, mOperatingModeDuringHoliday);
     }
 
     // Global Response: DefaultResponse
@@ -4061,9 +4208,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeDoorLockClusterSetPinCommand(buffer->Start(), bufferSize, endPointId, mUserID, mUserStatus, mUserType, mPIN);
+        chip::Controller::DoorLockCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.SetPin(nullptr, mUserID, mUserStatus, mUserType, mPIN);
     }
 
     // Global Response: DefaultResponse
@@ -4102,9 +4251,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeDoorLockClusterSetRfidCommand(buffer->Start(), bufferSize, endPointId, mUserID, mUserStatus, mUserType, mRFID);
+        chip::Controller::DoorLockCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.SetRfid(nullptr, mUserID, mUserStatus, mUserType, mRFID);
     }
 
     // Global Response: DefaultResponse
@@ -4141,9 +4292,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeDoorLockClusterSetUserTypeCommand(buffer->Start(), bufferSize, endPointId, mUserID, mUserType);
+        chip::Controller::DoorLockCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.SetUserType(nullptr, mUserID, mUserType);
     }
 
     // Global Response: DefaultResponse
@@ -4183,10 +4336,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeDoorLockClusterSetWeekdayScheduleCommand(buffer->Start(), bufferSize, endPointId, mScheduleID, mUserID,
-                                                              mDaysMask, mStartHour, mStartMinute, mEndHour, mEndMinute);
+        chip::Controller::DoorLockCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.SetWeekdaySchedule(nullptr, mScheduleID, mUserID, mDaysMask, mStartHour, mStartMinute, mEndHour, mEndMinute);
     }
 
     // Global Response: DefaultResponse
@@ -4228,10 +4382,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeDoorLockClusterSetYeardayScheduleCommand(buffer->Start(), bufferSize, endPointId, mScheduleID, mUserID,
-                                                              mLocalStartTime, mLocalEndTime);
+        chip::Controller::DoorLockCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.SetYeardaySchedule(nullptr, mScheduleID, mUserID, mLocalStartTime, mLocalEndTime);
     }
 
     // Global Response: DefaultResponse
@@ -4267,9 +4422,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeDoorLockClusterUnlockDoorCommand(buffer->Start(), bufferSize, endPointId, mPINOrRFIDCode);
+        chip::Controller::DoorLockCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.UnlockDoor(nullptr, mPINOrRFIDCode);
     }
 
     // Global Response: DefaultResponse
@@ -4303,10 +4460,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeDoorLockClusterUnlockWithTimeoutCommand(buffer->Start(), bufferSize, endPointId, mTimeoutInSeconds,
-                                                             mPINOrRFIDCode);
+        chip::Controller::DoorLockCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.UnlockWithTimeout(nullptr, mTimeoutInSeconds, mPINOrRFIDCode);
     }
 
     // Global Response: DefaultResponse
@@ -4336,9 +4494,11 @@ class DiscoverDoorLockAttributes : public ModelCommand
 public:
     DiscoverDoorLockAttributes() : ModelCommand("discover", kDoorLockClusterId, 0x0c) { ModelCommand::AddArguments(); }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeDoorLockClusterDiscoverAttributes(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::DoorLockCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.DiscoverAttributes(nullptr);
     }
 
     // Global Response: DiscoverAttributesResponse
@@ -4361,9 +4521,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeDoorLockClusterReadLockStateAttribute(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::DoorLockCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributeLockState(nullptr);
     }
 
     // Global Response: ReadAttributesResponse
@@ -4385,9 +4547,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeDoorLockClusterReportLockStateAttribute(buffer->Start(), bufferSize, endPointId, mMinInterval, mMaxInterval);
+        chip::Controller::DoorLockCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReportAttributeLockState(nullptr, mMinInterval, mMaxInterval, nullptr);
     }
 
     // Global Response: ConfigureReportingResponse
@@ -4414,9 +4578,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeDoorLockClusterReadLockTypeAttribute(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::DoorLockCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributeLockType(nullptr);
     }
 
     // Global Response: ReadAttributesResponse
@@ -4439,9 +4605,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeDoorLockClusterReadActuatorEnabledAttribute(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::DoorLockCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributeActuatorEnabled(nullptr);
     }
 
     // Global Response: ReadAttributesResponse
@@ -4606,9 +4774,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeGroupsClusterAddGroupCommand(buffer->Start(), bufferSize, endPointId, mGroupId, mGroupName);
+        chip::Controller::GroupsCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.AddGroup(nullptr, mGroupId, mGroupName);
     }
 
     // Global Response: DefaultResponse
@@ -4643,9 +4813,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeGroupsClusterAddGroupIfIdentifyingCommand(buffer->Start(), bufferSize, endPointId, mGroupId, mGroupName);
+        chip::Controller::GroupsCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.AddGroupIfIdentifying(nullptr, mGroupId, mGroupName);
     }
 
     // Global Response: DefaultResponse
@@ -4675,9 +4847,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeGroupsClusterGetGroupMembershipCommand(buffer->Start(), bufferSize, endPointId, mGroupCount, mGroupList);
+        chip::Controller::GroupsCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.GetGroupMembership(nullptr, mGroupCount, mGroupList);
     }
 
     // Global Response: DefaultResponse
@@ -4707,9 +4881,11 @@ class GroupsRemoveAllGroups : public ModelCommand
 public:
     GroupsRemoveAllGroups() : ModelCommand("remove-all-groups", kGroupsClusterId, 0x04) { ModelCommand::AddArguments(); }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeGroupsClusterRemoveAllGroupsCommand(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::GroupsCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.RemoveAllGroups(nullptr);
     }
 
     // Global Response: DefaultResponse
@@ -4732,9 +4908,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeGroupsClusterRemoveGroupCommand(buffer->Start(), bufferSize, endPointId, mGroupId);
+        chip::Controller::GroupsCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.RemoveGroup(nullptr, mGroupId);
     }
 
     // Global Response: DefaultResponse
@@ -4767,9 +4945,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeGroupsClusterViewGroupCommand(buffer->Start(), bufferSize, endPointId, mGroupId);
+        chip::Controller::GroupsCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ViewGroup(nullptr, mGroupId);
     }
 
     // Global Response: DefaultResponse
@@ -4798,9 +4978,11 @@ class DiscoverGroupsAttributes : public ModelCommand
 public:
     DiscoverGroupsAttributes() : ModelCommand("discover", kGroupsClusterId, 0x0c) { ModelCommand::AddArguments(); }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeGroupsClusterDiscoverAttributes(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::GroupsCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.DiscoverAttributes(nullptr);
     }
 
     // Global Response: DiscoverAttributesResponse
@@ -4823,9 +5005,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeGroupsClusterReadNameSupportAttribute(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::GroupsCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributeNameSupport(nullptr);
     }
 
     // Global Response: ReadAttributesResponse
@@ -4860,9 +5044,11 @@ class DiscoverIasZoneAttributes : public ModelCommand
 public:
     DiscoverIasZoneAttributes() : ModelCommand("discover", kIasZoneClusterId, 0x0c) { ModelCommand::AddArguments(); }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeIasZoneClusterDiscoverAttributes(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::IasZoneCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.DiscoverAttributes(nullptr);
     }
 
     // Global Response: DiscoverAttributesResponse
@@ -4885,9 +5071,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeIasZoneClusterReadZoneStateAttribute(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::IasZoneCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributeZoneState(nullptr);
     }
 
     // Global Response: ReadAttributesResponse
@@ -4910,9 +5098,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeIasZoneClusterReadZoneTypeAttribute(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::IasZoneCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributeZoneType(nullptr);
     }
 
     // Global Response: ReadAttributesResponse
@@ -4935,9 +5125,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeIasZoneClusterReadZoneStatusAttribute(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::IasZoneCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributeZoneStatus(nullptr);
     }
 
     // Global Response: ReadAttributesResponse
@@ -4960,9 +5152,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeIasZoneClusterReadIasCieAddressAttribute(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::IasZoneCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributeIasCieAddress(nullptr);
     }
 
     // Global Response: ReadAttributesResponse
@@ -4983,9 +5177,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeIasZoneClusterWriteIasCieAddressAttribute(buffer->Start(), bufferSize, endPointId, mIasCieAddress);
+        chip::Controller::IasZoneCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.WriteAttributeIasCieAddress(nullptr, mIasCieAddress);
     }
 
     // Global Response: WriteAttributesResponse
@@ -5011,9 +5207,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeIasZoneClusterReadZoneIdAttribute(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::IasZoneCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributeZoneId(nullptr);
     }
 
     // Global Response: ReadAttributesResponse
@@ -5072,9 +5270,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeIdentifyClusterIdentifyCommand(buffer->Start(), bufferSize, endPointId, mIdentifyTime);
+        chip::Controller::IdentifyCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.Identify(nullptr, mIdentifyTime);
     }
 
     // Global Response: DefaultResponse
@@ -5096,9 +5296,11 @@ class IdentifyIdentifyQuery : public ModelCommand
 public:
     IdentifyIdentifyQuery() : ModelCommand("identify-query", kIdentifyClusterId, 0x01) { ModelCommand::AddArguments(); }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeIdentifyClusterIdentifyQueryCommand(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::IdentifyCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.IdentifyQuery(nullptr);
     }
 
     // Global Response: DefaultResponse
@@ -5124,9 +5326,11 @@ class DiscoverIdentifyAttributes : public ModelCommand
 public:
     DiscoverIdentifyAttributes() : ModelCommand("discover", kIdentifyClusterId, 0x0c) { ModelCommand::AddArguments(); }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeIdentifyClusterDiscoverAttributes(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::IdentifyCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.DiscoverAttributes(nullptr);
     }
 
     // Global Response: DiscoverAttributesResponse
@@ -5149,9 +5353,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeIdentifyClusterReadIdentifyTimeAttribute(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::IdentifyCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributeIdentifyTime(nullptr);
     }
 
     // Global Response: ReadAttributesResponse
@@ -5197,10 +5403,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeLevelControlClusterMoveCommand(buffer->Start(), bufferSize, endPointId, mMoveMode, mRate, mOptionsMask,
-                                                    mOptionsOverride);
+        chip::Controller::LevelControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.Move(nullptr, mMoveMode, mRate, mOptionsMask, mOptionsOverride);
     }
 
     // Global Response: DefaultResponse
@@ -5232,10 +5439,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeLevelControlClusterMoveToLevelCommand(buffer->Start(), bufferSize, endPointId, mLevel, mTransitionTime,
-                                                           mOptionsMask, mOptionsOverride);
+        chip::Controller::LevelControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.MoveToLevel(nullptr, mLevel, mTransitionTime, mOptionsMask, mOptionsOverride);
     }
 
     // Global Response: DefaultResponse
@@ -5265,10 +5473,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeLevelControlClusterMoveToLevelWithOnOffCommand(buffer->Start(), bufferSize, endPointId, mLevel,
-                                                                    mTransitionTime);
+        chip::Controller::LevelControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.MoveToLevelWithOnOff(nullptr, mLevel, mTransitionTime);
     }
 
     // Global Response: DefaultResponse
@@ -5296,9 +5505,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeLevelControlClusterMoveWithOnOffCommand(buffer->Start(), bufferSize, endPointId, mMoveMode, mRate);
+        chip::Controller::LevelControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.MoveWithOnOff(nullptr, mMoveMode, mRate);
     }
 
     // Global Response: DefaultResponse
@@ -5329,10 +5540,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeLevelControlClusterStepCommand(buffer->Start(), bufferSize, endPointId, mStepMode, mStepSize, mTransitionTime,
-                                                    mOptionsMask, mOptionsOverride);
+        chip::Controller::LevelControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.Step(nullptr, mStepMode, mStepSize, mTransitionTime, mOptionsMask, mOptionsOverride);
     }
 
     // Global Response: DefaultResponse
@@ -5364,10 +5576,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeLevelControlClusterStepWithOnOffCommand(buffer->Start(), bufferSize, endPointId, mStepMode, mStepSize,
-                                                             mTransitionTime);
+        chip::Controller::LevelControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.StepWithOnOff(nullptr, mStepMode, mStepSize, mTransitionTime);
     }
 
     // Global Response: DefaultResponse
@@ -5396,9 +5609,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeLevelControlClusterStopCommand(buffer->Start(), bufferSize, endPointId, mOptionsMask, mOptionsOverride);
+        chip::Controller::LevelControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.Stop(nullptr, mOptionsMask, mOptionsOverride);
     }
 
     // Global Response: DefaultResponse
@@ -5421,9 +5636,11 @@ class LevelStopWithOnOff : public ModelCommand
 public:
     LevelStopWithOnOff() : ModelCommand("stop-with-on-off", kLevelClusterId, 0x07) { ModelCommand::AddArguments(); }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeLevelControlClusterStopWithOnOffCommand(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::LevelControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.StopWithOnOff(nullptr);
     }
 
     // Global Response: DefaultResponse
@@ -5442,9 +5659,11 @@ class DiscoverLevelAttributes : public ModelCommand
 public:
     DiscoverLevelAttributes() : ModelCommand("discover", kLevelClusterId, 0x0c) { ModelCommand::AddArguments(); }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeLevelControlClusterDiscoverAttributes(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::LevelControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.DiscoverAttributes(nullptr);
     }
 
     // Global Response: DiscoverAttributesResponse
@@ -5467,9 +5686,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeLevelControlClusterReadCurrentLevelAttribute(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::LevelControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributeCurrentLevel(nullptr);
     }
 
     // Global Response: ReadAttributesResponse
@@ -5492,10 +5713,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeLevelControlClusterReportCurrentLevelAttribute(buffer->Start(), bufferSize, endPointId, mMinInterval,
-                                                                    mMaxInterval, mChange);
+        chip::Controller::LevelControlCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReportAttributeCurrentLevel(nullptr, mMinInterval, mMaxInterval, mChange, nullptr);
     }
 
     // Global Response: ConfigureReportingResponse
@@ -5534,9 +5756,11 @@ class OnOffOff : public ModelCommand
 public:
     OnOffOff() : ModelCommand("off", kOnOffClusterId, 0x00) { ModelCommand::AddArguments(); }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeOnOffClusterOffCommand(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::OnOffCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.Off(nullptr);
     }
 
     // Global Response: DefaultResponse
@@ -5555,9 +5779,11 @@ class OnOffOn : public ModelCommand
 public:
     OnOffOn() : ModelCommand("on", kOnOffClusterId, 0x01) { ModelCommand::AddArguments(); }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeOnOffClusterOnCommand(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::OnOffCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.On(nullptr);
     }
 
     // Global Response: DefaultResponse
@@ -5576,9 +5802,11 @@ class OnOffToggle : public ModelCommand
 public:
     OnOffToggle() : ModelCommand("toggle", kOnOffClusterId, 0x02) { ModelCommand::AddArguments(); }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeOnOffClusterToggleCommand(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::OnOffCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.Toggle(nullptr);
     }
 
     // Global Response: DefaultResponse
@@ -5597,9 +5825,11 @@ class DiscoverOnOffAttributes : public ModelCommand
 public:
     DiscoverOnOffAttributes() : ModelCommand("discover", kOnOffClusterId, 0x0c) { ModelCommand::AddArguments(); }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeOnOffClusterDiscoverAttributes(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::OnOffCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.DiscoverAttributes(nullptr);
     }
 
     // Global Response: DiscoverAttributesResponse
@@ -5622,9 +5852,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeOnOffClusterReadOnOffAttribute(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::OnOffCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributeOnOff(nullptr);
     }
 
     // Global Response: ReadAttributesResponse
@@ -5646,9 +5878,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeOnOffClusterReportOnOffAttribute(buffer->Start(), bufferSize, endPointId, mMinInterval, mMaxInterval);
+        chip::Controller::OnOffCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReportAttributeOnOff(nullptr, mMinInterval, mMaxInterval, nullptr);
     }
 
     // Global Response: ConfigureReportingResponse
@@ -5924,10 +6158,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeScenesClusterAddSceneCommand(buffer->Start(), bufferSize, endPointId, mGroupID, mSceneID, mTransitionTime,
-                                                  mSceneName, mClusterId, mLength, mValue);
+        chip::Controller::ScenesCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.AddScene(nullptr, mGroupID, mSceneID, mTransitionTime, mSceneName, mClusterId, mLength, mValue);
     }
 
     // Global Response: DefaultResponse
@@ -5966,9 +6201,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeScenesClusterGetSceneMembershipCommand(buffer->Start(), bufferSize, endPointId, mGroupID);
+        chip::Controller::ScenesCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.GetSceneMembership(nullptr, mGroupID);
     }
 
     // Global Response: DefaultResponse
@@ -6003,9 +6240,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeScenesClusterRecallSceneCommand(buffer->Start(), bufferSize, endPointId, mGroupID, mSceneID, mTransitionTime);
+        chip::Controller::ScenesCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.RecallScene(nullptr, mGroupID, mSceneID, mTransitionTime);
     }
 
     // Global Response: DefaultResponse
@@ -6033,9 +6272,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeScenesClusterRemoveAllScenesCommand(buffer->Start(), bufferSize, endPointId, mGroupID);
+        chip::Controller::ScenesCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.RemoveAllScenes(nullptr, mGroupID);
     }
 
     // Global Response: DefaultResponse
@@ -6069,9 +6310,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeScenesClusterRemoveSceneCommand(buffer->Start(), bufferSize, endPointId, mGroupID, mSceneID);
+        chip::Controller::ScenesCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.RemoveScene(nullptr, mGroupID, mSceneID);
     }
 
     // Global Response: DefaultResponse
@@ -6106,9 +6349,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeScenesClusterStoreSceneCommand(buffer->Start(), bufferSize, endPointId, mGroupID, mSceneID);
+        chip::Controller::ScenesCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.StoreScene(nullptr, mGroupID, mSceneID);
     }
 
     // Global Response: DefaultResponse
@@ -6143,9 +6388,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeScenesClusterViewSceneCommand(buffer->Start(), bufferSize, endPointId, mGroupID, mSceneID);
+        chip::Controller::ScenesCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ViewScene(nullptr, mGroupID, mSceneID);
     }
 
     // Global Response: DefaultResponse
@@ -6175,9 +6422,11 @@ class DiscoverScenesAttributes : public ModelCommand
 public:
     DiscoverScenesAttributes() : ModelCommand("discover", kScenesClusterId, 0x0c) { ModelCommand::AddArguments(); }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeScenesClusterDiscoverAttributes(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::ScenesCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.DiscoverAttributes(nullptr);
     }
 
     // Global Response: DiscoverAttributesResponse
@@ -6200,9 +6449,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeScenesClusterReadSceneCountAttribute(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::ScenesCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributeSceneCount(nullptr);
     }
 
     // Global Response: ReadAttributesResponse
@@ -6225,9 +6476,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeScenesClusterReadCurrentSceneAttribute(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::ScenesCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributeCurrentScene(nullptr);
     }
 
     // Global Response: ReadAttributesResponse
@@ -6250,9 +6503,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeScenesClusterReadCurrentGroupAttribute(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::ScenesCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributeCurrentGroup(nullptr);
     }
 
     // Global Response: ReadAttributesResponse
@@ -6275,9 +6530,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeScenesClusterReadSceneValidAttribute(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::ScenesCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributeSceneValid(nullptr);
     }
 
     // Global Response: ReadAttributesResponse
@@ -6300,9 +6557,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeScenesClusterReadNameSupportAttribute(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::ScenesCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributeNameSupport(nullptr);
     }
 
     // Global Response: ReadAttributesResponse
@@ -6338,9 +6597,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeTemperatureMeasurementClusterDiscoverAttributes(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::TemperatureMeasurementCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.DiscoverAttributes(nullptr);
     }
 
     // Global Response: DiscoverAttributesResponse
@@ -6363,9 +6624,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeTemperatureMeasurementClusterReadMeasuredValueAttribute(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::TemperatureMeasurementCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributeMeasuredValue(nullptr);
     }
 
     // Global Response: ReadAttributesResponse
@@ -6388,10 +6651,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeTemperatureMeasurementClusterReportMeasuredValueAttribute(buffer->Start(), bufferSize, endPointId,
-                                                                               mMinInterval, mMaxInterval, mChange);
+        chip::Controller::TemperatureMeasurementCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReportAttributeMeasuredValue(nullptr, mMinInterval, mMaxInterval, mChange, nullptr);
     }
 
     // Global Response: ConfigureReportingResponse
@@ -6419,9 +6683,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeTemperatureMeasurementClusterReadMinMeasuredValueAttribute(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::TemperatureMeasurementCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributeMinMeasuredValue(nullptr);
     }
 
     // Global Response: ReadAttributesResponse
@@ -6444,9 +6710,11 @@ public:
         ModelCommand::AddArguments();
     }
 
-    uint16_t EncodeCommand(const PacketBufferHandle & buffer, uint16_t bufferSize, uint8_t endPointId) override
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
     {
-        return encodeTemperatureMeasurementClusterReadMaxMeasuredValueAttribute(buffer->Start(), bufferSize, endPointId);
+        chip::Controller::TemperatureMeasurementCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributeMaxMeasuredValue(nullptr);
     }
 
     // Global Response: ReadAttributesResponse
