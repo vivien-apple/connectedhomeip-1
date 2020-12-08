@@ -1,0 +1,139 @@
+{{chip_header}}
+#include "CHIPClusters.h"
+
+#include <app/chip-zcl-zpro-codec-api.h>
+
+namespace chip {
+namespace Controller {
+
+// TODO: Find a way to calculate maximum message length for clusters
+//       https://github.com/project-chip/connectedhomeip/issues/965
+constexpr uint16_t kMaxMessageLength = 1024;
+
+{{#chip_server_clusters}}
+
+// {{asCamelCased name false}} Cluster Commands
+{{#chip_server_cluster_commands}}
+CHIP_ERROR {{asCamelCased clusterName false}}Cluster::{{asCamelCased name false}}(Callback::Callback<> * onCompletion{{#chip_server_cluster_command_arguments}}, {{chipType}} {{asCamelCased label}}{{/chip_server_cluster_command_arguments}})
+{
+    CHIP_ERROR err         = CHIP_NO_ERROR;
+    uint16_t payloadLength = 0;
+
+    System::PacketBufferHandle buffer = System::PacketBuffer::NewWithAvailableSize(kMaxMessageLength);
+    VerifyOrExit(!buffer.IsNull(), err = CHIP_ERROR_NO_MEMORY);
+
+    payloadLength = encode{{asCamelCased clusterName false}}Cluster{{asType name}}Command(buffer->Start(), kMaxMessageLength, mEndpoint{{#chip_server_cluster_command_arguments}}, {{asCamelCased label}}{{/chip_server_cluster_command_arguments}});
+    VerifyOrExit(payloadLength != 0, err = CHIP_ERROR_INVALID_MESSAGE_LENGTH);
+    VerifyOrExit(payloadLength <= kMaxMessageLength, err = CHIP_ERROR_INTERNAL);
+
+    buffer->SetDataLength(payloadLength);
+    VerifyOrExit(buffer->DataLength() >= payloadLength, err = CHIP_ERROR_NO_MEMORY);
+
+    err = SendCommand(buffer, onCompletion);
+
+exit:
+    return err;
+}
+
+{{/chip_server_cluster_commands}}
+// {{asCamelCased name false}} Cluster Attributes
+CHIP_ERROR {{asCamelCased name false}}Cluster::DiscoverAttributes(Callback::Callback<> * onCompletion)
+{
+    CHIP_ERROR err         = CHIP_NO_ERROR;
+    uint16_t payloadLength = 0;
+
+    System::PacketBufferHandle buffer = System::PacketBuffer::NewWithAvailableSize(kMaxMessageLength);
+    VerifyOrExit(!buffer.IsNull(), err = CHIP_ERROR_NO_MEMORY);
+
+    payloadLength = encode{{asCamelCased name false}}ClusterDiscoverAttributes(buffer->Start(), kMaxMessageLength, mEndpoint);
+    VerifyOrExit(payloadLength != 0, err = CHIP_ERROR_INVALID_MESSAGE_LENGTH);
+    VerifyOrExit(payloadLength <= kMaxMessageLength, err = CHIP_ERROR_INTERNAL);
+
+    buffer->SetDataLength(payloadLength);
+    VerifyOrExit(buffer->DataLength() >= payloadLength, err = CHIP_ERROR_NO_MEMORY);
+
+    err = SendCommand(buffer, onCompletion);
+
+exit:
+    return err;
+}
+{{#chip_server_cluster_attributes}}
+CHIP_ERROR {{asCamelCased parent.name false}}Cluster::ReadAttribute{{asCamelCased name false}}(Callback::Callback<> * onCompletion)
+{
+    CHIP_ERROR err         = CHIP_NO_ERROR;
+    uint16_t payloadLength = 0;
+
+    System::PacketBufferHandle buffer = System::PacketBuffer::NewWithAvailableSize(kMaxMessageLength);
+    VerifyOrExit(!buffer.IsNull(), err = CHIP_ERROR_NO_MEMORY);
+
+    payloadLength = encode{{asCamelCased parent.name false}}ClusterRead{{asCamelCased name false}}Attribute(buffer->Start(), kMaxMessageLength, mEndpoint);
+    VerifyOrExit(payloadLength != 0, err = CHIP_ERROR_INVALID_MESSAGE_LENGTH);
+    VerifyOrExit(payloadLength <= kMaxMessageLength, err = CHIP_ERROR_INTERNAL);
+
+    buffer->SetDataLength(payloadLength);
+    VerifyOrExit(buffer->DataLength() >= payloadLength, err = CHIP_ERROR_NO_MEMORY);
+
+    err = SendCommand(buffer, onCompletion);
+
+exit:
+    return err;
+}
+
+{{#if (isWritableAttribute)}}
+CHIP_ERROR {{asCamelCased parent.name false}}Cluster::WriteAttribute{{asCamelCased name false}}(Callback::Callback<> * onCompletion, {{asUnderlyingZclType type}} value)
+{
+    CHIP_ERROR err         = CHIP_NO_ERROR;
+    uint16_t payloadLength = 0;
+
+    System::PacketBufferHandle buffer = System::PacketBuffer::NewWithAvailableSize(kMaxMessageLength);
+    VerifyOrExit(!buffer.IsNull(), err = CHIP_ERROR_NO_MEMORY);
+
+    payloadLength = encode{{asCamelCased parent.name false}}ClusterWrite{{asCamelCased name false}}Attribute(buffer->Start(), kMaxMessageLength, mEndpoint, value);
+    VerifyOrExit(payloadLength != 0, err = CHIP_ERROR_INVALID_MESSAGE_LENGTH);
+    VerifyOrExit(payloadLength <= kMaxMessageLength, err = CHIP_ERROR_INTERNAL);
+
+    buffer->SetDataLength(payloadLength);
+    VerifyOrExit(buffer->DataLength() >= payloadLength, err = CHIP_ERROR_NO_MEMORY);
+
+    err = SendCommand(buffer, onCompletion);
+
+exit:
+    return err;
+}
+
+{{/if}}
+{{#if (isReportableAttribute)}}
+CHIP_ERROR {{asCamelCased parent.name false}}Cluster::ReportAttribute{{asCamelCased name false}}(Callback::Callback<> * onCompletion, uint16_t minInterval, uint16_t maxInterval{{#unless (isDiscreteType)}}, {{chipType}} change{{/unless}}, Callback::Callback<> * onChange)
+{
+    CHIP_ERROR err         = CHIP_NO_ERROR;
+    uint16_t payloadLength = 0;
+
+    System::PacketBufferHandle buffer = System::PacketBuffer::NewWithAvailableSize(kMaxMessageLength);
+    VerifyOrExit(!buffer.IsNull(), err = CHIP_ERROR_NO_MEMORY);
+
+    payloadLength = encode{{asCamelCased parent.name false}}ClusterReport{{asCamelCased name false}}Attribute(buffer->Start(), kMaxMessageLength, mEndpoint, minInterval, maxInterval{{#unless (isDiscreteType)}}, change{{/unless}});
+    VerifyOrExit(payloadLength != 0, err = CHIP_ERROR_INVALID_MESSAGE_LENGTH);
+    VerifyOrExit(payloadLength <= kMaxMessageLength, err = CHIP_ERROR_INTERNAL);
+
+    buffer->SetDataLength(payloadLength);
+    VerifyOrExit(buffer->DataLength() >= payloadLength, err = CHIP_ERROR_NO_MEMORY);
+
+    err = SendCommand(buffer, onCompletion);
+    SuccessOrExit(err);
+
+    if (onChange != nullptr)
+    {
+        err = RequestAttributeReporting(onChange);
+        SuccessOrExit(err);
+    }
+
+exit:
+    return err;
+}
+
+{{/if}}
+{{/chip_server_cluster_attributes}}
+{{/chip_server_clusters}}
+
+} // namespace Controller
+} // namespace chip
