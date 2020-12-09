@@ -323,6 +323,116 @@ exit:
     return err;
 }
 
+// Binding Cluster Commands
+CHIP_ERROR BindingCluster::Bind(Callback::Callback<> * onCompletion, uint64_t nodeId, uint16_t groupId, uint8_t endpointId,
+                                chip::ClusterId clusterId)
+{
+    CHIP_ERROR err         = CHIP_NO_ERROR;
+    uint16_t payloadLength = 0;
+
+    System::PacketBufferHandle buffer = System::PacketBuffer::NewWithAvailableSize(kMaxMessageLength);
+    VerifyOrExit(!buffer.IsNull(), err = CHIP_ERROR_NO_MEMORY);
+
+    payloadLength =
+        encodeBindingClusterBindCommand(buffer->Start(), kMaxMessageLength, mEndpoint, nodeId, groupId, endpointId, clusterId);
+    VerifyOrExit(payloadLength != 0, err = CHIP_ERROR_INVALID_MESSAGE_LENGTH);
+    VerifyOrExit(payloadLength <= kMaxMessageLength, err = CHIP_ERROR_INTERNAL);
+
+    buffer->SetDataLength(payloadLength);
+    VerifyOrExit(buffer->DataLength() >= payloadLength, err = CHIP_ERROR_NO_MEMORY);
+
+    err = SendCommand(buffer, onCompletion);
+
+exit:
+    return err;
+}
+
+CHIP_ERROR BindingCluster::Unbind(Callback::Callback<> * onCompletion, uint64_t nodeId, uint16_t groupId, uint8_t endpointId,
+                                  chip::ClusterId clusterId)
+{
+    CHIP_ERROR err         = CHIP_NO_ERROR;
+    uint16_t payloadLength = 0;
+
+    System::PacketBufferHandle buffer = System::PacketBuffer::NewWithAvailableSize(kMaxMessageLength);
+    VerifyOrExit(!buffer.IsNull(), err = CHIP_ERROR_NO_MEMORY);
+
+    payloadLength =
+        encodeBindingClusterUnbindCommand(buffer->Start(), kMaxMessageLength, mEndpoint, nodeId, groupId, endpointId, clusterId);
+    VerifyOrExit(payloadLength != 0, err = CHIP_ERROR_INVALID_MESSAGE_LENGTH);
+    VerifyOrExit(payloadLength <= kMaxMessageLength, err = CHIP_ERROR_INTERNAL);
+
+    buffer->SetDataLength(payloadLength);
+    VerifyOrExit(buffer->DataLength() >= payloadLength, err = CHIP_ERROR_NO_MEMORY);
+
+    err = SendCommand(buffer, onCompletion);
+
+exit:
+    return err;
+}
+
+// Binding Cluster Attributes
+CHIP_ERROR BindingCluster::DiscoverAttributes(Callback::Callback<> * onCompletion)
+{
+    CHIP_ERROR err         = CHIP_NO_ERROR;
+    uint16_t payloadLength = 0;
+
+    System::PacketBufferHandle buffer = System::PacketBuffer::NewWithAvailableSize(kMaxMessageLength);
+    VerifyOrExit(!buffer.IsNull(), err = CHIP_ERROR_NO_MEMORY);
+
+    payloadLength = encodeBindingClusterDiscoverAttributes(buffer->Start(), kMaxMessageLength, mEndpoint);
+    VerifyOrExit(payloadLength != 0, err = CHIP_ERROR_INVALID_MESSAGE_LENGTH);
+    VerifyOrExit(payloadLength <= kMaxMessageLength, err = CHIP_ERROR_INTERNAL);
+
+    buffer->SetDataLength(payloadLength);
+    VerifyOrExit(buffer->DataLength() >= payloadLength, err = CHIP_ERROR_NO_MEMORY);
+
+    err = SendCommand(buffer, onCompletion);
+
+exit:
+    return err;
+}
+CHIP_ERROR BindingCluster::ReadAttributeBindingsCount(Callback::Callback<> * onCompletion)
+{
+    CHIP_ERROR err         = CHIP_NO_ERROR;
+    uint16_t payloadLength = 0;
+
+    System::PacketBufferHandle buffer = System::PacketBuffer::NewWithAvailableSize(kMaxMessageLength);
+    VerifyOrExit(!buffer.IsNull(), err = CHIP_ERROR_NO_MEMORY);
+
+    payloadLength = encodeBindingClusterReadBindingsCountAttribute(buffer->Start(), kMaxMessageLength, mEndpoint);
+    VerifyOrExit(payloadLength != 0, err = CHIP_ERROR_INVALID_MESSAGE_LENGTH);
+    VerifyOrExit(payloadLength <= kMaxMessageLength, err = CHIP_ERROR_INTERNAL);
+
+    buffer->SetDataLength(payloadLength);
+    VerifyOrExit(buffer->DataLength() >= payloadLength, err = CHIP_ERROR_NO_MEMORY);
+
+    err = SendCommand(buffer, onCompletion);
+
+exit:
+    return err;
+}
+
+CHIP_ERROR BindingCluster::ReadAttributeClusterRevision(Callback::Callback<> * onCompletion)
+{
+    CHIP_ERROR err         = CHIP_NO_ERROR;
+    uint16_t payloadLength = 0;
+
+    System::PacketBufferHandle buffer = System::PacketBuffer::NewWithAvailableSize(kMaxMessageLength);
+    VerifyOrExit(!buffer.IsNull(), err = CHIP_ERROR_NO_MEMORY);
+
+    payloadLength = encodeBindingClusterReadClusterRevisionAttribute(buffer->Start(), kMaxMessageLength, mEndpoint);
+    VerifyOrExit(payloadLength != 0, err = CHIP_ERROR_INVALID_MESSAGE_LENGTH);
+    VerifyOrExit(payloadLength <= kMaxMessageLength, err = CHIP_ERROR_INTERNAL);
+
+    buffer->SetDataLength(payloadLength);
+    VerifyOrExit(buffer->DataLength() >= payloadLength, err = CHIP_ERROR_NO_MEMORY);
+
+    err = SendCommand(buffer, onCompletion);
+
+exit:
+    return err;
+}
+
 // ColorControl Cluster Commands
 CHIP_ERROR ColorControlCluster::MoveColor(Callback::Callback<> * onCompletion, int16_t rateX, int16_t rateY, uint8_t optionsMask,
                                           uint8_t optionsOverride)

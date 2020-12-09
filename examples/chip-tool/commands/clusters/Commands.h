@@ -881,6 +881,7 @@ public:
 |---------------------------------------------------------------------+--------|
 | BarrierControl                                                      | 0x0103 |
 | Basic                                                               | 0x0000 |
+| Binding                                                             | 0xF000 |
 | ColorControl                                                        | 0x0300 |
 | DoorLock                                                            | 0x0101 |
 | Groups                                                              | 0x0004 |
@@ -894,6 +895,7 @@ public:
 
 constexpr uint16_t kBarrierControlClusterId  = 0x0103;
 constexpr uint16_t kBasicClusterId           = 0x0000;
+constexpr uint16_t kBindingClusterId         = 0xF000;
 constexpr uint16_t kColorControlClusterId    = 0x0300;
 constexpr uint16_t kDoorLockClusterId        = 0x0101;
 constexpr uint16_t kGroupsClusterId          = 0x0004;
@@ -1246,6 +1248,141 @@ public:
     }
 };
 
+/*----------------------------------------------------------------------------*\
+| Cluster Binding                                                     | 0xF000 |
+|------------------------------------------------------------------------------|
+| Responses:                                                          |        |
+|                                                                     |        |
+|------------------------------------------------------------------------------|
+| Commands:                                                           |        |
+| * Bind                                                              |   0x00 |
+| * Unbind                                                            |   0x01 |
+|------------------------------------------------------------------------------|
+| Attributes:                                                         |        |
+| * BindingsCount                                                     | 0x0000 |
+\*----------------------------------------------------------------------------*/
+
+/*
+ * Command Bind
+ */
+class BindingBind : public ModelCommand
+{
+public:
+    BindingBind() : ModelCommand("bind", kBindingClusterId, 0x00)
+    {
+        AddArgument("node-id", 0, UINT64_MAX, &mNodeId);
+        AddArgument("group-id", 0, UINT16_MAX, &mGroupId);
+        AddArgument("endpoint-id", 0, UINT8_MAX, &mEndpointId);
+        AddArgument("cluster-id", 0, UINT16_MAX, &mClusterId);
+        ModelCommand::AddArguments();
+    }
+
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
+    {
+        chip::Controller::BindingCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.Bind(nullptr, mNodeId, mGroupId, mEndpointId, mClusterId);
+    }
+
+    // Global Response: DefaultResponse
+    bool HandleGlobalResponse(uint8_t commandId, uint8_t * message, uint16_t messageLen) const override
+    {
+        DefaultResponse response;
+        return response.HandleCommandResponse(commandId, message, messageLen);
+    }
+
+private:
+    uint64_t mNodeId;
+    uint16_t mGroupId;
+    uint8_t mEndpointId;
+    uint16_t mClusterId;
+};
+
+/*
+ * Command Unbind
+ */
+class BindingUnbind : public ModelCommand
+{
+public:
+    BindingUnbind() : ModelCommand("unbind", kBindingClusterId, 0x01)
+    {
+        AddArgument("node-id", 0, UINT64_MAX, &mNodeId);
+        AddArgument("group-id", 0, UINT16_MAX, &mGroupId);
+        AddArgument("endpoint-id", 0, UINT8_MAX, &mEndpointId);
+        AddArgument("cluster-id", 0, UINT16_MAX, &mClusterId);
+        ModelCommand::AddArguments();
+    }
+
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
+    {
+        chip::Controller::BindingCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.Unbind(nullptr, mNodeId, mGroupId, mEndpointId, mClusterId);
+    }
+
+    // Global Response: DefaultResponse
+    bool HandleGlobalResponse(uint8_t commandId, uint8_t * message, uint16_t messageLen) const override
+    {
+        DefaultResponse response;
+        return response.HandleCommandResponse(commandId, message, messageLen);
+    }
+
+private:
+    uint64_t mNodeId;
+    uint16_t mGroupId;
+    uint8_t mEndpointId;
+    uint16_t mClusterId;
+};
+
+/*
+ * Discover attributes
+ */
+class DiscoverBindingAttributes : public ModelCommand
+{
+public:
+    DiscoverBindingAttributes() : ModelCommand("discover", kBindingClusterId, 0x0c) { ModelCommand::AddArguments(); }
+
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
+    {
+        chip::Controller::BindingCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.DiscoverAttributes(nullptr);
+    }
+
+    // Global Response: DiscoverAttributesResponse
+    bool HandleGlobalResponse(uint8_t commandId, uint8_t * message, uint16_t messageLen) const override
+    {
+        DiscoverAttributesResponse response;
+        return response.HandleCommandResponse(commandId, message, messageLen);
+    }
+};
+
+/*
+ * Attribute BindingsCount
+ */
+class ReadBindingBindingsCount : public ModelCommand
+{
+public:
+    ReadBindingBindingsCount() : ModelCommand("read", kBindingClusterId, 0x00)
+    {
+        AddArgument("attr-name", "bindings-count");
+        ModelCommand::AddArguments();
+    }
+
+    CHIP_ERROR EncodeCommand(ChipDevice * device, uint8_t endPointId) override
+    {
+        chip::Controller::BindingCluster cluster;
+        cluster.Associate(device, endPointId);
+        return cluster.ReadAttributeBindingsCount(nullptr);
+    }
+
+    // Global Response: ReadAttributesResponse
+    bool HandleGlobalResponse(uint8_t commandId, uint8_t * message, uint16_t messageLen) const override
+    {
+        ReadAttributesResponse response;
+        return response.HandleCommandResponse(commandId, message, messageLen);
+    }
+};
 /*----------------------------------------------------------------------------*\
 | Cluster ColorControl                                                | 0x0300 |
 |------------------------------------------------------------------------------|
@@ -6754,6 +6891,20 @@ void registerClusterBasic(Commands & commands)
     commands.Register(clusterName, clusterCommands);
 }
 
+void registerClusterBinding(Commands & commands)
+{
+    const char * clusterName = "Binding";
+
+    commands_list clusterCommands = {
+        make_unique<BindingBind>(),
+        make_unique<BindingUnbind>(),
+        make_unique<DiscoverBindingAttributes>(),
+        make_unique<ReadBindingBindingsCount>(),
+    };
+
+    commands.Register(clusterName, clusterCommands);
+}
+
 void registerClusterColorControl(Commands & commands)
 {
     const char * clusterName = "ColorControl";
@@ -6964,6 +7115,7 @@ void registerClusters(Commands & commands)
 {
     registerClusterBarrierControl(commands);
     registerClusterBasic(commands);
+    registerClusterBinding(commands);
     registerClusterColorControl(commands);
     registerClusterDoorLock(commands);
     registerClusterGroups(commands);
