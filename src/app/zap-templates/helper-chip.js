@@ -160,6 +160,7 @@ function asReadType(type)
       case 'int8_t':
       case 'uint8_t':
         return 'Int8u';
+      case 'chip::ClusterId':
       case 'int16_t':
       case 'uint16_t':
         return 'Int16u';
@@ -169,6 +170,9 @@ function asReadType(type)
       case 'int32_t':
       case 'uint32_t':
         return 'Int32u';
+      case 'int64_t':
+      case 'uint64_t':
+        return 'Int64u';
       default:
         error = 'Unhandled underlying type ' + zclType + ' for original type ' + type;
         throw error;

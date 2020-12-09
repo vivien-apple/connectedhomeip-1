@@ -45,9 +45,15 @@
 #include <app/util/attribute-storage.h>
 #include <app/util/binding-table.h>
 #include <app/util/common.h>
+#include <support/logging/CHIPLogging.h>
 #include <system/SystemLayer.h>
 
 using namespace chip;
+
+// TODO: Need to figure out what needs to happen wrt HAL tokens here, but for
+// now define ESZP_HOST to disable it.  See
+// https://github.com/project-chip/connectedhomeip/issues/3275
+#define EZSP_HOST
 
 #ifdef ATTRIBUTE_LARGEST
 #define READ_DATA_SIZE ATTRIBUTE_LARGEST
@@ -125,11 +131,11 @@ static uint32_t computeStringHash(uint8_t * data, uint8_t length)
 static EmberAfPluginReportingEntry table[REPORT_TABLE_SIZE];
 void emAfPluginReportingGetEntry(uint8_t index, EmberAfPluginReportingEntry * result)
 {
-    MEMMOVE(result, &table[index], sizeof(EmberAfPluginReportingEntry));
+    memmove(result, &table[index], sizeof(EmberAfPluginReportingEntry));
 }
 void emAfPluginReportingSetEntry(uint8_t index, EmberAfPluginReportingEntry * value)
 {
-    MEMMOVE(&table[index], value, sizeof(EmberAfPluginReportingEntry));
+    memmove(&table[index], value, sizeof(EmberAfPluginReportingEntry));
 }
 #else
 void emAfPluginReportingGetEntry(uint8_t index, EmberAfPluginReportingEntry * result)
@@ -145,21 +151,11 @@ void emAfPluginReportingSetEntry(uint8_t index, EmberAfPluginReportingEntry * va
 }
 #endif
 
-void emberAfPluginReportingStackStatusCallback(EmberStatus status)
-{
-    if (status == EMBER_NETWORK_UP)
-    {
-        // Load default reporting configurations
-        emberAfPluginReportingLoadReportingConfigDefaults();
-
-        scheduleTick();
-    }
-}
-
 void emberAfPluginReportingInitCallback(void)
 {
     // On device initialization, any attributes that have been set up to report
     // should generate an attribute report.
+    emberAfPluginReportingLoadReportingConfigDefaults();
     for (uint8_t i = 0; i < REPORT_TABLE_SIZE; i++)
     {
         EmberAfPluginReportingEntry entry;
@@ -216,14 +212,15 @@ void emberAfPluginReportingTickEventHandler(void)
                                    (uint8_t *) &readData, READ_DATA_SIZE, &dataType);
         if (status != EMBER_ZCL_STATUS_SUCCESS)
         {
-            emberAfReportingPrintln("ERR: reading cluster 0x%2x attribute 0x%2x: 0x%x", entry.clusterId, entry.attributeId, status);
+            emberAfReportingPrintln("ERR: reading endpoint: 0x%02x cluster 0x%04x attribute 0x%04x: 0x%x", entry.endpoint,
+                                    entry.clusterId, entry.attributeId, status);
             continue;
         }
         if (emberAfIsLongStringAttributeType(dataType))
         {
             // LONG string types are rarely used and even more rarely (never?)
             // reported; ignore and leave ensuing handling of other types unchanged.
-            emberAfReportingPrintln("ERR: reporting of LONG string attribute type not supported: cluster 0x%2x attribute 0x%2x",
+            emberAfReportingPrintln("ERR: reporting of LONG string attribute type not supported: cluster 0x%04x attribute 0x%04x",
                                     entry.clusterId, entry.attributeId);
             continue;
         }
@@ -802,7 +799,7 @@ static void scheduleTick(void)
     }
     if (delayMs != MAX_INT32U_VALUE)
     {
-        emberAfDebugPrintln("sched report event for: 0x%4x", delayMs);
+        emberAfDebugPrintln("sched report event for: %dms", delayMs);
         emberEventControlSetDelayMS(&emberAfPluginReportingTickEventControl, delayMs);
     }
     else

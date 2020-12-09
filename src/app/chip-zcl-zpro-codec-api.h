@@ -31,6 +31,7 @@ extern "C" {
 |---------------------------------------------------------------------+--------|
 | BarrierControl                                                      | 0x0103 |
 | Basic                                                               | 0x0000 |
+| Binding                                                             | 0xF000 |
 | ColorControl                                                        | 0x0300 |
 | DoorLock                                                            | 0x0101 |
 | Groups                                                              | 0x0004 |
@@ -163,6 +164,52 @@ uint16_t encodeBasicClusterReadPowerSourceAttribute(uint8_t * buffer, uint16_t b
  */
 uint16_t encodeBasicClusterReadClusterRevisionAttribute(uint8_t * buffer, uint16_t buf_length,
                                                         chip::EndpointId destination_endpoint);
+
+/*----------------------------------------------------------------------------*\
+| Cluster Binding                                                     | 0xF000 |
+|------------------------------------------------------------------------------|
+| Commands:                                                           |        |
+| * Bind                                                              |   0x00 |
+| * Unbind                                                            |   0x01 |
+|------------------------------------------------------------------------------|
+| Attributes:                                                         |        |
+| * BindingsCount                                                     | 0x0000 |
+| * ClusterRevision                                                   | 0xFFFD |
+\*----------------------------------------------------------------------------*/
+
+/**
+ * @brief
+ *    Encode an Bind command for Binding server into buffer including the APS frame
+ */
+uint16_t encodeBindingClusterBindCommand(uint8_t * buffer, uint16_t buf_length, chip::EndpointId destination_endpoint,
+                                         uint64_t nodeId, uint16_t groupId, uint8_t endpointId, chip::ClusterId clusterId);
+
+/**
+ * @brief
+ *    Encode an Unbind command for Binding server into buffer including the APS frame
+ */
+uint16_t encodeBindingClusterUnbindCommand(uint8_t * buffer, uint16_t buf_length, chip::EndpointId destination_endpoint,
+                                           uint64_t nodeId, uint16_t groupId, uint8_t endpointId, chip::ClusterId clusterId);
+
+/**
+ * @brief
+ *    Encode a Binding server discover command into buffer including the APS frame
+ */
+uint16_t encodeBindingClusterDiscoverAttributes(uint8_t * buffer, uint16_t buf_length, chip::EndpointId destination_endpoint);
+
+/**
+ * @brief
+ *    Encode a Binding server read command for the bindings count attribute into buffer including the APS frame
+ */
+uint16_t encodeBindingClusterReadBindingsCountAttribute(uint8_t * buffer, uint16_t buf_length,
+                                                        chip::EndpointId destination_endpoint);
+
+/**
+ * @brief
+ *    Encode a Binding server read command for the cluster revision attribute into buffer including the APS frame
+ */
+uint16_t encodeBindingClusterReadClusterRevisionAttribute(uint8_t * buffer, uint16_t buf_length,
+                                                          chip::EndpointId destination_endpoint);
 
 /*----------------------------------------------------------------------------*\
 | Cluster ColorControl                                                | 0x0300 |

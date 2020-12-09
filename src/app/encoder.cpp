@@ -177,6 +177,7 @@ extern "C" {
 |---------------------------------------------------------------------+--------|
 | BarrierControl                                                      | 0x0103 |
 | Basic                                                               | 0x0000 |
+| Binding                                                             | 0xF000 |
 | ColorControl                                                        | 0x0300 |
 | DoorLock                                                            | 0x0101 |
 | Groups                                                              | 0x0004 |
@@ -190,6 +191,7 @@ extern "C" {
 
 #define BARRIER_CONTROL_CLUSTER_ID 0x0103
 #define BASIC_CLUSTER_ID 0x0000
+#define BINDING_CLUSTER_ID 0xF000
 #define COLOR_CONTROL_CLUSTER_ID 0x0300
 #define DOOR_LOCK_CLUSTER_ID 0x0101
 #define GROUPS_CLUSTER_ID 0x0004
@@ -464,6 +466,71 @@ uint16_t encodeBasicClusterReadClusterRevisionAttribute(uint8_t * buffer, uint16
 {
     uint16_t attr_ids[] = { 0xFFFD };
     READ_ATTRIBUTES("ReadBasicClusterRevision", BASIC_CLUSTER_ID, 0x0000);
+}
+
+/*----------------------------------------------------------------------------*\
+| Cluster Binding                                                     | 0xF000 |
+|------------------------------------------------------------------------------|
+| Commands:                                                           |        |
+| * Bind                                                              |   0x00 |
+| * Unbind                                                            |   0x01 |
+|------------------------------------------------------------------------------|
+| Attributes:                                                         |        |
+| * BindingsCount                                                     | 0x0000 |
+| * ClusterRevision                                                   | 0xFFFD |
+\*----------------------------------------------------------------------------*/
+
+/*
+ * Command Bind
+ */
+uint16_t encodeBindingClusterBindCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint, uint64_t nodeId,
+                                         uint16_t groupId, uint8_t endpointId, chip::ClusterId clusterId)
+{
+    const char * kName = "BindingBind";
+    COMMAND_HEADER(kName, BINDING_CLUSTER_ID, 0x0000, 0x00);
+    buf.Put64(nodeId);
+    buf.Put16(groupId);
+    buf.Put(endpointId);
+    buf.Put16(clusterId);
+    COMMAND_FOOTER(kName);
+}
+
+/*
+ * Command Unbind
+ */
+uint16_t encodeBindingClusterUnbindCommand(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint, uint64_t nodeId,
+                                           uint16_t groupId, uint8_t endpointId, chip::ClusterId clusterId)
+{
+    const char * kName = "BindingUnbind";
+    COMMAND_HEADER(kName, BINDING_CLUSTER_ID, 0x0000, 0x01);
+    buf.Put64(nodeId);
+    buf.Put16(groupId);
+    buf.Put(endpointId);
+    buf.Put16(clusterId);
+    COMMAND_FOOTER(kName);
+}
+
+uint16_t encodeBindingClusterDiscoverAttributes(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint)
+{
+    DISCOVER_ATTRIBUTES("DiscoverBindingAttributes", BINDING_CLUSTER_ID, 0x1002);
+}
+
+/*
+ * Attribute BindingsCount
+ */
+uint16_t encodeBindingClusterReadBindingsCountAttribute(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint)
+{
+    uint16_t attr_ids[] = { 0x0000 };
+    READ_ATTRIBUTES("ReadBindingBindingsCount", BINDING_CLUSTER_ID, 0x0000);
+}
+
+/*
+ * Attribute ClusterRevision
+ */
+uint16_t encodeBindingClusterReadClusterRevisionAttribute(uint8_t * buffer, uint16_t buf_length, EndpointId destination_endpoint)
+{
+    uint16_t attr_ids[] = { 0xFFFD };
+    READ_ATTRIBUTES("ReadBindingClusterRevision", BINDING_CLUSTER_ID, 0x0000);
 }
 
 /*----------------------------------------------------------------------------*\
