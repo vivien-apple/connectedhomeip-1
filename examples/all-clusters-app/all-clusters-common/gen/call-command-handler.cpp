@@ -180,7 +180,7 @@ EmberAfStatus emberAfBarrierControlClusterServerCommandParse(EmberAfClusterComma
         switch (cmd->commandId)
         {
         case ZCL_BARRIER_CONTROL_GO_TO_PERCENT_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint8_t percentOpen;
 
             if (cmd->bufLen < payloadOffset + 1)
@@ -240,7 +240,7 @@ EmberAfStatus emberAfBindingClusterServerCommandParse(EmberAfClusterCommand * cm
         switch (cmd->commandId)
         {
         case ZCL_BIND_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             chip::NodeId nodeId;
             chip::GroupId groupId;
             chip::EndpointId endpointId;
@@ -274,7 +274,7 @@ EmberAfStatus emberAfBindingClusterServerCommandParse(EmberAfClusterCommand * cm
             break;
         }
         case ZCL_UNBIND_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             chip::NodeId nodeId;
             chip::GroupId groupId;
             chip::EndpointId endpointId;
@@ -324,7 +324,7 @@ EmberAfStatus emberAfColorControlClusterServerCommandParse(EmberAfClusterCommand
         switch (cmd->commandId)
         {
         case ZCL_MOVE_COLOR_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             int16_t rateX;
             int16_t rateY;
             uint8_t optionsMask;
@@ -358,7 +358,7 @@ EmberAfStatus emberAfColorControlClusterServerCommandParse(EmberAfClusterCommand
             break;
         }
         case ZCL_MOVE_COLOR_TEMPERATURE_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint8_t moveMode;
             uint16_t rate;
             uint16_t colorTemperatureMinimum;
@@ -407,7 +407,7 @@ EmberAfStatus emberAfColorControlClusterServerCommandParse(EmberAfClusterCommand
             break;
         }
         case ZCL_MOVE_HUE_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint8_t moveMode;
             uint8_t rate;
             uint8_t optionsMask;
@@ -441,7 +441,7 @@ EmberAfStatus emberAfColorControlClusterServerCommandParse(EmberAfClusterCommand
             break;
         }
         case ZCL_MOVE_SATURATION_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint8_t moveMode;
             uint8_t rate;
             uint8_t optionsMask;
@@ -475,7 +475,7 @@ EmberAfStatus emberAfColorControlClusterServerCommandParse(EmberAfClusterCommand
             break;
         }
         case ZCL_MOVE_TO_COLOR_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint16_t colorX;
             uint16_t colorY;
             uint16_t transitionTime;
@@ -517,7 +517,7 @@ EmberAfStatus emberAfColorControlClusterServerCommandParse(EmberAfClusterCommand
             break;
         }
         case ZCL_MOVE_TO_COLOR_TEMPERATURE_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint16_t colorTemperature;
             uint16_t transitionTime;
             uint8_t optionsMask;
@@ -552,7 +552,7 @@ EmberAfStatus emberAfColorControlClusterServerCommandParse(EmberAfClusterCommand
             break;
         }
         case ZCL_MOVE_TO_HUE_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint8_t hue;
             uint8_t direction;
             uint16_t transitionTime;
@@ -593,7 +593,7 @@ EmberAfStatus emberAfColorControlClusterServerCommandParse(EmberAfClusterCommand
             break;
         }
         case ZCL_MOVE_TO_HUE_AND_SATURATION_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint8_t hue;
             uint8_t saturation;
             uint16_t transitionTime;
@@ -635,7 +635,7 @@ EmberAfStatus emberAfColorControlClusterServerCommandParse(EmberAfClusterCommand
             break;
         }
         case ZCL_MOVE_TO_SATURATION_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint8_t saturation;
             uint16_t transitionTime;
             uint8_t optionsMask;
@@ -670,7 +670,7 @@ EmberAfStatus emberAfColorControlClusterServerCommandParse(EmberAfClusterCommand
             break;
         }
         case ZCL_STEP_COLOR_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             int16_t stepX;
             int16_t stepY;
             uint16_t transitionTime;
@@ -711,7 +711,7 @@ EmberAfStatus emberAfColorControlClusterServerCommandParse(EmberAfClusterCommand
             break;
         }
         case ZCL_STEP_COLOR_TEMPERATURE_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint8_t stepMode;
             uint16_t stepSize;
             uint16_t transitionTime;
@@ -767,7 +767,7 @@ EmberAfStatus emberAfColorControlClusterServerCommandParse(EmberAfClusterCommand
             break;
         }
         case ZCL_STEP_HUE_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint8_t stepMode;
             uint8_t stepSize;
             uint8_t transitionTime;
@@ -809,7 +809,7 @@ EmberAfStatus emberAfColorControlClusterServerCommandParse(EmberAfClusterCommand
             break;
         }
         case ZCL_STEP_SATURATION_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint8_t stepMode;
             uint8_t stepSize;
             uint8_t transitionTime;
@@ -851,7 +851,7 @@ EmberAfStatus emberAfColorControlClusterServerCommandParse(EmberAfClusterCommand
             break;
         }
         case ZCL_STOP_MOVE_STEP_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint8_t optionsMask;
             uint8_t optionsOverride;
 
@@ -887,7 +887,7 @@ EmberAfStatus emberAfDoorLockClusterClientCommandParse(EmberAfClusterCommand * c
         switch (cmd->commandId)
         {
         case ZCL_LOCK_DOOR_RESPONSE_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint8_t status;
 
             if (cmd->bufLen < payloadOffset + 1)
@@ -900,7 +900,7 @@ EmberAfStatus emberAfDoorLockClusterClientCommandParse(EmberAfClusterCommand * c
             break;
         }
         case ZCL_UNLOCK_DOOR_RESPONSE_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint8_t status;
 
             if (cmd->bufLen < payloadOffset + 1)
@@ -937,7 +937,7 @@ EmberAfStatus emberAfDoorLockClusterServerCommandParse(EmberAfClusterCommand * c
             break;
         }
         case ZCL_CLEAR_HOLIDAY_SCHEDULE_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint8_t scheduleId;
 
             if (cmd->bufLen < payloadOffset + 1)
@@ -950,7 +950,7 @@ EmberAfStatus emberAfDoorLockClusterServerCommandParse(EmberAfClusterCommand * c
             break;
         }
         case ZCL_CLEAR_PIN_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint16_t userId;
 
             if (cmd->bufLen < payloadOffset + 2)
@@ -963,7 +963,7 @@ EmberAfStatus emberAfDoorLockClusterServerCommandParse(EmberAfClusterCommand * c
             break;
         }
         case ZCL_CLEAR_RFID_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint16_t userId;
 
             if (cmd->bufLen < payloadOffset + 2)
@@ -976,7 +976,7 @@ EmberAfStatus emberAfDoorLockClusterServerCommandParse(EmberAfClusterCommand * c
             break;
         }
         case ZCL_CLEAR_WEEKDAY_SCHEDULE_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint8_t scheduleId;
             uint16_t userId;
 
@@ -996,7 +996,7 @@ EmberAfStatus emberAfDoorLockClusterServerCommandParse(EmberAfClusterCommand * c
             break;
         }
         case ZCL_CLEAR_YEARDAY_SCHEDULE_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint8_t scheduleId;
             uint16_t userId;
 
@@ -1016,7 +1016,7 @@ EmberAfStatus emberAfDoorLockClusterServerCommandParse(EmberAfClusterCommand * c
             break;
         }
         case ZCL_GET_HOLIDAY_SCHEDULE_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint8_t scheduleId;
 
             if (cmd->bufLen < payloadOffset + 1)
@@ -1029,7 +1029,7 @@ EmberAfStatus emberAfDoorLockClusterServerCommandParse(EmberAfClusterCommand * c
             break;
         }
         case ZCL_GET_LOG_RECORD_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint16_t logIndex;
 
             if (cmd->bufLen < payloadOffset + 2)
@@ -1042,7 +1042,7 @@ EmberAfStatus emberAfDoorLockClusterServerCommandParse(EmberAfClusterCommand * c
             break;
         }
         case ZCL_GET_PIN_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint16_t userId;
 
             if (cmd->bufLen < payloadOffset + 2)
@@ -1055,7 +1055,7 @@ EmberAfStatus emberAfDoorLockClusterServerCommandParse(EmberAfClusterCommand * c
             break;
         }
         case ZCL_GET_RFID_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint16_t userId;
 
             if (cmd->bufLen < payloadOffset + 2)
@@ -1068,7 +1068,7 @@ EmberAfStatus emberAfDoorLockClusterServerCommandParse(EmberAfClusterCommand * c
             break;
         }
         case ZCL_GET_USER_TYPE_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint16_t userId;
 
             if (cmd->bufLen < payloadOffset + 2)
@@ -1081,7 +1081,7 @@ EmberAfStatus emberAfDoorLockClusterServerCommandParse(EmberAfClusterCommand * c
             break;
         }
         case ZCL_GET_WEEKDAY_SCHEDULE_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint8_t scheduleId;
             uint16_t userId;
 
@@ -1101,7 +1101,7 @@ EmberAfStatus emberAfDoorLockClusterServerCommandParse(EmberAfClusterCommand * c
             break;
         }
         case ZCL_GET_YEARDAY_SCHEDULE_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint8_t scheduleId;
             uint16_t userId;
 
@@ -1121,7 +1121,7 @@ EmberAfStatus emberAfDoorLockClusterServerCommandParse(EmberAfClusterCommand * c
             break;
         }
         case ZCL_LOCK_DOOR_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint8_t * PIN;
 
             if (cmd->bufLen < payloadOffset + 1u)
@@ -1134,7 +1134,7 @@ EmberAfStatus emberAfDoorLockClusterServerCommandParse(EmberAfClusterCommand * c
             break;
         }
         case ZCL_SET_HOLIDAY_SCHEDULE_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint8_t scheduleId;
             uint32_t localStartTime;
             uint32_t localEndTime;
@@ -1169,7 +1169,7 @@ EmberAfStatus emberAfDoorLockClusterServerCommandParse(EmberAfClusterCommand * c
             break;
         }
         case ZCL_SET_PIN_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint16_t userId;
             uint8_t userStatus;
             uint8_t userType;
@@ -1203,7 +1203,7 @@ EmberAfStatus emberAfDoorLockClusterServerCommandParse(EmberAfClusterCommand * c
             break;
         }
         case ZCL_SET_RFID_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint16_t userId;
             uint8_t userStatus;
             uint8_t userType;
@@ -1237,7 +1237,7 @@ EmberAfStatus emberAfDoorLockClusterServerCommandParse(EmberAfClusterCommand * c
             break;
         }
         case ZCL_SET_USER_TYPE_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint16_t userId;
             uint8_t userType;
 
@@ -1257,7 +1257,7 @@ EmberAfStatus emberAfDoorLockClusterServerCommandParse(EmberAfClusterCommand * c
             break;
         }
         case ZCL_SET_WEEKDAY_SCHEDULE_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint8_t scheduleId;
             uint16_t userId;
             uint8_t daysMask;
@@ -1313,7 +1313,7 @@ EmberAfStatus emberAfDoorLockClusterServerCommandParse(EmberAfClusterCommand * c
             break;
         }
         case ZCL_SET_YEARDAY_SCHEDULE_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint8_t scheduleId;
             uint16_t userId;
             uint32_t localStartTime;
@@ -1347,7 +1347,7 @@ EmberAfStatus emberAfDoorLockClusterServerCommandParse(EmberAfClusterCommand * c
             break;
         }
         case ZCL_UNLOCK_DOOR_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint8_t * PIN;
 
             if (cmd->bufLen < payloadOffset + 1u)
@@ -1360,7 +1360,7 @@ EmberAfStatus emberAfDoorLockClusterServerCommandParse(EmberAfClusterCommand * c
             break;
         }
         case ZCL_UNLOCK_WITH_TIMEOUT_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint16_t timeoutInSeconds;
             uint8_t * pin;
 
@@ -1396,7 +1396,7 @@ EmberAfStatus emberAfGroupsClusterClientCommandParse(EmberAfClusterCommand * cmd
         switch (cmd->commandId)
         {
         case ZCL_ADD_GROUP_RESPONSE_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint8_t status;
             uint16_t groupId;
 
@@ -1416,7 +1416,7 @@ EmberAfStatus emberAfGroupsClusterClientCommandParse(EmberAfClusterCommand * cmd
             break;
         }
         case ZCL_GET_GROUP_MEMBERSHIP_RESPONSE_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint8_t capacity;
             uint8_t groupCount;
             /* TYPE WARNING: array array defaults to */ uint8_t * groupList;
@@ -1439,7 +1439,7 @@ EmberAfStatus emberAfGroupsClusterClientCommandParse(EmberAfClusterCommand * cmd
             break;
         }
         case ZCL_REMOVE_GROUP_RESPONSE_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint8_t status;
             uint16_t groupId;
 
@@ -1459,7 +1459,7 @@ EmberAfStatus emberAfGroupsClusterClientCommandParse(EmberAfClusterCommand * cmd
             break;
         }
         case ZCL_VIEW_GROUP_RESPONSE_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint8_t status;
             uint16_t groupId;
             uint8_t * groupName;
@@ -1502,7 +1502,7 @@ EmberAfStatus emberAfGroupsClusterServerCommandParse(EmberAfClusterCommand * cmd
         switch (cmd->commandId)
         {
         case ZCL_ADD_GROUP_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint16_t groupId;
             uint8_t * groupName;
 
@@ -1522,7 +1522,7 @@ EmberAfStatus emberAfGroupsClusterServerCommandParse(EmberAfClusterCommand * cmd
             break;
         }
         case ZCL_ADD_GROUP_IF_IDENTIFYING_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint16_t groupId;
             uint8_t * groupName;
 
@@ -1542,7 +1542,7 @@ EmberAfStatus emberAfGroupsClusterServerCommandParse(EmberAfClusterCommand * cmd
             break;
         }
         case ZCL_GET_GROUP_MEMBERSHIP_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint8_t groupCount;
             /* TYPE WARNING: array array defaults to */ uint8_t * groupList;
 
@@ -1562,7 +1562,7 @@ EmberAfStatus emberAfGroupsClusterServerCommandParse(EmberAfClusterCommand * cmd
             break;
         }
         case ZCL_REMOVE_GROUP_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint16_t groupId;
 
             if (cmd->bufLen < payloadOffset + 2)
@@ -1575,7 +1575,7 @@ EmberAfStatus emberAfGroupsClusterServerCommandParse(EmberAfClusterCommand * cmd
             break;
         }
         case ZCL_VIEW_GROUP_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint16_t groupId;
 
             if (cmd->bufLen < payloadOffset + 2)
@@ -1604,7 +1604,7 @@ EmberAfStatus emberAfIasZoneClusterServerCommandParse(EmberAfClusterCommand * cm
         switch (cmd->commandId)
         {
         case ZCL_ZONE_ENROLL_RESPONSE_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint8_t enrollResponseCode;
             uint8_t zoneId;
 
@@ -1640,7 +1640,7 @@ EmberAfStatus emberAfIdentifyClusterClientCommandParse(EmberAfClusterCommand * c
         switch (cmd->commandId)
         {
         case ZCL_IDENTIFY_QUERY_RESPONSE_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint16_t timeout;
 
             if (cmd->bufLen < payloadOffset + 2)
@@ -1669,7 +1669,7 @@ EmberAfStatus emberAfIdentifyClusterServerCommandParse(EmberAfClusterCommand * c
         switch (cmd->commandId)
         {
         case ZCL_IDENTIFY_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint16_t identifyTime;
 
             if (cmd->bufLen < payloadOffset + 2)
@@ -1702,7 +1702,7 @@ EmberAfStatus emberAfLevelControlClusterServerCommandParse(EmberAfClusterCommand
         switch (cmd->commandId)
         {
         case ZCL_MOVE_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint8_t moveMode;
             uint8_t rate;
             uint8_t optionMask;
@@ -1736,7 +1736,7 @@ EmberAfStatus emberAfLevelControlClusterServerCommandParse(EmberAfClusterCommand
             break;
         }
         case ZCL_MOVE_TO_LEVEL_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint8_t level;
             uint16_t transitionTime;
             uint8_t optionMask;
@@ -1770,7 +1770,7 @@ EmberAfStatus emberAfLevelControlClusterServerCommandParse(EmberAfClusterCommand
             break;
         }
         case ZCL_MOVE_TO_LEVEL_WITH_ON_OFF_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint8_t level;
             uint16_t transitionTime;
 
@@ -1790,7 +1790,7 @@ EmberAfStatus emberAfLevelControlClusterServerCommandParse(EmberAfClusterCommand
             break;
         }
         case ZCL_MOVE_WITH_ON_OFF_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint8_t moveMode;
             uint8_t rate;
 
@@ -1810,7 +1810,7 @@ EmberAfStatus emberAfLevelControlClusterServerCommandParse(EmberAfClusterCommand
             break;
         }
         case ZCL_STEP_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint8_t stepMode;
             uint8_t stepSize;
             uint16_t transitionTime;
@@ -1851,7 +1851,7 @@ EmberAfStatus emberAfLevelControlClusterServerCommandParse(EmberAfClusterCommand
             break;
         }
         case ZCL_STEP_WITH_ON_OFF_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint8_t stepMode;
             uint8_t stepSize;
             uint16_t transitionTime;
@@ -1878,7 +1878,7 @@ EmberAfStatus emberAfLevelControlClusterServerCommandParse(EmberAfClusterCommand
             break;
         }
         case ZCL_STOP_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint8_t optionMask;
             uint8_t optionOverride;
 
@@ -1946,7 +1946,7 @@ EmberAfStatus emberAfScenesClusterClientCommandParse(EmberAfClusterCommand * cmd
         switch (cmd->commandId)
         {
         case ZCL_ADD_SCENE_RESPONSE_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint8_t status;
             uint16_t groupId;
             uint8_t sceneId;
@@ -1973,7 +1973,7 @@ EmberAfStatus emberAfScenesClusterClientCommandParse(EmberAfClusterCommand * cmd
             break;
         }
         case ZCL_GET_SCENE_MEMBERSHIP_RESPONSE_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint8_t status;
             uint8_t capacity;
             uint16_t groupId;
@@ -2024,7 +2024,7 @@ EmberAfStatus emberAfScenesClusterClientCommandParse(EmberAfClusterCommand * cmd
             break;
         }
         case ZCL_REMOVE_ALL_SCENES_RESPONSE_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint8_t status;
             uint16_t groupId;
 
@@ -2044,7 +2044,7 @@ EmberAfStatus emberAfScenesClusterClientCommandParse(EmberAfClusterCommand * cmd
             break;
         }
         case ZCL_REMOVE_SCENE_RESPONSE_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint8_t status;
             uint16_t groupId;
             uint8_t sceneId;
@@ -2071,7 +2071,7 @@ EmberAfStatus emberAfScenesClusterClientCommandParse(EmberAfClusterCommand * cmd
             break;
         }
         case ZCL_STORE_SCENE_RESPONSE_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint8_t status;
             uint16_t groupId;
             uint8_t sceneId;
@@ -2098,7 +2098,7 @@ EmberAfStatus emberAfScenesClusterClientCommandParse(EmberAfClusterCommand * cmd
             break;
         }
         case ZCL_VIEW_SCENE_RESPONSE_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint8_t status;
             uint16_t groupId;
             uint8_t sceneId;
@@ -2180,7 +2180,7 @@ EmberAfStatus emberAfScenesClusterServerCommandParse(EmberAfClusterCommand * cmd
         switch (cmd->commandId)
         {
         case ZCL_ADD_SCENE_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint16_t groupId;
             uint8_t sceneId;
             uint16_t transitionTime;
@@ -2217,7 +2217,7 @@ EmberAfStatus emberAfScenesClusterServerCommandParse(EmberAfClusterCommand * cmd
             break;
         }
         case ZCL_GET_SCENE_MEMBERSHIP_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint16_t groupId;
 
             if (cmd->bufLen < payloadOffset + 2)
@@ -2230,7 +2230,7 @@ EmberAfStatus emberAfScenesClusterServerCommandParse(EmberAfClusterCommand * cmd
             break;
         }
         case ZCL_RECALL_SCENE_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint16_t groupId;
             uint8_t sceneId;
             uint16_t transitionTime;
@@ -2257,7 +2257,7 @@ EmberAfStatus emberAfScenesClusterServerCommandParse(EmberAfClusterCommand * cmd
             break;
         }
         case ZCL_REMOVE_ALL_SCENES_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint16_t groupId;
 
             if (cmd->bufLen < payloadOffset + 2)
@@ -2270,7 +2270,7 @@ EmberAfStatus emberAfScenesClusterServerCommandParse(EmberAfClusterCommand * cmd
             break;
         }
         case ZCL_REMOVE_SCENE_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint16_t groupId;
             uint8_t sceneId;
 
@@ -2290,7 +2290,7 @@ EmberAfStatus emberAfScenesClusterServerCommandParse(EmberAfClusterCommand * cmd
             break;
         }
         case ZCL_STORE_SCENE_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint16_t groupId;
             uint8_t sceneId;
 
@@ -2310,7 +2310,7 @@ EmberAfStatus emberAfScenesClusterServerCommandParse(EmberAfClusterCommand * cmd
             break;
         }
         case ZCL_VIEW_SCENE_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint16_t groupId;
             uint8_t sceneId;
 
