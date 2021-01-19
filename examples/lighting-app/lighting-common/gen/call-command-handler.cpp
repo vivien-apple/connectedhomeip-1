@@ -92,7 +92,7 @@ EmberAfStatus emberAfLevelControlClusterServerCommandParse(EmberAfClusterCommand
         switch (cmd->commandId)
         {
         case ZCL_MOVE_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint8_t moveMode;
             uint8_t rate;
             uint8_t optionMask;
@@ -126,7 +126,7 @@ EmberAfStatus emberAfLevelControlClusterServerCommandParse(EmberAfClusterCommand
             break;
         }
         case ZCL_MOVE_TO_LEVEL_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint8_t level;
             uint16_t transitionTime;
             uint8_t optionMask;
@@ -160,7 +160,7 @@ EmberAfStatus emberAfLevelControlClusterServerCommandParse(EmberAfClusterCommand
             break;
         }
         case ZCL_MOVE_TO_LEVEL_WITH_ON_OFF_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint8_t level;
             uint16_t transitionTime;
 
@@ -180,7 +180,7 @@ EmberAfStatus emberAfLevelControlClusterServerCommandParse(EmberAfClusterCommand
             break;
         }
         case ZCL_MOVE_WITH_ON_OFF_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint8_t moveMode;
             uint8_t rate;
 
@@ -200,7 +200,7 @@ EmberAfStatus emberAfLevelControlClusterServerCommandParse(EmberAfClusterCommand
             break;
         }
         case ZCL_STEP_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint8_t stepMode;
             uint8_t stepSize;
             uint16_t transitionTime;
@@ -241,7 +241,7 @@ EmberAfStatus emberAfLevelControlClusterServerCommandParse(EmberAfClusterCommand
             break;
         }
         case ZCL_STEP_WITH_ON_OFF_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint8_t stepMode;
             uint8_t stepSize;
             uint16_t transitionTime;
@@ -268,7 +268,7 @@ EmberAfStatus emberAfLevelControlClusterServerCommandParse(EmberAfClusterCommand
             break;
         }
         case ZCL_STOP_COMMAND_ID: {
-            uint32_t payloadOffset = cmd->payloadStartIndex;
+            uint16_t payloadOffset = cmd->payloadStartIndex;
             uint8_t optionMask;
             uint8_t optionOverride;
 
