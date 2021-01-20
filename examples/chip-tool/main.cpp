@@ -22,13 +22,13 @@
 #include "commands/pairing/Commands.h"
 #include "commands/payload/Commands.h"
 
-#include <transport/SecurePairingSession.h>
-
 // ================================================================================
 // Main Code
 // ================================================================================
 int main(int argc, char * argv[])
 {
+    InitDataModelHandler();
+
     Commands commands;
     registerCommandsPayload(commands);
     registerCommandsPairing(commands);
