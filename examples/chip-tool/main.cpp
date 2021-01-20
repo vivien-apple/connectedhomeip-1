@@ -29,6 +29,8 @@
 // ================================================================================
 int main(int argc, char * argv[])
 {
+    InitDataModelHandler();
+
     Commands commands;
     registerCommandsPayload(commands);
     registerCommandsPairing(commands);
