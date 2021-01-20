@@ -44,8 +44,11 @@
 #include <transport/TransportMgr.h>
 #include <transport/raw/UDP.h>
 
-namespace chip {
+#if CONFIG_NETWORK_LAYER_BLE
+#include <ble/BleLayer.h>
+#endif
 
+namespace chip {
 namespace Controller {
 
 constexpr uint16_t kNumMaxActiveDevices = 64;
@@ -58,6 +61,10 @@ struct ControllerInitParams
     Inet::InetLayer * inetLayer                 = nullptr;
 #if CHIP_ENABLE_INTERACTION_MODEL
     app::InteractionModelDelegate * imDelegate = nullptr;
+#endif
+
+#if CONFIG_NETWORK_LAYER_BLE
+    Ble::BleLayer * bleLayer = nullptr;
 #endif
 };
 
@@ -213,6 +220,7 @@ protected:
     PersistentStorageDelegate * mStorageDelegate;
     Inet::InetLayer * mInetLayer;
     System::Layer * mSystemLayer;
+    Ble::BleLayer * mBleLayer = nullptr;
 
     uint16_t mListenPort;
     uint16_t GetInactiveDeviceIndex();
