@@ -537,6 +537,19 @@ EmberAfStatus emberAfDoorLockClusterClientCommandParse(EmberAfClusterCommand * c
             wasHandled = emberAfDoorLockClusterSetHolidayScheduleResponseCallback(status);
             break;
         }
+        case ZCL_SET_PIN_RESPONSE_COMMAND_ID: {
+            uint16_t payloadOffset = cmd->payloadStartIndex;
+            uint8_t status;
+
+            if (cmd->bufLen < payloadOffset + 1)
+            {
+                return EMBER_ZCL_STATUS_MALFORMED_COMMAND;
+            }
+            status = emberAfGetInt8u(cmd->buffer, payloadOffset, cmd->bufLen);
+
+            wasHandled = emberAfDoorLockClusterSetPinResponseCallback(status);
+            break;
+        }
         case ZCL_SET_RFID_RESPONSE_COMMAND_ID: {
             uint16_t payloadOffset = cmd->payloadStartIndex;
             uint8_t status;
