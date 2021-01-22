@@ -179,7 +179,7 @@
 
 // Array of EmberAfCommandMetadata structs.
 #define ZAP_COMMAND_MASK(mask) COMMAND_MASK_##mask
-#define EMBER_AF_GENERATED_COMMAND_COUNT (102)
+#define EMBER_AF_GENERATED_COMMAND_COUNT (103)
 #define GENERATED_COMMANDS                                                                                                         \
     {                                                                                                                              \
         { 0x0000, 0x00,                                                                                                            \
@@ -240,6 +240,8 @@
             }, /* Door Lock (client): GetLogRecordResponse */                                                                      \
             { 0x0101, 0x05,                                                                                                        \
               ZAP_COMMAND_MASK(INCOMING_CLIENT) | ZAP_COMMAND_MASK(OUTGOING_CLIENT) }, /* Door Lock (client): SetPin */            \
+            { 0x0101, 0x05,                                                                                                        \
+              ZAP_COMMAND_MASK(INCOMING_CLIENT) | ZAP_COMMAND_MASK(OUTGOING_CLIENT) }, /* Door Lock (client): SetPinResponse */    \
             { 0x0101, 0x06,                                                                                                        \
               ZAP_COMMAND_MASK(INCOMING_CLIENT) | ZAP_COMMAND_MASK(OUTGOING_CLIENT) }, /* Door Lock (client): GetPin */            \
             { 0x0101, 0x06,                                                                                                        \
