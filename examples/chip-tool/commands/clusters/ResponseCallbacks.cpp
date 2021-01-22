@@ -784,6 +784,15 @@ bool emberAfDoorLockClusterSetHolidayScheduleResponseCallback(uint8_t status)
     return false;
 }
 
+bool emberAfDoorLockClusterSetPinResponseCallback(uint8_t status)
+{
+    ChipLogProgress(chipTool, "SetPinResponse:");
+    LogStatus(status);
+
+    sCommandSuccess = (status == EMBER_ZCL_STATUS_SUCCESS);
+    return false;
+}
+
 bool emberAfDoorLockClusterSetRfidResponseCallback(uint8_t status)
 {
     ChipLogProgress(chipTool, "SetRfidResponse:");

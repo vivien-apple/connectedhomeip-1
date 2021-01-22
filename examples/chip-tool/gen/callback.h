@@ -963,6 +963,13 @@ bool emberAfDoorLockClusterLockDoorResponseCallback(uint8_t status);
 bool emberAfDoorLockClusterSetHolidayScheduleResponseCallback(uint8_t status);
 
 /**
+ * @brief Door Lock Cluster SetPinResponse Command callback
+ * @param status
+ */
+
+bool emberAfDoorLockClusterSetPinResponseCallback(uint8_t status);
+
+/**
  * @brief Door Lock Cluster SetRfidResponse Command callback
  * @param status
  */
