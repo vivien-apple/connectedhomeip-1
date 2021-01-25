@@ -145,7 +145,11 @@ public:
     virtual CHIP_ERROR Run(PersistentStorage & storage, NodeId localId, NodeId remoteId) = 0;
 
     bool GetCommandExitStatus() const { return mCommandExitStatus; }
-    void SetCommandExitStatus(bool status) { mCommandExitStatus = status; }
+    void SetCommandExitStatus(bool status)
+    {
+        mCommandExitStatus = status;
+        UpdateWaitForResponse(false);
+    }
 
     void UpdateWaitForResponse(bool value);
     void WaitForResponse(uint16_t duration);

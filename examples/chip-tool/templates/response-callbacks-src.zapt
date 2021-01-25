@@ -1,33 +1,57 @@
 {{> header}}
 
-#include "gen/enums.h"
 #include "ResponseCallbacks.h"
-#include <inttypes.h>
+#include <app/util/af.h>
 #include <app/util/basic-types.h>
+#include <app/util/CallbacksMgr.h>
 #include <core/CHIPEncoding.h>
 #include <support/SafeInt.h>
 #include <support/logging/CHIPLogging.h>
 
 using namespace ::chip;
 
-bool sCommandSuccess = true;
-
 #define CHECK_MESSAGE_LENGTH(value)                                                                                                \
     if (!chip::CanCastTo<uint16_t>(value))                                                                                         \
     {                                                                                                                              \
         ChipLogError(chipTool, "CHECK_MESSAGE_LENGTH expects a uint16_t value, got: %d", value);                                   \
-        sCommandSuccess = false;                                                                                                   \
-        return false;                                                                                                              \
+        Callback::Callback<DefaultFailureCallback> * cb =                                                                          \
+            Callback::Callback<DefaultFailureCallback>::FromCancelable(onFailureCallback);                                         \
+        cb->mCall(cb->mContext, EMBER_ZCL_STATUS_INVALID_VALUE);                                                                   \
+        return true;                                                                                                               \
     }                                                                                                                              \
                                                                                                                                    \
     if (messageLen < value)                                                                                                        \
     {                                                                                                                              \
         ChipLogError(chipTool, "Unexpected response length: %d", messageLen);                                                      \
-        sCommandSuccess = false;                                                                                                   \
-        return false;                                                                                                              \
+        Callback::Callback<DefaultFailureCallback> * cb =                                                                          \
+            Callback::Callback<DefaultFailureCallback>::FromCancelable(onFailureCallback);                                         \
+        cb->mCall(cb->mContext, EMBER_ZCL_STATUS_INVALID_VALUE);                                                                   \
+        return true;                                                                                                               \
     }                                                                                                                              \
                                                                                                                                    \
     messageLen = static_cast<uint16_t>(messageLen - static_cast<uint16_t>(value));
+
+#define GET_CALLBACKS(name)                                                                                                        \
+    Callback::Cancelable * onSuccessCallback = nullptr;                                                                            \
+    Callback::Cancelable * onFailureCallback = nullptr;                                                                            \
+    NodeId sourceId                          = emberAfCurrentCommand()->source;                                                    \
+    uint8_t sequenceNumber                   = emberAfCurrentCommand()->seqNum;                                                    \
+    CHIP_ERROR err = gCallbacks.GetResponseCallback(sourceId, sequenceNumber, &onSuccessCallback, &onFailureCallback);             \
+                                                                                                                                   \
+    if (CHIP_NO_ERROR != err)                                                                                                      \
+    {                                                                                                                              \
+        if (onSuccessCallback == nullptr)                                                                                          \
+        {                                                                                                                          \
+            ChipLogDetail(chipTool, "%s: Missing success callback", name);                                                         \
+        }                                                                                                                          \
+                                                                                                                                   \
+        if (onFailureCallback == nullptr)                                                                                          \
+        {                                                                                                                          \
+            ChipLogDetail(chipTool, "%s: Missing failure callback", name);                                                         \
+        }                                                                                                                          \
+                                                                                                                                   \
+        return true;                                                                                                               \
+    }
 
 void LogStatus(uint8_t status)
 {
@@ -135,268 +159,8 @@ void LogStatus(uint8_t status)
     }
 }
 
-bool ReadAttributeValue(uint8_t *& message, uint16_t & messageLen)
-{
-    CHECK_MESSAGE_LENGTH(1);
-    uint8_t type = chip::Encoding::Read8(message);
-    ChipLogProgress(chipTool, "  type: 0x%02x", type);
-
-    // FIXME: Should we have a mapping of type ids to types, based on
-    // table 2.6.2.2 in Rev 8 of the ZCL spec?
-    switch (type)
-    {
-    case 0x00: // nodata / No data
-        ChipLogError(chipTool, "Type 0x%02x is not supported", type);
-        message += 0;
-        break;
-    case 0x08: // data8 / 8-bit data
-        CHECK_MESSAGE_LENGTH(1);
-        ChipLogProgress(chipTool, "  value: 0x%02x", chip::Encoding::Read8(message));
-        return true;
-        break;
-    case 0x09: // data16 / 16-bit data
-        CHECK_MESSAGE_LENGTH(2);
-        ChipLogProgress(chipTool, "  value: 0x%04x", chip::Encoding::LittleEndian::Read16(message));
-        return true;
-        break;
-    case 0x0A: // data24 / 24-bit data
-        ChipLogError(chipTool, "Type 0x%02x is not supported", type);
-        message += 3;
-        break;
-    case 0x0B: // data32 / 32-bit data
-        CHECK_MESSAGE_LENGTH(4);
-        ChipLogProgress(chipTool, "  value: 0x%08x", chip::Encoding::LittleEndian::Read32(message));
-        return true;
-        break;
-    case 0x0C: // data40 / 40-bit data
-        ChipLogError(chipTool, "Type 0x%02x is not supported", type);
-        message += 5;
-        break;
-    case 0x0D: // data48 / 48-bit data
-        ChipLogError(chipTool, "Type 0x%02x is not supported", type);
-        message += 6;
-        break;
-    case 0x0E: // data56 / 56-bit data
-        ChipLogError(chipTool, "Type 0x%02x is not supported", type);
-        message += 7;
-        break;
-    case 0x0F: // data64 / 64-bit data
-        CHECK_MESSAGE_LENGTH(8);
-        ChipLogProgress(chipTool, "  value: 0x%16x", chip::Encoding::LittleEndian::Read64(message));
-        return true;
-        break;
-    case 0x10: // bool / Boolean
-        CHECK_MESSAGE_LENGTH(1);
-        ChipLogProgress(chipTool, "  value: 0x%02x", chip::Encoding::Read8(message));
-        return true;
-        break;
-    case 0x18: // map8 / 8-bit bitmap
-        CHECK_MESSAGE_LENGTH(1);
-        ChipLogProgress(chipTool, "  value: 0x%02x", chip::Encoding::Read8(message));
-        return true;
-        break;
-    case 0x19: // map16 / 16-bit bitmap
-        CHECK_MESSAGE_LENGTH(2);
-        ChipLogProgress(chipTool, "  value: 0x%04x", chip::Encoding::LittleEndian::Read16(message));
-        return true;
-        break;
-    case 0x1A: // map24 / 24-bit bitmap
-        ChipLogError(chipTool, "Type 0x%02x is not supported", type);
-        message += 3;
-        break;
-    case 0x1B: // map32 / 32-bit bitmap
-        CHECK_MESSAGE_LENGTH(4);
-        ChipLogProgress(chipTool, "  value: 0x%08x", chip::Encoding::LittleEndian::Read32(message));
-        return true;
-        break;
-    case 0x1C: // map40 / 40-bit bitmap
-        ChipLogError(chipTool, "Type 0x%02x is not supported", type);
-        message += 5;
-        break;
-    case 0x1D: // map48 / 48-bit bitmap
-        ChipLogError(chipTool, "Type 0x%02x is not supported", type);
-        message += 6;
-        break;
-    case 0x1E: // map56 / 56-bit bitmap
-        ChipLogError(chipTool, "Type 0x%02x is not supported", type);
-        message += 7;
-        break;
-    case 0x1F: // map64 / 64-bit bitmap
-        CHECK_MESSAGE_LENGTH(8);
-        ChipLogProgress(chipTool, "  value: 0x%16x", chip::Encoding::LittleEndian::Read64(message));
-        return true;
-        break;
-    case 0x20: // uint8 / Unsigned  8-bit integer
-        CHECK_MESSAGE_LENGTH(1);
-        ChipLogProgress(chipTool, "  value: 0x%02x", chip::Encoding::Read8(message));
-        return true;
-        break;
-    case 0x21: // uint16 / Unsigned 16-bit integer
-        CHECK_MESSAGE_LENGTH(2);
-        ChipLogProgress(chipTool, "  value: 0x%04x", chip::Encoding::LittleEndian::Read16(message));
-        return true;
-        break;
-    case 0x22: // uint24 / Unsigned 24-bit integer
-        ChipLogError(chipTool, "Type 0x%02x is not supported", type);
-        message += 3;
-        break;
-    case 0x23: // uint32 / Unsigned 32-bit integer
-        CHECK_MESSAGE_LENGTH(4);
-        ChipLogProgress(chipTool, "  value: 0x%08x", chip::Encoding::LittleEndian::Read32(message));
-        return true;
-        break;
-    case 0x24: // uint40 / Unsigned 40-bit integer
-        ChipLogError(chipTool, "Type 0x%02x is not supported", type);
-        message += 5;
-        break;
-    case 0x25: // uint48 / Unsigned 48-bit integer
-        ChipLogError(chipTool, "Type 0x%02x is not supported", type);
-        message += 6;
-        break;
-    case 0x26: // uint56 / Unsigned 56-bit integer
-        ChipLogError(chipTool, "Type 0x%02x is not supported", type);
-        message += 7;
-        break;
-    case 0x27: // uint64 / Unsigned 64-bit integer
-        CHECK_MESSAGE_LENGTH(8);
-        ChipLogProgress(chipTool, "  value: 0x%16x", chip::Encoding::LittleEndian::Read64(message));
-        return true;
-        break;
-    case 0x28: // int8 / Signed 8-bit integer
-        CHECK_MESSAGE_LENGTH(1);
-        ChipLogProgress(chipTool, "  value: %d", chip::CastToSigned(chip::Encoding::Read8(message)));
-        return true;
-        break;
-    case 0x29: // int16 / Signed 16-bit integer
-        CHECK_MESSAGE_LENGTH(2);
-        ChipLogProgress(chipTool, "  value: %d", chip::CastToSigned(chip::Encoding::LittleEndian::Read16(message)));
-        return true;
-        break;
-    case 0x2A: // int24 / Signed 24-bit integer
-        ChipLogError(chipTool, "Type 0x%02x is not supported", type);
-        message += 3;
-        break;
-    case 0x2B: // int32 / Signed 32-bit integer
-        CHECK_MESSAGE_LENGTH(4);
-        ChipLogProgress(chipTool, "  value: %d", chip::CastToSigned(chip::Encoding::LittleEndian::Read32(message)));
-        return true;
-        break;
-    case 0x2C: // int40 / Signed 40-bit integer
-        ChipLogError(chipTool, "Type 0x%02x is not supported", type);
-        message += 5;
-        break;
-    case 0x2D: // int48 / Signed 48-bit integer
-        ChipLogError(chipTool, "Type 0x%02x is not supported", type);
-        message += 6;
-        break;
-    case 0x2E: // int56 / Signed 56-bit integer
-        ChipLogError(chipTool, "Type 0x%02x is not supported", type);
-        message += 7;
-        break;
-    case 0x2F: // int64 / Signed 64-bit integer
-        CHECK_MESSAGE_LENGTH(8);
-        ChipLogProgress(chipTool, "  value: %d", chip::CastToSigned(chip::Encoding::LittleEndian::Read64(message)));
-        return true;
-        break;
-    case 0x30: // enum8 / 8-bit enumeration
-        CHECK_MESSAGE_LENGTH(1);
-        ChipLogProgress(chipTool, "  value: 0x%02x", chip::Encoding::Read8(message));
-        return true;
-        break;
-    case 0x31: // enum16 / 16-bit enumeration
-        CHECK_MESSAGE_LENGTH(2);
-        ChipLogProgress(chipTool, "  value: 0x%04x", chip::Encoding::LittleEndian::Read16(message));
-        return true;
-        break;
-    case 0x38: // semi / Semi-precision
-        ChipLogError(chipTool, "Type 0x%02x is not supported", type);
-        message += 0;
-        break;
-    case 0x39: // single / Single precision
-        ChipLogError(chipTool, "Type 0x%02x is not supported", type);
-        message += 0;
-        break;
-    case 0x3A: // double / Double precision
-        ChipLogError(chipTool, "Type 0x%02x is not supported", type);
-        message += 0;
-        break;
-    case 0x41: // octstr / Octet string
-        ChipLogError(chipTool, "Type 0x%02x is not supported", type);
-        message += 0;
-        break;
-    case 0x42: // string / Character string
-        ChipLogError(chipTool, "Type 0x%02x is not supported", type);
-        message += 0;
-        break;
-    case 0x43: // octstr16 / Long octet string
-        ChipLogError(chipTool, "Type 0x%02x is not supported", type);
-        message += 2;
-        break;
-    case 0x44: // string16 / Long character string
-        ChipLogError(chipTool, "Type 0x%02x is not supported", type);
-        message += 2;
-        break;
-    case 0x48: // array / Array
-        ChipLogError(chipTool, "Type 0x%02x is not supported", type);
-        message += 0;
-        break;
-    case 0x49: // struct / Structure
-        ChipLogError(chipTool, "Type 0x%02x is not supported", type);
-        message += 0;
-        break;
-    case 0x50: // set / Set
-        ChipLogError(chipTool, "Type 0x%02x is not supported", type);
-        message += 0;
-        break;
-    case 0x51: // bag / Bag
-        ChipLogError(chipTool, "Type 0x%02x is not supported", type);
-        message += 0;
-        break;
-    case 0xE0: // ToD / Time of day
-        ChipLogError(chipTool, "Type 0x%02x is not supported", type);
-        message += 0;
-        break;
-    case 0xE1: // date / Date
-        CHECK_MESSAGE_LENGTH(4);
-        ChipLogProgress(chipTool, "  value: 0x%08x", chip::Encoding::LittleEndian::Read32(message));
-        return true;
-        break;
-    case 0xE2: // UTC / UTCTime
-        CHECK_MESSAGE_LENGTH(4);
-        ChipLogProgress(chipTool, "  value: 0x%08x", chip::Encoding::LittleEndian::Read32(message));
-        return true;
-        break;
-    case 0xE8: // clusterId / Cluster ID
-        CHECK_MESSAGE_LENGTH(2);
-        ChipLogProgress(chipTool, "  value: 0x%04x", chip::Encoding::LittleEndian::Read16(message));
-        return true;
-        break;
-    case 0xE9: // attribId / Attribute ID
-        CHECK_MESSAGE_LENGTH(2);
-        ChipLogProgress(chipTool, "  value: 0x%04x", chip::Encoding::LittleEndian::Read16(message));
-        return true;
-        break;
-    case 0xEA: // bacOID / BACnet OID
-        ChipLogError(chipTool, "Type 0x%02x is not supported", type);
-        message += 0;
-        break;
-    case 0xF0: // EUI64 / IEEE address
-        CHECK_MESSAGE_LENGTH(8);
-        ChipLogProgress(chipTool, "  value: 0x%16x", chip::Encoding::LittleEndian::Read64(message));
-        return true;
-        break;
-    case 0xF1: // key128 / 128-bit security key
-        ChipLogError(chipTool, "Type 0x%02x is not supported", type);
-        message += 16;
-        break;
-    case 0xFF: // unk / Unknown
-        ChipLogError(chipTool, "Type 0x%02x is not supported", type);
-        message += 0;
-        break;
-    }
-
-    return false;
-}
+// Singleton instance of the callbacks manager
+app::CHIPCallbacksMgr & gCallbacks = app::CHIPCallbacksMgr::GetInstance();
 
 bool emberAfDefaultResponseCallback(ClusterId clusterId, CommandId commandId, EmberAfStatus status)
 {
@@ -405,14 +169,27 @@ bool emberAfDefaultResponseCallback(ClusterId clusterId, CommandId commandId, Em
     ChipLogProgress(chipTool, "  CommandId: 0x%02x", commandId);
     LogStatus(status);
 
-    sCommandSuccess = (status == EMBER_ZCL_STATUS_SUCCESS);
-    return false;
+    GET_CALLBACKS("emberAfDefaultResponseCallback");
+    if (status == EMBER_ZCL_STATUS_SUCCESS)
+    {
+        Callback::Callback<DefaultSuccessCallback> * cb = Callback::Callback<DefaultSuccessCallback>::FromCancelable(onSuccessCallback);
+        cb->mCall(cb->mContext);
+    }
+    else
+    {
+        Callback::Callback<DefaultFailureCallback> * cb = Callback::Callback<DefaultFailureCallback>::FromCancelable(onFailureCallback);
+        cb->mCall(cb->mContext, status);
+    }
+
+    return true;
 }
 
 bool emberAfReadAttributesResponseCallback(ClusterId clusterId, uint8_t * message, uint16_t messageLen)
 {
     ChipLogProgress(chipTool, "ReadAttributesResponse:");
     ChipLogProgress(chipTool, "  ClusterId: 0x%04x", clusterId);
+
+    GET_CALLBACKS("emberAfReadAttributesResponseCallback");
 
     // struct readAttributeResponseRecord[]
     while (messageLen)
@@ -427,24 +204,191 @@ bool emberAfReadAttributesResponseCallback(ClusterId clusterId, uint8_t * messag
 
         if (status == EMBER_ZCL_STATUS_SUCCESS)
         {
-            if (!ReadAttributeValue(message, messageLen))
+            CHECK_MESSAGE_LENGTH(1);
+            uint8_t attributeType = chip::Encoding::Read8(message);
+            ChipLogProgress(chipTool, "  attributeType: 0x%02x", attributeType);
+
+            switch (attributeType)
             {
-                sCommandSuccess = false;
+                case 0x00: // nodata / No data
+                case 0x0A: // data24 / 24-bit data
+                case 0x0C: // data40 / 40-bit data
+                case 0x0D: // data48 / 48-bit data
+                case 0x0E: // data56 / 56-bit data
+                case 0x1A: // map24 / 24-bit bitmap
+                case 0x1C: // map40 / 40-bit bitmap
+                case 0x1D: // map48 / 48-bit bitmap
+                case 0x1E: // map56 / 56-bit bitmap
+                case 0x22: // uint24 / Unsigned 24-bit integer
+                case 0x24: // uint40 / Unsigned 40-bit integer
+                case 0x25: // uint48 / Unsigned 48-bit integer
+                case 0x26: // uint56 / Unsigned 56-bit integer
+                case 0x2A: // int24 / Signed 24-bit integer
+                case 0x2C: // int40 / Signed 40-bit integer
+                case 0x2D: // int48 / Signed 48-bit integer
+                case 0x2E: // int56 / Signed 56-bit integer
+                case 0x38: // semi / Semi-precision
+                case 0x39: // single / Single precision
+                case 0x3A: // double / Double precision
+                case 0x41: // octstr / Octet string
+                case 0x42: // string / Character string
+                case 0x43: // octstr16 / Long octet string
+                case 0x44: // string16 / Long character string
+                case 0x48: // array / Array
+                case 0x49: // struct / Structure
+                case 0x50: // set / Set
+                case 0x51: // bag / Bag
+                case 0xE0: // ToD / Time of day
+                {
+                    ChipLogError(chipTool, "attributeType 0x%02x is not supported", attributeType);
+                    Callback::Callback<DefaultFailureCallback> * cb = Callback::Callback<DefaultFailureCallback>::FromCancelable(onFailureCallback);
+                    cb->mCall(cb->mContext, EMBER_ZCL_STATUS_INVALID_VALUE);
+                    return true;
+                }
+
+                case 0x08: // data8 / 8-bit data
+                case 0x18: // map8 / 8-bit bitmap
+                case 0x20: // uint8 / Unsigned  8-bit integer
+                case 0x30: // enum8 / 8-bit enumeration
+                {
+                    CHECK_MESSAGE_LENGTH(1);
+                    uint8_t value = chip::Encoding::Read8(message);
+                    ChipLogProgress(chipTool, "  value: 0x%02x", value);
+
+                    Callback::Callback<Int8uAttributeCallback> * cb = Callback::Callback<Int8uAttributeCallback>::FromCancelable(onSuccessCallback);
+                    cb->mCall(cb->mContext, value);
+                    break;
+                }
+
+                case 0x09: // data16 / 16-bit data
+                case 0x19: // map16 / 16-bit bitmap
+                case 0x21: // uint16 / Unsigned 16-bit integer
+                case 0x31: // enum16 / 16-bit enumeration
+                case 0xE8: // clusterId / Cluster ID
+                case 0xE9: // attribId / Attribute ID
+                case 0xEA: // bacOID / BACnet OID
+                case 0xF1: // key128 / 128-bit security key
+                case 0xFF: // unk / Unknown
+                {
+                    CHECK_MESSAGE_LENGTH(2);
+                    uint16_t value = chip::Encoding::LittleEndian::Read16(message);
+                    ChipLogProgress(chipTool, "  value: 0x%04x", value);
+
+                    Callback::Callback<Int16uAttributeCallback> * cb = Callback::Callback<Int16uAttributeCallback>::FromCancelable(onSuccessCallback);
+                    cb->mCall(cb->mContext, value);
+                    break;
+                }
+
+                case 0x0B: // data32 / 32-bit data
+                case 0x1B: // map32 / 32-bit bitmap
+                case 0x23: // uint32 / Unsigned 32-bit integer
+                case 0xE1: // date / Date
+                case 0xE2: // UTC / UTCTime
+                {
+                    CHECK_MESSAGE_LENGTH(4);
+                    uint32_t value = chip::Encoding::LittleEndian::Read32(message);
+                    ChipLogProgress(chipTool, "  value: 0x%08x", value);
+
+                    Callback::Callback<Int32uAttributeCallback> * cb = Callback::Callback<Int32uAttributeCallback>::FromCancelable(onSuccessCallback);
+                    cb->mCall(cb->mContext, value);
+                    break;
+                }
+
+                case 0x0F: // data64 / 64-bit data
+                case 0x1F: // map64 / 64-bit bitmap
+                case 0x27: // uint64 / Unsigned 64-bit integer
+                case 0xF0: // EUI64 / IEEE address
+                {
+                    CHECK_MESSAGE_LENGTH(8);
+                    uint64_t value = chip::Encoding::LittleEndian::Read64(message);
+                    ChipLogProgress(chipTool, "  value: 0x%16x", value);
+
+                    Callback::Callback<Int64uAttributeCallback> * cb = Callback::Callback<Int64uAttributeCallback>::FromCancelable(onSuccessCallback);
+                    cb->mCall(cb->mContext, value);
+                    break;
+                }
+
+                case 0x10: // bool / Boolean
+                {
+                    CHECK_MESSAGE_LENGTH(1);
+                    uint8_t value = chip::Encoding::Read8(message);
+                    ChipLogProgress(chipTool, "  value: %d", value);
+
+                    Callback::Callback<BooleanAttributeCallback> * cb = Callback::Callback<BooleanAttributeCallback>::FromCancelable(onSuccessCallback);
+                    cb->mCall(cb->mContext, value);
+                    break;
+                }
+
+                case 0x28: // int8 / Signed 8-bit integer
+                {
+                    CHECK_MESSAGE_LENGTH(1);
+                    int8_t value = chip::CastToSigned(chip::Encoding::Read8(message));
+                    ChipLogProgress(chipTool, "  value: %" PRId8, value);
+
+                    Callback::Callback<Int8sAttributeCallback> * cb = Callback::Callback<Int8sAttributeCallback>::FromCancelable(onSuccessCallback);
+                    cb->mCall(cb->mContext, value);
+                    break;
+                }
+
+                case 0x29: // int16 / Signed 16-bit integer
+                {
+                    CHECK_MESSAGE_LENGTH(2);
+                    int16_t value = chip::CastToSigned(chip::Encoding::LittleEndian::Read16(message));
+                    ChipLogProgress(chipTool, "  value: %" PRId16, value);
+
+                    Callback::Callback<Int16sAttributeCallback> * cb = Callback::Callback<Int16sAttributeCallback>::FromCancelable(onSuccessCallback);
+                    cb->mCall(cb->mContext, value);
+                    break;
+                }
+
+                case 0x2B: // int32 / Signed 32-bit integer
+                {
+                    CHECK_MESSAGE_LENGTH(4);
+                    int32_t value = chip::CastToSigned(chip::Encoding::LittleEndian::Read32(message));
+                    ChipLogProgress(chipTool, "  value: %" PRId32, value);
+
+                    Callback::Callback<Int32sAttributeCallback> * cb = Callback::Callback<Int32sAttributeCallback>::FromCancelable(onSuccessCallback);
+                    cb->mCall(cb->mContext, value);
+                    break;
+                }
+
+                case 0x2F: // int64 / Signed 64-bit integer
+                {
+                    CHECK_MESSAGE_LENGTH(8);
+                    int64_t value = chip::CastToSigned(chip::Encoding::LittleEndian::Read64(message));
+                    ChipLogProgress(chipTool, "  value: %" PRId64, value);
+
+                    Callback::Callback<Int64sAttributeCallback> * cb = Callback::Callback<Int64sAttributeCallback>::FromCancelable(onSuccessCallback);
+                    cb->mCall(cb->mContext, value);
+                    break;
+                }
             }
         }
         else
         {
-            sCommandSuccess = false;
+            Callback::Callback<DefaultFailureCallback> * cb = Callback::Callback<DefaultFailureCallback>::FromCancelable(onFailureCallback);
+            cb->mCall(cb->mContext, static_cast<EmberAfStatus>(status));
+        }
+
+        // The current code is written matching the current API where there is a single attribute read 
+        // per read command. So if multiple attributes are read at the same time, something is wrong
+        // somewhere.
+        if (messageLen)
+        {
+            ChipLogError(chipTool, "Multiple attributes read at the same time. Something went wrong.");
+            break;
         }
     }
 
-    return false;
+    return true;
 }
 
 bool emberAfWriteAttributesResponseCallback(ClusterId clusterId, uint8_t * message, uint16_t messageLen)
 {
     ChipLogProgress(chipTool, "WriteAttributesResponse:");
     ChipLogProgress(chipTool, "  ClusterId: 0x%04x", clusterId);
+
+    GET_CALLBACKS("emberAfWriteAttributesResponseCallback");
 
     // struct writeAttributeResponseRecord[]
     while (messageLen)
@@ -453,23 +397,40 @@ bool emberAfWriteAttributesResponseCallback(ClusterId clusterId, uint8_t * messa
         uint8_t status = chip::Encoding::Read8(message); // zclStatus
         LogStatus(status);
 
-        if (status != EMBER_ZCL_STATUS_SUCCESS)
+        if (status == EMBER_ZCL_STATUS_SUCCESS)
         {
-            sCommandSuccess = false;
-
+            Callback::Callback<DefaultSuccessCallback> * cb = Callback::Callback<DefaultSuccessCallback>::FromCancelable(onSuccessCallback);
+            cb->mCall(cb->mContext);
+        }
+        else
+        {
             CHECK_MESSAGE_LENGTH(2);
             uint16_t attributeId = chip::Encoding::LittleEndian::Read16(message); // attribId
             ChipLogProgress(chipTool, "  attributeId: 0x%04x", attributeId);
+
+            Callback::Callback<DefaultFailureCallback> * cb = Callback::Callback<DefaultFailureCallback>::FromCancelable(onFailureCallback);
+            cb->mCall(cb->mContext, static_cast<EmberAfStatus>(status));
+        }
+
+        // The current code is written matching the current API where there is a single attribute written
+        // per write command. So if multiple attributes are written at the same time, something is wrong
+        // somewhere.
+        if (messageLen)
+        {
+            ChipLogError(chipTool, "Multiple attributes written at the same time. Something went wrong.");
+            break;
         }
     }
 
-    return false;
+    return true;
 }
 
 bool emberAfConfigureReportingResponseCallback(ClusterId clusterId, uint8_t * message, uint16_t messageLen)
 {
     ChipLogProgress(chipTool, "ConfigureReportingResponseCallback:");
     ChipLogProgress(chipTool, "  ClusterId: 0x%04x", clusterId);
+
+    GET_CALLBACKS("emberAfConfigureReportingResponseCallback");
 
     // struct configureReportingResponseRecord[]
     while (messageLen)
@@ -478,10 +439,13 @@ bool emberAfConfigureReportingResponseCallback(ClusterId clusterId, uint8_t * me
         uint8_t status = chip::Encoding::Read8(message); // zclStatus
         LogStatus(status);
 
-        if (status != EMBER_ZCL_STATUS_SUCCESS)
+        if (status == EMBER_ZCL_STATUS_SUCCESS)
         {
-            sCommandSuccess = false;
-
+            Callback::Callback<DefaultSuccessCallback> * cb = Callback::Callback<DefaultSuccessCallback>::FromCancelable(onSuccessCallback);
+            cb->mCall(cb->mContext);
+        }
+        else
+        {
             CHECK_MESSAGE_LENGTH(1);
             uint8_t direction = chip::Encoding::Read8(message); // reportingRole
             ChipLogProgress(chipTool, "  direction: 0x%02x", direction);
@@ -489,16 +453,30 @@ bool emberAfConfigureReportingResponseCallback(ClusterId clusterId, uint8_t * me
             CHECK_MESSAGE_LENGTH(2);
             uint16_t attributeId = chip::Encoding::LittleEndian::Read16(message); // attribId
             ChipLogProgress(chipTool, "  attributeId: 0x%04x", attributeId);
+
+            Callback::Callback<DefaultFailureCallback> * cb = Callback::Callback<DefaultFailureCallback>::FromCancelable(onFailureCallback);
+            cb->mCall(cb->mContext, static_cast<EmberAfStatus>(status));
+        }
+
+        // The current code is written matching the current API where there is a single attribute report 
+        // per configure command. So if multiple attributes are configured at the same time, something is wrong
+        // somewhere.
+        if (messageLen)
+        {
+            ChipLogError(chipTool, "Multiple attributes reports configured at the same time. Something went wrong.");
+            break;
         }
     }
 
-    return false;
+    return true;
 }
 
 bool emberAfReadReportingConfigurationResponseCallback(chip::ClusterId clusterId, uint8_t * message, uint16_t messageLen)
 {
     ChipLogProgress(chipTool, "ReadReportingConfigurationResponse:");
     ChipLogProgress(chipTool, "  ClusterId: 0x%04x", clusterId);
+
+    GET_CALLBACKS("emberAfReadReportingConfigurationResponseCallback");
 
     // struct readReportingConfigurationResponseRecord[]
     while (messageLen)
@@ -526,16 +504,22 @@ bool emberAfReadReportingConfigurationResponseCallback(chip::ClusterId clusterId
             ChipLogProgress(chipTool, "  maximumReportingInterval: %" PRIu16, maximumReportingInterval);
 
             // FIXME: unk is not supported yet.
+
+            Callback::Callback<ReadReportingConfigurationReportedCallback> * cb = Callback::Callback<ReadReportingConfigurationReportedCallback>::FromCancelable(onSuccessCallback);
+            cb->mCall(cb->mContext, minimumReportingInterval, maximumReportingInterval);
         }
         else
         {
             CHECK_MESSAGE_LENGTH(2);
             uint16_t timeout = chip::Encoding::LittleEndian::Read16(message); // uint16
             ChipLogProgress(chipTool, "  timeout: %" PRIu16, timeout);
+
+            Callback::Callback<ReadReportingConfigurationReceivedCallback> * cb = Callback::Callback<ReadReportingConfigurationReceivedCallback>::FromCancelable(onSuccessCallback);
+            cb->mCall(cb->mContext, timeout);
         }
     }
 
-    return false;
+    return true;
 }
 
 bool emberAfDiscoverAttributesResponseCallback(ClusterId clusterId, bool discoveryComplete, uint8_t * message, uint16_t messageLen,
@@ -545,6 +529,8 @@ bool emberAfDiscoverAttributesResponseCallback(ClusterId clusterId, bool discove
     ChipLogProgress(chipTool, "  ClusterId: 0x%04x", clusterId);
     ChipLogProgress(chipTool, "  discoveryComplete: %d", discoveryComplete);
     ChipLogProgress(chipTool, "  extended: %d", extended);
+
+    GET_CALLBACKS("emberAfDiscoverAttributesCallback");
 
     // struct discoverAttributesResponseRecord[]
     while (messageLen)
@@ -558,7 +544,9 @@ bool emberAfDiscoverAttributesResponseCallback(ClusterId clusterId, bool discove
         ChipLogProgress(chipTool, "  attributeType: 0x%02x", attributeType);
     }
 
-    return false;
+    Callback::Callback<DefaultSuccessCallback> * cb = Callback::Callback<DefaultSuccessCallback>::FromCancelable(onSuccessCallback);
+    cb->mCall(cb->mContext);
+    return true;
 }
 
 bool emberAfDiscoverCommandsGeneratedResponseCallback(ClusterId clusterId, uint16_t manufacturerCode, bool discoveryComplete,
@@ -575,7 +563,10 @@ bool emberAfDiscoverCommandsGeneratedResponseCallback(ClusterId clusterId, uint1
         ChipLogProgress(chipTool, "  commandId: 0x%02x", commandIds++);
     }
 
-    return false;
+    GET_CALLBACKS("emberAfDiscoverCommandsGeneratedResponseCallback");
+    Callback::Callback<DefaultSuccessCallback> * cb = Callback::Callback<DefaultSuccessCallback>::FromCancelable(onSuccessCallback);
+    cb->mCall(cb->mContext);
+    return true;
 }
 
 bool emberAfDiscoverCommandsReceivedResponseCallback(ClusterId clusterId, uint16_t manufacturerCode, bool discoveryComplete,
@@ -592,7 +583,10 @@ bool emberAfDiscoverCommandsReceivedResponseCallback(ClusterId clusterId, uint16
         ChipLogProgress(chipTool, "  commandId: 0x%02x", commandIds++);
     }
 
-    return false;
+    GET_CALLBACKS("emberAfDiscoverCommandsGeneratedResponseCallback");
+    Callback::Callback<DefaultSuccessCallback> * cb = Callback::Callback<DefaultSuccessCallback>::FromCancelable(onSuccessCallback);
+    cb->mCall(cb->mContext);
+    return true;
 }
 
 {{#all_user_clusters}}
@@ -612,12 +606,22 @@ bool emberAf{{asCamelCased parent.name false}}Cluster{{asCamelCased name false}}
     {{/if}}
     {{/zcl_command_arguments}}
 
+    GET_CALLBACKS("{{asCamelCased parent.name false}}Cluster{{asCamelCased name false}}Callback");
+
     {{#zcl_command_arguments}}
     {{#if (isStrEqual label "status")}}
-    sCommandSuccess = (status == EMBER_ZCL_STATUS_SUCCESS);
+    if (status != EMBER_ZCL_STATUS_SUCCESS)
+    {
+        Callback::Callback<DefaultFailureCallback> * cb = Callback::Callback<DefaultFailureCallback>::FromCancelable(onFailureCallback);
+        cb->mCall(cb->mContext, static_cast<EmberAfStatus>(status));
+        return true;
+    }
     {{/if}}
     {{/zcl_command_arguments}}
-    return false;
+
+    Callback::Callback<{{asCamelCased parent.name false}}Cluster{{asCamelCased name false}}Callback> * cb = Callback::Callback<{{asCamelCased parent.name false}}Cluster{{asCamelCased name false}}Callback>::FromCancelable(onSuccessCallback);
+    cb->mCall(cb->mContext{{#zcl_command_arguments}}{{#unless (isStrEqual label "status")}}, {{asSymbol label}}{{/unless}}{{/zcl_command_arguments}});
+    return true;
 }
 
 {{/if}}
