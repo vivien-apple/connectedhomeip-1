@@ -18,8 +18,6 @@
 
 #include "ModelCommand.h"
 
-#include "ResponseCallbacks.h"
-
 using namespace ::chip;
 
 namespace {
@@ -31,13 +29,13 @@ CHIP_ERROR ModelCommand::Run(PersistentStorage & storage, NodeId localId, NodeId
     CHIP_ERROR err = CHIP_NO_ERROR;
 
     err = mCommissioner.SetUdpListenPort(storage.GetListenPort());
-    VerifyOrExit(err == CHIP_NO_ERROR, ChipLogError(Controller, "Init failure! Commissioner: %s", chip::ErrorStr(err)));
+    VerifyOrExit(err == CHIP_NO_ERROR, ChipLogError(Controller, "Init failure! Commissioner: %s", ErrorStr(err)));
 
     err = mCommissioner.Init(localId, &storage);
-    VerifyOrExit(err == CHIP_NO_ERROR, ChipLogError(Controller, "Init failure! Commissioner: %s", chip::ErrorStr(err)));
+    VerifyOrExit(err == CHIP_NO_ERROR, ChipLogError(Controller, "Init failure! Commissioner: %s", ErrorStr(err)));
 
     err = mCommissioner.ServiceEvents();
-    VerifyOrExit(err == CHIP_NO_ERROR, ChipLogError(Controller, "Init failure! Run Loop: %s", chip::ErrorStr(err)));
+    VerifyOrExit(err == CHIP_NO_ERROR, ChipLogError(Controller, "Init failure! Run Loop: %s", ErrorStr(err)));
 
     err = mCommissioner.GetDevice(remoteId, &mDevice);
     VerifyOrExit(err == CHIP_NO_ERROR, ChipLogError(chipTool, "Init failure! No pairing for device: %" PRIu64, localId));
@@ -61,13 +59,10 @@ exit:
 void ModelCommand::OnMessage(PacketBufferHandle buffer)
 {
     ChipLogDetail(chipTool, "%" PRIu64 ": Received %zu bytes", mDevice->GetDeviceId(), buffer->DataLength());
-
     HandleDataModelMessage(mDevice->GetDeviceId(), std::move(buffer));
-    SetCommandExitStatus(sCommandSuccess);
-    UpdateWaitForResponse(false);
 }
 
 void ModelCommand::OnStatusChange(void)
 {
-    ChipLogProgress(chipTool, "DeviceStatusDelegate::OnStatusChange");
+    ChipLogDetail(chipTool, "DeviceStatusDelegate::OnStatusChange");
 }

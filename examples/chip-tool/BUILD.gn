@@ -41,6 +41,9 @@ executable("chip-tool") {
     "${chip_root}/src/app/util/process-cluster-message.cpp",
     "${chip_root}/src/app/util/process-global-message.cpp",
     "${chip_root}/src/app/util/util.cpp",
+    "${chip_root}/src/app/util/CallbacksMgr.cpp",
+    "${chip_root}/src/app/reporting/reporting.cpp",
+    "${chip_root}/src/app/reporting/reporting-default-configuration.cpp",
     "commands/clusters/ModelCommand.cpp",
     "commands/clusters/ResponseCallbacks.cpp",
     "commands/common/Command.cpp",
@@ -60,6 +63,7 @@ executable("chip-tool") {
     defines = [ "BUILD_RELEASE=1" ]
   }
 
+  defines += [ "EMBER_AF_PLUGIN_REPORTING=1" ]
   cflags = [ "-Wconversion" ]
 
   public_deps = [
