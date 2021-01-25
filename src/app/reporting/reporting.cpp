@@ -444,7 +444,7 @@ bool emberAfConfigureReportingCommandCallback(const EmberAfClusterCommand * cmd)
             if (emberAfGetAttributeAnalogOrDiscreteType(dataType) == EMBER_AF_DATA_TYPE_ANALOG)
             {
                 uint8_t dataSize = emberAfGetDataSize(dataType);
-                reportableChange = emberAfGetInt(cmd->buffer, bufIndex, cmd->bufLen, dataSize);
+                reportableChange = static_cast<uint32_t>(emberAfGetInt(cmd->buffer, bufIndex, cmd->bufLen, dataSize));
 
                 emberAfReportingPrint("   change:");
                 emberAfReportingPrintBuffer(cmd->buffer + bufIndex, dataSize, false);
