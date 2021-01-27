@@ -1582,8 +1582,8 @@ public:
 
         chip::Controller::ColorControlCluster cluster;
         cluster.Associate(device, endpointId);
-        return cluster.ReportAttributeCurrentHue(onSuccessCallback->Cancel(), onFailureCallback->Cancel(), nullptr, mMinInterval,
-                                                 mMaxInterval, mChange);
+        return cluster.ReportAttributeCurrentHue(onSuccessCallback->Cancel(), onFailureCallback->Cancel(),
+                                                 onReportCallback->Cancel(), mMinInterval, mMaxInterval, mChange);
     }
 
 private:
@@ -1591,6 +1591,8 @@ private:
         new chip::Callback::Callback<DefaultSuccessCallback>(OnDefaultSuccessResponse, this);
     chip::Callback::Callback<DefaultFailureCallback> * onFailureCallback =
         new chip::Callback::Callback<DefaultFailureCallback>(OnDefaultFailureResponse, this);
+    chip::Callback::Callback<Int8uAttributeCallback> * onReportCallback =
+        new chip::Callback::Callback<Int8uAttributeCallback>(OnInt8uAttributeResponse, this);
     uint16_t mMinInterval;
     uint16_t mMaxInterval;
     uint8_t mChange;
@@ -1642,8 +1644,8 @@ public:
 
         chip::Controller::ColorControlCluster cluster;
         cluster.Associate(device, endpointId);
-        return cluster.ReportAttributeCurrentSaturation(onSuccessCallback->Cancel(), onFailureCallback->Cancel(), nullptr,
-                                                        mMinInterval, mMaxInterval, mChange);
+        return cluster.ReportAttributeCurrentSaturation(onSuccessCallback->Cancel(), onFailureCallback->Cancel(),
+                                                        onReportCallback->Cancel(), mMinInterval, mMaxInterval, mChange);
     }
 
 private:
@@ -1651,6 +1653,8 @@ private:
         new chip::Callback::Callback<DefaultSuccessCallback>(OnDefaultSuccessResponse, this);
     chip::Callback::Callback<DefaultFailureCallback> * onFailureCallback =
         new chip::Callback::Callback<DefaultFailureCallback>(OnDefaultFailureResponse, this);
+    chip::Callback::Callback<Int8uAttributeCallback> * onReportCallback =
+        new chip::Callback::Callback<Int8uAttributeCallback>(OnInt8uAttributeResponse, this);
     uint16_t mMinInterval;
     uint16_t mMaxInterval;
     uint8_t mChange;
@@ -1730,8 +1734,8 @@ public:
 
         chip::Controller::ColorControlCluster cluster;
         cluster.Associate(device, endpointId);
-        return cluster.ReportAttributeCurrentX(onSuccessCallback->Cancel(), onFailureCallback->Cancel(), nullptr, mMinInterval,
-                                               mMaxInterval, mChange);
+        return cluster.ReportAttributeCurrentX(onSuccessCallback->Cancel(), onFailureCallback->Cancel(), onReportCallback->Cancel(),
+                                               mMinInterval, mMaxInterval, mChange);
     }
 
 private:
@@ -1739,6 +1743,8 @@ private:
         new chip::Callback::Callback<DefaultSuccessCallback>(OnDefaultSuccessResponse, this);
     chip::Callback::Callback<DefaultFailureCallback> * onFailureCallback =
         new chip::Callback::Callback<DefaultFailureCallback>(OnDefaultFailureResponse, this);
+    chip::Callback::Callback<Int16uAttributeCallback> * onReportCallback =
+        new chip::Callback::Callback<Int16uAttributeCallback>(OnInt16uAttributeResponse, this);
     uint16_t mMinInterval;
     uint16_t mMaxInterval;
     uint16_t mChange;
@@ -1790,8 +1796,8 @@ public:
 
         chip::Controller::ColorControlCluster cluster;
         cluster.Associate(device, endpointId);
-        return cluster.ReportAttributeCurrentY(onSuccessCallback->Cancel(), onFailureCallback->Cancel(), nullptr, mMinInterval,
-                                               mMaxInterval, mChange);
+        return cluster.ReportAttributeCurrentY(onSuccessCallback->Cancel(), onFailureCallback->Cancel(), onReportCallback->Cancel(),
+                                               mMinInterval, mMaxInterval, mChange);
     }
 
 private:
@@ -1799,6 +1805,8 @@ private:
         new chip::Callback::Callback<DefaultSuccessCallback>(OnDefaultSuccessResponse, this);
     chip::Callback::Callback<DefaultFailureCallback> * onFailureCallback =
         new chip::Callback::Callback<DefaultFailureCallback>(OnDefaultFailureResponse, this);
+    chip::Callback::Callback<Int16uAttributeCallback> * onReportCallback =
+        new chip::Callback::Callback<Int16uAttributeCallback>(OnInt16uAttributeResponse, this);
     uint16_t mMinInterval;
     uint16_t mMaxInterval;
     uint16_t mChange;
@@ -1906,8 +1914,8 @@ public:
 
         chip::Controller::ColorControlCluster cluster;
         cluster.Associate(device, endpointId);
-        return cluster.ReportAttributeColorTemperature(onSuccessCallback->Cancel(), onFailureCallback->Cancel(), nullptr,
-                                                       mMinInterval, mMaxInterval, mChange);
+        return cluster.ReportAttributeColorTemperature(onSuccessCallback->Cancel(), onFailureCallback->Cancel(),
+                                                       onReportCallback->Cancel(), mMinInterval, mMaxInterval, mChange);
     }
 
 private:
@@ -1915,6 +1923,8 @@ private:
         new chip::Callback::Callback<DefaultSuccessCallback>(OnDefaultSuccessResponse, this);
     chip::Callback::Callback<DefaultFailureCallback> * onFailureCallback =
         new chip::Callback::Callback<DefaultFailureCallback>(OnDefaultFailureResponse, this);
+    chip::Callback::Callback<Int16uAttributeCallback> * onReportCallback =
+        new chip::Callback::Callback<Int16uAttributeCallback>(OnInt16uAttributeResponse, this);
     uint16_t mMinInterval;
     uint16_t mMaxInterval;
     uint16_t mChange;
@@ -4298,8 +4308,8 @@ public:
 
         chip::Controller::DoorLockCluster cluster;
         cluster.Associate(device, endpointId);
-        return cluster.ReportAttributeLockState(onSuccessCallback->Cancel(), onFailureCallback->Cancel(), nullptr, mMinInterval,
-                                                mMaxInterval);
+        return cluster.ReportAttributeLockState(onSuccessCallback->Cancel(), onFailureCallback->Cancel(),
+                                                onReportCallback->Cancel(), mMinInterval, mMaxInterval);
     }
 
 private:
@@ -4307,6 +4317,8 @@ private:
         new chip::Callback::Callback<DefaultSuccessCallback>(OnDefaultSuccessResponse, this);
     chip::Callback::Callback<DefaultFailureCallback> * onFailureCallback =
         new chip::Callback::Callback<DefaultFailureCallback>(OnDefaultFailureResponse, this);
+    chip::Callback::Callback<Int8uAttributeCallback> * onReportCallback =
+        new chip::Callback::Callback<Int8uAttributeCallback>(OnInt8uAttributeResponse, this);
     uint16_t mMinInterval;
     uint16_t mMaxInterval;
 };
@@ -5188,8 +5200,8 @@ public:
 
         chip::Controller::LevelControlCluster cluster;
         cluster.Associate(device, endpointId);
-        return cluster.ReportAttributeCurrentLevel(onSuccessCallback->Cancel(), onFailureCallback->Cancel(), nullptr, mMinInterval,
-                                                   mMaxInterval, mChange);
+        return cluster.ReportAttributeCurrentLevel(onSuccessCallback->Cancel(), onFailureCallback->Cancel(),
+                                                   onReportCallback->Cancel(), mMinInterval, mMaxInterval, mChange);
     }
 
 private:
@@ -5197,6 +5209,8 @@ private:
         new chip::Callback::Callback<DefaultSuccessCallback>(OnDefaultSuccessResponse, this);
     chip::Callback::Callback<DefaultFailureCallback> * onFailureCallback =
         new chip::Callback::Callback<DefaultFailureCallback>(OnDefaultFailureResponse, this);
+    chip::Callback::Callback<Int8uAttributeCallback> * onReportCallback =
+        new chip::Callback::Callback<Int8uAttributeCallback>(OnInt8uAttributeResponse, this);
     uint16_t mMinInterval;
     uint16_t mMaxInterval;
     uint8_t mChange;
@@ -5384,8 +5398,8 @@ public:
 
         chip::Controller::OnOffCluster cluster;
         cluster.Associate(device, endpointId);
-        return cluster.ReportAttributeOnOff(onSuccessCallback->Cancel(), onFailureCallback->Cancel(), nullptr, mMinInterval,
-                                            mMaxInterval);
+        return cluster.ReportAttributeOnOff(onSuccessCallback->Cancel(), onFailureCallback->Cancel(), onReportCallback->Cancel(),
+                                            mMinInterval, mMaxInterval);
     }
 
 private:
@@ -5393,6 +5407,8 @@ private:
         new chip::Callback::Callback<DefaultSuccessCallback>(OnDefaultSuccessResponse, this);
     chip::Callback::Callback<DefaultFailureCallback> * onFailureCallback =
         new chip::Callback::Callback<DefaultFailureCallback>(OnDefaultFailureResponse, this);
+    chip::Callback::Callback<BooleanAttributeCallback> * onReportCallback =
+        new chip::Callback::Callback<BooleanAttributeCallback>(OnBooleanAttributeResponse, this);
     uint16_t mMinInterval;
     uint16_t mMaxInterval;
 };
@@ -5947,8 +5963,8 @@ public:
 
         chip::Controller::TemperatureMeasurementCluster cluster;
         cluster.Associate(device, endpointId);
-        return cluster.ReportAttributeMeasuredValue(onSuccessCallback->Cancel(), onFailureCallback->Cancel(), nullptr, mMinInterval,
-                                                    mMaxInterval, mChange);
+        return cluster.ReportAttributeMeasuredValue(onSuccessCallback->Cancel(), onFailureCallback->Cancel(),
+                                                    onReportCallback->Cancel(), mMinInterval, mMaxInterval, mChange);
     }
 
 private:
@@ -5956,6 +5972,8 @@ private:
         new chip::Callback::Callback<DefaultSuccessCallback>(OnDefaultSuccessResponse, this);
     chip::Callback::Callback<DefaultFailureCallback> * onFailureCallback =
         new chip::Callback::Callback<DefaultFailureCallback>(OnDefaultFailureResponse, this);
+    chip::Callback::Callback<Int16sAttributeCallback> * onReportCallback =
+        new chip::Callback::Callback<Int16sAttributeCallback>(OnInt16sAttributeResponse, this);
     uint16_t mMinInterval;
     uint16_t mMaxInterval;
     int16_t mChange;

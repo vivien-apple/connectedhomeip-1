@@ -259,9 +259,9 @@ void Device::AddResponseHandler(Callback::Cancelable * onSuccessCallback, Callba
     mCallbacksMgr.AddResponseCallback(mDeviceId, 0, onSuccessCallback, onFailureCallback);
 }
 
-void Device::AddReportHandler(EndpointId endpoint, ClusterId cluster, Callback::Cancelable * onReportCallback)
+void Device::AddReportHandler(EndpointId endpoint, ClusterId cluster, AttributeId attribute, Callback::Cancelable * onReportCallback)
 {
-    mCallbacksMgr.AddReportCallback(mDeviceId, endpoint, cluster, onReportCallback);
+    mCallbacksMgr.AddReportCallback(mDeviceId, endpoint, cluster, attribute, onReportCallback);
 }
 
 } // namespace Controller

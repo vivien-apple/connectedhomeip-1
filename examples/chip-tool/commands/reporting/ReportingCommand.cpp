@@ -18,6 +18,10 @@
 
 #include "ReportingCommand.h"
 
+#include "../clusters/ResponseCallbacks.h"
+#include "../common/Commands.h"
+#include <controller/CHIPClusters.h>
+
 using namespace ::chip;
 
 namespace {
@@ -27,6 +31,7 @@ constexpr uint16_t kWaitDurationInSeconds = UINT16_MAX;
 CHIP_ERROR ReportingCommand::Run(PersistentStorage & storage, NodeId localId, NodeId remoteId)
 {
     CHIP_ERROR err = CHIP_NO_ERROR;
+    chip::Controller::BasicCluster cluster;
 
     err = mCommissioner.SetUdpListenPort(storage.GetListenPort());
     VerifyOrExit(err == CHIP_NO_ERROR, ChipLogError(Controller, "Init failure! Commissioner: %s", ErrorStr(err)));
@@ -41,6 +46,12 @@ CHIP_ERROR ReportingCommand::Run(PersistentStorage & storage, NodeId localId, No
     VerifyOrExit(err == CHIP_NO_ERROR, ChipLogError(chipTool, "Init failure! No pairing for device: %" PRIu64, localId));
 
     mDevice->SetDelegate(this);
+
+    AddReportCallbacks(mEndPointId);
+
+    cluster.Associate(mDevice, mEndPointId);
+    err = cluster.MfgSpecificPing(nullptr, nullptr);
+    VerifyOrExit(err == CHIP_NO_ERROR, ChipLogError(Controller, "Init failure! Ping failure: %s", ErrorStr(err)));
 
     UpdateWaitForResponse(true);
     WaitForResponse(kWaitDurationInSeconds);
