@@ -53,7 +53,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.BarrierControlGoToPercent(callback, percentOpen);
+    CHIP_ERROR err = self.cppCluster.BarrierControlGoToPercent(callback, nullptr, percentOpen);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -68,7 +68,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.BarrierControlStop(callback);
+    CHIP_ERROR err = self.cppCluster.BarrierControlStop(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -84,7 +84,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeBarrierMovingState(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeBarrierMovingState(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -100,7 +100,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeBarrierSafetyStatus(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeBarrierSafetyStatus(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -116,7 +116,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeBarrierCapabilities(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeBarrierCapabilities(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -132,7 +132,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeBarrierPosition(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeBarrierPosition(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -148,7 +148,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeClusterRevision(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeClusterRevision(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -188,7 +188,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.MfgSpecificPing(callback);
+    CHIP_ERROR err = self.cppCluster.MfgSpecificPing(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -203,7 +203,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ResetToFactoryDefaults(callback);
+    CHIP_ERROR err = self.cppCluster.ResetToFactoryDefaults(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -219,7 +219,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeZclVersion(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeZclVersion(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -235,7 +235,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributePowerSource(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributePowerSource(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -251,7 +251,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeClusterRevision(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeClusterRevision(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -295,7 +295,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.Bind(callback, nodeId, groupId, endpointId, clusterId);
+    CHIP_ERROR err = self.cppCluster.Bind(callback, nullptr, nodeId, groupId, endpointId, clusterId);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -314,7 +314,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.Unbind(callback, nodeId, groupId, endpointId, clusterId);
+    CHIP_ERROR err = self.cppCluster.Unbind(callback, nullptr, nodeId, groupId, endpointId, clusterId);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -330,7 +330,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeClusterRevision(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeClusterRevision(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -374,7 +374,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.MoveColor(callback, rateX, rateY, optionsMask, optionsOverride);
+    CHIP_ERROR err = self.cppCluster.MoveColor(callback, nullptr, rateX, rateY, optionsMask, optionsOverride);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -396,7 +396,7 @@
     }
 
     CHIP_ERROR err = self.cppCluster.MoveColorTemperature(
-        callback, moveMode, rate, colorTemperatureMinimum, colorTemperatureMaximum, optionsMask, optionsOverride);
+        callback, nullptr, moveMode, rate, colorTemperatureMinimum, colorTemperatureMaximum, optionsMask, optionsOverride);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -415,7 +415,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.MoveHue(callback, moveMode, rate, optionsMask, optionsOverride);
+    CHIP_ERROR err = self.cppCluster.MoveHue(callback, nullptr, moveMode, rate, optionsMask, optionsOverride);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -434,7 +434,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.MoveSaturation(callback, moveMode, rate, optionsMask, optionsOverride);
+    CHIP_ERROR err = self.cppCluster.MoveSaturation(callback, nullptr, moveMode, rate, optionsMask, optionsOverride);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -454,7 +454,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.MoveToColor(callback, colorX, colorY, transitionTime, optionsMask, optionsOverride);
+    CHIP_ERROR err = self.cppCluster.MoveToColor(callback, nullptr, colorX, colorY, transitionTime, optionsMask, optionsOverride);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -474,7 +474,7 @@
     }
 
     CHIP_ERROR err
-        = self.cppCluster.MoveToColorTemperature(callback, colorTemperature, transitionTime, optionsMask, optionsOverride);
+        = self.cppCluster.MoveToColorTemperature(callback, nullptr, colorTemperature, transitionTime, optionsMask, optionsOverride);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -494,7 +494,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.MoveToHue(callback, hue, direction, transitionTime, optionsMask, optionsOverride);
+    CHIP_ERROR err = self.cppCluster.MoveToHue(callback, nullptr, hue, direction, transitionTime, optionsMask, optionsOverride);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -515,7 +515,7 @@
     }
 
     CHIP_ERROR err
-        = self.cppCluster.MoveToHueAndSaturation(callback, hue, saturation, transitionTime, optionsMask, optionsOverride);
+        = self.cppCluster.MoveToHueAndSaturation(callback, nullptr, hue, saturation, transitionTime, optionsMask, optionsOverride);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -534,7 +534,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.MoveToSaturation(callback, saturation, transitionTime, optionsMask, optionsOverride);
+    CHIP_ERROR err = self.cppCluster.MoveToSaturation(callback, nullptr, saturation, transitionTime, optionsMask, optionsOverride);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -554,7 +554,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.StepColor(callback, stepX, stepY, transitionTime, optionsMask, optionsOverride);
+    CHIP_ERROR err = self.cppCluster.StepColor(callback, nullptr, stepX, stepY, transitionTime, optionsMask, optionsOverride);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -576,8 +576,8 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.StepColorTemperature(callback, stepMode, stepSize, transitionTime, colorTemperatureMinimum,
-        colorTemperatureMaximum, optionsMask, optionsOverride);
+    CHIP_ERROR err = self.cppCluster.StepColorTemperature(callback, nullptr, stepMode, stepSize, transitionTime,
+        colorTemperatureMinimum, colorTemperatureMaximum, optionsMask, optionsOverride);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -597,7 +597,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.StepHue(callback, stepMode, stepSize, transitionTime, optionsMask, optionsOverride);
+    CHIP_ERROR err = self.cppCluster.StepHue(callback, nullptr, stepMode, stepSize, transitionTime, optionsMask, optionsOverride);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -617,7 +617,8 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.StepSaturation(callback, stepMode, stepSize, transitionTime, optionsMask, optionsOverride);
+    CHIP_ERROR err
+        = self.cppCluster.StepSaturation(callback, nullptr, stepMode, stepSize, transitionTime, optionsMask, optionsOverride);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -632,7 +633,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.StopMoveStep(callback, optionsMask, optionsOverride);
+    CHIP_ERROR err = self.cppCluster.StopMoveStep(callback, nullptr, optionsMask, optionsOverride);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -648,7 +649,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeCurrentHue(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeCurrentHue(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -674,7 +675,7 @@
     }
 
     CHIP_ERROR err
-        = self.cppCluster.ReportAttributeCurrentHue(completionCallback, changeCallback, minInterval, maxInterval, change);
+        = self.cppCluster.ReportAttributeCurrentHue(completionCallback, nullptr, changeCallback, minInterval, maxInterval, change);
     if (err != CHIP_NO_ERROR) {
         completionCallback->Cancel();
         changeCallback->Cancel();
@@ -692,7 +693,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeCurrentSaturation(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeCurrentSaturation(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -717,8 +718,8 @@
         return NO;
     }
 
-    CHIP_ERROR err
-        = self.cppCluster.ReportAttributeCurrentSaturation(completionCallback, changeCallback, minInterval, maxInterval, change);
+    CHIP_ERROR err = self.cppCluster.ReportAttributeCurrentSaturation(
+        completionCallback, nullptr, changeCallback, minInterval, maxInterval, change);
     if (err != CHIP_NO_ERROR) {
         completionCallback->Cancel();
         changeCallback->Cancel();
@@ -736,7 +737,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeRemainingTime(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeRemainingTime(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -752,7 +753,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeCurrentX(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeCurrentX(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -777,7 +778,8 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReportAttributeCurrentX(completionCallback, changeCallback, minInterval, maxInterval, change);
+    CHIP_ERROR err
+        = self.cppCluster.ReportAttributeCurrentX(completionCallback, nullptr, changeCallback, minInterval, maxInterval, change);
     if (err != CHIP_NO_ERROR) {
         completionCallback->Cancel();
         changeCallback->Cancel();
@@ -795,7 +797,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeCurrentY(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeCurrentY(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -820,7 +822,8 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReportAttributeCurrentY(completionCallback, changeCallback, minInterval, maxInterval, change);
+    CHIP_ERROR err
+        = self.cppCluster.ReportAttributeCurrentY(completionCallback, nullptr, changeCallback, minInterval, maxInterval, change);
     if (err != CHIP_NO_ERROR) {
         completionCallback->Cancel();
         changeCallback->Cancel();
@@ -838,7 +841,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeDriftCompensation(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeDriftCompensation(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -854,7 +857,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeCompensationText(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeCompensationText(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -870,7 +873,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeColorTemperature(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeColorTemperature(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -895,8 +898,8 @@
         return NO;
     }
 
-    CHIP_ERROR err
-        = self.cppCluster.ReportAttributeColorTemperature(completionCallback, changeCallback, minInterval, maxInterval, change);
+    CHIP_ERROR err = self.cppCluster.ReportAttributeColorTemperature(
+        completionCallback, nullptr, changeCallback, minInterval, maxInterval, change);
     if (err != CHIP_NO_ERROR) {
         completionCallback->Cancel();
         changeCallback->Cancel();
@@ -914,7 +917,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeColorMode(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeColorMode(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -930,7 +933,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeColorControlOptions(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeColorControlOptions(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -946,7 +949,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.WriteAttributeColorControlOptions(callback, value);
+    CHIP_ERROR err = self.cppCluster.WriteAttributeColorControlOptions(callback, nullptr, value);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -962,7 +965,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeNumberOfPrimaries(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeNumberOfPrimaries(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -978,7 +981,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributePrimary1X(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributePrimary1X(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -994,7 +997,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributePrimary1Y(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributePrimary1Y(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -1010,7 +1013,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributePrimary1Intensity(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributePrimary1Intensity(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -1026,7 +1029,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributePrimary2X(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributePrimary2X(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -1042,7 +1045,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributePrimary2Y(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributePrimary2Y(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -1058,7 +1061,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributePrimary2Intensity(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributePrimary2Intensity(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -1074,7 +1077,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributePrimary3X(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributePrimary3X(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -1090,7 +1093,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributePrimary3Y(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributePrimary3Y(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -1106,7 +1109,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributePrimary3Intensity(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributePrimary3Intensity(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -1122,7 +1125,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributePrimary4X(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributePrimary4X(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -1138,7 +1141,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributePrimary4Y(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributePrimary4Y(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -1154,7 +1157,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributePrimary4Intensity(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributePrimary4Intensity(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -1170,7 +1173,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributePrimary5X(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributePrimary5X(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -1186,7 +1189,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributePrimary5Y(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributePrimary5Y(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -1202,7 +1205,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributePrimary5Intensity(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributePrimary5Intensity(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -1218,7 +1221,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributePrimary6X(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributePrimary6X(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -1234,7 +1237,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributePrimary6Y(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributePrimary6Y(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -1250,7 +1253,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributePrimary6Intensity(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributePrimary6Intensity(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -1266,7 +1269,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeWhitePointX(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeWhitePointX(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -1282,7 +1285,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.WriteAttributeWhitePointX(callback, value);
+    CHIP_ERROR err = self.cppCluster.WriteAttributeWhitePointX(callback, nullptr, value);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -1298,7 +1301,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeWhitePointY(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeWhitePointY(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -1314,7 +1317,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.WriteAttributeWhitePointY(callback, value);
+    CHIP_ERROR err = self.cppCluster.WriteAttributeWhitePointY(callback, nullptr, value);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -1330,7 +1333,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeColorPointRX(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeColorPointRX(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -1346,7 +1349,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.WriteAttributeColorPointRX(callback, value);
+    CHIP_ERROR err = self.cppCluster.WriteAttributeColorPointRX(callback, nullptr, value);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -1362,7 +1365,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeColorPointRY(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeColorPointRY(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -1378,7 +1381,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.WriteAttributeColorPointRY(callback, value);
+    CHIP_ERROR err = self.cppCluster.WriteAttributeColorPointRY(callback, nullptr, value);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -1394,7 +1397,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeColorPointRIntensity(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeColorPointRIntensity(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -1410,7 +1413,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.WriteAttributeColorPointRIntensity(callback, value);
+    CHIP_ERROR err = self.cppCluster.WriteAttributeColorPointRIntensity(callback, nullptr, value);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -1426,7 +1429,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeColorPointGX(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeColorPointGX(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -1442,7 +1445,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.WriteAttributeColorPointGX(callback, value);
+    CHIP_ERROR err = self.cppCluster.WriteAttributeColorPointGX(callback, nullptr, value);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -1458,7 +1461,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeColorPointGY(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeColorPointGY(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -1474,7 +1477,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.WriteAttributeColorPointGY(callback, value);
+    CHIP_ERROR err = self.cppCluster.WriteAttributeColorPointGY(callback, nullptr, value);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -1490,7 +1493,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeColorPointGIntensity(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeColorPointGIntensity(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -1506,7 +1509,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.WriteAttributeColorPointGIntensity(callback, value);
+    CHIP_ERROR err = self.cppCluster.WriteAttributeColorPointGIntensity(callback, nullptr, value);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -1522,7 +1525,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeColorPointBX(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeColorPointBX(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -1538,7 +1541,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.WriteAttributeColorPointBX(callback, value);
+    CHIP_ERROR err = self.cppCluster.WriteAttributeColorPointBX(callback, nullptr, value);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -1554,7 +1557,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeColorPointBY(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeColorPointBY(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -1570,7 +1573,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.WriteAttributeColorPointBY(callback, value);
+    CHIP_ERROR err = self.cppCluster.WriteAttributeColorPointBY(callback, nullptr, value);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -1586,7 +1589,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeColorPointBIntensity(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeColorPointBIntensity(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -1602,7 +1605,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.WriteAttributeColorPointBIntensity(callback, value);
+    CHIP_ERROR err = self.cppCluster.WriteAttributeColorPointBIntensity(callback, nullptr, value);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -1618,7 +1621,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeEnhancedCurrentHue(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeEnhancedCurrentHue(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -1634,7 +1637,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeEnhancedColorMode(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeEnhancedColorMode(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -1650,7 +1653,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeColorLoopActive(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeColorLoopActive(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -1666,7 +1669,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeColorLoopDirection(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeColorLoopDirection(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -1682,7 +1685,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeColorLoopTime(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeColorLoopTime(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -1698,7 +1701,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeColorCapabilities(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeColorCapabilities(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -1714,7 +1717,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeColorTempPhysicalMin(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeColorTempPhysicalMin(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -1730,7 +1733,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeColorTempPhysicalMax(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeColorTempPhysicalMax(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -1746,7 +1749,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeCoupleColorTempToLevelMinMireds(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeCoupleColorTempToLevelMinMireds(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -1762,7 +1765,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeStartUpColorTemperatureMireds(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeStartUpColorTemperatureMireds(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -1778,7 +1781,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.WriteAttributeStartUpColorTemperatureMireds(callback, value);
+    CHIP_ERROR err = self.cppCluster.WriteAttributeStartUpColorTemperatureMireds(callback, nullptr, value);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -1794,7 +1797,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeClusterRevision(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeClusterRevision(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -1834,7 +1837,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ClearAllPins(callback);
+    CHIP_ERROR err = self.cppCluster.ClearAllPins(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -1849,7 +1852,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ClearAllRfids(callback);
+    CHIP_ERROR err = self.cppCluster.ClearAllRfids(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -1864,7 +1867,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ClearHolidaySchedule(callback, scheduleId);
+    CHIP_ERROR err = self.cppCluster.ClearHolidaySchedule(callback, nullptr, scheduleId);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -1879,7 +1882,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ClearPin(callback, userId);
+    CHIP_ERROR err = self.cppCluster.ClearPin(callback, nullptr, userId);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -1894,7 +1897,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ClearRfid(callback, userId);
+    CHIP_ERROR err = self.cppCluster.ClearRfid(callback, nullptr, userId);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -1909,7 +1912,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ClearWeekdaySchedule(callback, scheduleId, userId);
+    CHIP_ERROR err = self.cppCluster.ClearWeekdaySchedule(callback, nullptr, scheduleId, userId);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -1924,7 +1927,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ClearYeardaySchedule(callback, scheduleId, userId);
+    CHIP_ERROR err = self.cppCluster.ClearYeardaySchedule(callback, nullptr, scheduleId, userId);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -1939,7 +1942,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.GetHolidaySchedule(callback, scheduleId);
+    CHIP_ERROR err = self.cppCluster.GetHolidaySchedule(callback, nullptr, scheduleId);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -1954,7 +1957,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.GetLogRecord(callback, logIndex);
+    CHIP_ERROR err = self.cppCluster.GetLogRecord(callback, nullptr, logIndex);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -1969,7 +1972,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.GetPin(callback, userId);
+    CHIP_ERROR err = self.cppCluster.GetPin(callback, nullptr, userId);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -1984,7 +1987,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.GetRfid(callback, userId);
+    CHIP_ERROR err = self.cppCluster.GetRfid(callback, nullptr, userId);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -1999,7 +2002,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.GetUserType(callback, userId);
+    CHIP_ERROR err = self.cppCluster.GetUserType(callback, nullptr, userId);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -2014,7 +2017,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.GetWeekdaySchedule(callback, scheduleId, userId);
+    CHIP_ERROR err = self.cppCluster.GetWeekdaySchedule(callback, nullptr, scheduleId, userId);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -2029,7 +2032,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.GetYeardaySchedule(callback, scheduleId, userId);
+    CHIP_ERROR err = self.cppCluster.GetYeardaySchedule(callback, nullptr, scheduleId, userId);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -2044,7 +2047,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.LockDoor(callback, pin);
+    CHIP_ERROR err = self.cppCluster.LockDoor(callback, nullptr, pin);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -2063,8 +2066,8 @@
         return NO;
     }
 
-    CHIP_ERROR err
-        = self.cppCluster.SetHolidaySchedule(callback, scheduleId, localStartTime, localEndTime, operatingModeDuringHoliday);
+    CHIP_ERROR err = self.cppCluster.SetHolidaySchedule(
+        callback, nullptr, scheduleId, localStartTime, localEndTime, operatingModeDuringHoliday);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -2083,7 +2086,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.SetPin(callback, userId, userStatus, userType, pin);
+    CHIP_ERROR err = self.cppCluster.SetPin(callback, nullptr, userId, userStatus, userType, pin);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -2102,7 +2105,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.SetRfid(callback, userId, userStatus, userType, id);
+    CHIP_ERROR err = self.cppCluster.SetRfid(callback, nullptr, userId, userStatus, userType, id);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -2117,7 +2120,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.SetUserType(callback, userId, userType);
+    CHIP_ERROR err = self.cppCluster.SetUserType(callback, nullptr, userId, userType);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -2139,8 +2142,8 @@
         return NO;
     }
 
-    CHIP_ERROR err
-        = self.cppCluster.SetWeekdaySchedule(callback, scheduleId, userId, daysMask, startHour, startMinute, endHour, endMinute);
+    CHIP_ERROR err = self.cppCluster.SetWeekdaySchedule(
+        callback, nullptr, scheduleId, userId, daysMask, startHour, startMinute, endHour, endMinute);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -2159,7 +2162,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.SetYeardaySchedule(callback, scheduleId, userId, localStartTime, localEndTime);
+    CHIP_ERROR err = self.cppCluster.SetYeardaySchedule(callback, nullptr, scheduleId, userId, localStartTime, localEndTime);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -2174,7 +2177,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.UnlockDoor(callback, pin);
+    CHIP_ERROR err = self.cppCluster.UnlockDoor(callback, nullptr, pin);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -2189,7 +2192,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.UnlockWithTimeout(callback, timeoutInSeconds, pin);
+    CHIP_ERROR err = self.cppCluster.UnlockWithTimeout(callback, nullptr, timeoutInSeconds, pin);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -2205,7 +2208,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeLockState(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeLockState(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -2229,7 +2232,8 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReportAttributeLockState(completionCallback, changeCallback, minInterval, maxInterval);
+    CHIP_ERROR err
+        = self.cppCluster.ReportAttributeLockState(completionCallback, nullptr, changeCallback, minInterval, maxInterval);
     if (err != CHIP_NO_ERROR) {
         completionCallback->Cancel();
         changeCallback->Cancel();
@@ -2247,7 +2251,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeLockType(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeLockType(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -2263,7 +2267,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeActuatorEnabled(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeActuatorEnabled(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -2279,7 +2283,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeClusterRevision(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeClusterRevision(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -2319,7 +2323,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.AddGroup(callback, groupId, groupName);
+    CHIP_ERROR err = self.cppCluster.AddGroup(callback, nullptr, groupId, groupName);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -2334,7 +2338,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.AddGroupIfIdentifying(callback, groupId, groupName);
+    CHIP_ERROR err = self.cppCluster.AddGroupIfIdentifying(callback, nullptr, groupId, groupName);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -2349,7 +2353,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.GetGroupMembership(callback, groupCount, groupList);
+    CHIP_ERROR err = self.cppCluster.GetGroupMembership(callback, nullptr, groupCount, groupList);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -2364,7 +2368,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.RemoveAllGroups(callback);
+    CHIP_ERROR err = self.cppCluster.RemoveAllGroups(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -2379,7 +2383,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.RemoveGroup(callback, groupId);
+    CHIP_ERROR err = self.cppCluster.RemoveGroup(callback, nullptr, groupId);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -2394,7 +2398,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ViewGroup(callback, groupId);
+    CHIP_ERROR err = self.cppCluster.ViewGroup(callback, nullptr, groupId);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -2410,7 +2414,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeNameSupport(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeNameSupport(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -2426,7 +2430,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeClusterRevision(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeClusterRevision(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -2466,7 +2470,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeZoneState(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeZoneState(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -2482,7 +2486,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeZoneType(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeZoneType(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -2498,7 +2502,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeZoneStatus(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeZoneStatus(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -2514,7 +2518,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeIasCieAddress(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeIasCieAddress(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -2530,7 +2534,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.WriteAttributeIasCieAddress(callback, value);
+    CHIP_ERROR err = self.cppCluster.WriteAttributeIasCieAddress(callback, nullptr, value);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -2546,7 +2550,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeZoneId(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeZoneId(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -2562,7 +2566,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeClusterRevision(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeClusterRevision(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -2602,7 +2606,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.Identify(callback, identifyTime);
+    CHIP_ERROR err = self.cppCluster.Identify(callback, nullptr, identifyTime);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -2617,7 +2621,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.IdentifyQuery(callback);
+    CHIP_ERROR err = self.cppCluster.IdentifyQuery(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -2633,7 +2637,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeIdentifyTime(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeIdentifyTime(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -2649,7 +2653,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.WriteAttributeIdentifyTime(callback, value);
+    CHIP_ERROR err = self.cppCluster.WriteAttributeIdentifyTime(callback, nullptr, value);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -2665,7 +2669,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeClusterRevision(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeClusterRevision(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -2709,7 +2713,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.Move(callback, moveMode, rate, optionMask, optionOverride);
+    CHIP_ERROR err = self.cppCluster.Move(callback, nullptr, moveMode, rate, optionMask, optionOverride);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -2728,7 +2732,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.MoveToLevel(callback, level, transitionTime, optionMask, optionOverride);
+    CHIP_ERROR err = self.cppCluster.MoveToLevel(callback, nullptr, level, transitionTime, optionMask, optionOverride);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -2743,7 +2747,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.MoveToLevelWithOnOff(callback, level, transitionTime);
+    CHIP_ERROR err = self.cppCluster.MoveToLevelWithOnOff(callback, nullptr, level, transitionTime);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -2758,7 +2762,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.MoveWithOnOff(callback, moveMode, rate);
+    CHIP_ERROR err = self.cppCluster.MoveWithOnOff(callback, nullptr, moveMode, rate);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -2778,7 +2782,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.Step(callback, stepMode, stepSize, transitionTime, optionMask, optionOverride);
+    CHIP_ERROR err = self.cppCluster.Step(callback, nullptr, stepMode, stepSize, transitionTime, optionMask, optionOverride);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -2796,7 +2800,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.StepWithOnOff(callback, stepMode, stepSize, transitionTime);
+    CHIP_ERROR err = self.cppCluster.StepWithOnOff(callback, nullptr, stepMode, stepSize, transitionTime);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -2811,7 +2815,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.Stop(callback, optionMask, optionOverride);
+    CHIP_ERROR err = self.cppCluster.Stop(callback, nullptr, optionMask, optionOverride);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -2826,7 +2830,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.StopWithOnOff(callback);
+    CHIP_ERROR err = self.cppCluster.StopWithOnOff(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -2842,7 +2846,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeCurrentLevel(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeCurrentLevel(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -2867,8 +2871,8 @@
         return NO;
     }
 
-    CHIP_ERROR err
-        = self.cppCluster.ReportAttributeCurrentLevel(completionCallback, changeCallback, minInterval, maxInterval, change);
+    CHIP_ERROR err = self.cppCluster.ReportAttributeCurrentLevel(
+        completionCallback, nullptr, changeCallback, minInterval, maxInterval, change);
     if (err != CHIP_NO_ERROR) {
         completionCallback->Cancel();
         changeCallback->Cancel();
@@ -2886,7 +2890,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeClusterRevision(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeClusterRevision(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -2926,7 +2930,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.Off(callback);
+    CHIP_ERROR err = self.cppCluster.Off(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -2941,7 +2945,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.On(callback);
+    CHIP_ERROR err = self.cppCluster.On(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -2956,7 +2960,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.Toggle(callback);
+    CHIP_ERROR err = self.cppCluster.Toggle(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -2972,7 +2976,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeOnOff(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeOnOff(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -2996,7 +3000,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReportAttributeOnOff(completionCallback, changeCallback, minInterval, maxInterval);
+    CHIP_ERROR err = self.cppCluster.ReportAttributeOnOff(completionCallback, nullptr, changeCallback, minInterval, maxInterval);
     if (err != CHIP_NO_ERROR) {
         completionCallback->Cancel();
         changeCallback->Cancel();
@@ -3014,7 +3018,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeClusterRevision(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeClusterRevision(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -3061,7 +3065,8 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.AddScene(callback, groupId, sceneId, transitionTime, sceneName, clusterId, length, value);
+    CHIP_ERROR err
+        = self.cppCluster.AddScene(callback, nullptr, groupId, sceneId, transitionTime, sceneName, clusterId, length, value);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -3076,7 +3081,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.GetSceneMembership(callback, groupId);
+    CHIP_ERROR err = self.cppCluster.GetSceneMembership(callback, nullptr, groupId);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -3094,7 +3099,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.RecallScene(callback, groupId, sceneId, transitionTime);
+    CHIP_ERROR err = self.cppCluster.RecallScene(callback, nullptr, groupId, sceneId, transitionTime);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -3109,7 +3114,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.RemoveAllScenes(callback, groupId);
+    CHIP_ERROR err = self.cppCluster.RemoveAllScenes(callback, nullptr, groupId);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -3124,7 +3129,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.RemoveScene(callback, groupId, sceneId);
+    CHIP_ERROR err = self.cppCluster.RemoveScene(callback, nullptr, groupId, sceneId);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -3139,7 +3144,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.StoreScene(callback, groupId, sceneId);
+    CHIP_ERROR err = self.cppCluster.StoreScene(callback, nullptr, groupId, sceneId);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -3154,7 +3159,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ViewScene(callback, groupId, sceneId);
+    CHIP_ERROR err = self.cppCluster.ViewScene(callback, nullptr, groupId, sceneId);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -3170,7 +3175,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeSceneCount(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeSceneCount(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -3186,7 +3191,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeCurrentScene(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeCurrentScene(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -3202,7 +3207,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeCurrentGroup(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeCurrentGroup(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -3218,7 +3223,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeSceneValid(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeSceneValid(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -3234,7 +3239,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeNameSupport(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeNameSupport(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -3250,7 +3255,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeClusterRevision(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeClusterRevision(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -3290,7 +3295,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeMeasuredValue(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeMeasuredValue(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -3315,8 +3320,8 @@
         return NO;
     }
 
-    CHIP_ERROR err
-        = self.cppCluster.ReportAttributeMeasuredValue(completionCallback, changeCallback, minInterval, maxInterval, change);
+    CHIP_ERROR err = self.cppCluster.ReportAttributeMeasuredValue(
+        completionCallback, nullptr, changeCallback, minInterval, maxInterval, change);
     if (err != CHIP_NO_ERROR) {
         completionCallback->Cancel();
         changeCallback->Cancel();
@@ -3334,7 +3339,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeMinMeasuredValue(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeMinMeasuredValue(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -3350,7 +3355,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeMaxMeasuredValue(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeMaxMeasuredValue(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;
@@ -3366,7 +3371,7 @@
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReadAttributeClusterRevision(callback);
+    CHIP_ERROR err = self.cppCluster.ReadAttributeClusterRevision(callback, nullptr);
     if (err != CHIP_NO_ERROR) {
         callback->Cancel();
         delete callback;

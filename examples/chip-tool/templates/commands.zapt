@@ -5,7 +5,6 @@
 #include "ModelCommand.h"
 #include <controller/CHIPClusters.h>
 #include "ResponseCallbacks.h"
-#include <app/util/CallbacksMgr.h>
 
 static void OnDefaultSuccessResponse(void * context)
 {
@@ -114,12 +113,9 @@ public:
     {
         ChipLogProgress(chipTool, "Sending cluster ({{asHex parent.code 4}}) command ({{asHex code 2}}) on endpoint %" PRIu16, endpointId);
 
-        chip::app::CHIPCallbacksMgr & callbacks = chip::app::CHIPCallbacksMgr::GetInstance();
-        callbacks.AddResponseCallback(device->GetDeviceId(), 0, onSuccessCallback->Cancel(), onFailureCallback->Cancel());
-
         chip::Controller::{{asCamelCased parent.name false}}Cluster cluster;
         cluster.Associate(device, endpointId);
-        return cluster.{{asCamelCased name false}}(nullptr{{#chip_server_cluster_command_arguments}}, m{{asCamelCased label false}}{{/chip_server_cluster_command_arguments}});
+        return cluster.{{asCamelCased name false}}(onSuccessCallback->Cancel(), onFailureCallback->Cancel(){{#chip_server_cluster_command_arguments}}, m{{asCamelCased label false}}{{/chip_server_cluster_command_arguments}});
     }
 
 private:
@@ -155,12 +151,9 @@ public:
     {
         ChipLogProgress(chipTool, "Sending cluster ({{asHex parent.code 4}}) command (0x0C) on endpoint %" PRIu16, endpointId);
 
-        chip::app::CHIPCallbacksMgr & callbacks = chip::app::CHIPCallbacksMgr::GetInstance();
-        callbacks.AddResponseCallback(device->GetDeviceId(), 0, onSuccessCallback->Cancel(), onFailureCallback->Cancel());
-
         chip::Controller::{{asCamelCased name false}}Cluster cluster;
         cluster.Associate(device, endpointId);
-        return cluster.DiscoverAttributes(nullptr);
+        return cluster.DiscoverAttributes(onSuccessCallback->Cancel(), onFailureCallback->Cancel());
     }
 
 private:
@@ -185,12 +178,9 @@ public:
     {
         ChipLogProgress(chipTool, "Sending cluster ({{asHex parent.code 4}}) command (0x00) on endpoint %" PRIu16, endpointId);
 
-        chip::app::CHIPCallbacksMgr & callbacks = chip::app::CHIPCallbacksMgr::GetInstance();
-        callbacks.AddResponseCallback(device->GetDeviceId(), 0, onSuccessCallback->Cancel(), onFailureCallback->Cancel());
-
         chip::Controller::{{asCamelCased parent.name false}}Cluster cluster;
         cluster.Associate(device, endpointId);
-        return cluster.ReadAttribute{{asCamelCased name false}}(nullptr);
+        return cluster.ReadAttribute{{asCamelCased name false}}(onSuccessCallback->Cancel(), onFailureCallback->Cancel());
     }
 
 private:
@@ -213,12 +203,9 @@ public:
     {
         ChipLogProgress(chipTool, "Sending cluster ({{asHex parent.code 4}}) command (0x01) on endpoint %" PRIu16, endpointId);
 
-        chip::app::CHIPCallbacksMgr & callbacks = chip::app::CHIPCallbacksMgr::GetInstance();
-        callbacks.AddResponseCallback(device->GetDeviceId(), 0, onSuccessCallback->Cancel(), onFailureCallback->Cancel());
-
         chip::Controller::{{asCamelCased parent.name false}}Cluster cluster;
         cluster.Associate(device, endpointId);
-        return cluster.WriteAttribute{{asCamelCased name false}}(nullptr, mValue);
+        return cluster.WriteAttribute{{asCamelCased name false}}(onSuccessCallback->Cancel(), onFailureCallback->Cancel(), mValue);
     }
 
 private:
@@ -247,12 +234,9 @@ public:
     {
         ChipLogProgress(chipTool, "Sending cluster ({{asHex parent.code 4}}) command (0x06) on endpoint %" PRIu16, endpointId);
 
-        chip::app::CHIPCallbacksMgr & callbacks = chip::app::CHIPCallbacksMgr::GetInstance();
-        callbacks.AddResponseCallback(device->GetDeviceId(), 0, onSuccessCallback->Cancel(), onFailureCallback->Cancel());
-
         chip::Controller::{{asCamelCased parent.name false}}Cluster cluster;
         cluster.Associate(device, endpointId);
-        return cluster.ReportAttribute{{asCamelCased name false}}(nullptr, nullptr, mMinInterval, mMaxInterval{{#unless (isDiscreteType)}}, mChange{{/unless}});
+        return cluster.ReportAttribute{{asCamelCased name false}}(onSuccessCallback->Cancel(), onFailureCallback->Cancel(), nullptr, mMinInterval, mMaxInterval{{#unless (isDiscreteType)}}, mChange{{/unless}});
     }
 
 private:
