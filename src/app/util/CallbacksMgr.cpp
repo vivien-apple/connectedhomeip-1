@@ -84,11 +84,11 @@ CHIP_ERROR CHIPCallbacksMgr::GetResponseCallback(NodeId nodeId, uint8_t sequence
     return CHIP_ERROR_KEY_NOT_FOUND;
 }
 
-CHIP_ERROR CHIPCallbacksMgr::AddReportCallback(NodeId nodeId, EndpointId endpointId, ClusterId clusterId,
+CHIP_ERROR CHIPCallbacksMgr::AddReportCallback(NodeId nodeId, EndpointId endpointId, ClusterId clusterId, AttributeId attributeId,
                                                Callback::Cancelable * onReportCallback)
 {
     // XXX mInfoScalar is a uint64_t which is not enough to store our discriminator (nodeId (uint64_t) + endpointId (uint8_t) +
-    // clusterId (uint16_t))
+    // clusterId (uint16_t) + attributeId (uint16_t))
 
     onReportCallback->mInfoScalar = nodeId;
     mReports.Enqueue(onReportCallback);
@@ -96,7 +96,7 @@ CHIP_ERROR CHIPCallbacksMgr::AddReportCallback(NodeId nodeId, EndpointId endpoin
     return CHIP_NO_ERROR;
 }
 
-CHIP_ERROR CHIPCallbacksMgr::GetReportCallback(NodeId nodeId, EndpointId endpointId, ClusterId clusterId,
+CHIP_ERROR CHIPCallbacksMgr::GetReportCallback(NodeId nodeId, EndpointId endpointId, ClusterId clusterId, AttributeId attributeId,
                                                Callback::Cancelable ** onReportCallback)
 {
     Callback::Cancelable * ca = &mReports;

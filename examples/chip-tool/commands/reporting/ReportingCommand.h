@@ -21,10 +21,18 @@
 #include "../../config/PersistentStorage.h"
 #include "../common/Command.h"
 
+// Limits on endpoint values.  Could be wrong, if we start using endpoint 0 for
+// something.
+#define CHIP_ZCL_ENDPOINT_MIN 0x01
+#define CHIP_ZCL_ENDPOINT_MAX 0xF0
+
 class ReportingCommand : public Command, public chip::Controller::DeviceStatusDelegate
 {
 public:
-    ReportingCommand(const char * commandName) : Command(commandName) {}
+    ReportingCommand(const char * commandName) : Command(commandName)
+    {
+        AddArgument("endpoint-id", CHIP_ZCL_ENDPOINT_MIN, CHIP_ZCL_ENDPOINT_MAX, &mEndPointId);
+    }
 
     /////////// Command Interface /////////
     CHIP_ERROR Run(PersistentStorage & storage, NodeId localId, NodeId remoteId) override;
@@ -33,7 +41,11 @@ public:
     void OnMessage(PacketBufferHandle buffer) override;
     void OnStatusChange(void) override;
 
+    virtual void AddReportCallbacks(uint8_t endPointId) = 0;
+
 private:
+    uint8_t mEndPointId;
+
     ChipDeviceCommissioner mCommissioner;
     ChipDevice * mDevice;
 };

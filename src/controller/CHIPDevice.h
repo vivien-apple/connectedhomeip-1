@@ -221,7 +221,7 @@ public:
     PASESessionSerializable & GetPairing() { return mPairing; }
 
     void AddResponseHandler(Callback::Cancelable * onSuccessCallback, Callback::Cancelable * onFailureCallback);
-    void AddReportHandler(EndpointId endpoint, ClusterId cluster, Callback::Cancelable * onReportCallback);
+    void AddReportHandler(EndpointId endpoint, ClusterId cluster, AttributeId attribute, Callback::Cancelable * onReportCallback);
 
 private:
     enum class ConnectionState

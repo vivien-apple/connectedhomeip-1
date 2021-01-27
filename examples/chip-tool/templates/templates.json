@@ -25,8 +25,13 @@
     "templates": [
         {
             "path": "commands.zapt",
-            "name": "Commands header",
+            "name": "Cluster Commands header",
             "output": "examples/chip-tool/commands/clusters/Commands.h"
+        },
+        {
+            "path": "reporting-commands.zapt",
+            "name": "Reporting Commands header",
+            "output": "examples/chip-tool/commands/reporting/Commands.h"
         },
         {
             "path": "response-callbacks.zapt",
