@@ -63,7 +63,7 @@ void __attribute__((weak)) emberAfOnOffClusterInitCallback(EndpointId endpoint)
  *
  * @param tasks   Ver.: always
  */
-void emberAfAddToCurrentAppTasksCallback(EmberAfApplicationTask tasks) {}
+void __attribute__((weak)) emberAfAddToCurrentAppTasksCallback(EmberAfApplicationTask tasks) {}
 
 /** @brief Remove From Current App Tasks
  *
@@ -77,7 +77,7 @@ void emberAfAddToCurrentAppTasksCallback(EmberAfApplicationTask tasks) {}
  *
  * @param tasks   Ver.: always
  */
-void emberAfRemoveFromCurrentAppTasksCallback(EmberAfApplicationTask tasks) {}
+void __attribute__((weak)) emberAfRemoveFromCurrentAppTasksCallback(EmberAfApplicationTask tasks) {}
 
 /** @brief Allow Network Write Attribute
  *
@@ -112,9 +112,9 @@ void emberAfRemoveFromCurrentAppTasksCallback(EmberAfApplicationTask tasks) {}
  * @param value   Ver.: always
  * @param type   Ver.: always
  */
-EmberAfAttributeWritePermission emberAfAllowNetworkWriteAttributeCallback(EndpointId endpoint, ClusterId clusterId,
-                                                                          AttributeId attributeId, uint8_t mask,
-                                                                          uint16_t manufacturerCode, uint8_t * value, uint8_t type)
+EmberAfAttributeWritePermission __attribute__((weak))
+emberAfAllowNetworkWriteAttributeCallback(EndpointId endpoint, ClusterId clusterId, AttributeId attributeId, uint8_t mask,
+                                          uint16_t manufacturerCode, uint8_t * value, uint8_t type)
 {
     return EMBER_ZCL_ATTRIBUTE_WRITE_PERMISSION_ALLOW_WRITE_NORMAL; // Default
 }
@@ -129,8 +129,8 @@ EmberAfAttributeWritePermission emberAfAllowNetworkWriteAttributeCallback(Endpoi
  * @param manufacturerCode   Ver.: always
  * @param attributeId   Ver.: always
  */
-bool emberAfAttributeReadAccessCallback(EndpointId endpoint, ClusterId clusterId, uint16_t manufacturerCode,
-                                        AttributeId attributeId)
+bool __attribute__((weak))
+emberAfAttributeReadAccessCallback(EndpointId endpoint, ClusterId clusterId, uint16_t manufacturerCode, AttributeId attributeId)
 {
     return true;
 }
@@ -145,8 +145,8 @@ bool emberAfAttributeReadAccessCallback(EndpointId endpoint, ClusterId clusterId
  * @param manufacturerCode   Ver.: always
  * @param attributeId   Ver.: always
  */
-bool emberAfAttributeWriteAccessCallback(EndpointId endpoint, ClusterId clusterId, uint16_t manufacturerCode,
-                                         AttributeId attributeId)
+bool __attribute__((weak))
+emberAfAttributeWriteAccessCallback(EndpointId endpoint, ClusterId clusterId, uint16_t manufacturerCode, AttributeId attributeId)
 {
     return true;
 }
@@ -163,7 +163,7 @@ bool emberAfAttributeWriteAccessCallback(EndpointId endpoint, ClusterId clusterI
  * @param status Specifies either SUCCESS or the nature of the error that was
  * detected in the received command.  Ver.: always
  */
-bool emberAfDefaultResponseCallback(ClusterId clusterId, CommandId commandId, EmberAfStatus status)
+bool __attribute__((weak)) emberAfDefaultResponseCallback(ClusterId clusterId, CommandId commandId, EmberAfStatus status)
 {
     return false;
 }
@@ -188,8 +188,8 @@ bool emberAfDefaultResponseCallback(ClusterId clusterId, CommandId commandId, Em
  * @param extended Indicates whether the response is in the extended format or
  * not.  Ver.: always
  */
-bool emberAfDiscoverAttributesResponseCallback(ClusterId clusterId, bool discoveryComplete, uint8_t * buffer, uint16_t bufLen,
-                                               bool extended)
+bool __attribute__((weak)) emberAfDiscoverAttributesResponseCallback(ClusterId clusterId, bool discoveryComplete, uint8_t * buffer,
+                                                                     uint16_t bufLen, bool extended)
 {
     return false;
 }
@@ -208,8 +208,9 @@ bool emberAfDiscoverAttributesResponseCallback(ClusterId clusterId, bool discove
  * @param commandIdCount The length of bytes of the list, whish is the same as
  * the number of identifiers.  Ver.: always
  */
-bool emberAfDiscoverCommandsGeneratedResponseCallback(ClusterId clusterId, uint16_t manufacturerCode, bool discoveryComplete,
-                                                      CommandId * commandIds, uint16_t commandIdCount)
+bool __attribute__((weak))
+emberAfDiscoverCommandsGeneratedResponseCallback(ClusterId clusterId, uint16_t manufacturerCode, bool discoveryComplete,
+                                                 CommandId * commandIds, uint16_t commandIdCount)
 {
     return false;
 }
@@ -228,8 +229,9 @@ bool emberAfDiscoverCommandsGeneratedResponseCallback(ClusterId clusterId, uint1
  * @param commandIdCount The length of bytes of the list, whish is the same as
  * the number of identifiers.  Ver.: always
  */
-bool emberAfDiscoverCommandsReceivedResponseCallback(ClusterId clusterId, uint16_t manufacturerCode, bool discoveryComplete,
-                                                     CommandId * commandIds, uint16_t commandIdCount)
+bool __attribute__((weak))
+emberAfDiscoverCommandsReceivedResponseCallback(ClusterId clusterId, uint16_t manufacturerCode, bool discoveryComplete,
+                                                CommandId * commandIds, uint16_t commandIdCount)
 {
     return false;
 }
@@ -247,7 +249,7 @@ bool emberAfDiscoverCommandsReceivedResponseCallback(ClusterId clusterId, uint16
  *
  * @param cmd   Ver.: always
  */
-bool emberAfPreCommandReceivedCallback(EmberAfClusterCommand * cmd)
+bool __attribute__((weak)) emberAfPreCommandReceivedCallback(EmberAfClusterCommand * cmd)
 {
     return false;
 }
@@ -271,7 +273,7 @@ bool emberAfPreCommandReceivedCallback(EmberAfClusterCommand * cmd)
  * @param status A pointer to the status code value that will be returned to the
  * caller.  Ver.: always
  */
-bool emberAfPreMessageSendCallback(EmberAfMessageStruct * messageStruct, EmberStatus * status)
+bool __attribute__((weak)) emberAfPreMessageSendCallback(EmberAfMessageStruct * messageStruct, EmberStatus * status)
 {
     return false;
 }
@@ -294,8 +296,9 @@ bool emberAfPreMessageSendCallback(EmberAfMessageStruct * messageStruct, EmberSt
  * @param message   Ver.: always
  * @param status   Ver.: always
  */
-bool emberAfMessageSentCallback(EmberOutgoingMessageType type, uint16_t indexOrDestination, EmberApsFrame * apsFrame,
-                                uint16_t msgLen, uint8_t * message, EmberStatus status)
+bool __attribute__((weak))
+emberAfMessageSentCallback(EmberOutgoingMessageType type, uint16_t indexOrDestination, EmberApsFrame * apsFrame, uint16_t msgLen,
+                           uint8_t * message, EmberStatus status)
 {
     return false;
 }
@@ -317,8 +320,9 @@ bool emberAfMessageSentCallback(EmberOutgoingMessageType type, uint16_t indexOrD
  * @param size   Ver.: always
  * @param value   Ver.: always
  */
-EmberAfStatus emberAfPreAttributeChangeCallback(EndpointId endpoint, ClusterId clusterId, AttributeId attributeId, uint8_t mask,
-                                                uint16_t manufacturerCode, uint8_t type, uint8_t size, uint8_t * value)
+EmberAfStatus __attribute__((weak))
+emberAfPreAttributeChangeCallback(EndpointId endpoint, ClusterId clusterId, AttributeId attributeId, uint8_t mask,
+                                  uint16_t manufacturerCode, uint8_t type, uint8_t size, uint8_t * value)
 {
     return EMBER_ZCL_STATUS_SUCCESS;
 }
@@ -338,8 +342,10 @@ EmberAfStatus emberAfPreAttributeChangeCallback(EndpointId endpoint, ClusterId c
  * @param size   Ver.: always
  * @param value   Ver.: always
  */
-// void emberAfPostAttributeChangeCallback(EndpointId endpoint, ClusterId clusterId, AttributeId attributeId, uint8_t mask,
-//                                         uint16_t manufacturerCode, uint8_t type, uint8_t size, uint8_t * value) {}
+void __attribute__((weak))
+emberAfPostAttributeChangeCallback(EndpointId endpoint, ClusterId clusterId, AttributeId attributeId, uint8_t mask,
+                                   uint16_t manufacturerCode, uint8_t type, uint8_t size, uint8_t * value)
+{}
 
 /** @brief Read Attributes Response
  *
@@ -352,7 +358,7 @@ EmberAfStatus emberAfPreAttributeChangeCallback(EndpointId endpoint, ClusterId c
  * Ver.: always
  * @param bufLen The length in bytes of the list.  Ver.: always
  */
-bool emberAfReadAttributesResponseCallback(ClusterId clusterId, uint8_t * buffer, uint16_t bufLen)
+bool __attribute__((weak)) emberAfReadAttributesResponseCallback(ClusterId clusterId, uint8_t * buffer, uint16_t bufLen)
 {
     return false;
 }
@@ -393,9 +399,9 @@ bool emberAfReadAttributesResponseCallback(ClusterId clusterId, uint8_t * buffer
  * @param buffer   Ver.: always
  * @param maxReadLength   Ver.: always
  */
-EmberAfStatus emberAfExternalAttributeReadCallback(EndpointId endpoint, ClusterId clusterId,
-                                                   EmberAfAttributeMetadata * attributeMetadata, uint16_t manufacturerCode,
-                                                   uint8_t * buffer, uint16_t maxReadLength)
+EmberAfStatus __attribute__((weak))
+emberAfExternalAttributeReadCallback(EndpointId endpoint, ClusterId clusterId, EmberAfAttributeMetadata * attributeMetadata,
+                                     uint16_t manufacturerCode, uint8_t * buffer, uint16_t maxReadLength)
 {
     return EMBER_ZCL_STATUS_FAILURE;
 }
@@ -411,7 +417,7 @@ EmberAfStatus emberAfExternalAttributeReadCallback(EndpointId endpoint, ClusterI
  * Ver.: always
  * @param bufLen The length in bytes of the list.  Ver.: always
  */
-bool emberAfWriteAttributesResponseCallback(ClusterId clusterId, uint8_t * buffer, uint16_t bufLen)
+bool __attribute__((weak)) emberAfWriteAttributesResponseCallback(ClusterId clusterId, uint8_t * buffer, uint16_t bufLen)
 {
     return false;
 }
@@ -462,9 +468,9 @@ bool emberAfWriteAttributesResponseCallback(ClusterId clusterId, uint8_t * buffe
  * @param manufacturerCode   Ver.: always
  * @param buffer   Ver.: always
  */
-EmberAfStatus emberAfExternalAttributeWriteCallback(EndpointId endpoint, ClusterId clusterId,
-                                                    EmberAfAttributeMetadata * attributeMetadata, uint16_t manufacturerCode,
-                                                    uint8_t * buffer)
+EmberAfStatus __attribute__((weak))
+emberAfExternalAttributeWriteCallback(EndpointId endpoint, ClusterId clusterId, EmberAfAttributeMetadata * attributeMetadata,
+                                      uint16_t manufacturerCode, uint8_t * buffer)
 {
     return EMBER_ZCL_STATUS_FAILURE;
 }
@@ -480,7 +486,7 @@ EmberAfStatus emberAfExternalAttributeWriteCallback(EndpointId endpoint, Cluster
  * always
  * @param bufLen The length in bytes of the list.  Ver.: always
  */
-bool emberAfReportAttributesCallback(ClusterId clusterId, uint8_t * buffer, uint16_t bufLen)
+bool __attribute__((weak)) emberAfReportAttributesCallback(ClusterId clusterId, uint8_t * buffer, uint16_t bufLen)
 {
     return false;
 }
@@ -494,7 +500,7 @@ bool emberAfReportAttributesCallback(ClusterId clusterId, uint8_t * buffer, uint
  * that device does not have access to real time.
  *
  */
-uint32_t emberAfGetCurrentTimeCallback()
+uint32_t __attribute__((weak)) emberAfGetCurrentTimeCallback()
 {
     return 0;
 }
@@ -516,8 +522,8 @@ uint32_t emberAfGetCurrentTimeCallback()
  * @param returnEndpointInfo A pointer to a data struct that will be written
  * with information about the endpoint.  Ver.: always
  */
-bool emberAfGetEndpointInfoCallback(EndpointId endpoint, uint8_t * returnNetworkIndex,
-                                    EmberAfEndpointInfoStruct * returnEndpointInfo)
+bool __attribute__((weak))
+emberAfGetEndpointInfoCallback(EndpointId endpoint, uint8_t * returnNetworkIndex, EmberAfEndpointInfoStruct * returnEndpointInfo)
 {
     return false;
 }
@@ -529,7 +535,7 @@ bool emberAfGetEndpointInfoCallback(EndpointId endpoint, uint8_t * returnNetwork
  *
  * @param destination The node id of the destination  Ver.: always
  */
-uint8_t emberAfGetSourceRouteOverheadCallback(EmberNodeId destination)
+uint8_t __attribute__((weak)) emberAfGetSourceRouteOverheadCallback(EmberNodeId destination)
 {
     return 0;
 }
@@ -540,7 +546,7 @@ uint8_t emberAfGetSourceRouteOverheadCallback(EmberNodeId destination)
  * process.
  *
  */
-void emberAfRegistrationAbortCallback() {}
+void __attribute__((weak)) emberAfRegistrationAbortCallback() {}
 
 /** @brief Interpan Send Message
  *
@@ -552,7 +558,8 @@ void emberAfRegistrationAbortCallback() {}
  * always
  * @param message The message data received or to send.  Ver.: always
  */
-EmberStatus emberAfInterpanSendMessageCallback(EmberAfInterpanHeader * header, uint16_t messageLength, uint8_t * message)
+EmberStatus __attribute__((weak))
+emberAfInterpanSendMessageCallback(EmberAfInterpanHeader * header, uint16_t messageLength, uint8_t * message)
 {
     return EMBER_LIBRARY_NOT_PRESENT;
 }
@@ -563,7 +570,7 @@ EmberStatus emberAfInterpanSendMessageCallback(EmberAfInterpanHeader * header, u
  * to a new parent.
  *
  */
-bool emberAfStartMoveCallback()
+bool __attribute__((weak)) emberAfStartMoveCallback()
 {
     return false;
 }
