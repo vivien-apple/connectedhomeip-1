@@ -360,6 +360,7 @@ static void OnScenesClusterViewSceneResponse(void * context, uint16_t groupId, u
 |---------------------------------------------------------------------+--------|
 | BarrierControl                                                      | 0x0103 |
 | Basic                                                               | 0x0000 |
+| Binding                                                             | 0xF000 |
 | ColorControl                                                        | 0x0300 |
 | DoorLock                                                            | 0x0101 |
 | Groups                                                              | 0x0004 |
@@ -372,6 +373,7 @@ static void OnScenesClusterViewSceneResponse(void * context, uint16_t groupId, u
 
 constexpr chip::ClusterId kBarrierControlClusterId         = 0x0103;
 constexpr chip::ClusterId kBasicClusterId                  = 0x0000;
+constexpr chip::ClusterId kBindingClusterId                = 0xF000;
 constexpr chip::ClusterId kColorControlClusterId           = 0x0300;
 constexpr chip::ClusterId kDoorLockClusterId               = 0x0101;
 constexpr chip::ClusterId kGroupsClusterId                 = 0x0004;
@@ -771,6 +773,139 @@ public:
         ChipLogProgress(chipTool, "Sending cluster (0x0000) command (0x00) on endpoint %" PRIu16, endpointId);
 
         chip::Controller::BasicCluster cluster;
+        cluster.Associate(device, endpointId);
+        return cluster.ReadAttributeClusterRevision(onSuccessCallback->Cancel(), onFailureCallback->Cancel());
+    }
+
+private:
+    chip::Callback::Callback<Int16uAttributeCallback> * onSuccessCallback =
+        new chip::Callback::Callback<Int16uAttributeCallback>(OnInt16uAttributeResponse, this);
+    chip::Callback::Callback<DefaultFailureCallback> * onFailureCallback =
+        new chip::Callback::Callback<DefaultFailureCallback>(OnDefaultFailureResponse, this);
+};
+
+/*----------------------------------------------------------------------------*\
+| Cluster Binding                                                     | 0xF000 |
+|------------------------------------------------------------------------------|
+| Commands:                                                           |        |
+| * Bind                                                              |   0x00 |
+| * Unbind                                                            |   0x01 |
+|------------------------------------------------------------------------------|
+| Attributes:                                                         |        |
+| * ClusterRevision                                                   | 0xFFFD |
+\*----------------------------------------------------------------------------*/
+
+/*
+ * Command Bind
+ */
+class BindingBind : public ModelCommand
+{
+public:
+    BindingBind() : ModelCommand("bind")
+    {
+        AddArgument("nodeId", 0, UINT64_MAX, &mNodeId);
+        AddArgument("groupId", 0, UINT16_MAX, &mGroupId);
+        AddArgument("endpointId", 0, UINT8_MAX, &mEndpointId);
+        AddArgument("clusterId", 0, UINT16_MAX, &mClusterId);
+        ModelCommand::AddArguments();
+    }
+
+    CHIP_ERROR SendCommand(ChipDevice * device, uint8_t endpointId) override
+    {
+        ChipLogProgress(chipTool, "Sending cluster (0xF000) command (0x00) on endpoint %" PRIu16, endpointId);
+
+        chip::Controller::BindingCluster cluster;
+        cluster.Associate(device, endpointId);
+        return cluster.Bind(onSuccessCallback->Cancel(), onFailureCallback->Cancel(), mNodeId, mGroupId, mEndpointId, mClusterId);
+    }
+
+private:
+    chip::Callback::Callback<DefaultSuccessCallback> * onSuccessCallback =
+        new chip::Callback::Callback<DefaultSuccessCallback>(OnDefaultSuccessResponse, this);
+    chip::Callback::Callback<DefaultFailureCallback> * onFailureCallback =
+        new chip::Callback::Callback<DefaultFailureCallback>(OnDefaultFailureResponse, this);
+    chip::NodeId mNodeId;
+    chip::GroupId mGroupId;
+    chip::EndpointId mEndpointId;
+    chip::ClusterId mClusterId;
+};
+
+/*
+ * Command Unbind
+ */
+class BindingUnbind : public ModelCommand
+{
+public:
+    BindingUnbind() : ModelCommand("unbind")
+    {
+        AddArgument("nodeId", 0, UINT64_MAX, &mNodeId);
+        AddArgument("groupId", 0, UINT16_MAX, &mGroupId);
+        AddArgument("endpointId", 0, UINT8_MAX, &mEndpointId);
+        AddArgument("clusterId", 0, UINT16_MAX, &mClusterId);
+        ModelCommand::AddArguments();
+    }
+
+    CHIP_ERROR SendCommand(ChipDevice * device, uint8_t endpointId) override
+    {
+        ChipLogProgress(chipTool, "Sending cluster (0xF000) command (0x01) on endpoint %" PRIu16, endpointId);
+
+        chip::Controller::BindingCluster cluster;
+        cluster.Associate(device, endpointId);
+        return cluster.Unbind(onSuccessCallback->Cancel(), onFailureCallback->Cancel(), mNodeId, mGroupId, mEndpointId, mClusterId);
+    }
+
+private:
+    chip::Callback::Callback<DefaultSuccessCallback> * onSuccessCallback =
+        new chip::Callback::Callback<DefaultSuccessCallback>(OnDefaultSuccessResponse, this);
+    chip::Callback::Callback<DefaultFailureCallback> * onFailureCallback =
+        new chip::Callback::Callback<DefaultFailureCallback>(OnDefaultFailureResponse, this);
+    chip::NodeId mNodeId;
+    chip::GroupId mGroupId;
+    chip::EndpointId mEndpointId;
+    chip::ClusterId mClusterId;
+};
+
+/*
+ * Discover Attributes
+ */
+class DiscoverBindingAttributes : public ModelCommand
+{
+public:
+    DiscoverBindingAttributes() : ModelCommand("discover") { ModelCommand::AddArguments(); }
+
+    CHIP_ERROR SendCommand(ChipDevice * device, uint8_t endpointId) override
+    {
+        ChipLogProgress(chipTool, "Sending cluster (0x0000) command (0x0C) on endpoint %" PRIu16, endpointId);
+
+        chip::Controller::BindingCluster cluster;
+        cluster.Associate(device, endpointId);
+        return cluster.DiscoverAttributes(onSuccessCallback->Cancel(), onFailureCallback->Cancel());
+    }
+
+private:
+    chip::Callback::Callback<DefaultSuccessCallback> * onSuccessCallback =
+        new chip::Callback::Callback<DefaultSuccessCallback>(OnDefaultSuccessResponse, this);
+    chip::Callback::Callback<DefaultFailureCallback> * onFailureCallback =
+        new chip::Callback::Callback<DefaultFailureCallback>(OnDefaultFailureResponse, this);
+};
+
+/*
+ * Attribute ClusterRevision
+ */
+class ReadBindingClusterRevision : public ModelCommand
+{
+public:
+    ReadBindingClusterRevision() : ModelCommand("read")
+    {
+        AddArgument("attr-name", "cluster-revision");
+        ModelCommand::AddArguments();
+    }
+
+    CHIP_ERROR SendCommand(ChipDevice * device, uint8_t endpointId) override
+    {
+        ChipLogProgress(chipTool, "Sending cluster (0xF000) command (0x00) on endpoint %" PRIu16, endpointId);
+
+        chip::Controller::BindingCluster cluster;
         cluster.Associate(device, endpointId);
         return cluster.ReadAttributeClusterRevision(onSuccessCallback->Cancel(), onFailureCallback->Cancel());
     }
@@ -5937,6 +6072,19 @@ void registerClusterBasic(Commands & commands)
 
     commands.Register(clusterName, clusterCommands);
 }
+void registerClusterBinding(Commands & commands)
+{
+    const char * clusterName = "Binding";
+
+    commands_list clusterCommands = {
+        make_unique<BindingBind>(),
+        make_unique<BindingUnbind>(),
+        make_unique<DiscoverBindingAttributes>(),
+        make_unique<ReadBindingClusterRevision>(),
+    };
+
+    commands.Register(clusterName, clusterCommands);
+}
 void registerClusterColorControl(Commands & commands)
 {
     const char * clusterName = "ColorControl";
@@ -6166,6 +6314,7 @@ void registerClusters(Commands & commands)
 {
     registerClusterBarrierControl(commands);
     registerClusterBasic(commands);
+    registerClusterBinding(commands);
     registerClusterColorControl(commands);
     registerClusterDoorLock(commands);
     registerClusterGroups(commands);
