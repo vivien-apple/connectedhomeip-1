@@ -29,9 +29,9 @@ static void OnDefaultSuccessResponse(void * context)
     command->SetCommandExitStatus(true);
 }
 
-static void OnDefaultFailureResponse(void * context, EmberAfStatus status)
+static void OnDefaultFailureResponse(void * context, uint8_t status)
 {
-    ChipLogProgress(chipTool, "Default Failure Response");
+    ChipLogProgress(chipTool, "Default Failure Response: 0x%02x", status);
 
     ModelCommand * command = reinterpret_cast<ModelCommand *>(context);
     command->SetCommandExitStatus(false);

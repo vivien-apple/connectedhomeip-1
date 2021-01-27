@@ -31,9 +31,9 @@ public:
         ChipLogProgress(chipTool, "Default Success Response");
     }
 
-    static void OnDefaultFailureResponse(void * context, EmberAfStatus status)
+    static void OnDefaultFailureResponse(void * context, uint8_t status)
     {
-        ChipLogProgress(chipTool, "Default Failure Response");
+        ChipLogProgress(chipTool, "Default Failure Response: 0x%02x", status);
     }
 
     static void OnUnsupportedAttributeResponse(void * context)

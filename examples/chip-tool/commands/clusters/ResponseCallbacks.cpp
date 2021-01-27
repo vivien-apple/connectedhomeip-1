@@ -18,6 +18,7 @@
 #include "ResponseCallbacks.h"
 #include "gen/enums.h"
 #include <app/util/CallbacksMgr.h>
+#include <app/util/af-enums.h>
 #include <app/util/af.h>
 #include <app/util/basic-types.h>
 #include <core/CHIPEncoding.h>
@@ -216,7 +217,7 @@ bool emberAfDefaultResponseCallback(ClusterId clusterId, CommandId commandId, Em
     {
         Callback::Callback<DefaultFailureCallback> * cb =
             Callback::Callback<DefaultFailureCallback>::FromCancelable(onFailureCallback);
-        cb->mCall(cb->mContext, status);
+        cb->mCall(cb->mContext, static_cast<uint8_t>(status));
     }
 
     return true;
@@ -416,7 +417,7 @@ bool emberAfReadAttributesResponseCallback(ClusterId clusterId, uint8_t * messag
         {
             Callback::Callback<DefaultFailureCallback> * cb =
                 Callback::Callback<DefaultFailureCallback>::FromCancelable(onFailureCallback);
-            cb->mCall(cb->mContext, static_cast<EmberAfStatus>(status));
+            cb->mCall(cb->mContext, status);
         }
 
         // The current code is written matching the current API where there is a single attribute read
@@ -460,7 +461,7 @@ bool emberAfWriteAttributesResponseCallback(ClusterId clusterId, uint8_t * messa
 
             Callback::Callback<DefaultFailureCallback> * cb =
                 Callback::Callback<DefaultFailureCallback>::FromCancelable(onFailureCallback);
-            cb->mCall(cb->mContext, static_cast<EmberAfStatus>(status));
+            cb->mCall(cb->mContext, status);
         }
 
         // The current code is written matching the current API where there is a single attribute written
@@ -508,7 +509,7 @@ bool emberAfConfigureReportingResponseCallback(ClusterId clusterId, uint8_t * me
 
             Callback::Callback<DefaultFailureCallback> * cb =
                 Callback::Callback<DefaultFailureCallback>::FromCancelable(onFailureCallback);
-            cb->mCall(cb->mContext, static_cast<EmberAfStatus>(status));
+            cb->mCall(cb->mContext, status);
         }
 
         // The current code is written matching the current API where there is a single attribute report
@@ -655,7 +656,7 @@ bool emberAfDoorLockClusterClearAllPinsResponseCallback(uint8_t status)
     {
         Callback::Callback<DefaultFailureCallback> * cb =
             Callback::Callback<DefaultFailureCallback>::FromCancelable(onFailureCallback);
-        cb->mCall(cb->mContext, static_cast<EmberAfStatus>(status));
+        cb->mCall(cb->mContext, status);
         return true;
     }
 
@@ -676,7 +677,7 @@ bool emberAfDoorLockClusterClearAllRfidsResponseCallback(uint8_t status)
     {
         Callback::Callback<DefaultFailureCallback> * cb =
             Callback::Callback<DefaultFailureCallback>::FromCancelable(onFailureCallback);
-        cb->mCall(cb->mContext, static_cast<EmberAfStatus>(status));
+        cb->mCall(cb->mContext, status);
         return true;
     }
 
@@ -697,7 +698,7 @@ bool emberAfDoorLockClusterClearHolidayScheduleResponseCallback(uint8_t status)
     {
         Callback::Callback<DefaultFailureCallback> * cb =
             Callback::Callback<DefaultFailureCallback>::FromCancelable(onFailureCallback);
-        cb->mCall(cb->mContext, static_cast<EmberAfStatus>(status));
+        cb->mCall(cb->mContext, status);
         return true;
     }
 
@@ -718,7 +719,7 @@ bool emberAfDoorLockClusterClearPinResponseCallback(uint8_t status)
     {
         Callback::Callback<DefaultFailureCallback> * cb =
             Callback::Callback<DefaultFailureCallback>::FromCancelable(onFailureCallback);
-        cb->mCall(cb->mContext, static_cast<EmberAfStatus>(status));
+        cb->mCall(cb->mContext, status);
         return true;
     }
 
@@ -739,7 +740,7 @@ bool emberAfDoorLockClusterClearRfidResponseCallback(uint8_t status)
     {
         Callback::Callback<DefaultFailureCallback> * cb =
             Callback::Callback<DefaultFailureCallback>::FromCancelable(onFailureCallback);
-        cb->mCall(cb->mContext, static_cast<EmberAfStatus>(status));
+        cb->mCall(cb->mContext, status);
         return true;
     }
 
@@ -760,7 +761,7 @@ bool emberAfDoorLockClusterClearWeekdayScheduleResponseCallback(uint8_t status)
     {
         Callback::Callback<DefaultFailureCallback> * cb =
             Callback::Callback<DefaultFailureCallback>::FromCancelable(onFailureCallback);
-        cb->mCall(cb->mContext, static_cast<EmberAfStatus>(status));
+        cb->mCall(cb->mContext, status);
         return true;
     }
 
@@ -781,7 +782,7 @@ bool emberAfDoorLockClusterClearYeardayScheduleResponseCallback(uint8_t status)
     {
         Callback::Callback<DefaultFailureCallback> * cb =
             Callback::Callback<DefaultFailureCallback>::FromCancelable(onFailureCallback);
-        cb->mCall(cb->mContext, static_cast<EmberAfStatus>(status));
+        cb->mCall(cb->mContext, status);
         return true;
     }
 
@@ -807,7 +808,7 @@ bool emberAfDoorLockClusterGetHolidayScheduleResponseCallback(uint8_t scheduleId
     {
         Callback::Callback<DefaultFailureCallback> * cb =
             Callback::Callback<DefaultFailureCallback>::FromCancelable(onFailureCallback);
-        cb->mCall(cb->mContext, static_cast<EmberAfStatus>(status));
+        cb->mCall(cb->mContext, status);
         return true;
     }
 
@@ -903,7 +904,7 @@ bool emberAfDoorLockClusterGetWeekdayScheduleResponseCallback(uint8_t scheduleId
     {
         Callback::Callback<DefaultFailureCallback> * cb =
             Callback::Callback<DefaultFailureCallback>::FromCancelable(onFailureCallback);
-        cb->mCall(cb->mContext, static_cast<EmberAfStatus>(status));
+        cb->mCall(cb->mContext, status);
         return true;
     }
 
@@ -929,7 +930,7 @@ bool emberAfDoorLockClusterGetYeardayScheduleResponseCallback(uint8_t scheduleId
     {
         Callback::Callback<DefaultFailureCallback> * cb =
             Callback::Callback<DefaultFailureCallback>::FromCancelable(onFailureCallback);
-        cb->mCall(cb->mContext, static_cast<EmberAfStatus>(status));
+        cb->mCall(cb->mContext, status);
         return true;
     }
 
@@ -950,7 +951,7 @@ bool emberAfDoorLockClusterLockDoorResponseCallback(uint8_t status)
     {
         Callback::Callback<DefaultFailureCallback> * cb =
             Callback::Callback<DefaultFailureCallback>::FromCancelable(onFailureCallback);
-        cb->mCall(cb->mContext, static_cast<EmberAfStatus>(status));
+        cb->mCall(cb->mContext, status);
         return true;
     }
 
@@ -971,7 +972,7 @@ bool emberAfDoorLockClusterSetHolidayScheduleResponseCallback(uint8_t status)
     {
         Callback::Callback<DefaultFailureCallback> * cb =
             Callback::Callback<DefaultFailureCallback>::FromCancelable(onFailureCallback);
-        cb->mCall(cb->mContext, static_cast<EmberAfStatus>(status));
+        cb->mCall(cb->mContext, status);
         return true;
     }
 
@@ -992,7 +993,7 @@ bool emberAfDoorLockClusterSetPinResponseCallback(uint8_t status)
     {
         Callback::Callback<DefaultFailureCallback> * cb =
             Callback::Callback<DefaultFailureCallback>::FromCancelable(onFailureCallback);
-        cb->mCall(cb->mContext, static_cast<EmberAfStatus>(status));
+        cb->mCall(cb->mContext, status);
         return true;
     }
 
@@ -1013,7 +1014,7 @@ bool emberAfDoorLockClusterSetRfidResponseCallback(uint8_t status)
     {
         Callback::Callback<DefaultFailureCallback> * cb =
             Callback::Callback<DefaultFailureCallback>::FromCancelable(onFailureCallback);
-        cb->mCall(cb->mContext, static_cast<EmberAfStatus>(status));
+        cb->mCall(cb->mContext, status);
         return true;
     }
 
@@ -1034,7 +1035,7 @@ bool emberAfDoorLockClusterSetUserTypeResponseCallback(uint8_t status)
     {
         Callback::Callback<DefaultFailureCallback> * cb =
             Callback::Callback<DefaultFailureCallback>::FromCancelable(onFailureCallback);
-        cb->mCall(cb->mContext, static_cast<EmberAfStatus>(status));
+        cb->mCall(cb->mContext, status);
         return true;
     }
 
@@ -1055,7 +1056,7 @@ bool emberAfDoorLockClusterSetWeekdayScheduleResponseCallback(uint8_t status)
     {
         Callback::Callback<DefaultFailureCallback> * cb =
             Callback::Callback<DefaultFailureCallback>::FromCancelable(onFailureCallback);
-        cb->mCall(cb->mContext, static_cast<EmberAfStatus>(status));
+        cb->mCall(cb->mContext, status);
         return true;
     }
 
@@ -1076,7 +1077,7 @@ bool emberAfDoorLockClusterSetYeardayScheduleResponseCallback(uint8_t status)
     {
         Callback::Callback<DefaultFailureCallback> * cb =
             Callback::Callback<DefaultFailureCallback>::FromCancelable(onFailureCallback);
-        cb->mCall(cb->mContext, static_cast<EmberAfStatus>(status));
+        cb->mCall(cb->mContext, status);
         return true;
     }
 
@@ -1097,7 +1098,7 @@ bool emberAfDoorLockClusterUnlockDoorResponseCallback(uint8_t status)
     {
         Callback::Callback<DefaultFailureCallback> * cb =
             Callback::Callback<DefaultFailureCallback>::FromCancelable(onFailureCallback);
-        cb->mCall(cb->mContext, static_cast<EmberAfStatus>(status));
+        cb->mCall(cb->mContext, status);
         return true;
     }
 
@@ -1118,7 +1119,7 @@ bool emberAfDoorLockClusterUnlockWithTimeoutResponseCallback(uint8_t status)
     {
         Callback::Callback<DefaultFailureCallback> * cb =
             Callback::Callback<DefaultFailureCallback>::FromCancelable(onFailureCallback);
-        cb->mCall(cb->mContext, static_cast<EmberAfStatus>(status));
+        cb->mCall(cb->mContext, status);
         return true;
     }
 
@@ -1140,7 +1141,7 @@ bool emberAfGroupsClusterAddGroupResponseCallback(uint8_t status, uint16_t group
     {
         Callback::Callback<DefaultFailureCallback> * cb =
             Callback::Callback<DefaultFailureCallback>::FromCancelable(onFailureCallback);
-        cb->mCall(cb->mContext, static_cast<EmberAfStatus>(status));
+        cb->mCall(cb->mContext, status);
         return true;
     }
 
@@ -1178,7 +1179,7 @@ bool emberAfGroupsClusterRemoveGroupResponseCallback(uint8_t status, uint16_t gr
     {
         Callback::Callback<DefaultFailureCallback> * cb =
             Callback::Callback<DefaultFailureCallback>::FromCancelable(onFailureCallback);
-        cb->mCall(cb->mContext, static_cast<EmberAfStatus>(status));
+        cb->mCall(cb->mContext, status);
         return true;
     }
 
@@ -1201,7 +1202,7 @@ bool emberAfGroupsClusterViewGroupResponseCallback(uint8_t status, uint16_t grou
     {
         Callback::Callback<DefaultFailureCallback> * cb =
             Callback::Callback<DefaultFailureCallback>::FromCancelable(onFailureCallback);
-        cb->mCall(cb->mContext, static_cast<EmberAfStatus>(status));
+        cb->mCall(cb->mContext, status);
         return true;
     }
 
@@ -1237,7 +1238,7 @@ bool emberAfScenesClusterAddSceneResponseCallback(uint8_t status, uint16_t group
     {
         Callback::Callback<DefaultFailureCallback> * cb =
             Callback::Callback<DefaultFailureCallback>::FromCancelable(onFailureCallback);
-        cb->mCall(cb->mContext, static_cast<EmberAfStatus>(status));
+        cb->mCall(cb->mContext, status);
         return true;
     }
 
@@ -1263,7 +1264,7 @@ bool emberAfScenesClusterGetSceneMembershipResponseCallback(uint8_t status, uint
     {
         Callback::Callback<DefaultFailureCallback> * cb =
             Callback::Callback<DefaultFailureCallback>::FromCancelable(onFailureCallback);
-        cb->mCall(cb->mContext, static_cast<EmberAfStatus>(status));
+        cb->mCall(cb->mContext, status);
         return true;
     }
 
@@ -1285,7 +1286,7 @@ bool emberAfScenesClusterRemoveAllScenesResponseCallback(uint8_t status, uint16_
     {
         Callback::Callback<DefaultFailureCallback> * cb =
             Callback::Callback<DefaultFailureCallback>::FromCancelable(onFailureCallback);
-        cb->mCall(cb->mContext, static_cast<EmberAfStatus>(status));
+        cb->mCall(cb->mContext, status);
         return true;
     }
 
@@ -1308,7 +1309,7 @@ bool emberAfScenesClusterRemoveSceneResponseCallback(uint8_t status, uint16_t gr
     {
         Callback::Callback<DefaultFailureCallback> * cb =
             Callback::Callback<DefaultFailureCallback>::FromCancelable(onFailureCallback);
-        cb->mCall(cb->mContext, static_cast<EmberAfStatus>(status));
+        cb->mCall(cb->mContext, status);
         return true;
     }
 
@@ -1331,7 +1332,7 @@ bool emberAfScenesClusterStoreSceneResponseCallback(uint8_t status, uint16_t gro
     {
         Callback::Callback<DefaultFailureCallback> * cb =
             Callback::Callback<DefaultFailureCallback>::FromCancelable(onFailureCallback);
-        cb->mCall(cb->mContext, static_cast<EmberAfStatus>(status));
+        cb->mCall(cb->mContext, status);
         return true;
     }
 
@@ -1359,7 +1360,7 @@ bool emberAfScenesClusterViewSceneResponseCallback(uint8_t status, uint16_t grou
     {
         Callback::Callback<DefaultFailureCallback> * cb =
             Callback::Callback<DefaultFailureCallback>::FromCancelable(onFailureCallback);
-        cb->mCall(cb->mContext, static_cast<EmberAfStatus>(status));
+        cb->mCall(cb->mContext, status);
         return true;
     }
 

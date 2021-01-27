@@ -3,6 +3,7 @@
 #include "ResponseCallbacks.h"
 #include "gen/enums.h"
 #include <app/util/af.h>
+#include <app/util/af-enums.h>
 #include <app/util/basic-types.h>
 #include <app/util/CallbacksMgr.h>
 #include <core/CHIPEncoding.h>
@@ -199,7 +200,7 @@ bool emberAfDefaultResponseCallback(ClusterId clusterId, CommandId commandId, Em
     else
     {
         Callback::Callback<DefaultFailureCallback> * cb = Callback::Callback<DefaultFailureCallback>::FromCancelable(onFailureCallback);
-        cb->mCall(cb->mContext, status);
+        cb->mCall(cb->mContext, static_cast<uint8_t>(status));
     }
 
     return true;
@@ -388,7 +389,7 @@ bool emberAfReadAttributesResponseCallback(ClusterId clusterId, uint8_t * messag
         else
         {
             Callback::Callback<DefaultFailureCallback> * cb = Callback::Callback<DefaultFailureCallback>::FromCancelable(onFailureCallback);
-            cb->mCall(cb->mContext, static_cast<EmberAfStatus>(status));
+            cb->mCall(cb->mContext, status);
         }
 
         // The current code is written matching the current API where there is a single attribute read 
@@ -430,7 +431,7 @@ bool emberAfWriteAttributesResponseCallback(ClusterId clusterId, uint8_t * messa
             ChipLogProgress(chipTool, "  attributeId: 0x%04x", attributeId);
 
             Callback::Callback<DefaultFailureCallback> * cb = Callback::Callback<DefaultFailureCallback>::FromCancelable(onFailureCallback);
-            cb->mCall(cb->mContext, static_cast<EmberAfStatus>(status));
+            cb->mCall(cb->mContext, status);
         }
 
         // The current code is written matching the current API where there is a single attribute written
@@ -476,7 +477,7 @@ bool emberAfConfigureReportingResponseCallback(ClusterId clusterId, uint8_t * me
             ChipLogProgress(chipTool, "  attributeId: 0x%04x", attributeId);
 
             Callback::Callback<DefaultFailureCallback> * cb = Callback::Callback<DefaultFailureCallback>::FromCancelable(onFailureCallback);
-            cb->mCall(cb->mContext, static_cast<EmberAfStatus>(status));
+            cb->mCall(cb->mContext, status);
         }
 
         // The current code is written matching the current API where there is a single attribute report 
@@ -634,7 +635,7 @@ bool emberAf{{asCamelCased parent.name false}}Cluster{{asCamelCased name false}}
     if (status != EMBER_ZCL_STATUS_SUCCESS)
     {
         Callback::Callback<DefaultFailureCallback> * cb = Callback::Callback<DefaultFailureCallback>::FromCancelable(onFailureCallback);
-        cb->mCall(cb->mContext, static_cast<EmberAfStatus>(status));
+        cb->mCall(cb->mContext, status);
         return true;
     }
     {{/if}}
