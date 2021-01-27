@@ -21,6 +21,7 @@
 #include "commands/clusters/Commands.h"
 #include "commands/pairing/Commands.h"
 #include "commands/payload/Commands.h"
+#include "commands/reporting/Commands.h"
 
 #include <transport/PASESession.h>
 
@@ -34,6 +35,7 @@ int main(int argc, char * argv[])
     Commands commands;
     registerCommandsPayload(commands);
     registerCommandsPairing(commands);
+    registerCommandsReporting(commands);
     registerClusters(commands);
 
     return commands.Run(chip::kTestControllerNodeId, chip::kTestDeviceNodeId, argc, argv);
