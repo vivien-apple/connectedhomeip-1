@@ -3008,7 +3008,7 @@
           "mfgCode": null,
           "define": "BINDING_CLUSTER",
           "side": "client",
-          "enabled": 0,
+          "enabled": 1,
           "commands": [
             {
               "name": "Bind",
@@ -3051,7 +3051,7 @@
           "mfgCode": null,
           "define": "BINDING_CLUSTER",
           "side": "server",
-          "enabled": 1,
+          "enabled": 0,
           "commands": [],
           "attributes": [
             {
