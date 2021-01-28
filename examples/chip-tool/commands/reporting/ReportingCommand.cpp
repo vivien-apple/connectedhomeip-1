@@ -18,7 +18,7 @@
 
 #include "ReportingCommand.h"
 
-#include "../clusters/ResponseCallbacks.h"
+#include "gen/CHIPClientCallbacks.h"
 #include "../common/Commands.h"
 #include <controller/CHIPClusters.h>
 

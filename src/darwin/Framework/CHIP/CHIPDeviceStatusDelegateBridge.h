@@ -25,18 +25,15 @@ NS_ASSUME_NONNULL_BEGIN
 class CHIPDeviceStatusDelegateBridge : public chip::Controller::DeviceStatusDelegate
 {
 public:
-    CHIPDeviceStatusDelegateBridge();
+    CHIPDeviceStatusDelegateBridge(chip::NodeId deviceId);
     ~CHIPDeviceStatusDelegateBridge();
-
-    void setDelegate(id<CHIPDeviceStatusDelegate> delegate, dispatch_queue_t queue);
 
     void OnMessage(chip::System::PacketBufferHandle message) override;
 
     void OnStatusChange() override;
 
 private:
-    id<CHIPDeviceStatusDelegate> mDelegate;
-    dispatch_queue_t mQueue;
+    chip::NodeId mDeviceId;
 };
 
 NS_ASSUME_NONNULL_END

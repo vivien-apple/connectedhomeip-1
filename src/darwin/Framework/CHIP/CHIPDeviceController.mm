@@ -27,6 +27,7 @@
 #import "CHIPLogging.h"
 #import "CHIPPersistentStorageDelegateBridge.h"
 
+#include <app/server/DataModelHandler.h>
 #include <controller/CHIPDeviceController.h>
 #include <inet/IPAddress.h>
 #include <support/CHIPMem.h>
@@ -53,21 +54,10 @@ constexpr chip::NodeId kLocalDeviceId = chip::kTestControllerNodeId;
 // queue used to call select on the system and inet layer fds., remove this with NW Framework.
 // primarily used to not block the work queue
 @property (atomic, readonly) dispatch_queue_t chipSelectQueue;
-/**
- *  The Controller delegate.
- *  Note: Getter is not thread safe.
- */
-@property (readonly, weak, nonatomic) id<CHIPDeviceControllerDelegate> delegate;
 
-/**
- * The delegate queue where delegate callbacks will run
- */
-@property (readonly, nonatomic) dispatch_queue_t delegateQueue;
 @property (readonly) chip::Controller::DeviceCommissioner * cppController;
 @property (readonly) CHIPDevicePairingDelegateBridge * pairingDelegateBridge;
-@property (readonly) CHIPDeviceStatusDelegateBridge * deviceStatusDelegateBridge;
 @property (readonly) CHIPPersistentStorageDelegateBridge * persistentStorageDelegateBridge;
-
 @end
 
 @implementation CHIPDeviceController
@@ -99,13 +89,7 @@ constexpr chip::NodeId kLocalDeviceId = chip::kTestControllerNodeId;
             return nil;
         }
 
-        _deviceStatusDelegateBridge = new CHIPDeviceStatusDelegateBridge();
-        if (!_deviceStatusDelegateBridge) {
-            CHIP_LOG_ERROR("Error: couldn't create device status delegate bridge");
-            return nil;
-        }
-        dispatch_queue_t callbackQueue = dispatch_queue_create("com.zigbee.chip.controller.callback", DISPATCH_QUEUE_SERIAL);
-        _deviceStatusDelegateBridge->setDelegate(self, callbackQueue);
+        InitDataModelHandler();
 
         _cppController = new chip::Controller::DeviceCommissioner();
         if (!_cppController) {
@@ -148,19 +132,6 @@ constexpr chip::NodeId kLocalDeviceId = chip::kTestControllerNodeId;
         });
     }
     return self;
-}
-
-// MARK: CHIPDeviceStatusDelegate
-- (void)onMessageReceived:(NSData *)message
-{
-    CHIP_LOG_METHOD_ENTRY();
-
-    id<CHIPDeviceControllerDelegate> strongDelegate = [self delegate];
-    if (strongDelegate && [self delegateQueue]) {
-        dispatch_async(self.delegateQueue, ^{
-            [strongDelegate deviceControllerOnMessage:message];
-        });
-    }
 }
 
 - (BOOL)pairDevice:(uint64_t)deviceID
@@ -243,7 +214,13 @@ constexpr chip::NodeId kLocalDeviceId = chip::kTestControllerNodeId;
         return nil;
     }
 
-    cppDevice->SetDelegate(_deviceStatusDelegateBridge);
+    CHIPDeviceStatusDelegateBridge * delegate = new CHIPDeviceStatusDelegateBridge(deviceID);
+    if (!delegate) {
+        CHIP_LOG_ERROR("Error: couldn't create device status delegate bridge");
+        return nil;
+    }
+
+    cppDevice->SetDelegate(delegate);
 
     return [[CHIPDevice alloc] initWithDevice:cppDevice];
 }
@@ -251,19 +228,6 @@ constexpr chip::NodeId kLocalDeviceId = chip::kTestControllerNodeId;
 - (BOOL)disconnect:(NSError * __autoreleasing *)error
 {
     return YES;
-}
-
-- (void)setDelegate:(id<CHIPDeviceControllerDelegate>)delegate queue:(dispatch_queue_t)queue
-{
-    [self.lock lock];
-    if (delegate && queue) {
-        self->_delegate = delegate;
-        self->_delegateQueue = queue;
-    } else {
-        self->_delegate = nil;
-        self->_delegateQueue = NULL;
-    }
-    [self.lock unlock];
 }
 
 - (void)setPairingDelegate:(id<CHIPDevicePairingDelegate>)delegate queue:(dispatch_queue_t)queue

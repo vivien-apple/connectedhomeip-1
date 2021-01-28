@@ -26,12 +26,6 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @protocol CHIPDeviceStatusDelegate <NSObject>
 @required
-/**
- * Notify the delegate when a message is received from the device
- *
- */
-- (void)onMessageReceived:(NSData *)message;
-
 @end
 
 NS_ASSUME_NONNULL_END
