@@ -139,41 +139,50 @@
 
 - (IBAction)onButtonTapped:(id)sender
 {
-    CHIPDeviceCallback completionHandler = ^(NSError * error) {
-        NSLog(@"Status: On command completed with error %@", [error description]);
+    CHIPDeviceCallback successHandler = ^(void) {
+        NSLog(@"Status: On command success");
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 5.0), dispatch_get_main_queue(), ^{
+            [self updateResult:@"Status: On command success"];
+        });
     };
 
     UIButton * button = (UIButton *) sender;
     NSInteger lightNumber = button.tag;
     NSLog(@"Light %@ on button pressed.", @(lightNumber));
     // TODO: Do something based on which light is selected
-    [self.onOff on:completionHandler];
+    [self.onOff on:successHandler];
 }
 
 - (IBAction)offButtonTapped:(id)sender
 {
-    CHIPDeviceCallback completionHandler = ^(NSError * error) {
-        NSLog(@"Status: Off command completed with error %@", [error description]);
+    CHIPDeviceCallback successHandler = ^(void) {
+        NSLog(@"Status: Off command success");
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 5.0), dispatch_get_main_queue(), ^{
+            [self updateResult:@"Status: Off command success"];
+        });
     };
 
     UIButton * button = (UIButton *) sender;
     NSInteger lightNumber = button.tag;
     NSLog(@"Light %@ off button pressed.", @(lightNumber));
     // TODO: Do something based on which light is selected
-    [self.onOff off:completionHandler];
+    [self.onOff off:successHandler];
 }
 
 - (IBAction)toggleButtonTapped:(id)sender
 {
-    CHIPDeviceCallback completionHandler = ^(NSError * error) {
-        NSLog(@"Status: Toggle command completed with error %@", [error description]);
+    CHIPDeviceCallback successHandler = ^(void) {
+        NSLog(@"Status: Toggle command succeess");
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 5.0), dispatch_get_main_queue(), ^{
+            [self updateResult:@"Status: Toggle command success"];
+        });
     };
 
     UIButton * button = (UIButton *) sender;
     NSInteger lightNumber = button.tag;
     NSLog(@"Light %@ toggle button pressed.", @(lightNumber));
     // TODO: Do something based on which light is selected
-    [self.onOff toggle:completionHandler];
+    [self.onOff toggle:successHandler];
 }
 
 // MARK: CHIPDeviceControllerDelegate
@@ -191,19 +200,5 @@
             [self updateResult:stringError];
         });
     }
-}
-
-- (void)deviceControllerOnMessage:(nonnull NSData *)message
-{
-    NSString * stringMessage;
-    if ([CHIPDevice isDataModelCommand:message] == YES) {
-        stringMessage = [CHIPDevice commandToString:message];
-    } else {
-        stringMessage = [[NSString alloc] initWithData:message encoding:NSUTF8StringEncoding];
-    }
-    NSString * resultMessage = [@"Echo Response: " stringByAppendingFormat:@"%@", stringMessage];
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 5.0), dispatch_get_main_queue(), ^{
-        [self updateResult:resultMessage];
-    });
 }
 @end

@@ -366,10 +366,6 @@
     NSLog(@"Status: Device Controller error %@", [error description]);
 }
 
-- (void)deviceControllerOnMessage:(nonnull NSData *)message
-{
-}
-
 // MARK: CHIPDevicePairingDelegate
 - (void)onNetworkCredentialsRequested:(SendNetworkCredentials)handler
 {

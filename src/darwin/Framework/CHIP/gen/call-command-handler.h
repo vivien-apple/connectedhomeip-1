@@ -1,4 +1,4 @@
-/**
+/*
  *
  *    Copyright (c) 2020 Project CHIP Authors
  *
@@ -15,12 +15,7 @@
  *    limitations under the License.
  */
 
-#import <Foundation/Foundation.h>
+// Prevent multiple inclusion
+#pragma once
 
-#import <CHIP/CHIPError.h>
-
-NS_ASSUME_NONNULL_BEGIN
-
-typedef void (^CHIPDeviceCallback)(void);
-
-NS_ASSUME_NONNULL_END
+#include "af-types.h"

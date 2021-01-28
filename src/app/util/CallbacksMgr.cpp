@@ -38,11 +38,17 @@ CHIP_ERROR CHIPCallbacksMgr::AddResponseCallback(NodeId nodeId, uint8_t sequence
 {
     // XXX mInfoScalar is a uint64_t which is not enough to store our discriminator (nodeId (uint64_t) + sequenceNumber (uint8_t))
 
-    onSuccessCallback->mInfoScalar = nodeId;
-    mResponsesSuccess.Enqueue(onSuccessCallback);
+    if (onSuccessCallback != nullptr)
+    {
+        onSuccessCallback->mInfoScalar = nodeId;
+        mResponsesSuccess.Enqueue(onSuccessCallback);
+    }
 
-    onFailureCallback->mInfoScalar = nodeId;
-    mResponsesFailure.Enqueue(onFailureCallback);
+    if (onFailureCallback != nullptr)
+    {
+        onFailureCallback->mInfoScalar = nodeId;
+        mResponsesFailure.Enqueue(onFailureCallback);
+    }
 
     return CHIP_NO_ERROR;
 }
@@ -90,8 +96,11 @@ CHIP_ERROR CHIPCallbacksMgr::AddReportCallback(NodeId nodeId, EndpointId endpoin
     // XXX mInfoScalar is a uint64_t which is not enough to store our discriminator (nodeId (uint64_t) + endpointId (uint8_t) +
     // clusterId (uint16_t) + attributeId (uint16_t))
 
-    onReportCallback->mInfoScalar = nodeId;
-    mReports.Enqueue(onReportCallback);
+    if (onReportCallback != nullptr)
+    {
+        onReportCallback->mInfoScalar = nodeId;
+        mReports.Enqueue(onReportCallback);
+    }
 
     return CHIP_NO_ERROR;
 }

@@ -104,13 +104,6 @@ typedef void (^ControllerOnErrorBlock)(NSError * error);
 - (void)deviceControllerOnConnected;
 
 /**
- * Notify the delegate that a message was received
- *
- * @param[in] message The received message
- */
-- (void)deviceControllerOnMessage:(NSData *)message;
-
-/**
  * Notify the Delegate that an error occurred
  *
  * @param[in] error The error that occurred

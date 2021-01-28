@@ -1,12 +1,20 @@
 {
     "name": "CHIP Application templates",
     "version": "chip-v1",
-    "helpers": ["common/StringHelper.js", "templates/app/helper.js"],
+    "helpers": ["common/StringHelper.js", "templates/app/helper.js", "templates/chip/helper.js"],
     "override": "common/override.js",
     "partials": [
         {
             "name": "header",
             "path": "partials/header.zapt"
+        },
+        {
+            "name": "clusters_header",
+            "path": "partials/clusters_header.zapt"
+        },
+        {
+            "name": "cluster_header",
+            "path": "partials/cluster_header.zapt"
         },
         {
             "name": "command_handler_cluster_commands",
@@ -98,6 +106,16 @@
             "path": "templates/app/print-cluster.zapt",
             "name": "ZCL print-cluster header",
             "output": "print-cluster.h"
+        },
+        {
+            "path": "templates/app/response-callbacks.zapt",
+            "name": "Response Callbacks header",
+            "output": "ResponseCallbacks.h"
+        },
+        {
+            "path": "templates/app/response-callbacks-src.zapt",
+            "name": "Response Callbacks",
+            "output": "ResponseCallbacks.cpp"
         }
     ]
 }

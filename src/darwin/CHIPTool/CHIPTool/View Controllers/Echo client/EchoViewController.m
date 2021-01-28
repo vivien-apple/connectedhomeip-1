@@ -30,6 +30,8 @@
 @property (nonatomic, strong) UILabel * resultLabel;
 @property (nonatomic, strong) UIStackView * stackView;
 
+@property (readwrite) CHIPBasic * basic;
+
 @property (readwrite) CHIPDeviceController * chipController;
 @property (readwrite) CHIPDevice * chipDevice;
 
@@ -64,6 +66,7 @@
         deviceID--;
         NSError * error;
         self.chipDevice = [self.chipController getPairedDevice:deviceID error:&error];
+        self.basic = [[CHIPBasic alloc] initWithDevice:self.chipDevice endpoint:1 queue:callbackQueue];
     }
 }
 
@@ -135,15 +138,16 @@
     }
 
     // send message
-    if ([self.chipDevice isActive]) {
-        NSError * error;
-        BOOL didSend = [self.chipDevice sendMessage:[msg dataUsingEncoding:NSUTF8StringEncoding] error:&error];
-        if (!didSend) {
-            NSString * errorString = [@"Error: " stringByAppendingString:error.localizedDescription];
-            [self updateResult:errorString];
-        } else {
-            [self updateResult:@"Message Sent"];
-        }
+    if ([self.chipDevice isActive] && self.basic != nil) {
+        [self updateResult:@"MfgSpecificPing command sent..."];
+
+        CHIPDeviceCallback successHandler = ^(void) {
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1.0), dispatch_get_main_queue(), ^{
+                [self updateResult:@"MfgSpecificPing command: success!"];
+            });
+        };
+
+        [self.basic mfgSpecificPing:successHandler];
     } else {
         [self updateResult:@"Controller not connected"];
     }
@@ -164,20 +168,6 @@
             [self updateResult:stringError];
         });
     }
-}
-
-- (void)deviceControllerOnMessage:(nonnull NSData *)message
-{
-    NSString * stringMessage;
-    if ([CHIPDevice isDataModelCommand:message] == YES) {
-        stringMessage = [CHIPDevice commandToString:message];
-    } else {
-        stringMessage = [[NSString alloc] initWithData:message encoding:NSUTF8StringEncoding];
-    }
-    NSString * resultMessage = [@"Echo Response: " stringByAppendingFormat:@"%@", stringMessage];
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 5.0), dispatch_get_main_queue(), ^{
-        [self updateResult:resultMessage];
-    });
 }
 
 @end
