@@ -33,7 +33,7 @@ void CHIPCallbackBridge::CallbackFn(void * context)
     CHIPCallbackBridge * callback = reinterpret_cast<CHIPCallbackBridge *>(context);
     if (callback && callback->mQueue) {
         dispatch_async(callback->mQueue, ^{
-            callback->mHandler([CHIPError errorForCHIPErrorCode:CHIP_NO_ERROR]);
+            callback->mHandler();
             callback->Cancel();
             delete callback;
         });

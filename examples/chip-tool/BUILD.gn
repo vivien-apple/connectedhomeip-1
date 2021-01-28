@@ -44,7 +44,6 @@ executable("chip-tool") {
     "${chip_root}/src/app/reporting/reporting.cpp",
     "${chip_root}/src/app/reporting/reporting-default-configuration.cpp",
     "commands/clusters/ModelCommand.cpp",
-    "commands/clusters/ResponseCallbacks.cpp",
     "commands/common/Command.cpp",
     "commands/common/Commands.cpp",
     "commands/pairing/PairingCommand.cpp",
@@ -54,6 +53,7 @@ executable("chip-tool") {
     "config/PersistentStorage.cpp",
     "gen/call-command-handler.cpp",
     "gen/callback-stub.cpp",
+    "gen/ResponseCallbacks.cpp",
     "main.cpp",
   ]
 

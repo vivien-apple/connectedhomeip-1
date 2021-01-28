@@ -17,46 +17,19 @@
 
 #import "CHIPDeviceStatusDelegateBridge.h"
 #import <Foundation/Foundation.h>
+#import <app/server/DataModelHandler.h>
 
-CHIPDeviceStatusDelegateBridge::CHIPDeviceStatusDelegateBridge(void)
-    : mDelegate(nil)
+CHIPDeviceStatusDelegateBridge::CHIPDeviceStatusDelegateBridge(chip::NodeId deviceId)
+    : mDeviceId(deviceId)
 {
 }
 
 CHIPDeviceStatusDelegateBridge::~CHIPDeviceStatusDelegateBridge() {}
 
-void CHIPDeviceStatusDelegateBridge::setDelegate(id<CHIPDeviceStatusDelegate> delegate, dispatch_queue_t queue)
-{
-    if (delegate && queue) {
-        mDelegate = delegate;
-        mQueue = queue;
-    } else {
-        mDelegate = nil;
-        mQueue = nil;
-    }
-}
-
 void CHIPDeviceStatusDelegateBridge::OnMessage(chip::System::PacketBufferHandle message)
 {
     NSLog(@"DeviceStatusDelegate received message from the device");
-
-    size_t data_len = message->DataLength();
-    // convert to NSData
-    NSMutableData * dataBuffer = [[NSMutableData alloc] initWithBytes:message->Start() length:data_len];
-    message.FreeHead();
-
-    while (!message.IsNull()) {
-        data_len = message->DataLength();
-        [dataBuffer appendBytes:message->Start() length:data_len];
-        message.FreeHead();
-    }
-
-    id<CHIPDeviceStatusDelegate> strongDelegate = mDelegate;
-    if (strongDelegate && mQueue) {
-        dispatch_async(mQueue, ^{
-            [strongDelegate onMessageReceived:dataBuffer];
-        });
-    }
+    HandleDataModelMessage(mDeviceId, std::move(message));
 }
 
 void CHIPDeviceStatusDelegateBridge::OnStatusChange() { NSLog(@"CHIPDeviceStatusDelegateBridge device status changed"); }
