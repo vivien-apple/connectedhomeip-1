@@ -1,4 +1,19 @@
-{{> header}}
+/*
+ *
+ *    Copyright (c) 2020 Project CHIP Authors
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
 
 #import <Foundation/Foundation.h>
 
@@ -111,8 +126,7 @@ public:
         if (callback && callback->mQueue) {
             dispatch_async(callback->mQueue, ^{
                 callback->mHandler(value);
-                if (!callback->mKeepAlive)
-                {
+                if (!callback->mKeepAlive) {
                     callback->Cancel();
                     delete callback;
                 }
@@ -144,8 +158,7 @@ public:
         if (callback && callback->mQueue) {
             dispatch_async(callback->mQueue, ^{
                 callback->mHandler(value);
-                if (!callback->mKeepAlive)
-                {
+                if (!callback->mKeepAlive) {
                     callback->Cancel();
                     delete callback;
                 }
@@ -177,8 +190,7 @@ public:
         if (callback && callback->mQueue) {
             dispatch_async(callback->mQueue, ^{
                 callback->mHandler(value);
-                if (!callback->mKeepAlive)
-                {
+                if (!callback->mKeepAlive) {
                     callback->Cancel();
                     delete callback;
                 }
@@ -210,8 +222,7 @@ public:
         if (callback && callback->mQueue) {
             dispatch_async(callback->mQueue, ^{
                 callback->mHandler(value);
-                if (!callback->mKeepAlive)
-                {
+                if (!callback->mKeepAlive) {
                     callback->Cancel();
                     delete callback;
                 }
@@ -243,8 +254,7 @@ public:
         if (callback && callback->mQueue) {
             dispatch_async(callback->mQueue, ^{
                 callback->mHandler(value);
-                if (!callback->mKeepAlive)
-                {
+                if (!callback->mKeepAlive) {
                     callback->Cancel();
                     delete callback;
                 }
@@ -258,53 +268,13 @@ private:
     bool mKeepAlive;
 };
 
-{{#all_user_clusters}}
-{{#if (isClient side) }}
-{{#if (user_cluster_has_enabled_command name side)}}
-{{#all_user_cluster_commands}}
-{{#if (isStrEqual clusterName parent.name)}}
-{{#if (isCommandAvailable parent.side incoming outgoing commandSource name)}}
-class CHIP{{asCamelCased parent.name false}}Cluster{{asCamelCased name false}}CallbackBridge : public Callback::Callback<{{asCamelCased parent.name false}}Cluster{{asCamelCased name false}}Callback>
-{
-public:
-    CHIP{{asCamelCased parent.name false}}Cluster{{asCamelCased name false}}CallbackBridge({{asCamelCased parent.name false}}Cluster{{asCamelCased name false}}Handler handler, dispatch_queue_t queue): Callback::Callback<{{asCamelCased parent.name false}}Cluster{{asCamelCased name false}}Callback>(CallbackFn, this), mHandler(handler), mQueue(queue) {}
+@interface CHIPOnOff ()
 
-    ~CHIP{{asCamelCased parent.name false}}Cluster{{asCamelCased name false}}CallbackBridge() {};
-
-    static void CallbackFn(void * context{{#zcl_command_arguments}}{{#unless (isStrEqual label "status")}}, {{asUnderlyingZclType type}} {{asSymbol label}}{{/unless}}{{/zcl_command_arguments}})
-    {
-        CHIP{{asCamelCased parent.name false}}Cluster{{asCamelCased name false}}CallbackBridge * callback = reinterpret_cast<CHIP{{asCamelCased parent.name false}}Cluster{{asCamelCased name false}}CallbackBridge *>(context);
-        if (callback && callback->mQueue)
-        {
-            dispatch_async(callback->mQueue, ^{
-                callback->mHandler({{#zcl_command_arguments}}{{#unless (isStrEqual label "status")}}{{asSymbol label}}{{#unless (isLastElement index count)}}, {{/unless}}{{/unless}}{{/zcl_command_arguments}});
-                callback->Cancel();
-                delete callback;
-            });
-        }
-    };
-
-private:
-    {{asCamelCased parent.name false}}Cluster{{asCamelCased name false}}Handler mHandler;
-    dispatch_queue_t mQueue;
-};
-
-{{/if}}
-{{/if}}
-{{/all_user_cluster_commands}}
-{{/if}}
-{{/if}}
-{{/all_user_clusters}}
-
-{{#chip_clusters}}
-
-@interface CHIP{{asCamelCased name false}} ()
-
-@property (readonly) Controller::{{asCamelCased name false}}Cluster cppCluster;
+@property (readonly) Controller::OnOffCluster cppCluster;
 @property (readonly, nonatomic) dispatch_queue_t callbackQueue;
 @end
 
-@implementation CHIP{{asCamelCased name false}}
+@implementation CHIPOnOff
 
 - (instancetype)initWithDevice:(CHIPDevice *)device endpoint:(EndpointId)endpoint queue:(dispatch_queue_t)queue
 {
@@ -321,63 +291,7 @@ private:
     return self;
 }
 
-{{#chip_server_cluster_commands}}
-{{#if (hasSpecificResponse name)}}
-- (BOOL){{asCamelCased name}}:({{asCamelCased parent.name false}}Cluster{{asCamelCased name false}}ResponseHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback{{#chip_server_cluster_command_arguments}} {{asCamelCased label}}:({{asBasicType chipType}}){{asCamelCased label}}{{/chip_server_cluster_command_arguments}}
-{{else}}
-- (BOOL){{asCamelCased name}}:(DefaultSuccessHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback{{#chip_server_cluster_command_arguments}} {{asCamelCased label}}:({{asBasicType chipType}}){{asCamelCased label}}{{/chip_server_cluster_command_arguments}}
-{{/if}}
-{
-{{#if (hasSpecificResponse name)}}
-    CHIP{{asCamelCased parent.name false}}Cluster{{asCamelCased name false}}ResponseCallbackBridge * onSuccess = new CHIP{{asCamelCased parent.name false}}Cluster{{asCamelCased name false}}ResponseCallbackBridge(onSuccessCallback, _callbackQueue);
-{{else}}
-    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
-{{/if}}
-    if (!onSuccess) {
-        return NO;
-    }
-
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
-    if (!onFailure) {
-        delete onSuccess;
-        return NO;
-    }
-
-    CHIP_ERROR err = self.cppCluster.{{asCamelCased name false}}(onSuccess->Cancel(), onFailure->Cancel(){{#chip_server_cluster_command_arguments}}, {{asCamelCased label}}{{/chip_server_cluster_command_arguments}});
-    if (err != CHIP_NO_ERROR) {
-        delete onSuccess;
-        delete onFailure;
-        return NO;
-    }
-    return YES;
-}
-{{/chip_server_cluster_commands}}
-
-{{#chip_server_cluster_attributes}}
-- (BOOL)readAttribute{{asCamelCased name false}}:({{asCallbackAttributeType atomicTypeId}}AttributeHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback
-{
-    CHIP{{asCallbackAttributeType atomicTypeId}}AttributeCallbackBridge * onSuccess = new CHIP{{asCallbackAttributeType atomicTypeId}}AttributeCallbackBridge(onSuccessCallback, _callbackQueue);
-    if (!onSuccess) {
-        return NO;
-    }
-
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
-    if (!onFailure) {
-        delete onSuccess;
-        return NO;
-    }
-
-    CHIP_ERROR err = self.cppCluster.ReadAttribute{{asCamelCased name false}}(onSuccess->Cancel(), onFailure->Cancel());
-    if (err != CHIP_NO_ERROR) {
-        delete onSuccess;
-        delete onFailure;
-        return NO;
-    }
-    return YES;
-}
-
-{{#if (isWritableAttribute)}}
-- (BOOL)writeAttribute{{asCamelCased name false}}:(DefaultSuccessHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback value:({{asUnderlyingZclType type}})value
+- (BOOL)off:(DefaultSuccessHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback
 {
     CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
     if (!onSuccess) {
@@ -390,7 +304,7 @@ private:
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.WriteAttribute{{asCamelCased name false}}(onSuccess->Cancel(), onFailure->Cancel(), value);
+    CHIP_ERROR err = self.cppCluster.Off(onSuccess->Cancel(), onFailure->Cancel());
     if (err != CHIP_NO_ERROR) {
         delete onSuccess;
         delete onFailure;
@@ -398,10 +312,7 @@ private:
     }
     return YES;
 }
-
-{{/if}}
-{{#if (isReportableAttribute)}}
-- (BOOL) reportAttribute{{asCamelCased name false}}:(DefaultSuccessHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback onReportCallback:({{asCallbackAttributeType atomicTypeId}}AttributeHandler)onReportCallback minInterval:(uint16_t)minInterval  maxInterval:(uint16_t)maxInterval{{#unless (isDiscreteType)}} change:({{chipType}})change{{/unless}}
+- (BOOL)on:(DefaultSuccessHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback
 {
     CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
     if (!onSuccess) {
@@ -414,14 +325,84 @@ private:
         return NO;
     }
 
-    CHIP{{asCallbackAttributeType atomicTypeId}}AttributeCallbackBridge * onReport = new CHIP{{asCallbackAttributeType atomicTypeId}}AttributeCallbackBridge(onReportCallback, _callbackQueue, true);
+    CHIP_ERROR err = self.cppCluster.On(onSuccess->Cancel(), onFailure->Cancel());
+    if (err != CHIP_NO_ERROR) {
+        delete onSuccess;
+        delete onFailure;
+        return NO;
+    }
+    return YES;
+}
+- (BOOL)toggle:(DefaultSuccessHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback
+{
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    if (!onSuccess) {
+        return NO;
+    }
+
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    if (!onFailure) {
+        delete onSuccess;
+        return NO;
+    }
+
+    CHIP_ERROR err = self.cppCluster.Toggle(onSuccess->Cancel(), onFailure->Cancel());
+    if (err != CHIP_NO_ERROR) {
+        delete onSuccess;
+        delete onFailure;
+        return NO;
+    }
+    return YES;
+}
+
+- (BOOL)readAttributeOnOff:(BooleanAttributeHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback
+{
+    CHIPBooleanAttributeCallbackBridge * onSuccess = new CHIPBooleanAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    if (!onSuccess) {
+        return NO;
+    }
+
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    if (!onFailure) {
+        delete onSuccess;
+        return NO;
+    }
+
+    CHIP_ERROR err = self.cppCluster.ReadAttributeOnOff(onSuccess->Cancel(), onFailure->Cancel());
+    if (err != CHIP_NO_ERROR) {
+        delete onSuccess;
+        delete onFailure;
+        return NO;
+    }
+    return YES;
+}
+
+- (BOOL)reportAttributeOnOff:(DefaultSuccessHandler)onSuccessCallback
+           onFailureCallback:(DefaultFailureHandler)onFailureCallback
+            onReportCallback:(BooleanAttributeHandler)onReportCallback
+                 minInterval:(uint16_t)minInterval
+                 maxInterval:(uint16_t)maxInterval
+{
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    if (!onSuccess) {
+        return NO;
+    }
+
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    if (!onFailure) {
+        delete onSuccess;
+        return NO;
+    }
+
+    CHIPBooleanAttributeCallbackBridge * onReport = new CHIPBooleanAttributeCallbackBridge(onReportCallback, _callbackQueue, true);
     if (!onReport) {
         delete onSuccess;
         delete onFailure;
         return NO;
     }
 
-    CHIP_ERROR err = self.cppCluster.ReportAttribute{{asCamelCased name false}}(onSuccess->Cancel(), onFailure->Cancel(), onReport->Cancel(), minInterval, maxInterval{{#unless (isDiscreteType)}}, change{{/unless}});
+    CHIP_ERROR err = self.cppCluster.ReportAttributeOnOff(
+        onSuccess->Cancel(), onFailure->Cancel(), onReport->Cancel(), minInterval, maxInterval);
     if (err != CHIP_NO_ERROR) {
         delete onSuccess;
         delete onFailure;
@@ -431,9 +412,27 @@ private:
     return YES;
 }
 
-{{/if}}
-{{/chip_server_cluster_attributes}}
+- (BOOL)readAttributeClusterRevision:(Int16uAttributeHandler)onSuccessCallback
+                   onFailureCallback:(DefaultFailureHandler)onFailureCallback
+{
+    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    if (!onSuccess) {
+        return NO;
+    }
+
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    if (!onFailure) {
+        delete onSuccess;
+        return NO;
+    }
+
+    CHIP_ERROR err = self.cppCluster.ReadAttributeClusterRevision(onSuccess->Cancel(), onFailure->Cancel());
+    if (err != CHIP_NO_ERROR) {
+        delete onSuccess;
+        delete onFailure;
+        return NO;
+    }
+    return YES;
+}
 
 @end
-
-{{/chip_clusters}}

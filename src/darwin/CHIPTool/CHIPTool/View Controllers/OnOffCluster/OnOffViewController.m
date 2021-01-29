@@ -146,7 +146,14 @@
             [self updateResult:@"Status: On command success"];
         });
     };
-    [self.onOff on:successHandler];
+
+    [self.onOff on:successHandler
+        onFailureCallback:^(uint8_t status) {
+            NSLog(@"Status: On command failure");
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 5.0), dispatch_get_main_queue(), ^{
+                [self updateResult:@"Status: On command failure"];
+            });
+        }];
 }
 
 - (IBAction)offButtonTapped:(id)sender
@@ -157,18 +164,32 @@
             [self updateResult:@"Status: Off command success"];
         });
     };
-    [self.onOff off:successHandler];
+
+    [self.onOff off:successHandler
+        onFailureCallback:^(uint8_t status) {
+            NSLog(@"Status: Off command failure");
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 5.0), dispatch_get_main_queue(), ^{
+                [self updateResult:@"Status: Off command failure"];
+            });
+        }];
 }
 
 - (IBAction)toggleButtonTapped:(id)sender
 {
     CHIPDeviceCallback successHandler = ^(void) {
-        NSLog(@"Status: Toggle command succeess");
+        NSLog(@"Status: Toggle command success");
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 5.0), dispatch_get_main_queue(), ^{
             [self updateResult:@"Status: Toggle command success"];
         });
     };
-    [self.onOff toggle:successHandler];
+
+    [self.onOff toggle:successHandler
+        onFailureCallback:^(uint8_t status) {
+            NSLog(@"Status: Toggle command failure");
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 5.0), dispatch_get_main_queue(), ^{
+                [self updateResult:@"Status: Toggle command failure"];
+            });
+        }];
 }
 
 // MARK: CHIPDeviceControllerDelegate
