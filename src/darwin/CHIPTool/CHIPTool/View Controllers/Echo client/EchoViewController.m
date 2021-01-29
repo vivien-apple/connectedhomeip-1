@@ -138,7 +138,7 @@
     }
 
     // send message
-    if ([self.chipDevice isActive] && self.basic != nil) {
+    if ([self.chipDevice isActive]) {
         [self updateResult:@"MfgSpecificPing command sent..."];
 
         CHIPDeviceCallback successHandler = ^(void) {
@@ -147,7 +147,12 @@
             });
         };
 
-        [self.basic mfgSpecificPing:successHandler];
+        [self.basic mfgSpecificPing:successHandler
+                  onFailureCallback:^(uint8_t status) {
+                      dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1.0), dispatch_get_main_queue(), ^{
+                          [self updateResult:@"MfgSpecificPing command: failure!"];
+                      });
+                  }];
     } else {
         [self updateResult:@"Controller not connected"];
     }

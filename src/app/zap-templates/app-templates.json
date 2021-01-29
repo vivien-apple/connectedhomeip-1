@@ -116,6 +116,16 @@
             "path": "templates/app/response-callbacks-src.zapt",
             "name": "Response Callbacks",
             "output": "ResponseCallbacks.cpp"
+        },
+        {
+            "path": "templates/chip/CHIPClustersObjc.zapt",
+            "name": "Objc ZCL API Header",
+            "output": "CHIPClustersObjc.h"
+        },
+        {
+            "path": "templates/chip/CHIPClustersObjc-src.zapt",
+            "name": "Objc ZCL API",
+            "output": "CHIPClustersObjc.mm"
         }
     ]
 }

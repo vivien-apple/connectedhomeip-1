@@ -59,7 +59,7 @@ CHIP_ERROR CHIPCallbacksMgr::GetResponseCallback(NodeId nodeId, uint8_t sequence
     Callback::Cancelable * ca;
 
     ca = &mResponsesSuccess;
-    while (ca->mNext != &mResponsesSuccess)
+    while (ca != nullptr && ca->mNext != &mResponsesSuccess)
     {
         if (ca->mNext != nullptr && ca->mNext->mInfoScalar == nodeId)
         {
@@ -71,7 +71,7 @@ CHIP_ERROR CHIPCallbacksMgr::GetResponseCallback(NodeId nodeId, uint8_t sequence
     }
 
     ca = &mResponsesFailure;
-    while (ca->mNext != &mResponsesFailure)
+    while (ca != nullptr && ca->mNext != &mResponsesFailure)
     {
         if (ca->mNext != nullptr && ca->mNext->mInfoScalar == nodeId)
         {
@@ -109,7 +109,7 @@ CHIP_ERROR CHIPCallbacksMgr::GetReportCallback(NodeId nodeId, EndpointId endpoin
                                                Callback::Cancelable ** onReportCallback)
 {
     Callback::Cancelable * ca = &mReports;
-    while (ca->mNext != &mReports)
+    while (ca != nullptr && ca->mNext != &mReports)
     {
         if (ca->mNext != nullptr && ca->mNext->mInfoScalar == nodeId)
         {
