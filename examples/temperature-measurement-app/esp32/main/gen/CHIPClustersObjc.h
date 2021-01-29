@@ -19,27 +19,8 @@
 #define CHIP_CLUSTERS_H
 
 #import <Foundation/Foundation.h>
-#include <stdbool.h>
 
-// Global Response Handlers
-typedef void (^DefaultSuccessHandler)(void);
-typedef void (^DefaultFailureHandler)(uint8_t status);
-typedef void (^BooleanAttributeHandler)(bool value);
-typedef void (^Int8uAttributeHandler)(uint8_t value);
-typedef void (^Int8sAttributeHandler)(int8_t value);
-typedef void (^Int16uAttributeHandler)(uint16_t value);
-typedef void (^Int16sAttributeHandler)(int16_t value);
-typedef void (^Int32uAttributeHandler)(uint32_t value);
-typedef void (^Int32sAttributeHandler)(int32_t value);
-typedef void (^Int64uAttributeHandler)(uint64_t value);
-typedef void (^Int64sAttributeHandler)(int64_t value);
-typedef void (^ReadReportingConfigurationReportedHandler)(uint16_t minInterval, uint16_t maxInterval);
-typedef void (^ReadReportingConfigurationReceivedHandler)(uint16_t timeout);
-
-// Cluster Specific Response Handlers
-
-// This is a temporary workarounds for attributes that are not correctly handled yet.
-typedef void (^UnsupportedAttributeHandler)(void);
+typedef void (^ResponseHandler)(NSError * error, NSDictionary * values);
 
 @class CHIPDevice;
 
@@ -48,13 +29,11 @@ NS_ASSUME_NONNULL_BEGIN
 @interface CHIPBasic : NSObject
 
 - (nullable instancetype)initWithDevice:(CHIPDevice *)device endpoint:(uint8_t)endpoint queue:(dispatch_queue_t)queue;
-- (BOOL)resetToFactoryDefaults:(DefaultSuccessHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback;
+- (BOOL)resetToFactoryDefaults:(ResponseHandler)completionHandler;
 
-- (BOOL)readAttributeZclVersion:(Int8uAttributeHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)readAttributePowerSource:(Int8uAttributeHandler)onSuccessCallback
-               onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)readAttributeClusterRevision:(Int16uAttributeHandler)onSuccessCallback
-                   onFailureCallback:(DefaultFailureHandler)onFailureCallback;
+- (BOOL)readAttributeZclVersion:(ResponseHandler)completionHandler;
+- (BOOL)readAttributePowerSource:(ResponseHandler)completionHandler;
+- (BOOL)readAttributeClusterRevision:(ResponseHandler)completionHandler;
 
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;
@@ -69,20 +48,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (nullable instancetype)initWithDevice:(CHIPDevice *)device endpoint:(uint8_t)endpoint queue:(dispatch_queue_t)queue;
 
-- (BOOL)readAttributeMeasuredValue:(Int16sAttributeHandler)onSuccessCallback
-                 onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)reportAttributeMeasuredValue:(DefaultSuccessHandler)onSuccessCallback
-                   onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                    onReportCallback:(Int16sAttributeHandler)onReportCallback
-                         minInterval:(uint16_t)minInterval
-                         maxInterval:(uint16_t)maxInterval
-                              change:(int16_t)change;
-- (BOOL)readAttributeMinMeasuredValue:(Int16sAttributeHandler)onSuccessCallback
-                    onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)readAttributeMaxMeasuredValue:(Int16sAttributeHandler)onSuccessCallback
-                    onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)readAttributeClusterRevision:(Int16uAttributeHandler)onSuccessCallback
-                   onFailureCallback:(DefaultFailureHandler)onFailureCallback;
+- (BOOL)readAttributeMeasuredValue:(ResponseHandler)completionHandler;
+- (BOOL)configureAttributeMeasuredValue:(uint16_t)minInterval
+                            maxInterval:(uint16_t)maxInterval
+                                 change:(int16_t)change
+                      completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)reportAttributeMeasuredValue:(ResponseHandler)reportHandler;
+- (BOOL)readAttributeMinMeasuredValue:(ResponseHandler)completionHandler;
+- (BOOL)readAttributeMaxMeasuredValue:(ResponseHandler)completionHandler;
+- (BOOL)readAttributeClusterRevision:(ResponseHandler)completionHandler;
 
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;

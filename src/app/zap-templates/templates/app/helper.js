@@ -356,6 +356,11 @@ function asPrintFormat(type)
   return templateUtil.templatePromise(this.global, promise)
 }
 
+function isFirstElement(index)
+{
+    return index == 0;
+}
+
 //
 // Module exports
 //
@@ -364,6 +369,7 @@ exports.asReadType                                    = asReadType;
 exports.asReadTypeLength                              = asReadTypeLength;
 exports.asValueIfNotPresent                           = asValueIfNotPresent;
 exports.asChipUnderlyingType                          = asChipUnderlyingType;
+exports.isFirstElement                                = isFirstElement;
 exports.user_cluster_has_enabled_manufacturer_command = user_cluster_has_enabled_manufacturer_command;
 exports.chip_endpoint_generated_functions             = chip_endpoint_generated_functions
 exports.chip_endpoint_cluster_list                    = chip_endpoint_cluster_list

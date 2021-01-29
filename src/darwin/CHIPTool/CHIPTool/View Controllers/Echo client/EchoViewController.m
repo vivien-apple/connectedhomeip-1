@@ -141,18 +141,21 @@
     if ([self.chipDevice isActive]) {
         [self updateResult:@"MfgSpecificPing command sent..."];
 
-        CHIPDeviceCallback successHandler = ^(void) {
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1.0), dispatch_get_main_queue(), ^{
-                [self updateResult:@"MfgSpecificPing command: success!"];
-            });
-        };
+        [self.basic mfgSpecificPing:^(NSError *error, NSDictionary *values) {
+            NSString *resultString;
+            if (error == nil)
+            {
+                resultString = @"MfgSpecificPing command: success!";
+            }
+            else
+            {
+                resultString = [NSString stringWithFormat:@"An error occured: 0x%02lx", error.code];
+            }
 
-        [self.basic mfgSpecificPing:successHandler
-                  onFailureCallback:^(uint8_t status) {
-                      dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1.0), dispatch_get_main_queue(), ^{
-                          [self updateResult:@"MfgSpecificPing command: failure!"];
-                      });
-                  }];
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 5.0), dispatch_get_main_queue(), ^{
+                [self updateResult:resultString];
+            });
+        }];
     } else {
         [self updateResult:@"Controller not connected"];
     }

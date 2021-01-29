@@ -28,7 +28,7 @@ using namespace ::chip;
 
 class CHIPDefaultSuccessCallbackBridge : public Callback::Callback<DefaultSuccessCallback> {
 public:
-    CHIPDefaultSuccessCallbackBridge(DefaultSuccessHandler handler, dispatch_queue_t queue)
+    CHIPDefaultSuccessCallbackBridge(ResponseHandler handler, dispatch_queue_t queue)
         : Callback::Callback<DefaultSuccessCallback>(CallbackFn, this)
         , mHandler(handler)
         , mQueue(queue)
@@ -42,7 +42,7 @@ public:
         CHIPDefaultSuccessCallbackBridge * callback = reinterpret_cast<CHIPDefaultSuccessCallbackBridge *>(context);
         if (callback && callback->mQueue) {
             dispatch_async(callback->mQueue, ^{
-                callback->mHandler();
+                callback->mHandler(nil, nil);
                 callback->Cancel();
                 delete callback;
             });
@@ -50,13 +50,13 @@ public:
     };
 
 private:
-    DefaultSuccessHandler mHandler;
+    ResponseHandler mHandler;
     dispatch_queue_t mQueue;
 };
 
 class CHIPDefaultFailureCallbackBridge : public Callback::Callback<DefaultFailureCallback> {
 public:
-    CHIPDefaultFailureCallbackBridge(DefaultFailureHandler handler, dispatch_queue_t queue)
+    CHIPDefaultFailureCallbackBridge(ResponseHandler handler, dispatch_queue_t queue)
         : Callback::Callback<DefaultFailureCallback>(CallbackFn, this)
         , mHandler(handler)
         , mQueue(queue)
@@ -70,7 +70,8 @@ public:
         CHIPDefaultFailureCallbackBridge * callback = reinterpret_cast<CHIPDefaultFailureCallbackBridge *>(context);
         if (callback && callback->mQueue) {
             dispatch_async(callback->mQueue, ^{
-                callback->mHandler(status);
+                NSError * error = [NSError errorWithDomain:@"ZCL" code:status userInfo:@ { NSLocalizedDescriptionKey : @"" }];
+                callback->mHandler(error, nil);
                 callback->Cancel();
                 delete callback;
             });
@@ -78,13 +79,13 @@ public:
     };
 
 private:
-    DefaultFailureHandler mHandler;
+    ResponseHandler mHandler;
     dispatch_queue_t mQueue;
 };
 
 class CHIPUnsupportedAttributeCallbackBridge : public Callback::Callback<DefaultSuccessCallback> {
 public:
-    CHIPUnsupportedAttributeCallbackBridge(DefaultSuccessHandler handler, dispatch_queue_t queue)
+    CHIPUnsupportedAttributeCallbackBridge(ResponseHandler handler, dispatch_queue_t queue)
         : Callback::Callback<DefaultSuccessCallback>(CallbackFn, this)
     {
     }
@@ -96,7 +97,10 @@ public:
         CHIPUnsupportedAttributeCallbackBridge * callback = reinterpret_cast<CHIPUnsupportedAttributeCallbackBridge *>(context);
         if (callback && callback->mQueue) {
             dispatch_async(callback->mQueue, ^{
-                callback->mHandler();
+                NSError * error = [NSError errorWithDomain:@"ZCL"
+                                                      code:0
+                                                  userInfo:@ { NSLocalizedDescriptionKey : @"Unsuported attribute type" }];
+                callback->mHandler(error, nil);
                 callback->Cancel();
                 delete callback;
             });
@@ -104,13 +108,13 @@ public:
     };
 
 private:
-    DefaultSuccessHandler mHandler;
+    ResponseHandler mHandler;
     dispatch_queue_t mQueue;
 };
 
 class CHIPBooleanAttributeCallbackBridge : public Callback::Callback<BooleanAttributeCallback> {
 public:
-    CHIPBooleanAttributeCallbackBridge(BooleanAttributeHandler handler, dispatch_queue_t queue, bool keepAlive = false)
+    CHIPBooleanAttributeCallbackBridge(ResponseHandler handler, dispatch_queue_t queue, bool keepAlive = false)
         : Callback::Callback<BooleanAttributeCallback>(CallbackFn, this)
         , mHandler(handler)
         , mQueue(queue)
@@ -125,7 +129,7 @@ public:
         CHIPBooleanAttributeCallbackBridge * callback = reinterpret_cast<CHIPBooleanAttributeCallbackBridge *>(context);
         if (callback && callback->mQueue) {
             dispatch_async(callback->mQueue, ^{
-                callback->mHandler(value);
+                callback->mHandler(nil, @ { @"value" : [NSNumber numberWithBool:value] });
                 if (!callback->mKeepAlive) {
                     callback->Cancel();
                     delete callback;
@@ -135,14 +139,14 @@ public:
     };
 
 private:
-    BooleanAttributeHandler mHandler;
+    ResponseHandler mHandler;
     dispatch_queue_t mQueue;
     bool mKeepAlive;
 };
 
 class CHIPInt8uAttributeCallbackBridge : public Callback::Callback<Int8uAttributeCallback> {
 public:
-    CHIPInt8uAttributeCallbackBridge(Int8uAttributeHandler handler, dispatch_queue_t queue, bool keepAlive = false)
+    CHIPInt8uAttributeCallbackBridge(ResponseHandler handler, dispatch_queue_t queue, bool keepAlive = false)
         : Callback::Callback<Int8uAttributeCallback>(CallbackFn, this)
         , mHandler(handler)
         , mQueue(queue)
@@ -157,7 +161,7 @@ public:
         CHIPInt8uAttributeCallbackBridge * callback = reinterpret_cast<CHIPInt8uAttributeCallbackBridge *>(context);
         if (callback && callback->mQueue) {
             dispatch_async(callback->mQueue, ^{
-                callback->mHandler(value);
+                callback->mHandler(nil, @ { @"value" : [NSNumber numberWithUnsignedChar:value] });
                 if (!callback->mKeepAlive) {
                     callback->Cancel();
                     delete callback;
@@ -167,14 +171,14 @@ public:
     };
 
 private:
-    Int8uAttributeHandler mHandler;
+    ResponseHandler mHandler;
     dispatch_queue_t mQueue;
     bool mKeepAlive;
 };
 
 class CHIPInt8sAttributeCallbackBridge : public Callback::Callback<Int8sAttributeCallback> {
 public:
-    CHIPInt8sAttributeCallbackBridge(Int8sAttributeHandler handler, dispatch_queue_t queue, bool keepAlive = false)
+    CHIPInt8sAttributeCallbackBridge(ResponseHandler handler, dispatch_queue_t queue, bool keepAlive = false)
         : Callback::Callback<Int8sAttributeCallback>(CallbackFn, this)
         , mHandler(handler)
         , mQueue(queue)
@@ -189,7 +193,7 @@ public:
         CHIPInt8sAttributeCallbackBridge * callback = reinterpret_cast<CHIPInt8sAttributeCallbackBridge *>(context);
         if (callback && callback->mQueue) {
             dispatch_async(callback->mQueue, ^{
-                callback->mHandler(value);
+                callback->mHandler(nil, @ { @"value" : [NSNumber numberWithChar:value] });
                 if (!callback->mKeepAlive) {
                     callback->Cancel();
                     delete callback;
@@ -199,14 +203,14 @@ public:
     };
 
 private:
-    Int8sAttributeHandler mHandler;
+    ResponseHandler mHandler;
     dispatch_queue_t mQueue;
     bool mKeepAlive;
 };
 
 class CHIPInt16uAttributeCallbackBridge : public Callback::Callback<Int16uAttributeCallback> {
 public:
-    CHIPInt16uAttributeCallbackBridge(Int16uAttributeHandler handler, dispatch_queue_t queue, bool keepAlive = false)
+    CHIPInt16uAttributeCallbackBridge(ResponseHandler handler, dispatch_queue_t queue, bool keepAlive = false)
         : Callback::Callback<Int16uAttributeCallback>(CallbackFn, this)
         , mHandler(handler)
         , mQueue(queue)
@@ -221,7 +225,7 @@ public:
         CHIPInt16uAttributeCallbackBridge * callback = reinterpret_cast<CHIPInt16uAttributeCallbackBridge *>(context);
         if (callback && callback->mQueue) {
             dispatch_async(callback->mQueue, ^{
-                callback->mHandler(value);
+                callback->mHandler(nil, @ { @"value" : [NSNumber numberWithUnsignedShort:value] });
                 if (!callback->mKeepAlive) {
                     callback->Cancel();
                     delete callback;
@@ -231,14 +235,14 @@ public:
     };
 
 private:
-    Int16uAttributeHandler mHandler;
+    ResponseHandler mHandler;
     dispatch_queue_t mQueue;
     bool mKeepAlive;
 };
 
 class CHIPInt16sAttributeCallbackBridge : public Callback::Callback<Int16sAttributeCallback> {
 public:
-    CHIPInt16sAttributeCallbackBridge(Int16sAttributeHandler handler, dispatch_queue_t queue, bool keepAlive = false)
+    CHIPInt16sAttributeCallbackBridge(ResponseHandler handler, dispatch_queue_t queue, bool keepAlive = false)
         : Callback::Callback<Int16sAttributeCallback>(CallbackFn, this)
         , mHandler(handler)
         , mQueue(queue)
@@ -253,7 +257,7 @@ public:
         CHIPInt16sAttributeCallbackBridge * callback = reinterpret_cast<CHIPInt16sAttributeCallbackBridge *>(context);
         if (callback && callback->mQueue) {
             dispatch_async(callback->mQueue, ^{
-                callback->mHandler(value);
+                callback->mHandler(nil, @ { @"value" : [NSNumber numberWithShort:value] });
                 if (!callback->mKeepAlive) {
                     callback->Cancel();
                     delete callback;
@@ -263,7 +267,7 @@ public:
     };
 
 private:
-    Int16sAttributeHandler mHandler;
+    ResponseHandler mHandler;
     dispatch_queue_t mQueue;
     bool mKeepAlive;
 };
@@ -271,8 +275,7 @@ private:
 class CHIPDoorLockClusterClearAllPinsResponseCallbackBridge
     : public Callback::Callback<DoorLockClusterClearAllPinsResponseCallback> {
 public:
-    CHIPDoorLockClusterClearAllPinsResponseCallbackBridge(
-        DoorLockClusterClearAllPinsResponseHandler handler, dispatch_queue_t queue)
+    CHIPDoorLockClusterClearAllPinsResponseCallbackBridge(ResponseHandler handler, dispatch_queue_t queue)
         : Callback::Callback<DoorLockClusterClearAllPinsResponseCallback>(CallbackFn, this)
         , mHandler(handler)
         , mQueue(queue)
@@ -287,7 +290,7 @@ public:
             = reinterpret_cast<CHIPDoorLockClusterClearAllPinsResponseCallbackBridge *>(context);
         if (callback && callback->mQueue) {
             dispatch_async(callback->mQueue, ^{
-                callback->mHandler();
+                callback->mHandler(nil, @ {});
                 callback->Cancel();
                 delete callback;
             });
@@ -295,15 +298,14 @@ public:
     };
 
 private:
-    DoorLockClusterClearAllPinsResponseHandler mHandler;
+    ResponseHandler mHandler;
     dispatch_queue_t mQueue;
 };
 
 class CHIPDoorLockClusterClearAllRfidsResponseCallbackBridge
     : public Callback::Callback<DoorLockClusterClearAllRfidsResponseCallback> {
 public:
-    CHIPDoorLockClusterClearAllRfidsResponseCallbackBridge(
-        DoorLockClusterClearAllRfidsResponseHandler handler, dispatch_queue_t queue)
+    CHIPDoorLockClusterClearAllRfidsResponseCallbackBridge(ResponseHandler handler, dispatch_queue_t queue)
         : Callback::Callback<DoorLockClusterClearAllRfidsResponseCallback>(CallbackFn, this)
         , mHandler(handler)
         , mQueue(queue)
@@ -318,7 +320,7 @@ public:
             = reinterpret_cast<CHIPDoorLockClusterClearAllRfidsResponseCallbackBridge *>(context);
         if (callback && callback->mQueue) {
             dispatch_async(callback->mQueue, ^{
-                callback->mHandler();
+                callback->mHandler(nil, @ {});
                 callback->Cancel();
                 delete callback;
             });
@@ -326,15 +328,14 @@ public:
     };
 
 private:
-    DoorLockClusterClearAllRfidsResponseHandler mHandler;
+    ResponseHandler mHandler;
     dispatch_queue_t mQueue;
 };
 
 class CHIPDoorLockClusterClearHolidayScheduleResponseCallbackBridge
     : public Callback::Callback<DoorLockClusterClearHolidayScheduleResponseCallback> {
 public:
-    CHIPDoorLockClusterClearHolidayScheduleResponseCallbackBridge(
-        DoorLockClusterClearHolidayScheduleResponseHandler handler, dispatch_queue_t queue)
+    CHIPDoorLockClusterClearHolidayScheduleResponseCallbackBridge(ResponseHandler handler, dispatch_queue_t queue)
         : Callback::Callback<DoorLockClusterClearHolidayScheduleResponseCallback>(CallbackFn, this)
         , mHandler(handler)
         , mQueue(queue)
@@ -349,7 +350,7 @@ public:
             = reinterpret_cast<CHIPDoorLockClusterClearHolidayScheduleResponseCallbackBridge *>(context);
         if (callback && callback->mQueue) {
             dispatch_async(callback->mQueue, ^{
-                callback->mHandler();
+                callback->mHandler(nil, @ {});
                 callback->Cancel();
                 delete callback;
             });
@@ -357,13 +358,13 @@ public:
     };
 
 private:
-    DoorLockClusterClearHolidayScheduleResponseHandler mHandler;
+    ResponseHandler mHandler;
     dispatch_queue_t mQueue;
 };
 
 class CHIPDoorLockClusterClearPinResponseCallbackBridge : public Callback::Callback<DoorLockClusterClearPinResponseCallback> {
 public:
-    CHIPDoorLockClusterClearPinResponseCallbackBridge(DoorLockClusterClearPinResponseHandler handler, dispatch_queue_t queue)
+    CHIPDoorLockClusterClearPinResponseCallbackBridge(ResponseHandler handler, dispatch_queue_t queue)
         : Callback::Callback<DoorLockClusterClearPinResponseCallback>(CallbackFn, this)
         , mHandler(handler)
         , mQueue(queue)
@@ -378,7 +379,7 @@ public:
             = reinterpret_cast<CHIPDoorLockClusterClearPinResponseCallbackBridge *>(context);
         if (callback && callback->mQueue) {
             dispatch_async(callback->mQueue, ^{
-                callback->mHandler();
+                callback->mHandler(nil, @ {});
                 callback->Cancel();
                 delete callback;
             });
@@ -386,13 +387,13 @@ public:
     };
 
 private:
-    DoorLockClusterClearPinResponseHandler mHandler;
+    ResponseHandler mHandler;
     dispatch_queue_t mQueue;
 };
 
 class CHIPDoorLockClusterClearRfidResponseCallbackBridge : public Callback::Callback<DoorLockClusterClearRfidResponseCallback> {
 public:
-    CHIPDoorLockClusterClearRfidResponseCallbackBridge(DoorLockClusterClearRfidResponseHandler handler, dispatch_queue_t queue)
+    CHIPDoorLockClusterClearRfidResponseCallbackBridge(ResponseHandler handler, dispatch_queue_t queue)
         : Callback::Callback<DoorLockClusterClearRfidResponseCallback>(CallbackFn, this)
         , mHandler(handler)
         , mQueue(queue)
@@ -407,7 +408,7 @@ public:
             = reinterpret_cast<CHIPDoorLockClusterClearRfidResponseCallbackBridge *>(context);
         if (callback && callback->mQueue) {
             dispatch_async(callback->mQueue, ^{
-                callback->mHandler();
+                callback->mHandler(nil, @ {});
                 callback->Cancel();
                 delete callback;
             });
@@ -415,15 +416,14 @@ public:
     };
 
 private:
-    DoorLockClusterClearRfidResponseHandler mHandler;
+    ResponseHandler mHandler;
     dispatch_queue_t mQueue;
 };
 
 class CHIPDoorLockClusterClearWeekdayScheduleResponseCallbackBridge
     : public Callback::Callback<DoorLockClusterClearWeekdayScheduleResponseCallback> {
 public:
-    CHIPDoorLockClusterClearWeekdayScheduleResponseCallbackBridge(
-        DoorLockClusterClearWeekdayScheduleResponseHandler handler, dispatch_queue_t queue)
+    CHIPDoorLockClusterClearWeekdayScheduleResponseCallbackBridge(ResponseHandler handler, dispatch_queue_t queue)
         : Callback::Callback<DoorLockClusterClearWeekdayScheduleResponseCallback>(CallbackFn, this)
         , mHandler(handler)
         , mQueue(queue)
@@ -438,7 +438,7 @@ public:
             = reinterpret_cast<CHIPDoorLockClusterClearWeekdayScheduleResponseCallbackBridge *>(context);
         if (callback && callback->mQueue) {
             dispatch_async(callback->mQueue, ^{
-                callback->mHandler();
+                callback->mHandler(nil, @ {});
                 callback->Cancel();
                 delete callback;
             });
@@ -446,15 +446,14 @@ public:
     };
 
 private:
-    DoorLockClusterClearWeekdayScheduleResponseHandler mHandler;
+    ResponseHandler mHandler;
     dispatch_queue_t mQueue;
 };
 
 class CHIPDoorLockClusterClearYeardayScheduleResponseCallbackBridge
     : public Callback::Callback<DoorLockClusterClearYeardayScheduleResponseCallback> {
 public:
-    CHIPDoorLockClusterClearYeardayScheduleResponseCallbackBridge(
-        DoorLockClusterClearYeardayScheduleResponseHandler handler, dispatch_queue_t queue)
+    CHIPDoorLockClusterClearYeardayScheduleResponseCallbackBridge(ResponseHandler handler, dispatch_queue_t queue)
         : Callback::Callback<DoorLockClusterClearYeardayScheduleResponseCallback>(CallbackFn, this)
         , mHandler(handler)
         , mQueue(queue)
@@ -469,7 +468,7 @@ public:
             = reinterpret_cast<CHIPDoorLockClusterClearYeardayScheduleResponseCallbackBridge *>(context);
         if (callback && callback->mQueue) {
             dispatch_async(callback->mQueue, ^{
-                callback->mHandler();
+                callback->mHandler(nil, @ {});
                 callback->Cancel();
                 delete callback;
             });
@@ -477,15 +476,14 @@ public:
     };
 
 private:
-    DoorLockClusterClearYeardayScheduleResponseHandler mHandler;
+    ResponseHandler mHandler;
     dispatch_queue_t mQueue;
 };
 
 class CHIPDoorLockClusterGetHolidayScheduleResponseCallbackBridge
     : public Callback::Callback<DoorLockClusterGetHolidayScheduleResponseCallback> {
 public:
-    CHIPDoorLockClusterGetHolidayScheduleResponseCallbackBridge(
-        DoorLockClusterGetHolidayScheduleResponseHandler handler, dispatch_queue_t queue)
+    CHIPDoorLockClusterGetHolidayScheduleResponseCallbackBridge(ResponseHandler handler, dispatch_queue_t queue)
         : Callback::Callback<DoorLockClusterGetHolidayScheduleResponseCallback>(CallbackFn, this)
         , mHandler(handler)
         , mQueue(queue)
@@ -501,7 +499,12 @@ public:
             = reinterpret_cast<CHIPDoorLockClusterGetHolidayScheduleResponseCallbackBridge *>(context);
         if (callback && callback->mQueue) {
             dispatch_async(callback->mQueue, ^{
-                callback->mHandler(scheduleId, localStartTime, localEndTime, operatingModeDuringHoliday);
+                callback->mHandler(nil, @ {
+                    @"scheduleId" : [NSNumber numberWithUnsignedChar:scheduleId],
+                    @"localStartTime" : [NSNumber numberWithUnsignedLong:localStartTime],
+                    @"localEndTime" : [NSNumber numberWithUnsignedLong:localEndTime],
+                    @"operatingModeDuringHoliday" : [NSNumber numberWithUnsignedChar:operatingModeDuringHoliday],
+                });
                 callback->Cancel();
                 delete callback;
             });
@@ -509,15 +512,14 @@ public:
     };
 
 private:
-    DoorLockClusterGetHolidayScheduleResponseHandler mHandler;
+    ResponseHandler mHandler;
     dispatch_queue_t mQueue;
 };
 
 class CHIPDoorLockClusterGetLogRecordResponseCallbackBridge
     : public Callback::Callback<DoorLockClusterGetLogRecordResponseCallback> {
 public:
-    CHIPDoorLockClusterGetLogRecordResponseCallbackBridge(
-        DoorLockClusterGetLogRecordResponseHandler handler, dispatch_queue_t queue)
+    CHIPDoorLockClusterGetLogRecordResponseCallbackBridge(ResponseHandler handler, dispatch_queue_t queue)
         : Callback::Callback<DoorLockClusterGetLogRecordResponseCallback>(CallbackFn, this)
         , mHandler(handler)
         , mQueue(queue)
@@ -533,7 +535,15 @@ public:
             = reinterpret_cast<CHIPDoorLockClusterGetLogRecordResponseCallbackBridge *>(context);
         if (callback && callback->mQueue) {
             dispatch_async(callback->mQueue, ^{
-                callback->mHandler(logEntryId, timestamp, eventType, source, eventIdOrAlarmCode, userId, pin);
+                callback->mHandler(nil, @ {
+                    @"logEntryId" : [NSNumber numberWithUnsignedShort:logEntryId],
+                    @"timestamp" : [NSNumber numberWithUnsignedLong:timestamp],
+                    @"eventType" : [NSNumber numberWithUnsignedChar:eventType],
+                    @"source" : [NSNumber numberWithUnsignedChar:source],
+                    @"eventIdOrAlarmCode" : [NSNumber numberWithUnsignedChar:eventIdOrAlarmCode],
+                    @"userId" : [NSNumber numberWithUnsignedShort:userId],
+                    @"pin" : [NSString stringWithFormat:@"%s", pin],
+                });
                 callback->Cancel();
                 delete callback;
             });
@@ -541,13 +551,13 @@ public:
     };
 
 private:
-    DoorLockClusterGetLogRecordResponseHandler mHandler;
+    ResponseHandler mHandler;
     dispatch_queue_t mQueue;
 };
 
 class CHIPDoorLockClusterGetPinResponseCallbackBridge : public Callback::Callback<DoorLockClusterGetPinResponseCallback> {
 public:
-    CHIPDoorLockClusterGetPinResponseCallbackBridge(DoorLockClusterGetPinResponseHandler handler, dispatch_queue_t queue)
+    CHIPDoorLockClusterGetPinResponseCallbackBridge(ResponseHandler handler, dispatch_queue_t queue)
         : Callback::Callback<DoorLockClusterGetPinResponseCallback>(CallbackFn, this)
         , mHandler(handler)
         , mQueue(queue)
@@ -562,7 +572,12 @@ public:
             = reinterpret_cast<CHIPDoorLockClusterGetPinResponseCallbackBridge *>(context);
         if (callback && callback->mQueue) {
             dispatch_async(callback->mQueue, ^{
-                callback->mHandler(userId, userStatus, userType, pin);
+                callback->mHandler(nil, @ {
+                    @"userId" : [NSNumber numberWithUnsignedShort:userId],
+                    @"userStatus" : [NSNumber numberWithUnsignedChar:userStatus],
+                    @"userType" : [NSNumber numberWithUnsignedChar:userType],
+                    @"pin" : [NSString stringWithFormat:@"%s", pin],
+                });
                 callback->Cancel();
                 delete callback;
             });
@@ -570,13 +585,13 @@ public:
     };
 
 private:
-    DoorLockClusterGetPinResponseHandler mHandler;
+    ResponseHandler mHandler;
     dispatch_queue_t mQueue;
 };
 
 class CHIPDoorLockClusterGetRfidResponseCallbackBridge : public Callback::Callback<DoorLockClusterGetRfidResponseCallback> {
 public:
-    CHIPDoorLockClusterGetRfidResponseCallbackBridge(DoorLockClusterGetRfidResponseHandler handler, dispatch_queue_t queue)
+    CHIPDoorLockClusterGetRfidResponseCallbackBridge(ResponseHandler handler, dispatch_queue_t queue)
         : Callback::Callback<DoorLockClusterGetRfidResponseCallback>(CallbackFn, this)
         , mHandler(handler)
         , mQueue(queue)
@@ -591,7 +606,12 @@ public:
             = reinterpret_cast<CHIPDoorLockClusterGetRfidResponseCallbackBridge *>(context);
         if (callback && callback->mQueue) {
             dispatch_async(callback->mQueue, ^{
-                callback->mHandler(userId, userStatus, userType, rfid);
+                callback->mHandler(nil, @ {
+                    @"userId" : [NSNumber numberWithUnsignedShort:userId],
+                    @"userStatus" : [NSNumber numberWithUnsignedChar:userStatus],
+                    @"userType" : [NSNumber numberWithUnsignedChar:userType],
+                    @"rfid" : [NSString stringWithFormat:@"%s", rfid],
+                });
                 callback->Cancel();
                 delete callback;
             });
@@ -599,13 +619,13 @@ public:
     };
 
 private:
-    DoorLockClusterGetRfidResponseHandler mHandler;
+    ResponseHandler mHandler;
     dispatch_queue_t mQueue;
 };
 
 class CHIPDoorLockClusterGetUserTypeResponseCallbackBridge : public Callback::Callback<DoorLockClusterGetUserTypeResponseCallback> {
 public:
-    CHIPDoorLockClusterGetUserTypeResponseCallbackBridge(DoorLockClusterGetUserTypeResponseHandler handler, dispatch_queue_t queue)
+    CHIPDoorLockClusterGetUserTypeResponseCallbackBridge(ResponseHandler handler, dispatch_queue_t queue)
         : Callback::Callback<DoorLockClusterGetUserTypeResponseCallback>(CallbackFn, this)
         , mHandler(handler)
         , mQueue(queue)
@@ -620,7 +640,10 @@ public:
             = reinterpret_cast<CHIPDoorLockClusterGetUserTypeResponseCallbackBridge *>(context);
         if (callback && callback->mQueue) {
             dispatch_async(callback->mQueue, ^{
-                callback->mHandler(userId, userType);
+                callback->mHandler(nil, @ {
+                    @"userId" : [NSNumber numberWithUnsignedShort:userId],
+                    @"userType" : [NSNumber numberWithUnsignedChar:userType],
+                });
                 callback->Cancel();
                 delete callback;
             });
@@ -628,15 +651,14 @@ public:
     };
 
 private:
-    DoorLockClusterGetUserTypeResponseHandler mHandler;
+    ResponseHandler mHandler;
     dispatch_queue_t mQueue;
 };
 
 class CHIPDoorLockClusterGetWeekdayScheduleResponseCallbackBridge
     : public Callback::Callback<DoorLockClusterGetWeekdayScheduleResponseCallback> {
 public:
-    CHIPDoorLockClusterGetWeekdayScheduleResponseCallbackBridge(
-        DoorLockClusterGetWeekdayScheduleResponseHandler handler, dispatch_queue_t queue)
+    CHIPDoorLockClusterGetWeekdayScheduleResponseCallbackBridge(ResponseHandler handler, dispatch_queue_t queue)
         : Callback::Callback<DoorLockClusterGetWeekdayScheduleResponseCallback>(CallbackFn, this)
         , mHandler(handler)
         , mQueue(queue)
@@ -652,7 +674,15 @@ public:
             = reinterpret_cast<CHIPDoorLockClusterGetWeekdayScheduleResponseCallbackBridge *>(context);
         if (callback && callback->mQueue) {
             dispatch_async(callback->mQueue, ^{
-                callback->mHandler(scheduleId, userId, daysMask, startHour, startMinute, endHour, endMinute);
+                callback->mHandler(nil, @ {
+                    @"scheduleId" : [NSNumber numberWithUnsignedChar:scheduleId],
+                    @"userId" : [NSNumber numberWithUnsignedShort:userId],
+                    @"daysMask" : [NSNumber numberWithUnsignedChar:daysMask],
+                    @"startHour" : [NSNumber numberWithUnsignedChar:startHour],
+                    @"startMinute" : [NSNumber numberWithUnsignedChar:startMinute],
+                    @"endHour" : [NSNumber numberWithUnsignedChar:endHour],
+                    @"endMinute" : [NSNumber numberWithUnsignedChar:endMinute],
+                });
                 callback->Cancel();
                 delete callback;
             });
@@ -660,15 +690,14 @@ public:
     };
 
 private:
-    DoorLockClusterGetWeekdayScheduleResponseHandler mHandler;
+    ResponseHandler mHandler;
     dispatch_queue_t mQueue;
 };
 
 class CHIPDoorLockClusterGetYeardayScheduleResponseCallbackBridge
     : public Callback::Callback<DoorLockClusterGetYeardayScheduleResponseCallback> {
 public:
-    CHIPDoorLockClusterGetYeardayScheduleResponseCallbackBridge(
-        DoorLockClusterGetYeardayScheduleResponseHandler handler, dispatch_queue_t queue)
+    CHIPDoorLockClusterGetYeardayScheduleResponseCallbackBridge(ResponseHandler handler, dispatch_queue_t queue)
         : Callback::Callback<DoorLockClusterGetYeardayScheduleResponseCallback>(CallbackFn, this)
         , mHandler(handler)
         , mQueue(queue)
@@ -683,7 +712,12 @@ public:
             = reinterpret_cast<CHIPDoorLockClusterGetYeardayScheduleResponseCallbackBridge *>(context);
         if (callback && callback->mQueue) {
             dispatch_async(callback->mQueue, ^{
-                callback->mHandler(scheduleId, userId, localStartTime, localEndTime);
+                callback->mHandler(nil, @ {
+                    @"scheduleId" : [NSNumber numberWithUnsignedChar:scheduleId],
+                    @"userId" : [NSNumber numberWithUnsignedShort:userId],
+                    @"localStartTime" : [NSNumber numberWithUnsignedLong:localStartTime],
+                    @"localEndTime" : [NSNumber numberWithUnsignedLong:localEndTime],
+                });
                 callback->Cancel();
                 delete callback;
             });
@@ -691,13 +725,13 @@ public:
     };
 
 private:
-    DoorLockClusterGetYeardayScheduleResponseHandler mHandler;
+    ResponseHandler mHandler;
     dispatch_queue_t mQueue;
 };
 
 class CHIPDoorLockClusterLockDoorResponseCallbackBridge : public Callback::Callback<DoorLockClusterLockDoorResponseCallback> {
 public:
-    CHIPDoorLockClusterLockDoorResponseCallbackBridge(DoorLockClusterLockDoorResponseHandler handler, dispatch_queue_t queue)
+    CHIPDoorLockClusterLockDoorResponseCallbackBridge(ResponseHandler handler, dispatch_queue_t queue)
         : Callback::Callback<DoorLockClusterLockDoorResponseCallback>(CallbackFn, this)
         , mHandler(handler)
         , mQueue(queue)
@@ -712,7 +746,7 @@ public:
             = reinterpret_cast<CHIPDoorLockClusterLockDoorResponseCallbackBridge *>(context);
         if (callback && callback->mQueue) {
             dispatch_async(callback->mQueue, ^{
-                callback->mHandler();
+                callback->mHandler(nil, @ {});
                 callback->Cancel();
                 delete callback;
             });
@@ -720,15 +754,14 @@ public:
     };
 
 private:
-    DoorLockClusterLockDoorResponseHandler mHandler;
+    ResponseHandler mHandler;
     dispatch_queue_t mQueue;
 };
 
 class CHIPDoorLockClusterSetHolidayScheduleResponseCallbackBridge
     : public Callback::Callback<DoorLockClusterSetHolidayScheduleResponseCallback> {
 public:
-    CHIPDoorLockClusterSetHolidayScheduleResponseCallbackBridge(
-        DoorLockClusterSetHolidayScheduleResponseHandler handler, dispatch_queue_t queue)
+    CHIPDoorLockClusterSetHolidayScheduleResponseCallbackBridge(ResponseHandler handler, dispatch_queue_t queue)
         : Callback::Callback<DoorLockClusterSetHolidayScheduleResponseCallback>(CallbackFn, this)
         , mHandler(handler)
         , mQueue(queue)
@@ -743,7 +776,7 @@ public:
             = reinterpret_cast<CHIPDoorLockClusterSetHolidayScheduleResponseCallbackBridge *>(context);
         if (callback && callback->mQueue) {
             dispatch_async(callback->mQueue, ^{
-                callback->mHandler();
+                callback->mHandler(nil, @ {});
                 callback->Cancel();
                 delete callback;
             });
@@ -751,13 +784,13 @@ public:
     };
 
 private:
-    DoorLockClusterSetHolidayScheduleResponseHandler mHandler;
+    ResponseHandler mHandler;
     dispatch_queue_t mQueue;
 };
 
 class CHIPDoorLockClusterSetPinResponseCallbackBridge : public Callback::Callback<DoorLockClusterSetPinResponseCallback> {
 public:
-    CHIPDoorLockClusterSetPinResponseCallbackBridge(DoorLockClusterSetPinResponseHandler handler, dispatch_queue_t queue)
+    CHIPDoorLockClusterSetPinResponseCallbackBridge(ResponseHandler handler, dispatch_queue_t queue)
         : Callback::Callback<DoorLockClusterSetPinResponseCallback>(CallbackFn, this)
         , mHandler(handler)
         , mQueue(queue)
@@ -772,7 +805,7 @@ public:
             = reinterpret_cast<CHIPDoorLockClusterSetPinResponseCallbackBridge *>(context);
         if (callback && callback->mQueue) {
             dispatch_async(callback->mQueue, ^{
-                callback->mHandler();
+                callback->mHandler(nil, @ {});
                 callback->Cancel();
                 delete callback;
             });
@@ -780,13 +813,13 @@ public:
     };
 
 private:
-    DoorLockClusterSetPinResponseHandler mHandler;
+    ResponseHandler mHandler;
     dispatch_queue_t mQueue;
 };
 
 class CHIPDoorLockClusterSetRfidResponseCallbackBridge : public Callback::Callback<DoorLockClusterSetRfidResponseCallback> {
 public:
-    CHIPDoorLockClusterSetRfidResponseCallbackBridge(DoorLockClusterSetRfidResponseHandler handler, dispatch_queue_t queue)
+    CHIPDoorLockClusterSetRfidResponseCallbackBridge(ResponseHandler handler, dispatch_queue_t queue)
         : Callback::Callback<DoorLockClusterSetRfidResponseCallback>(CallbackFn, this)
         , mHandler(handler)
         , mQueue(queue)
@@ -801,7 +834,7 @@ public:
             = reinterpret_cast<CHIPDoorLockClusterSetRfidResponseCallbackBridge *>(context);
         if (callback && callback->mQueue) {
             dispatch_async(callback->mQueue, ^{
-                callback->mHandler();
+                callback->mHandler(nil, @ {});
                 callback->Cancel();
                 delete callback;
             });
@@ -809,13 +842,13 @@ public:
     };
 
 private:
-    DoorLockClusterSetRfidResponseHandler mHandler;
+    ResponseHandler mHandler;
     dispatch_queue_t mQueue;
 };
 
 class CHIPDoorLockClusterSetUserTypeResponseCallbackBridge : public Callback::Callback<DoorLockClusterSetUserTypeResponseCallback> {
 public:
-    CHIPDoorLockClusterSetUserTypeResponseCallbackBridge(DoorLockClusterSetUserTypeResponseHandler handler, dispatch_queue_t queue)
+    CHIPDoorLockClusterSetUserTypeResponseCallbackBridge(ResponseHandler handler, dispatch_queue_t queue)
         : Callback::Callback<DoorLockClusterSetUserTypeResponseCallback>(CallbackFn, this)
         , mHandler(handler)
         , mQueue(queue)
@@ -830,7 +863,7 @@ public:
             = reinterpret_cast<CHIPDoorLockClusterSetUserTypeResponseCallbackBridge *>(context);
         if (callback && callback->mQueue) {
             dispatch_async(callback->mQueue, ^{
-                callback->mHandler();
+                callback->mHandler(nil, @ {});
                 callback->Cancel();
                 delete callback;
             });
@@ -838,15 +871,14 @@ public:
     };
 
 private:
-    DoorLockClusterSetUserTypeResponseHandler mHandler;
+    ResponseHandler mHandler;
     dispatch_queue_t mQueue;
 };
 
 class CHIPDoorLockClusterSetWeekdayScheduleResponseCallbackBridge
     : public Callback::Callback<DoorLockClusterSetWeekdayScheduleResponseCallback> {
 public:
-    CHIPDoorLockClusterSetWeekdayScheduleResponseCallbackBridge(
-        DoorLockClusterSetWeekdayScheduleResponseHandler handler, dispatch_queue_t queue)
+    CHIPDoorLockClusterSetWeekdayScheduleResponseCallbackBridge(ResponseHandler handler, dispatch_queue_t queue)
         : Callback::Callback<DoorLockClusterSetWeekdayScheduleResponseCallback>(CallbackFn, this)
         , mHandler(handler)
         , mQueue(queue)
@@ -861,7 +893,7 @@ public:
             = reinterpret_cast<CHIPDoorLockClusterSetWeekdayScheduleResponseCallbackBridge *>(context);
         if (callback && callback->mQueue) {
             dispatch_async(callback->mQueue, ^{
-                callback->mHandler();
+                callback->mHandler(nil, @ {});
                 callback->Cancel();
                 delete callback;
             });
@@ -869,15 +901,14 @@ public:
     };
 
 private:
-    DoorLockClusterSetWeekdayScheduleResponseHandler mHandler;
+    ResponseHandler mHandler;
     dispatch_queue_t mQueue;
 };
 
 class CHIPDoorLockClusterSetYeardayScheduleResponseCallbackBridge
     : public Callback::Callback<DoorLockClusterSetYeardayScheduleResponseCallback> {
 public:
-    CHIPDoorLockClusterSetYeardayScheduleResponseCallbackBridge(
-        DoorLockClusterSetYeardayScheduleResponseHandler handler, dispatch_queue_t queue)
+    CHIPDoorLockClusterSetYeardayScheduleResponseCallbackBridge(ResponseHandler handler, dispatch_queue_t queue)
         : Callback::Callback<DoorLockClusterSetYeardayScheduleResponseCallback>(CallbackFn, this)
         , mHandler(handler)
         , mQueue(queue)
@@ -892,7 +923,7 @@ public:
             = reinterpret_cast<CHIPDoorLockClusterSetYeardayScheduleResponseCallbackBridge *>(context);
         if (callback && callback->mQueue) {
             dispatch_async(callback->mQueue, ^{
-                callback->mHandler();
+                callback->mHandler(nil, @ {});
                 callback->Cancel();
                 delete callback;
             });
@@ -900,13 +931,13 @@ public:
     };
 
 private:
-    DoorLockClusterSetYeardayScheduleResponseHandler mHandler;
+    ResponseHandler mHandler;
     dispatch_queue_t mQueue;
 };
 
 class CHIPDoorLockClusterUnlockDoorResponseCallbackBridge : public Callback::Callback<DoorLockClusterUnlockDoorResponseCallback> {
 public:
-    CHIPDoorLockClusterUnlockDoorResponseCallbackBridge(DoorLockClusterUnlockDoorResponseHandler handler, dispatch_queue_t queue)
+    CHIPDoorLockClusterUnlockDoorResponseCallbackBridge(ResponseHandler handler, dispatch_queue_t queue)
         : Callback::Callback<DoorLockClusterUnlockDoorResponseCallback>(CallbackFn, this)
         , mHandler(handler)
         , mQueue(queue)
@@ -921,7 +952,7 @@ public:
             = reinterpret_cast<CHIPDoorLockClusterUnlockDoorResponseCallbackBridge *>(context);
         if (callback && callback->mQueue) {
             dispatch_async(callback->mQueue, ^{
-                callback->mHandler();
+                callback->mHandler(nil, @ {});
                 callback->Cancel();
                 delete callback;
             });
@@ -929,15 +960,14 @@ public:
     };
 
 private:
-    DoorLockClusterUnlockDoorResponseHandler mHandler;
+    ResponseHandler mHandler;
     dispatch_queue_t mQueue;
 };
 
 class CHIPDoorLockClusterUnlockWithTimeoutResponseCallbackBridge
     : public Callback::Callback<DoorLockClusterUnlockWithTimeoutResponseCallback> {
 public:
-    CHIPDoorLockClusterUnlockWithTimeoutResponseCallbackBridge(
-        DoorLockClusterUnlockWithTimeoutResponseHandler handler, dispatch_queue_t queue)
+    CHIPDoorLockClusterUnlockWithTimeoutResponseCallbackBridge(ResponseHandler handler, dispatch_queue_t queue)
         : Callback::Callback<DoorLockClusterUnlockWithTimeoutResponseCallback>(CallbackFn, this)
         , mHandler(handler)
         , mQueue(queue)
@@ -952,7 +982,7 @@ public:
             = reinterpret_cast<CHIPDoorLockClusterUnlockWithTimeoutResponseCallbackBridge *>(context);
         if (callback && callback->mQueue) {
             dispatch_async(callback->mQueue, ^{
-                callback->mHandler();
+                callback->mHandler(nil, @ {});
                 callback->Cancel();
                 delete callback;
             });
@@ -960,13 +990,13 @@ public:
     };
 
 private:
-    DoorLockClusterUnlockWithTimeoutResponseHandler mHandler;
+    ResponseHandler mHandler;
     dispatch_queue_t mQueue;
 };
 
 class CHIPGroupsClusterAddGroupResponseCallbackBridge : public Callback::Callback<GroupsClusterAddGroupResponseCallback> {
 public:
-    CHIPGroupsClusterAddGroupResponseCallbackBridge(GroupsClusterAddGroupResponseHandler handler, dispatch_queue_t queue)
+    CHIPGroupsClusterAddGroupResponseCallbackBridge(ResponseHandler handler, dispatch_queue_t queue)
         : Callback::Callback<GroupsClusterAddGroupResponseCallback>(CallbackFn, this)
         , mHandler(handler)
         , mQueue(queue)
@@ -981,7 +1011,9 @@ public:
             = reinterpret_cast<CHIPGroupsClusterAddGroupResponseCallbackBridge *>(context);
         if (callback && callback->mQueue) {
             dispatch_async(callback->mQueue, ^{
-                callback->mHandler(groupId);
+                callback->mHandler(nil, @ {
+                    @"groupId" : [NSNumber numberWithUnsignedShort:groupId],
+                });
                 callback->Cancel();
                 delete callback;
             });
@@ -989,15 +1021,14 @@ public:
     };
 
 private:
-    GroupsClusterAddGroupResponseHandler mHandler;
+    ResponseHandler mHandler;
     dispatch_queue_t mQueue;
 };
 
 class CHIPGroupsClusterGetGroupMembershipResponseCallbackBridge
     : public Callback::Callback<GroupsClusterGetGroupMembershipResponseCallback> {
 public:
-    CHIPGroupsClusterGetGroupMembershipResponseCallbackBridge(
-        GroupsClusterGetGroupMembershipResponseHandler handler, dispatch_queue_t queue)
+    CHIPGroupsClusterGetGroupMembershipResponseCallbackBridge(ResponseHandler handler, dispatch_queue_t queue)
         : Callback::Callback<GroupsClusterGetGroupMembershipResponseCallback>(CallbackFn, this)
         , mHandler(handler)
         , mQueue(queue)
@@ -1013,7 +1044,12 @@ public:
             = reinterpret_cast<CHIPGroupsClusterGetGroupMembershipResponseCallbackBridge *>(context);
         if (callback && callback->mQueue) {
             dispatch_async(callback->mQueue, ^{
-                callback->mHandler(capacity, groupCount, groupList);
+                callback->mHandler(nil, @ {
+                    @"capacity" : [NSNumber numberWithUnsignedChar:capacity],
+                    @"groupCount" : [NSNumber numberWithUnsignedChar:groupCount],
+                    // groupList: /* TYPE WARNING: array array defaults to */ uint8_t *
+                    // Conversion from this type to Objc is not properly implemented yet
+                });
                 callback->Cancel();
                 delete callback;
             });
@@ -1021,13 +1057,13 @@ public:
     };
 
 private:
-    GroupsClusterGetGroupMembershipResponseHandler mHandler;
+    ResponseHandler mHandler;
     dispatch_queue_t mQueue;
 };
 
 class CHIPGroupsClusterRemoveGroupResponseCallbackBridge : public Callback::Callback<GroupsClusterRemoveGroupResponseCallback> {
 public:
-    CHIPGroupsClusterRemoveGroupResponseCallbackBridge(GroupsClusterRemoveGroupResponseHandler handler, dispatch_queue_t queue)
+    CHIPGroupsClusterRemoveGroupResponseCallbackBridge(ResponseHandler handler, dispatch_queue_t queue)
         : Callback::Callback<GroupsClusterRemoveGroupResponseCallback>(CallbackFn, this)
         , mHandler(handler)
         , mQueue(queue)
@@ -1042,7 +1078,9 @@ public:
             = reinterpret_cast<CHIPGroupsClusterRemoveGroupResponseCallbackBridge *>(context);
         if (callback && callback->mQueue) {
             dispatch_async(callback->mQueue, ^{
-                callback->mHandler(groupId);
+                callback->mHandler(nil, @ {
+                    @"groupId" : [NSNumber numberWithUnsignedShort:groupId],
+                });
                 callback->Cancel();
                 delete callback;
             });
@@ -1050,13 +1088,13 @@ public:
     };
 
 private:
-    GroupsClusterRemoveGroupResponseHandler mHandler;
+    ResponseHandler mHandler;
     dispatch_queue_t mQueue;
 };
 
 class CHIPGroupsClusterViewGroupResponseCallbackBridge : public Callback::Callback<GroupsClusterViewGroupResponseCallback> {
 public:
-    CHIPGroupsClusterViewGroupResponseCallbackBridge(GroupsClusterViewGroupResponseHandler handler, dispatch_queue_t queue)
+    CHIPGroupsClusterViewGroupResponseCallbackBridge(ResponseHandler handler, dispatch_queue_t queue)
         : Callback::Callback<GroupsClusterViewGroupResponseCallback>(CallbackFn, this)
         , mHandler(handler)
         , mQueue(queue)
@@ -1071,7 +1109,10 @@ public:
             = reinterpret_cast<CHIPGroupsClusterViewGroupResponseCallbackBridge *>(context);
         if (callback && callback->mQueue) {
             dispatch_async(callback->mQueue, ^{
-                callback->mHandler(groupId, groupName);
+                callback->mHandler(nil, @ {
+                    @"groupId" : [NSNumber numberWithUnsignedShort:groupId],
+                    @"groupName" : [NSString stringWithFormat:@"%s", groupName],
+                });
                 callback->Cancel();
                 delete callback;
             });
@@ -1079,15 +1120,14 @@ public:
     };
 
 private:
-    GroupsClusterViewGroupResponseHandler mHandler;
+    ResponseHandler mHandler;
     dispatch_queue_t mQueue;
 };
 
 class CHIPIdentifyClusterIdentifyQueryResponseCallbackBridge
     : public Callback::Callback<IdentifyClusterIdentifyQueryResponseCallback> {
 public:
-    CHIPIdentifyClusterIdentifyQueryResponseCallbackBridge(
-        IdentifyClusterIdentifyQueryResponseHandler handler, dispatch_queue_t queue)
+    CHIPIdentifyClusterIdentifyQueryResponseCallbackBridge(ResponseHandler handler, dispatch_queue_t queue)
         : Callback::Callback<IdentifyClusterIdentifyQueryResponseCallback>(CallbackFn, this)
         , mHandler(handler)
         , mQueue(queue)
@@ -1102,7 +1142,9 @@ public:
             = reinterpret_cast<CHIPIdentifyClusterIdentifyQueryResponseCallbackBridge *>(context);
         if (callback && callback->mQueue) {
             dispatch_async(callback->mQueue, ^{
-                callback->mHandler(timeout);
+                callback->mHandler(nil, @ {
+                    @"timeout" : [NSNumber numberWithUnsignedShort:timeout],
+                });
                 callback->Cancel();
                 delete callback;
             });
@@ -1110,13 +1152,13 @@ public:
     };
 
 private:
-    IdentifyClusterIdentifyQueryResponseHandler mHandler;
+    ResponseHandler mHandler;
     dispatch_queue_t mQueue;
 };
 
 class CHIPScenesClusterAddSceneResponseCallbackBridge : public Callback::Callback<ScenesClusterAddSceneResponseCallback> {
 public:
-    CHIPScenesClusterAddSceneResponseCallbackBridge(ScenesClusterAddSceneResponseHandler handler, dispatch_queue_t queue)
+    CHIPScenesClusterAddSceneResponseCallbackBridge(ResponseHandler handler, dispatch_queue_t queue)
         : Callback::Callback<ScenesClusterAddSceneResponseCallback>(CallbackFn, this)
         , mHandler(handler)
         , mQueue(queue)
@@ -1131,7 +1173,10 @@ public:
             = reinterpret_cast<CHIPScenesClusterAddSceneResponseCallbackBridge *>(context);
         if (callback && callback->mQueue) {
             dispatch_async(callback->mQueue, ^{
-                callback->mHandler(groupId, sceneId);
+                callback->mHandler(nil, @ {
+                    @"groupId" : [NSNumber numberWithUnsignedShort:groupId],
+                    @"sceneId" : [NSNumber numberWithUnsignedChar:sceneId],
+                });
                 callback->Cancel();
                 delete callback;
             });
@@ -1139,15 +1184,14 @@ public:
     };
 
 private:
-    ScenesClusterAddSceneResponseHandler mHandler;
+    ResponseHandler mHandler;
     dispatch_queue_t mQueue;
 };
 
 class CHIPScenesClusterGetSceneMembershipResponseCallbackBridge
     : public Callback::Callback<ScenesClusterGetSceneMembershipResponseCallback> {
 public:
-    CHIPScenesClusterGetSceneMembershipResponseCallbackBridge(
-        ScenesClusterGetSceneMembershipResponseHandler handler, dispatch_queue_t queue)
+    CHIPScenesClusterGetSceneMembershipResponseCallbackBridge(ResponseHandler handler, dispatch_queue_t queue)
         : Callback::Callback<ScenesClusterGetSceneMembershipResponseCallback>(CallbackFn, this)
         , mHandler(handler)
         , mQueue(queue)
@@ -1163,7 +1207,13 @@ public:
             = reinterpret_cast<CHIPScenesClusterGetSceneMembershipResponseCallbackBridge *>(context);
         if (callback && callback->mQueue) {
             dispatch_async(callback->mQueue, ^{
-                callback->mHandler(capacity, groupId, sceneCount, sceneList);
+                callback->mHandler(nil, @ {
+                    @"capacity" : [NSNumber numberWithUnsignedChar:capacity],
+                    @"groupId" : [NSNumber numberWithUnsignedShort:groupId],
+                    @"sceneCount" : [NSNumber numberWithUnsignedChar:sceneCount],
+                    // sceneList: /* TYPE WARNING: array array defaults to */ uint8_t *
+                    // Conversion from this type to Objc is not properly implemented yet
+                });
                 callback->Cancel();
                 delete callback;
             });
@@ -1171,15 +1221,14 @@ public:
     };
 
 private:
-    ScenesClusterGetSceneMembershipResponseHandler mHandler;
+    ResponseHandler mHandler;
     dispatch_queue_t mQueue;
 };
 
 class CHIPScenesClusterRemoveAllScenesResponseCallbackBridge
     : public Callback::Callback<ScenesClusterRemoveAllScenesResponseCallback> {
 public:
-    CHIPScenesClusterRemoveAllScenesResponseCallbackBridge(
-        ScenesClusterRemoveAllScenesResponseHandler handler, dispatch_queue_t queue)
+    CHIPScenesClusterRemoveAllScenesResponseCallbackBridge(ResponseHandler handler, dispatch_queue_t queue)
         : Callback::Callback<ScenesClusterRemoveAllScenesResponseCallback>(CallbackFn, this)
         , mHandler(handler)
         , mQueue(queue)
@@ -1194,7 +1243,9 @@ public:
             = reinterpret_cast<CHIPScenesClusterRemoveAllScenesResponseCallbackBridge *>(context);
         if (callback && callback->mQueue) {
             dispatch_async(callback->mQueue, ^{
-                callback->mHandler(groupId);
+                callback->mHandler(nil, @ {
+                    @"groupId" : [NSNumber numberWithUnsignedShort:groupId],
+                });
                 callback->Cancel();
                 delete callback;
             });
@@ -1202,13 +1253,13 @@ public:
     };
 
 private:
-    ScenesClusterRemoveAllScenesResponseHandler mHandler;
+    ResponseHandler mHandler;
     dispatch_queue_t mQueue;
 };
 
 class CHIPScenesClusterRemoveSceneResponseCallbackBridge : public Callback::Callback<ScenesClusterRemoveSceneResponseCallback> {
 public:
-    CHIPScenesClusterRemoveSceneResponseCallbackBridge(ScenesClusterRemoveSceneResponseHandler handler, dispatch_queue_t queue)
+    CHIPScenesClusterRemoveSceneResponseCallbackBridge(ResponseHandler handler, dispatch_queue_t queue)
         : Callback::Callback<ScenesClusterRemoveSceneResponseCallback>(CallbackFn, this)
         , mHandler(handler)
         , mQueue(queue)
@@ -1223,7 +1274,10 @@ public:
             = reinterpret_cast<CHIPScenesClusterRemoveSceneResponseCallbackBridge *>(context);
         if (callback && callback->mQueue) {
             dispatch_async(callback->mQueue, ^{
-                callback->mHandler(groupId, sceneId);
+                callback->mHandler(nil, @ {
+                    @"groupId" : [NSNumber numberWithUnsignedShort:groupId],
+                    @"sceneId" : [NSNumber numberWithUnsignedChar:sceneId],
+                });
                 callback->Cancel();
                 delete callback;
             });
@@ -1231,13 +1285,13 @@ public:
     };
 
 private:
-    ScenesClusterRemoveSceneResponseHandler mHandler;
+    ResponseHandler mHandler;
     dispatch_queue_t mQueue;
 };
 
 class CHIPScenesClusterStoreSceneResponseCallbackBridge : public Callback::Callback<ScenesClusterStoreSceneResponseCallback> {
 public:
-    CHIPScenesClusterStoreSceneResponseCallbackBridge(ScenesClusterStoreSceneResponseHandler handler, dispatch_queue_t queue)
+    CHIPScenesClusterStoreSceneResponseCallbackBridge(ResponseHandler handler, dispatch_queue_t queue)
         : Callback::Callback<ScenesClusterStoreSceneResponseCallback>(CallbackFn, this)
         , mHandler(handler)
         , mQueue(queue)
@@ -1252,7 +1306,10 @@ public:
             = reinterpret_cast<CHIPScenesClusterStoreSceneResponseCallbackBridge *>(context);
         if (callback && callback->mQueue) {
             dispatch_async(callback->mQueue, ^{
-                callback->mHandler(groupId, sceneId);
+                callback->mHandler(nil, @ {
+                    @"groupId" : [NSNumber numberWithUnsignedShort:groupId],
+                    @"sceneId" : [NSNumber numberWithUnsignedChar:sceneId],
+                });
                 callback->Cancel();
                 delete callback;
             });
@@ -1260,13 +1317,13 @@ public:
     };
 
 private:
-    ScenesClusterStoreSceneResponseHandler mHandler;
+    ResponseHandler mHandler;
     dispatch_queue_t mQueue;
 };
 
 class CHIPScenesClusterViewSceneResponseCallbackBridge : public Callback::Callback<ScenesClusterViewSceneResponseCallback> {
 public:
-    CHIPScenesClusterViewSceneResponseCallbackBridge(ScenesClusterViewSceneResponseHandler handler, dispatch_queue_t queue)
+    CHIPScenesClusterViewSceneResponseCallbackBridge(ResponseHandler handler, dispatch_queue_t queue)
         : Callback::Callback<ScenesClusterViewSceneResponseCallback>(CallbackFn, this)
         , mHandler(handler)
         , mQueue(queue)
@@ -1282,7 +1339,14 @@ public:
             = reinterpret_cast<CHIPScenesClusterViewSceneResponseCallbackBridge *>(context);
         if (callback && callback->mQueue) {
             dispatch_async(callback->mQueue, ^{
-                callback->mHandler(groupId, sceneId, transitionTime, sceneName, extensionFieldSets);
+                callback->mHandler(nil, @ {
+                    @"groupId" : [NSNumber numberWithUnsignedShort:groupId],
+                    @"sceneId" : [NSNumber numberWithUnsignedChar:sceneId],
+                    @"transitionTime" : [NSNumber numberWithUnsignedShort:transitionTime],
+                    @"sceneName" : [NSString stringWithFormat:@"%s", sceneName],
+                    // extensionFieldSets: /* TYPE WARNING: array array defaults to */ uint8_t *
+                    // Conversion from this type to Objc is not properly implemented yet
+                });
                 callback->Cancel();
                 delete callback;
             });
@@ -1290,7 +1354,7 @@ public:
     };
 
 private:
-    ScenesClusterViewSceneResponseHandler mHandler;
+    ResponseHandler mHandler;
     dispatch_queue_t mQueue;
 };
 
@@ -1317,16 +1381,14 @@ private:
     return self;
 }
 
-- (BOOL)barrierControlGoToPercent:(DefaultSuccessHandler)onSuccessCallback
-                onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                      percentOpen:(uint8_t)percentOpen
+- (BOOL)barrierControlGoToPercent:(uint8_t)percentOpen completionHandler:(ResponseHandler)completionHandler
 {
-    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -1340,14 +1402,14 @@ private:
     }
     return YES;
 }
-- (BOOL)barrierControlStop:(DefaultSuccessHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)barrierControlStop:(ResponseHandler)completionHandler
 {
-    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -1362,15 +1424,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributeBarrierMovingState:(Int8uAttributeHandler)onSuccessCallback
-                      onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributeBarrierMovingState:(ResponseHandler)completionHandler
 {
-    CHIPInt8uAttributeCallbackBridge * onSuccess = new CHIPInt8uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt8uAttributeCallbackBridge * onSuccess = new CHIPInt8uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -1385,15 +1446,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributeBarrierSafetyStatus:(Int16uAttributeHandler)onSuccessCallback
-                       onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributeBarrierSafetyStatus:(ResponseHandler)completionHandler
 {
-    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -1408,15 +1468,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributeBarrierCapabilities:(Int8uAttributeHandler)onSuccessCallback
-                       onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributeBarrierCapabilities:(ResponseHandler)completionHandler
 {
-    CHIPInt8uAttributeCallbackBridge * onSuccess = new CHIPInt8uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt8uAttributeCallbackBridge * onSuccess = new CHIPInt8uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -1431,15 +1490,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributeBarrierPosition:(Int8uAttributeHandler)onSuccessCallback
-                   onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributeBarrierPosition:(ResponseHandler)completionHandler
 {
-    CHIPInt8uAttributeCallbackBridge * onSuccess = new CHIPInt8uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt8uAttributeCallbackBridge * onSuccess = new CHIPInt8uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -1454,15 +1512,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributeClusterRevision:(Int16uAttributeHandler)onSuccessCallback
-                   onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributeClusterRevision:(ResponseHandler)completionHandler
 {
-    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -1502,14 +1559,14 @@ private:
     return self;
 }
 
-- (BOOL)mfgSpecificPing:(DefaultSuccessHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)mfgSpecificPing:(ResponseHandler)completionHandler
 {
-    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -1523,14 +1580,14 @@ private:
     }
     return YES;
 }
-- (BOOL)resetToFactoryDefaults:(DefaultSuccessHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)resetToFactoryDefaults:(ResponseHandler)completionHandler
 {
-    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -1545,14 +1602,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributeZclVersion:(Int8uAttributeHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributeZclVersion:(ResponseHandler)completionHandler
 {
-    CHIPInt8uAttributeCallbackBridge * onSuccess = new CHIPInt8uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt8uAttributeCallbackBridge * onSuccess = new CHIPInt8uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -1567,14 +1624,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributePowerSource:(Int8uAttributeHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributePowerSource:(ResponseHandler)completionHandler
 {
-    CHIPInt8uAttributeCallbackBridge * onSuccess = new CHIPInt8uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt8uAttributeCallbackBridge * onSuccess = new CHIPInt8uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -1589,15 +1646,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributeClusterRevision:(Int16uAttributeHandler)onSuccessCallback
-                   onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributeClusterRevision:(ResponseHandler)completionHandler
 {
-    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -1637,19 +1693,18 @@ private:
     return self;
 }
 
-- (BOOL)bind:(DefaultSuccessHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-               nodeId:(uint64_t)nodeId
+- (BOOL)bind:(uint64_t)nodeId
               groupId:(uint16_t)groupId
            endpointId:(uint8_t)endpointId
             clusterId:(uint16_t)clusterId
+    completionHandler:(ResponseHandler)completionHandler
 {
-    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -1663,19 +1718,18 @@ private:
     }
     return YES;
 }
-- (BOOL)unbind:(DefaultSuccessHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-               nodeId:(uint64_t)nodeId
+- (BOOL)unbind:(uint64_t)nodeId
               groupId:(uint16_t)groupId
            endpointId:(uint8_t)endpointId
             clusterId:(uint16_t)clusterId
+    completionHandler:(ResponseHandler)completionHandler
 {
-    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -1690,15 +1744,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributeClusterRevision:(Int16uAttributeHandler)onSuccessCallback
-                   onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributeClusterRevision:(ResponseHandler)completionHandler
 {
-    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -1738,19 +1791,18 @@ private:
     return self;
 }
 
-- (BOOL)moveColor:(DefaultSuccessHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                rateX:(int16_t)rateX
+- (BOOL)moveColor:(int16_t)rateX
                 rateY:(int16_t)rateY
           optionsMask:(uint8_t)optionsMask
       optionsOverride:(uint8_t)optionsOverride
+    completionHandler:(ResponseHandler)completionHandler
 {
-    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -1765,21 +1817,20 @@ private:
     }
     return YES;
 }
-- (BOOL)moveColorTemperature:(DefaultSuccessHandler)onSuccessCallback
-           onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                    moveMode:(uint8_t)moveMode
+- (BOOL)moveColorTemperature:(uint8_t)moveMode
                         rate:(uint16_t)rate
      colorTemperatureMinimum:(uint16_t)colorTemperatureMinimum
      colorTemperatureMaximum:(uint16_t)colorTemperatureMaximum
                  optionsMask:(uint8_t)optionsMask
              optionsOverride:(uint8_t)optionsOverride
+           completionHandler:(ResponseHandler)completionHandler
 {
-    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -1794,19 +1845,18 @@ private:
     }
     return YES;
 }
-- (BOOL)moveHue:(DefaultSuccessHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-             moveMode:(uint8_t)moveMode
+- (BOOL)moveHue:(uint8_t)moveMode
                  rate:(uint8_t)rate
           optionsMask:(uint8_t)optionsMask
       optionsOverride:(uint8_t)optionsOverride
+    completionHandler:(ResponseHandler)completionHandler
 {
-    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -1821,19 +1871,18 @@ private:
     }
     return YES;
 }
-- (BOOL)moveSaturation:(DefaultSuccessHandler)onSuccessCallback
-     onFailureCallback:(DefaultFailureHandler)onFailureCallback
-              moveMode:(uint8_t)moveMode
+- (BOOL)moveSaturation:(uint8_t)moveMode
                   rate:(uint8_t)rate
            optionsMask:(uint8_t)optionsMask
        optionsOverride:(uint8_t)optionsOverride
+     completionHandler:(ResponseHandler)completionHandler
 {
-    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -1848,20 +1897,19 @@ private:
     }
     return YES;
 }
-- (BOOL)moveToColor:(DefaultSuccessHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-               colorX:(uint16_t)colorX
+- (BOOL)moveToColor:(uint16_t)colorX
                colorY:(uint16_t)colorY
        transitionTime:(uint16_t)transitionTime
           optionsMask:(uint8_t)optionsMask
       optionsOverride:(uint8_t)optionsOverride
+    completionHandler:(ResponseHandler)completionHandler
 {
-    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -1876,19 +1924,18 @@ private:
     }
     return YES;
 }
-- (BOOL)moveToColorTemperature:(DefaultSuccessHandler)onSuccessCallback
-             onFailureCallback:(DefaultFailureHandler)onFailureCallback
-              colorTemperature:(uint16_t)colorTemperature
+- (BOOL)moveToColorTemperature:(uint16_t)colorTemperature
                 transitionTime:(uint16_t)transitionTime
                    optionsMask:(uint8_t)optionsMask
                optionsOverride:(uint8_t)optionsOverride
+             completionHandler:(ResponseHandler)completionHandler
 {
-    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -1903,20 +1950,19 @@ private:
     }
     return YES;
 }
-- (BOOL)moveToHue:(DefaultSuccessHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                  hue:(uint8_t)hue
+- (BOOL)moveToHue:(uint8_t)hue
             direction:(uint8_t)direction
        transitionTime:(uint16_t)transitionTime
           optionsMask:(uint8_t)optionsMask
       optionsOverride:(uint8_t)optionsOverride
+    completionHandler:(ResponseHandler)completionHandler
 {
-    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -1931,20 +1977,19 @@ private:
     }
     return YES;
 }
-- (BOOL)moveToHueAndSaturation:(DefaultSuccessHandler)onSuccessCallback
-             onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                           hue:(uint8_t)hue
+- (BOOL)moveToHueAndSaturation:(uint8_t)hue
                     saturation:(uint8_t)saturation
                 transitionTime:(uint16_t)transitionTime
                    optionsMask:(uint8_t)optionsMask
                optionsOverride:(uint8_t)optionsOverride
+             completionHandler:(ResponseHandler)completionHandler
 {
-    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -1959,19 +2004,18 @@ private:
     }
     return YES;
 }
-- (BOOL)moveToSaturation:(DefaultSuccessHandler)onSuccessCallback
-       onFailureCallback:(DefaultFailureHandler)onFailureCallback
-              saturation:(uint8_t)saturation
+- (BOOL)moveToSaturation:(uint8_t)saturation
           transitionTime:(uint16_t)transitionTime
              optionsMask:(uint8_t)optionsMask
          optionsOverride:(uint8_t)optionsOverride
+       completionHandler:(ResponseHandler)completionHandler
 {
-    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -1986,20 +2030,19 @@ private:
     }
     return YES;
 }
-- (BOOL)stepColor:(DefaultSuccessHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                stepX:(int16_t)stepX
+- (BOOL)stepColor:(int16_t)stepX
                 stepY:(int16_t)stepY
        transitionTime:(uint16_t)transitionTime
           optionsMask:(uint8_t)optionsMask
       optionsOverride:(uint8_t)optionsOverride
+    completionHandler:(ResponseHandler)completionHandler
 {
-    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -2014,22 +2057,21 @@ private:
     }
     return YES;
 }
-- (BOOL)stepColorTemperature:(DefaultSuccessHandler)onSuccessCallback
-           onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                    stepMode:(uint8_t)stepMode
+- (BOOL)stepColorTemperature:(uint8_t)stepMode
                     stepSize:(uint16_t)stepSize
               transitionTime:(uint16_t)transitionTime
      colorTemperatureMinimum:(uint16_t)colorTemperatureMinimum
      colorTemperatureMaximum:(uint16_t)colorTemperatureMaximum
                  optionsMask:(uint8_t)optionsMask
              optionsOverride:(uint8_t)optionsOverride
+           completionHandler:(ResponseHandler)completionHandler
 {
-    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -2044,20 +2086,19 @@ private:
     }
     return YES;
 }
-- (BOOL)stepHue:(DefaultSuccessHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-             stepMode:(uint8_t)stepMode
+- (BOOL)stepHue:(uint8_t)stepMode
              stepSize:(uint8_t)stepSize
        transitionTime:(uint8_t)transitionTime
           optionsMask:(uint8_t)optionsMask
       optionsOverride:(uint8_t)optionsOverride
+    completionHandler:(ResponseHandler)completionHandler
 {
-    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -2072,20 +2113,19 @@ private:
     }
     return YES;
 }
-- (BOOL)stepSaturation:(DefaultSuccessHandler)onSuccessCallback
-     onFailureCallback:(DefaultFailureHandler)onFailureCallback
-              stepMode:(uint8_t)stepMode
+- (BOOL)stepSaturation:(uint8_t)stepMode
               stepSize:(uint8_t)stepSize
         transitionTime:(uint8_t)transitionTime
            optionsMask:(uint8_t)optionsMask
        optionsOverride:(uint8_t)optionsOverride
+     completionHandler:(ResponseHandler)completionHandler
 {
-    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -2100,17 +2140,16 @@ private:
     }
     return YES;
 }
-- (BOOL)stopMoveStep:(DefaultSuccessHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-          optionsMask:(uint8_t)optionsMask
+- (BOOL)stopMoveStep:(uint8_t)optionsMask
       optionsOverride:(uint8_t)optionsOverride
+    completionHandler:(ResponseHandler)completionHandler
 {
-    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -2125,14 +2164,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributeCurrentHue:(Int8uAttributeHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributeCurrentHue:(ResponseHandler)completionHandler
 {
-    CHIPInt8uAttributeCallbackBridge * onSuccess = new CHIPInt8uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt8uAttributeCallbackBridge * onSuccess = new CHIPInt8uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -2147,51 +2186,56 @@ private:
     return YES;
 }
 
-- (BOOL)reportAttributeCurrentHue:(DefaultSuccessHandler)onSuccessCallback
-                onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                 onReportCallback:(Int8uAttributeHandler)onReportCallback
-                      minInterval:(uint16_t)minInterval
-                      maxInterval:(uint16_t)maxInterval
-                           change:(uint8_t)change
+- (BOOL)configureAttributeCurrentHue:(uint16_t)minInterval
+                         maxInterval:(uint16_t)maxInterval
+                              change:(uint8_t)change
+                   completionHandler:(ResponseHandler)completionHandler
 {
-    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
     }
 
-    CHIPInt8uAttributeCallbackBridge * onReport = new CHIPInt8uAttributeCallbackBridge(onReportCallback, _callbackQueue, true);
-    if (!onReport) {
-        delete onSuccess;
-        delete onFailure;
-        return NO;
-    }
-
-    CHIP_ERROR err = self.cppCluster.ReportAttributeCurrentHue(
-        onSuccess->Cancel(), onFailure->Cancel(), onReport->Cancel(), minInterval, maxInterval, change);
+    CHIP_ERROR err
+        = self.cppCluster.ConfigureAttributeCurrentHue(onSuccess->Cancel(), onFailure->Cancel(), minInterval, maxInterval, change);
     if (err != CHIP_NO_ERROR) {
         delete onSuccess;
         delete onFailure;
-        delete onReport;
         return NO;
     }
     return YES;
 }
 
-- (BOOL)readAttributeCurrentSaturation:(Int8uAttributeHandler)onSuccessCallback
-                     onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)reportAttributeCurrentHue:(ResponseHandler)reportHandler
 {
-    CHIPInt8uAttributeCallbackBridge * onSuccess = new CHIPInt8uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt8uAttributeCallbackBridge * onReport = new CHIPInt8uAttributeCallbackBridge(reportHandler, _callbackQueue, true);
+    if (!onReport) {
+        return NO;
+    }
+
+    CHIP_ERROR err = self.cppCluster.ReportAttributeCurrentHue(onReport->Cancel());
+    if (err != CHIP_NO_ERROR) {
+        delete onReport;
+        return NO;
+    }
+
+    return YES;
+}
+
+- (BOOL)readAttributeCurrentSaturation:(ResponseHandler)completionHandler
+{
+    CHIPInt8uAttributeCallbackBridge * onSuccess = new CHIPInt8uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -2206,51 +2250,56 @@ private:
     return YES;
 }
 
-- (BOOL)reportAttributeCurrentSaturation:(DefaultSuccessHandler)onSuccessCallback
-                       onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                        onReportCallback:(Int8uAttributeHandler)onReportCallback
-                             minInterval:(uint16_t)minInterval
-                             maxInterval:(uint16_t)maxInterval
-                                  change:(uint8_t)change
+- (BOOL)configureAttributeCurrentSaturation:(uint16_t)minInterval
+                                maxInterval:(uint16_t)maxInterval
+                                     change:(uint8_t)change
+                          completionHandler:(ResponseHandler)completionHandler
 {
-    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
     }
 
-    CHIPInt8uAttributeCallbackBridge * onReport = new CHIPInt8uAttributeCallbackBridge(onReportCallback, _callbackQueue, true);
-    if (!onReport) {
-        delete onSuccess;
-        delete onFailure;
-        return NO;
-    }
-
-    CHIP_ERROR err = self.cppCluster.ReportAttributeCurrentSaturation(
-        onSuccess->Cancel(), onFailure->Cancel(), onReport->Cancel(), minInterval, maxInterval, change);
+    CHIP_ERROR err = self.cppCluster.ConfigureAttributeCurrentSaturation(
+        onSuccess->Cancel(), onFailure->Cancel(), minInterval, maxInterval, change);
     if (err != CHIP_NO_ERROR) {
         delete onSuccess;
         delete onFailure;
-        delete onReport;
         return NO;
     }
     return YES;
 }
 
-- (BOOL)readAttributeRemainingTime:(Int16uAttributeHandler)onSuccessCallback
-                 onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)reportAttributeCurrentSaturation:(ResponseHandler)reportHandler
 {
-    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt8uAttributeCallbackBridge * onReport = new CHIPInt8uAttributeCallbackBridge(reportHandler, _callbackQueue, true);
+    if (!onReport) {
+        return NO;
+    }
+
+    CHIP_ERROR err = self.cppCluster.ReportAttributeCurrentSaturation(onReport->Cancel());
+    if (err != CHIP_NO_ERROR) {
+        delete onReport;
+        return NO;
+    }
+
+    return YES;
+}
+
+- (BOOL)readAttributeRemainingTime:(ResponseHandler)completionHandler
+{
+    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -2265,14 +2314,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributeCurrentX:(Int16uAttributeHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributeCurrentX:(ResponseHandler)completionHandler
 {
-    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -2287,50 +2336,56 @@ private:
     return YES;
 }
 
-- (BOOL)reportAttributeCurrentX:(DefaultSuccessHandler)onSuccessCallback
-              onFailureCallback:(DefaultFailureHandler)onFailureCallback
-               onReportCallback:(Int16uAttributeHandler)onReportCallback
-                    minInterval:(uint16_t)minInterval
-                    maxInterval:(uint16_t)maxInterval
-                         change:(uint16_t)change
+- (BOOL)configureAttributeCurrentX:(uint16_t)minInterval
+                       maxInterval:(uint16_t)maxInterval
+                            change:(uint16_t)change
+                 completionHandler:(ResponseHandler)completionHandler
 {
-    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
     }
 
-    CHIPInt16uAttributeCallbackBridge * onReport = new CHIPInt16uAttributeCallbackBridge(onReportCallback, _callbackQueue, true);
-    if (!onReport) {
-        delete onSuccess;
-        delete onFailure;
-        return NO;
-    }
-
-    CHIP_ERROR err = self.cppCluster.ReportAttributeCurrentX(
-        onSuccess->Cancel(), onFailure->Cancel(), onReport->Cancel(), minInterval, maxInterval, change);
+    CHIP_ERROR err
+        = self.cppCluster.ConfigureAttributeCurrentX(onSuccess->Cancel(), onFailure->Cancel(), minInterval, maxInterval, change);
     if (err != CHIP_NO_ERROR) {
         delete onSuccess;
         delete onFailure;
-        delete onReport;
         return NO;
     }
     return YES;
 }
 
-- (BOOL)readAttributeCurrentY:(Int16uAttributeHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)reportAttributeCurrentX:(ResponseHandler)reportHandler
 {
-    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt16uAttributeCallbackBridge * onReport = new CHIPInt16uAttributeCallbackBridge(reportHandler, _callbackQueue, true);
+    if (!onReport) {
+        return NO;
+    }
+
+    CHIP_ERROR err = self.cppCluster.ReportAttributeCurrentX(onReport->Cancel());
+    if (err != CHIP_NO_ERROR) {
+        delete onReport;
+        return NO;
+    }
+
+    return YES;
+}
+
+- (BOOL)readAttributeCurrentY:(ResponseHandler)completionHandler
+{
+    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -2345,51 +2400,56 @@ private:
     return YES;
 }
 
-- (BOOL)reportAttributeCurrentY:(DefaultSuccessHandler)onSuccessCallback
-              onFailureCallback:(DefaultFailureHandler)onFailureCallback
-               onReportCallback:(Int16uAttributeHandler)onReportCallback
-                    minInterval:(uint16_t)minInterval
-                    maxInterval:(uint16_t)maxInterval
-                         change:(uint16_t)change
+- (BOOL)configureAttributeCurrentY:(uint16_t)minInterval
+                       maxInterval:(uint16_t)maxInterval
+                            change:(uint16_t)change
+                 completionHandler:(ResponseHandler)completionHandler
 {
-    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
     }
 
-    CHIPInt16uAttributeCallbackBridge * onReport = new CHIPInt16uAttributeCallbackBridge(onReportCallback, _callbackQueue, true);
-    if (!onReport) {
-        delete onSuccess;
-        delete onFailure;
-        return NO;
-    }
-
-    CHIP_ERROR err = self.cppCluster.ReportAttributeCurrentY(
-        onSuccess->Cancel(), onFailure->Cancel(), onReport->Cancel(), minInterval, maxInterval, change);
+    CHIP_ERROR err
+        = self.cppCluster.ConfigureAttributeCurrentY(onSuccess->Cancel(), onFailure->Cancel(), minInterval, maxInterval, change);
     if (err != CHIP_NO_ERROR) {
         delete onSuccess;
         delete onFailure;
-        delete onReport;
         return NO;
     }
     return YES;
 }
 
-- (BOOL)readAttributeDriftCompensation:(Int8uAttributeHandler)onSuccessCallback
-                     onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)reportAttributeCurrentY:(ResponseHandler)reportHandler
 {
-    CHIPInt8uAttributeCallbackBridge * onSuccess = new CHIPInt8uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt16uAttributeCallbackBridge * onReport = new CHIPInt16uAttributeCallbackBridge(reportHandler, _callbackQueue, true);
+    if (!onReport) {
+        return NO;
+    }
+
+    CHIP_ERROR err = self.cppCluster.ReportAttributeCurrentY(onReport->Cancel());
+    if (err != CHIP_NO_ERROR) {
+        delete onReport;
+        return NO;
+    }
+
+    return YES;
+}
+
+- (BOOL)readAttributeDriftCompensation:(ResponseHandler)completionHandler
+{
+    CHIPInt8uAttributeCallbackBridge * onSuccess = new CHIPInt8uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -2404,16 +2464,15 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributeCompensationText:(UnsupportedAttributeHandler)onSuccessCallback
-                    onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributeCompensationText:(ResponseHandler)completionHandler
 {
     CHIPUnsupportedAttributeCallbackBridge * onSuccess
-        = new CHIPUnsupportedAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+        = new CHIPUnsupportedAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -2428,15 +2487,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributeColorTemperature:(Int16uAttributeHandler)onSuccessCallback
-                    onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributeColorTemperature:(ResponseHandler)completionHandler
 {
-    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -2451,50 +2509,56 @@ private:
     return YES;
 }
 
-- (BOOL)reportAttributeColorTemperature:(DefaultSuccessHandler)onSuccessCallback
-                      onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                       onReportCallback:(Int16uAttributeHandler)onReportCallback
-                            minInterval:(uint16_t)minInterval
-                            maxInterval:(uint16_t)maxInterval
-                                 change:(uint16_t)change
+- (BOOL)configureAttributeColorTemperature:(uint16_t)minInterval
+                               maxInterval:(uint16_t)maxInterval
+                                    change:(uint16_t)change
+                         completionHandler:(ResponseHandler)completionHandler
 {
-    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
     }
 
-    CHIPInt16uAttributeCallbackBridge * onReport = new CHIPInt16uAttributeCallbackBridge(onReportCallback, _callbackQueue, true);
-    if (!onReport) {
-        delete onSuccess;
-        delete onFailure;
-        return NO;
-    }
-
-    CHIP_ERROR err = self.cppCluster.ReportAttributeColorTemperature(
-        onSuccess->Cancel(), onFailure->Cancel(), onReport->Cancel(), minInterval, maxInterval, change);
+    CHIP_ERROR err = self.cppCluster.ConfigureAttributeColorTemperature(
+        onSuccess->Cancel(), onFailure->Cancel(), minInterval, maxInterval, change);
     if (err != CHIP_NO_ERROR) {
         delete onSuccess;
         delete onFailure;
-        delete onReport;
         return NO;
     }
     return YES;
 }
 
-- (BOOL)readAttributeColorMode:(Int8uAttributeHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)reportAttributeColorTemperature:(ResponseHandler)reportHandler
 {
-    CHIPInt8uAttributeCallbackBridge * onSuccess = new CHIPInt8uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt16uAttributeCallbackBridge * onReport = new CHIPInt16uAttributeCallbackBridge(reportHandler, _callbackQueue, true);
+    if (!onReport) {
+        return NO;
+    }
+
+    CHIP_ERROR err = self.cppCluster.ReportAttributeColorTemperature(onReport->Cancel());
+    if (err != CHIP_NO_ERROR) {
+        delete onReport;
+        return NO;
+    }
+
+    return YES;
+}
+
+- (BOOL)readAttributeColorMode:(ResponseHandler)completionHandler
+{
+    CHIPInt8uAttributeCallbackBridge * onSuccess = new CHIPInt8uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -2509,15 +2573,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributeColorControlOptions:(Int8uAttributeHandler)onSuccessCallback
-                       onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributeColorControlOptions:(ResponseHandler)completionHandler
 {
-    CHIPInt8uAttributeCallbackBridge * onSuccess = new CHIPInt8uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt8uAttributeCallbackBridge * onSuccess = new CHIPInt8uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -2532,16 +2595,14 @@ private:
     return YES;
 }
 
-- (BOOL)writeAttributeColorControlOptions:(DefaultSuccessHandler)onSuccessCallback
-                        onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                                    value:(uint8_t)value
+- (BOOL)writeAttributeColorControlOptions:(uint8_t)value completionHandler:(ResponseHandler)completionHandler
 {
-    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -2556,15 +2617,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributeNumberOfPrimaries:(Int8uAttributeHandler)onSuccessCallback
-                     onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributeNumberOfPrimaries:(ResponseHandler)completionHandler
 {
-    CHIPInt8uAttributeCallbackBridge * onSuccess = new CHIPInt8uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt8uAttributeCallbackBridge * onSuccess = new CHIPInt8uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -2579,14 +2639,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributePrimary1X:(Int16uAttributeHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributePrimary1X:(ResponseHandler)completionHandler
 {
-    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -2601,14 +2661,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributePrimary1Y:(Int16uAttributeHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributePrimary1Y:(ResponseHandler)completionHandler
 {
-    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -2623,15 +2683,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributePrimary1Intensity:(Int8uAttributeHandler)onSuccessCallback
-                     onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributePrimary1Intensity:(ResponseHandler)completionHandler
 {
-    CHIPInt8uAttributeCallbackBridge * onSuccess = new CHIPInt8uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt8uAttributeCallbackBridge * onSuccess = new CHIPInt8uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -2646,14 +2705,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributePrimary2X:(Int16uAttributeHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributePrimary2X:(ResponseHandler)completionHandler
 {
-    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -2668,14 +2727,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributePrimary2Y:(Int16uAttributeHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributePrimary2Y:(ResponseHandler)completionHandler
 {
-    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -2690,15 +2749,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributePrimary2Intensity:(Int8uAttributeHandler)onSuccessCallback
-                     onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributePrimary2Intensity:(ResponseHandler)completionHandler
 {
-    CHIPInt8uAttributeCallbackBridge * onSuccess = new CHIPInt8uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt8uAttributeCallbackBridge * onSuccess = new CHIPInt8uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -2713,14 +2771,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributePrimary3X:(Int16uAttributeHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributePrimary3X:(ResponseHandler)completionHandler
 {
-    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -2735,14 +2793,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributePrimary3Y:(Int16uAttributeHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributePrimary3Y:(ResponseHandler)completionHandler
 {
-    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -2757,15 +2815,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributePrimary3Intensity:(Int8uAttributeHandler)onSuccessCallback
-                     onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributePrimary3Intensity:(ResponseHandler)completionHandler
 {
-    CHIPInt8uAttributeCallbackBridge * onSuccess = new CHIPInt8uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt8uAttributeCallbackBridge * onSuccess = new CHIPInt8uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -2780,14 +2837,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributePrimary4X:(Int16uAttributeHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributePrimary4X:(ResponseHandler)completionHandler
 {
-    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -2802,14 +2859,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributePrimary4Y:(Int16uAttributeHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributePrimary4Y:(ResponseHandler)completionHandler
 {
-    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -2824,15 +2881,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributePrimary4Intensity:(Int8uAttributeHandler)onSuccessCallback
-                     onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributePrimary4Intensity:(ResponseHandler)completionHandler
 {
-    CHIPInt8uAttributeCallbackBridge * onSuccess = new CHIPInt8uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt8uAttributeCallbackBridge * onSuccess = new CHIPInt8uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -2847,14 +2903,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributePrimary5X:(Int16uAttributeHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributePrimary5X:(ResponseHandler)completionHandler
 {
-    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -2869,14 +2925,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributePrimary5Y:(Int16uAttributeHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributePrimary5Y:(ResponseHandler)completionHandler
 {
-    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -2891,15 +2947,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributePrimary5Intensity:(Int8uAttributeHandler)onSuccessCallback
-                     onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributePrimary5Intensity:(ResponseHandler)completionHandler
 {
-    CHIPInt8uAttributeCallbackBridge * onSuccess = new CHIPInt8uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt8uAttributeCallbackBridge * onSuccess = new CHIPInt8uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -2914,14 +2969,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributePrimary6X:(Int16uAttributeHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributePrimary6X:(ResponseHandler)completionHandler
 {
-    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -2936,14 +2991,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributePrimary6Y:(Int16uAttributeHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributePrimary6Y:(ResponseHandler)completionHandler
 {
-    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -2958,15 +3013,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributePrimary6Intensity:(Int8uAttributeHandler)onSuccessCallback
-                     onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributePrimary6Intensity:(ResponseHandler)completionHandler
 {
-    CHIPInt8uAttributeCallbackBridge * onSuccess = new CHIPInt8uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt8uAttributeCallbackBridge * onSuccess = new CHIPInt8uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -2981,15 +3035,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributeWhitePointX:(Int16uAttributeHandler)onSuccessCallback
-               onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributeWhitePointX:(ResponseHandler)completionHandler
 {
-    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -3004,16 +3057,14 @@ private:
     return YES;
 }
 
-- (BOOL)writeAttributeWhitePointX:(DefaultSuccessHandler)onSuccessCallback
-                onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                            value:(uint16_t)value
+- (BOOL)writeAttributeWhitePointX:(uint16_t)value completionHandler:(ResponseHandler)completionHandler
 {
-    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -3028,15 +3079,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributeWhitePointY:(Int16uAttributeHandler)onSuccessCallback
-               onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributeWhitePointY:(ResponseHandler)completionHandler
 {
-    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -3051,16 +3101,14 @@ private:
     return YES;
 }
 
-- (BOOL)writeAttributeWhitePointY:(DefaultSuccessHandler)onSuccessCallback
-                onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                            value:(uint16_t)value
+- (BOOL)writeAttributeWhitePointY:(uint16_t)value completionHandler:(ResponseHandler)completionHandler
 {
-    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -3075,15 +3123,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributeColorPointRX:(Int16uAttributeHandler)onSuccessCallback
-                onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributeColorPointRX:(ResponseHandler)completionHandler
 {
-    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -3098,16 +3145,14 @@ private:
     return YES;
 }
 
-- (BOOL)writeAttributeColorPointRX:(DefaultSuccessHandler)onSuccessCallback
-                 onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                             value:(uint16_t)value
+- (BOOL)writeAttributeColorPointRX:(uint16_t)value completionHandler:(ResponseHandler)completionHandler
 {
-    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -3122,15 +3167,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributeColorPointRY:(Int16uAttributeHandler)onSuccessCallback
-                onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributeColorPointRY:(ResponseHandler)completionHandler
 {
-    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -3145,16 +3189,14 @@ private:
     return YES;
 }
 
-- (BOOL)writeAttributeColorPointRY:(DefaultSuccessHandler)onSuccessCallback
-                 onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                             value:(uint16_t)value
+- (BOOL)writeAttributeColorPointRY:(uint16_t)value completionHandler:(ResponseHandler)completionHandler
 {
-    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -3169,15 +3211,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributeColorPointRIntensity:(Int8uAttributeHandler)onSuccessCallback
-                        onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributeColorPointRIntensity:(ResponseHandler)completionHandler
 {
-    CHIPInt8uAttributeCallbackBridge * onSuccess = new CHIPInt8uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt8uAttributeCallbackBridge * onSuccess = new CHIPInt8uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -3192,16 +3233,14 @@ private:
     return YES;
 }
 
-- (BOOL)writeAttributeColorPointRIntensity:(DefaultSuccessHandler)onSuccessCallback
-                         onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                                     value:(uint8_t)value
+- (BOOL)writeAttributeColorPointRIntensity:(uint8_t)value completionHandler:(ResponseHandler)completionHandler
 {
-    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -3216,15 +3255,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributeColorPointGX:(Int16uAttributeHandler)onSuccessCallback
-                onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributeColorPointGX:(ResponseHandler)completionHandler
 {
-    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -3239,16 +3277,14 @@ private:
     return YES;
 }
 
-- (BOOL)writeAttributeColorPointGX:(DefaultSuccessHandler)onSuccessCallback
-                 onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                             value:(uint16_t)value
+- (BOOL)writeAttributeColorPointGX:(uint16_t)value completionHandler:(ResponseHandler)completionHandler
 {
-    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -3263,15 +3299,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributeColorPointGY:(Int16uAttributeHandler)onSuccessCallback
-                onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributeColorPointGY:(ResponseHandler)completionHandler
 {
-    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -3286,16 +3321,14 @@ private:
     return YES;
 }
 
-- (BOOL)writeAttributeColorPointGY:(DefaultSuccessHandler)onSuccessCallback
-                 onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                             value:(uint16_t)value
+- (BOOL)writeAttributeColorPointGY:(uint16_t)value completionHandler:(ResponseHandler)completionHandler
 {
-    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -3310,15 +3343,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributeColorPointGIntensity:(Int8uAttributeHandler)onSuccessCallback
-                        onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributeColorPointGIntensity:(ResponseHandler)completionHandler
 {
-    CHIPInt8uAttributeCallbackBridge * onSuccess = new CHIPInt8uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt8uAttributeCallbackBridge * onSuccess = new CHIPInt8uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -3333,16 +3365,14 @@ private:
     return YES;
 }
 
-- (BOOL)writeAttributeColorPointGIntensity:(DefaultSuccessHandler)onSuccessCallback
-                         onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                                     value:(uint8_t)value
+- (BOOL)writeAttributeColorPointGIntensity:(uint8_t)value completionHandler:(ResponseHandler)completionHandler
 {
-    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -3357,15 +3387,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributeColorPointBX:(Int16uAttributeHandler)onSuccessCallback
-                onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributeColorPointBX:(ResponseHandler)completionHandler
 {
-    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -3380,16 +3409,14 @@ private:
     return YES;
 }
 
-- (BOOL)writeAttributeColorPointBX:(DefaultSuccessHandler)onSuccessCallback
-                 onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                             value:(uint16_t)value
+- (BOOL)writeAttributeColorPointBX:(uint16_t)value completionHandler:(ResponseHandler)completionHandler
 {
-    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -3404,15 +3431,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributeColorPointBY:(Int16uAttributeHandler)onSuccessCallback
-                onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributeColorPointBY:(ResponseHandler)completionHandler
 {
-    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -3427,16 +3453,14 @@ private:
     return YES;
 }
 
-- (BOOL)writeAttributeColorPointBY:(DefaultSuccessHandler)onSuccessCallback
-                 onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                             value:(uint16_t)value
+- (BOOL)writeAttributeColorPointBY:(uint16_t)value completionHandler:(ResponseHandler)completionHandler
 {
-    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -3451,15 +3475,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributeColorPointBIntensity:(Int8uAttributeHandler)onSuccessCallback
-                        onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributeColorPointBIntensity:(ResponseHandler)completionHandler
 {
-    CHIPInt8uAttributeCallbackBridge * onSuccess = new CHIPInt8uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt8uAttributeCallbackBridge * onSuccess = new CHIPInt8uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -3474,16 +3497,14 @@ private:
     return YES;
 }
 
-- (BOOL)writeAttributeColorPointBIntensity:(DefaultSuccessHandler)onSuccessCallback
-                         onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                                     value:(uint8_t)value
+- (BOOL)writeAttributeColorPointBIntensity:(uint8_t)value completionHandler:(ResponseHandler)completionHandler
 {
-    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -3498,15 +3519,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributeEnhancedCurrentHue:(Int16uAttributeHandler)onSuccessCallback
-                      onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributeEnhancedCurrentHue:(ResponseHandler)completionHandler
 {
-    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -3521,15 +3541,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributeEnhancedColorMode:(Int8uAttributeHandler)onSuccessCallback
-                     onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributeEnhancedColorMode:(ResponseHandler)completionHandler
 {
-    CHIPInt8uAttributeCallbackBridge * onSuccess = new CHIPInt8uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt8uAttributeCallbackBridge * onSuccess = new CHIPInt8uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -3544,15 +3563,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributeColorLoopActive:(Int8uAttributeHandler)onSuccessCallback
-                   onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributeColorLoopActive:(ResponseHandler)completionHandler
 {
-    CHIPInt8uAttributeCallbackBridge * onSuccess = new CHIPInt8uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt8uAttributeCallbackBridge * onSuccess = new CHIPInt8uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -3567,15 +3585,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributeColorLoopDirection:(Int8uAttributeHandler)onSuccessCallback
-                      onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributeColorLoopDirection:(ResponseHandler)completionHandler
 {
-    CHIPInt8uAttributeCallbackBridge * onSuccess = new CHIPInt8uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt8uAttributeCallbackBridge * onSuccess = new CHIPInt8uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -3590,15 +3607,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributeColorLoopTime:(Int16uAttributeHandler)onSuccessCallback
-                 onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributeColorLoopTime:(ResponseHandler)completionHandler
 {
-    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -3613,15 +3629,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributeColorCapabilities:(Int16uAttributeHandler)onSuccessCallback
-                     onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributeColorCapabilities:(ResponseHandler)completionHandler
 {
-    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -3636,15 +3651,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributeColorTempPhysicalMin:(Int16uAttributeHandler)onSuccessCallback
-                        onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributeColorTempPhysicalMin:(ResponseHandler)completionHandler
 {
-    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -3659,15 +3673,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributeColorTempPhysicalMax:(Int16uAttributeHandler)onSuccessCallback
-                        onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributeColorTempPhysicalMax:(ResponseHandler)completionHandler
 {
-    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -3682,15 +3695,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributeCoupleColorTempToLevelMinMireds:(Int16uAttributeHandler)onSuccessCallback
-                                   onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributeCoupleColorTempToLevelMinMireds:(ResponseHandler)completionHandler
 {
-    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -3705,15 +3717,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributeStartUpColorTemperatureMireds:(Int16uAttributeHandler)onSuccessCallback
-                                 onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributeStartUpColorTemperatureMireds:(ResponseHandler)completionHandler
 {
-    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -3728,16 +3739,14 @@ private:
     return YES;
 }
 
-- (BOOL)writeAttributeStartUpColorTemperatureMireds:(DefaultSuccessHandler)onSuccessCallback
-                                  onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                                              value:(uint16_t)value
+- (BOOL)writeAttributeStartUpColorTemperatureMireds:(uint16_t)value completionHandler:(ResponseHandler)completionHandler
 {
-    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -3752,15 +3761,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributeClusterRevision:(Int16uAttributeHandler)onSuccessCallback
-                   onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributeClusterRevision:(ResponseHandler)completionHandler
 {
-    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -3800,16 +3808,15 @@ private:
     return self;
 }
 
-- (BOOL)clearAllPins:(DoorLockClusterClearAllPinsResponseHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)clearAllPins:(ResponseHandler)completionHandler
 {
     CHIPDoorLockClusterClearAllPinsResponseCallbackBridge * onSuccess
-        = new CHIPDoorLockClusterClearAllPinsResponseCallbackBridge(onSuccessCallback, _callbackQueue);
+        = new CHIPDoorLockClusterClearAllPinsResponseCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -3823,16 +3830,15 @@ private:
     }
     return YES;
 }
-- (BOOL)clearAllRfids:(DoorLockClusterClearAllRfidsResponseHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)clearAllRfids:(ResponseHandler)completionHandler
 {
     CHIPDoorLockClusterClearAllRfidsResponseCallbackBridge * onSuccess
-        = new CHIPDoorLockClusterClearAllRfidsResponseCallbackBridge(onSuccessCallback, _callbackQueue);
+        = new CHIPDoorLockClusterClearAllRfidsResponseCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -3846,17 +3852,15 @@ private:
     }
     return YES;
 }
-- (BOOL)clearHolidaySchedule:(DoorLockClusterClearHolidayScheduleResponseHandler)onSuccessCallback
-           onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                  scheduleId:(uint8_t)scheduleId
+- (BOOL)clearHolidaySchedule:(uint8_t)scheduleId completionHandler:(ResponseHandler)completionHandler
 {
     CHIPDoorLockClusterClearHolidayScheduleResponseCallbackBridge * onSuccess
-        = new CHIPDoorLockClusterClearHolidayScheduleResponseCallbackBridge(onSuccessCallback, _callbackQueue);
+        = new CHIPDoorLockClusterClearHolidayScheduleResponseCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -3870,17 +3874,15 @@ private:
     }
     return YES;
 }
-- (BOOL)clearPin:(DoorLockClusterClearPinResponseHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-               userId:(uint16_t)userId
+- (BOOL)clearPin:(uint16_t)userId completionHandler:(ResponseHandler)completionHandler
 {
     CHIPDoorLockClusterClearPinResponseCallbackBridge * onSuccess
-        = new CHIPDoorLockClusterClearPinResponseCallbackBridge(onSuccessCallback, _callbackQueue);
+        = new CHIPDoorLockClusterClearPinResponseCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -3894,17 +3896,15 @@ private:
     }
     return YES;
 }
-- (BOOL)clearRfid:(DoorLockClusterClearRfidResponseHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-               userId:(uint16_t)userId
+- (BOOL)clearRfid:(uint16_t)userId completionHandler:(ResponseHandler)completionHandler
 {
     CHIPDoorLockClusterClearRfidResponseCallbackBridge * onSuccess
-        = new CHIPDoorLockClusterClearRfidResponseCallbackBridge(onSuccessCallback, _callbackQueue);
+        = new CHIPDoorLockClusterClearRfidResponseCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -3918,18 +3918,15 @@ private:
     }
     return YES;
 }
-- (BOOL)clearWeekdaySchedule:(DoorLockClusterClearWeekdayScheduleResponseHandler)onSuccessCallback
-           onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                  scheduleId:(uint8_t)scheduleId
-                      userId:(uint16_t)userId
+- (BOOL)clearWeekdaySchedule:(uint8_t)scheduleId userId:(uint16_t)userId completionHandler:(ResponseHandler)completionHandler
 {
     CHIPDoorLockClusterClearWeekdayScheduleResponseCallbackBridge * onSuccess
-        = new CHIPDoorLockClusterClearWeekdayScheduleResponseCallbackBridge(onSuccessCallback, _callbackQueue);
+        = new CHIPDoorLockClusterClearWeekdayScheduleResponseCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -3943,18 +3940,15 @@ private:
     }
     return YES;
 }
-- (BOOL)clearYeardaySchedule:(DoorLockClusterClearYeardayScheduleResponseHandler)onSuccessCallback
-           onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                  scheduleId:(uint8_t)scheduleId
-                      userId:(uint16_t)userId
+- (BOOL)clearYeardaySchedule:(uint8_t)scheduleId userId:(uint16_t)userId completionHandler:(ResponseHandler)completionHandler
 {
     CHIPDoorLockClusterClearYeardayScheduleResponseCallbackBridge * onSuccess
-        = new CHIPDoorLockClusterClearYeardayScheduleResponseCallbackBridge(onSuccessCallback, _callbackQueue);
+        = new CHIPDoorLockClusterClearYeardayScheduleResponseCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -3968,17 +3962,15 @@ private:
     }
     return YES;
 }
-- (BOOL)getHolidaySchedule:(DoorLockClusterGetHolidayScheduleResponseHandler)onSuccessCallback
-         onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                scheduleId:(uint8_t)scheduleId
+- (BOOL)getHolidaySchedule:(uint8_t)scheduleId completionHandler:(ResponseHandler)completionHandler
 {
     CHIPDoorLockClusterGetHolidayScheduleResponseCallbackBridge * onSuccess
-        = new CHIPDoorLockClusterGetHolidayScheduleResponseCallbackBridge(onSuccessCallback, _callbackQueue);
+        = new CHIPDoorLockClusterGetHolidayScheduleResponseCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -3992,17 +3984,15 @@ private:
     }
     return YES;
 }
-- (BOOL)getLogRecord:(DoorLockClusterGetLogRecordResponseHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-             logIndex:(uint16_t)logIndex
+- (BOOL)getLogRecord:(uint16_t)logIndex completionHandler:(ResponseHandler)completionHandler
 {
     CHIPDoorLockClusterGetLogRecordResponseCallbackBridge * onSuccess
-        = new CHIPDoorLockClusterGetLogRecordResponseCallbackBridge(onSuccessCallback, _callbackQueue);
+        = new CHIPDoorLockClusterGetLogRecordResponseCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -4016,17 +4006,15 @@ private:
     }
     return YES;
 }
-- (BOOL)getPin:(DoorLockClusterGetPinResponseHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-               userId:(uint16_t)userId
+- (BOOL)getPin:(uint16_t)userId completionHandler:(ResponseHandler)completionHandler
 {
     CHIPDoorLockClusterGetPinResponseCallbackBridge * onSuccess
-        = new CHIPDoorLockClusterGetPinResponseCallbackBridge(onSuccessCallback, _callbackQueue);
+        = new CHIPDoorLockClusterGetPinResponseCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -4040,17 +4028,15 @@ private:
     }
     return YES;
 }
-- (BOOL)getRfid:(DoorLockClusterGetRfidResponseHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-               userId:(uint16_t)userId
+- (BOOL)getRfid:(uint16_t)userId completionHandler:(ResponseHandler)completionHandler
 {
     CHIPDoorLockClusterGetRfidResponseCallbackBridge * onSuccess
-        = new CHIPDoorLockClusterGetRfidResponseCallbackBridge(onSuccessCallback, _callbackQueue);
+        = new CHIPDoorLockClusterGetRfidResponseCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -4064,17 +4050,15 @@ private:
     }
     return YES;
 }
-- (BOOL)getUserType:(DoorLockClusterGetUserTypeResponseHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-               userId:(uint16_t)userId
+- (BOOL)getUserType:(uint16_t)userId completionHandler:(ResponseHandler)completionHandler
 {
     CHIPDoorLockClusterGetUserTypeResponseCallbackBridge * onSuccess
-        = new CHIPDoorLockClusterGetUserTypeResponseCallbackBridge(onSuccessCallback, _callbackQueue);
+        = new CHIPDoorLockClusterGetUserTypeResponseCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -4088,18 +4072,15 @@ private:
     }
     return YES;
 }
-- (BOOL)getWeekdaySchedule:(DoorLockClusterGetWeekdayScheduleResponseHandler)onSuccessCallback
-         onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                scheduleId:(uint8_t)scheduleId
-                    userId:(uint16_t)userId
+- (BOOL)getWeekdaySchedule:(uint8_t)scheduleId userId:(uint16_t)userId completionHandler:(ResponseHandler)completionHandler
 {
     CHIPDoorLockClusterGetWeekdayScheduleResponseCallbackBridge * onSuccess
-        = new CHIPDoorLockClusterGetWeekdayScheduleResponseCallbackBridge(onSuccessCallback, _callbackQueue);
+        = new CHIPDoorLockClusterGetWeekdayScheduleResponseCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -4113,18 +4094,15 @@ private:
     }
     return YES;
 }
-- (BOOL)getYeardaySchedule:(DoorLockClusterGetYeardayScheduleResponseHandler)onSuccessCallback
-         onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                scheduleId:(uint8_t)scheduleId
-                    userId:(uint16_t)userId
+- (BOOL)getYeardaySchedule:(uint8_t)scheduleId userId:(uint16_t)userId completionHandler:(ResponseHandler)completionHandler
 {
     CHIPDoorLockClusterGetYeardayScheduleResponseCallbackBridge * onSuccess
-        = new CHIPDoorLockClusterGetYeardayScheduleResponseCallbackBridge(onSuccessCallback, _callbackQueue);
+        = new CHIPDoorLockClusterGetYeardayScheduleResponseCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -4138,17 +4116,15 @@ private:
     }
     return YES;
 }
-- (BOOL)lockDoor:(DoorLockClusterLockDoorResponseHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                  pin:(char *)pin
+- (BOOL)lockDoor:(char *)pin completionHandler:(ResponseHandler)completionHandler
 {
     CHIPDoorLockClusterLockDoorResponseCallbackBridge * onSuccess
-        = new CHIPDoorLockClusterLockDoorResponseCallbackBridge(onSuccessCallback, _callbackQueue);
+        = new CHIPDoorLockClusterLockDoorResponseCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -4162,20 +4138,19 @@ private:
     }
     return YES;
 }
-- (BOOL)setHolidaySchedule:(DoorLockClusterSetHolidayScheduleResponseHandler)onSuccessCallback
-             onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                    scheduleId:(uint8_t)scheduleId
+- (BOOL)setHolidaySchedule:(uint8_t)scheduleId
                 localStartTime:(uint32_t)localStartTime
                   localEndTime:(uint32_t)localEndTime
     operatingModeDuringHoliday:(uint8_t)operatingModeDuringHoliday
+             completionHandler:(ResponseHandler)completionHandler
 {
     CHIPDoorLockClusterSetHolidayScheduleResponseCallbackBridge * onSuccess
-        = new CHIPDoorLockClusterSetHolidayScheduleResponseCallbackBridge(onSuccessCallback, _callbackQueue);
+        = new CHIPDoorLockClusterSetHolidayScheduleResponseCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -4190,20 +4165,19 @@ private:
     }
     return YES;
 }
-- (BOOL)setPin:(DoorLockClusterSetPinResponseHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-               userId:(uint16_t)userId
+- (BOOL)setPin:(uint16_t)userId
            userStatus:(uint8_t)userStatus
              userType:(uint8_t)userType
                   pin:(char *)pin
+    completionHandler:(ResponseHandler)completionHandler
 {
     CHIPDoorLockClusterSetPinResponseCallbackBridge * onSuccess
-        = new CHIPDoorLockClusterSetPinResponseCallbackBridge(onSuccessCallback, _callbackQueue);
+        = new CHIPDoorLockClusterSetPinResponseCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -4217,20 +4191,19 @@ private:
     }
     return YES;
 }
-- (BOOL)setRfid:(DoorLockClusterSetRfidResponseHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-               userId:(uint16_t)userId
+- (BOOL)setRfid:(uint16_t)userId
            userStatus:(uint8_t)userStatus
              userType:(uint8_t)userType
                    id:(char *)id
+    completionHandler:(ResponseHandler)completionHandler
 {
     CHIPDoorLockClusterSetRfidResponseCallbackBridge * onSuccess
-        = new CHIPDoorLockClusterSetRfidResponseCallbackBridge(onSuccessCallback, _callbackQueue);
+        = new CHIPDoorLockClusterSetRfidResponseCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -4244,18 +4217,15 @@ private:
     }
     return YES;
 }
-- (BOOL)setUserType:(DoorLockClusterSetUserTypeResponseHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-               userId:(uint16_t)userId
-             userType:(uint8_t)userType
+- (BOOL)setUserType:(uint16_t)userId userType:(uint8_t)userType completionHandler:(ResponseHandler)completionHandler
 {
     CHIPDoorLockClusterSetUserTypeResponseCallbackBridge * onSuccess
-        = new CHIPDoorLockClusterSetUserTypeResponseCallbackBridge(onSuccessCallback, _callbackQueue);
+        = new CHIPDoorLockClusterSetUserTypeResponseCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -4269,23 +4239,22 @@ private:
     }
     return YES;
 }
-- (BOOL)setWeekdaySchedule:(DoorLockClusterSetWeekdayScheduleResponseHandler)onSuccessCallback
-         onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                scheduleId:(uint8_t)scheduleId
+- (BOOL)setWeekdaySchedule:(uint8_t)scheduleId
                     userId:(uint16_t)userId
                   daysMask:(uint8_t)daysMask
                  startHour:(uint8_t)startHour
                startMinute:(uint8_t)startMinute
                    endHour:(uint8_t)endHour
                  endMinute:(uint8_t)endMinute
+         completionHandler:(ResponseHandler)completionHandler
 {
     CHIPDoorLockClusterSetWeekdayScheduleResponseCallbackBridge * onSuccess
-        = new CHIPDoorLockClusterSetWeekdayScheduleResponseCallbackBridge(onSuccessCallback, _callbackQueue);
+        = new CHIPDoorLockClusterSetWeekdayScheduleResponseCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -4300,20 +4269,19 @@ private:
     }
     return YES;
 }
-- (BOOL)setYeardaySchedule:(DoorLockClusterSetYeardayScheduleResponseHandler)onSuccessCallback
-         onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                scheduleId:(uint8_t)scheduleId
+- (BOOL)setYeardaySchedule:(uint8_t)scheduleId
                     userId:(uint16_t)userId
             localStartTime:(uint32_t)localStartTime
               localEndTime:(uint32_t)localEndTime
+         completionHandler:(ResponseHandler)completionHandler
 {
     CHIPDoorLockClusterSetYeardayScheduleResponseCallbackBridge * onSuccess
-        = new CHIPDoorLockClusterSetYeardayScheduleResponseCallbackBridge(onSuccessCallback, _callbackQueue);
+        = new CHIPDoorLockClusterSetYeardayScheduleResponseCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -4328,17 +4296,15 @@ private:
     }
     return YES;
 }
-- (BOOL)unlockDoor:(DoorLockClusterUnlockDoorResponseHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                  pin:(char *)pin
+- (BOOL)unlockDoor:(char *)pin completionHandler:(ResponseHandler)completionHandler
 {
     CHIPDoorLockClusterUnlockDoorResponseCallbackBridge * onSuccess
-        = new CHIPDoorLockClusterUnlockDoorResponseCallbackBridge(onSuccessCallback, _callbackQueue);
+        = new CHIPDoorLockClusterUnlockDoorResponseCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -4352,18 +4318,15 @@ private:
     }
     return YES;
 }
-- (BOOL)unlockWithTimeout:(DoorLockClusterUnlockWithTimeoutResponseHandler)onSuccessCallback
-        onFailureCallback:(DefaultFailureHandler)onFailureCallback
-         timeoutInSeconds:(uint16_t)timeoutInSeconds
-                      pin:(char *)pin
+- (BOOL)unlockWithTimeout:(uint16_t)timeoutInSeconds pin:(char *)pin completionHandler:(ResponseHandler)completionHandler
 {
     CHIPDoorLockClusterUnlockWithTimeoutResponseCallbackBridge * onSuccess
-        = new CHIPDoorLockClusterUnlockWithTimeoutResponseCallbackBridge(onSuccessCallback, _callbackQueue);
+        = new CHIPDoorLockClusterUnlockWithTimeoutResponseCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -4378,14 +4341,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributeLockState:(Int8uAttributeHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributeLockState:(ResponseHandler)completionHandler
 {
-    CHIPInt8uAttributeCallbackBridge * onSuccess = new CHIPInt8uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt8uAttributeCallbackBridge * onSuccess = new CHIPInt8uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -4400,49 +4363,55 @@ private:
     return YES;
 }
 
-- (BOOL)reportAttributeLockState:(DefaultSuccessHandler)onSuccessCallback
-               onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                onReportCallback:(Int8uAttributeHandler)onReportCallback
-                     minInterval:(uint16_t)minInterval
-                     maxInterval:(uint16_t)maxInterval
+- (BOOL)configureAttributeLockState:(uint16_t)minInterval
+                        maxInterval:(uint16_t)maxInterval
+                  completionHandler:(ResponseHandler)completionHandler
 {
-    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
     }
 
-    CHIPInt8uAttributeCallbackBridge * onReport = new CHIPInt8uAttributeCallbackBridge(onReportCallback, _callbackQueue, true);
-    if (!onReport) {
-        delete onSuccess;
-        delete onFailure;
-        return NO;
-    }
-
-    CHIP_ERROR err = self.cppCluster.ReportAttributeLockState(
-        onSuccess->Cancel(), onFailure->Cancel(), onReport->Cancel(), minInterval, maxInterval);
+    CHIP_ERROR err
+        = self.cppCluster.ConfigureAttributeLockState(onSuccess->Cancel(), onFailure->Cancel(), minInterval, maxInterval);
     if (err != CHIP_NO_ERROR) {
         delete onSuccess;
         delete onFailure;
-        delete onReport;
         return NO;
     }
     return YES;
 }
 
-- (BOOL)readAttributeLockType:(Int8uAttributeHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)reportAttributeLockState:(ResponseHandler)reportHandler
 {
-    CHIPInt8uAttributeCallbackBridge * onSuccess = new CHIPInt8uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt8uAttributeCallbackBridge * onReport = new CHIPInt8uAttributeCallbackBridge(reportHandler, _callbackQueue, true);
+    if (!onReport) {
+        return NO;
+    }
+
+    CHIP_ERROR err = self.cppCluster.ReportAttributeLockState(onReport->Cancel());
+    if (err != CHIP_NO_ERROR) {
+        delete onReport;
+        return NO;
+    }
+
+    return YES;
+}
+
+- (BOOL)readAttributeLockType:(ResponseHandler)completionHandler
+{
+    CHIPInt8uAttributeCallbackBridge * onSuccess = new CHIPInt8uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -4457,15 +4426,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributeActuatorEnabled:(BooleanAttributeHandler)onSuccessCallback
-                   onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributeActuatorEnabled:(ResponseHandler)completionHandler
 {
-    CHIPBooleanAttributeCallbackBridge * onSuccess = new CHIPBooleanAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPBooleanAttributeCallbackBridge * onSuccess = new CHIPBooleanAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -4480,15 +4448,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributeClusterRevision:(Int16uAttributeHandler)onSuccessCallback
-                   onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributeClusterRevision:(ResponseHandler)completionHandler
 {
-    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -4528,18 +4495,15 @@ private:
     return self;
 }
 
-- (BOOL)addGroup:(GroupsClusterAddGroupResponseHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-              groupId:(uint16_t)groupId
-            groupName:(char *)groupName
+- (BOOL)addGroup:(uint16_t)groupId groupName:(char *)groupName completionHandler:(ResponseHandler)completionHandler
 {
     CHIPGroupsClusterAddGroupResponseCallbackBridge * onSuccess
-        = new CHIPGroupsClusterAddGroupResponseCallbackBridge(onSuccessCallback, _callbackQueue);
+        = new CHIPGroupsClusterAddGroupResponseCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -4553,17 +4517,14 @@ private:
     }
     return YES;
 }
-- (BOOL)addGroupIfIdentifying:(DefaultSuccessHandler)onSuccessCallback
-            onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                      groupId:(uint16_t)groupId
-                    groupName:(char *)groupName
+- (BOOL)addGroupIfIdentifying:(uint16_t)groupId groupName:(char *)groupName completionHandler:(ResponseHandler)completionHandler
 {
-    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -4577,18 +4538,15 @@ private:
     }
     return YES;
 }
-- (BOOL)getGroupMembership:(GroupsClusterGetGroupMembershipResponseHandler)onSuccessCallback
-         onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                groupCount:(uint8_t)groupCount
-                 groupList:(uint16_t)groupList
+- (BOOL)getGroupMembership:(uint8_t)groupCount groupList:(uint16_t)groupList completionHandler:(ResponseHandler)completionHandler
 {
     CHIPGroupsClusterGetGroupMembershipResponseCallbackBridge * onSuccess
-        = new CHIPGroupsClusterGetGroupMembershipResponseCallbackBridge(onSuccessCallback, _callbackQueue);
+        = new CHIPGroupsClusterGetGroupMembershipResponseCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -4602,14 +4560,14 @@ private:
     }
     return YES;
 }
-- (BOOL)removeAllGroups:(DefaultSuccessHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)removeAllGroups:(ResponseHandler)completionHandler
 {
-    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -4623,17 +4581,15 @@ private:
     }
     return YES;
 }
-- (BOOL)removeGroup:(GroupsClusterRemoveGroupResponseHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-              groupId:(uint16_t)groupId
+- (BOOL)removeGroup:(uint16_t)groupId completionHandler:(ResponseHandler)completionHandler
 {
     CHIPGroupsClusterRemoveGroupResponseCallbackBridge * onSuccess
-        = new CHIPGroupsClusterRemoveGroupResponseCallbackBridge(onSuccessCallback, _callbackQueue);
+        = new CHIPGroupsClusterRemoveGroupResponseCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -4647,17 +4603,15 @@ private:
     }
     return YES;
 }
-- (BOOL)viewGroup:(GroupsClusterViewGroupResponseHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-              groupId:(uint16_t)groupId
+- (BOOL)viewGroup:(uint16_t)groupId completionHandler:(ResponseHandler)completionHandler
 {
     CHIPGroupsClusterViewGroupResponseCallbackBridge * onSuccess
-        = new CHIPGroupsClusterViewGroupResponseCallbackBridge(onSuccessCallback, _callbackQueue);
+        = new CHIPGroupsClusterViewGroupResponseCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -4672,14 +4626,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributeNameSupport:(Int8uAttributeHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributeNameSupport:(ResponseHandler)completionHandler
 {
-    CHIPInt8uAttributeCallbackBridge * onSuccess = new CHIPInt8uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt8uAttributeCallbackBridge * onSuccess = new CHIPInt8uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -4694,15 +4648,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributeClusterRevision:(Int16uAttributeHandler)onSuccessCallback
-                   onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributeClusterRevision:(ResponseHandler)completionHandler
 {
-    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -4742,16 +4695,14 @@ private:
     return self;
 }
 
-- (BOOL)identify:(DefaultSuccessHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-         identifyTime:(uint16_t)identifyTime
+- (BOOL)identify:(uint16_t)identifyTime completionHandler:(ResponseHandler)completionHandler
 {
-    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -4765,16 +4716,15 @@ private:
     }
     return YES;
 }
-- (BOOL)identifyQuery:(IdentifyClusterIdentifyQueryResponseHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)identifyQuery:(ResponseHandler)completionHandler
 {
     CHIPIdentifyClusterIdentifyQueryResponseCallbackBridge * onSuccess
-        = new CHIPIdentifyClusterIdentifyQueryResponseCallbackBridge(onSuccessCallback, _callbackQueue);
+        = new CHIPIdentifyClusterIdentifyQueryResponseCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -4789,15 +4739,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributeIdentifyTime:(Int16uAttributeHandler)onSuccessCallback
-                onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributeIdentifyTime:(ResponseHandler)completionHandler
 {
-    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -4812,16 +4761,14 @@ private:
     return YES;
 }
 
-- (BOOL)writeAttributeIdentifyTime:(DefaultSuccessHandler)onSuccessCallback
-                 onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                             value:(uint16_t)value
+- (BOOL)writeAttributeIdentifyTime:(uint16_t)value completionHandler:(ResponseHandler)completionHandler
 {
-    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -4836,15 +4783,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributeClusterRevision:(Int16uAttributeHandler)onSuccessCallback
-                   onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributeClusterRevision:(ResponseHandler)completionHandler
 {
-    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -4884,19 +4830,18 @@ private:
     return self;
 }
 
-- (BOOL)move:(DefaultSuccessHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-             moveMode:(uint8_t)moveMode
+- (BOOL)move:(uint8_t)moveMode
                  rate:(uint8_t)rate
            optionMask:(uint8_t)optionMask
        optionOverride:(uint8_t)optionOverride
+    completionHandler:(ResponseHandler)completionHandler
 {
-    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -4910,19 +4855,18 @@ private:
     }
     return YES;
 }
-- (BOOL)moveToLevel:(DefaultSuccessHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                level:(uint8_t)level
+- (BOOL)moveToLevel:(uint8_t)level
        transitionTime:(uint16_t)transitionTime
            optionMask:(uint8_t)optionMask
        optionOverride:(uint8_t)optionOverride
+    completionHandler:(ResponseHandler)completionHandler
 {
-    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -4937,17 +4881,16 @@ private:
     }
     return YES;
 }
-- (BOOL)moveToLevelWithOnOff:(DefaultSuccessHandler)onSuccessCallback
-           onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                       level:(uint8_t)level
+- (BOOL)moveToLevelWithOnOff:(uint8_t)level
               transitionTime:(uint16_t)transitionTime
+           completionHandler:(ResponseHandler)completionHandler
 {
-    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -4961,17 +4904,14 @@ private:
     }
     return YES;
 }
-- (BOOL)moveWithOnOff:(DefaultSuccessHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-             moveMode:(uint8_t)moveMode
-                 rate:(uint8_t)rate
+- (BOOL)moveWithOnOff:(uint8_t)moveMode rate:(uint8_t)rate completionHandler:(ResponseHandler)completionHandler
 {
-    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -4985,20 +4925,19 @@ private:
     }
     return YES;
 }
-- (BOOL)step:(DefaultSuccessHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-             stepMode:(uint8_t)stepMode
+- (BOOL)step:(uint8_t)stepMode
              stepSize:(uint8_t)stepSize
        transitionTime:(uint16_t)transitionTime
            optionMask:(uint8_t)optionMask
        optionOverride:(uint8_t)optionOverride
+    completionHandler:(ResponseHandler)completionHandler
 {
-    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -5013,18 +4952,17 @@ private:
     }
     return YES;
 }
-- (BOOL)stepWithOnOff:(DefaultSuccessHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-             stepMode:(uint8_t)stepMode
+- (BOOL)stepWithOnOff:(uint8_t)stepMode
              stepSize:(uint8_t)stepSize
        transitionTime:(uint16_t)transitionTime
+    completionHandler:(ResponseHandler)completionHandler
 {
-    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -5038,17 +4976,14 @@ private:
     }
     return YES;
 }
-- (BOOL)stop:(DefaultSuccessHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-           optionMask:(uint8_t)optionMask
-       optionOverride:(uint8_t)optionOverride
+- (BOOL)stop:(uint8_t)optionMask optionOverride:(uint8_t)optionOverride completionHandler:(ResponseHandler)completionHandler
 {
-    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -5062,14 +4997,14 @@ private:
     }
     return YES;
 }
-- (BOOL)stopWithOnOff:(DefaultSuccessHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)stopWithOnOff:(ResponseHandler)completionHandler
 {
-    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -5084,15 +5019,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributeCurrentLevel:(Int8uAttributeHandler)onSuccessCallback
-                onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributeCurrentLevel:(ResponseHandler)completionHandler
 {
-    CHIPInt8uAttributeCallbackBridge * onSuccess = new CHIPInt8uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt8uAttributeCallbackBridge * onSuccess = new CHIPInt8uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -5107,51 +5041,56 @@ private:
     return YES;
 }
 
-- (BOOL)reportAttributeCurrentLevel:(DefaultSuccessHandler)onSuccessCallback
-                  onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                   onReportCallback:(Int8uAttributeHandler)onReportCallback
-                        minInterval:(uint16_t)minInterval
-                        maxInterval:(uint16_t)maxInterval
-                             change:(uint8_t)change
+- (BOOL)configureAttributeCurrentLevel:(uint16_t)minInterval
+                           maxInterval:(uint16_t)maxInterval
+                                change:(uint8_t)change
+                     completionHandler:(ResponseHandler)completionHandler
 {
-    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
     }
 
-    CHIPInt8uAttributeCallbackBridge * onReport = new CHIPInt8uAttributeCallbackBridge(onReportCallback, _callbackQueue, true);
-    if (!onReport) {
-        delete onSuccess;
-        delete onFailure;
-        return NO;
-    }
-
-    CHIP_ERROR err = self.cppCluster.ReportAttributeCurrentLevel(
-        onSuccess->Cancel(), onFailure->Cancel(), onReport->Cancel(), minInterval, maxInterval, change);
+    CHIP_ERROR err = self.cppCluster.ConfigureAttributeCurrentLevel(
+        onSuccess->Cancel(), onFailure->Cancel(), minInterval, maxInterval, change);
     if (err != CHIP_NO_ERROR) {
         delete onSuccess;
         delete onFailure;
-        delete onReport;
         return NO;
     }
     return YES;
 }
 
-- (BOOL)readAttributeClusterRevision:(Int16uAttributeHandler)onSuccessCallback
-                   onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)reportAttributeCurrentLevel:(ResponseHandler)reportHandler
 {
-    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt8uAttributeCallbackBridge * onReport = new CHIPInt8uAttributeCallbackBridge(reportHandler, _callbackQueue, true);
+    if (!onReport) {
+        return NO;
+    }
+
+    CHIP_ERROR err = self.cppCluster.ReportAttributeCurrentLevel(onReport->Cancel());
+    if (err != CHIP_NO_ERROR) {
+        delete onReport;
+        return NO;
+    }
+
+    return YES;
+}
+
+- (BOOL)readAttributeClusterRevision:(ResponseHandler)completionHandler
+{
+    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -5191,14 +5130,14 @@ private:
     return self;
 }
 
-- (BOOL)off:(DefaultSuccessHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)off:(ResponseHandler)completionHandler
 {
-    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -5212,14 +5151,14 @@ private:
     }
     return YES;
 }
-- (BOOL)on:(DefaultSuccessHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)on:(ResponseHandler)completionHandler
 {
-    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -5233,14 +5172,14 @@ private:
     }
     return YES;
 }
-- (BOOL)toggle:(DefaultSuccessHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)toggle:(ResponseHandler)completionHandler
 {
-    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -5255,14 +5194,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributeOnOff:(BooleanAttributeHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributeOnOff:(ResponseHandler)completionHandler
 {
-    CHIPBooleanAttributeCallbackBridge * onSuccess = new CHIPBooleanAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPBooleanAttributeCallbackBridge * onSuccess = new CHIPBooleanAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -5277,50 +5216,54 @@ private:
     return YES;
 }
 
-- (BOOL)reportAttributeOnOff:(DefaultSuccessHandler)onSuccessCallback
-           onFailureCallback:(DefaultFailureHandler)onFailureCallback
-            onReportCallback:(BooleanAttributeHandler)onReportCallback
-                 minInterval:(uint16_t)minInterval
-                 maxInterval:(uint16_t)maxInterval
+- (BOOL)configureAttributeOnOff:(uint16_t)minInterval
+                    maxInterval:(uint16_t)maxInterval
+              completionHandler:(ResponseHandler)completionHandler
 {
-    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
     }
 
-    CHIPBooleanAttributeCallbackBridge * onReport = new CHIPBooleanAttributeCallbackBridge(onReportCallback, _callbackQueue, true);
-    if (!onReport) {
-        delete onSuccess;
-        delete onFailure;
-        return NO;
-    }
-
-    CHIP_ERROR err = self.cppCluster.ReportAttributeOnOff(
-        onSuccess->Cancel(), onFailure->Cancel(), onReport->Cancel(), minInterval, maxInterval);
+    CHIP_ERROR err = self.cppCluster.ConfigureAttributeOnOff(onSuccess->Cancel(), onFailure->Cancel(), minInterval, maxInterval);
     if (err != CHIP_NO_ERROR) {
         delete onSuccess;
         delete onFailure;
-        delete onReport;
         return NO;
     }
     return YES;
 }
 
-- (BOOL)readAttributeClusterRevision:(Int16uAttributeHandler)onSuccessCallback
-                   onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)reportAttributeOnOff:(ResponseHandler)reportHandler
 {
-    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPBooleanAttributeCallbackBridge * onReport = new CHIPBooleanAttributeCallbackBridge(reportHandler, _callbackQueue, true);
+    if (!onReport) {
+        return NO;
+    }
+
+    CHIP_ERROR err = self.cppCluster.ReportAttributeOnOff(onReport->Cancel());
+    if (err != CHIP_NO_ERROR) {
+        delete onReport;
+        return NO;
+    }
+
+    return YES;
+}
+
+- (BOOL)readAttributeClusterRevision:(ResponseHandler)completionHandler
+{
+    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -5360,23 +5303,22 @@ private:
     return self;
 }
 
-- (BOOL)addScene:(ScenesClusterAddSceneResponseHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-              groupId:(uint16_t)groupId
+- (BOOL)addScene:(uint16_t)groupId
               sceneId:(uint8_t)sceneId
        transitionTime:(uint16_t)transitionTime
             sceneName:(char *)sceneName
             clusterId:(uint16_t)clusterId
                length:(uint8_t)length
                 value:(uint8_t)value
+    completionHandler:(ResponseHandler)completionHandler
 {
     CHIPScenesClusterAddSceneResponseCallbackBridge * onSuccess
-        = new CHIPScenesClusterAddSceneResponseCallbackBridge(onSuccessCallback, _callbackQueue);
+        = new CHIPScenesClusterAddSceneResponseCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -5391,17 +5333,15 @@ private:
     }
     return YES;
 }
-- (BOOL)getSceneMembership:(ScenesClusterGetSceneMembershipResponseHandler)onSuccessCallback
-         onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                   groupId:(uint16_t)groupId
+- (BOOL)getSceneMembership:(uint16_t)groupId completionHandler:(ResponseHandler)completionHandler
 {
     CHIPScenesClusterGetSceneMembershipResponseCallbackBridge * onSuccess
-        = new CHIPScenesClusterGetSceneMembershipResponseCallbackBridge(onSuccessCallback, _callbackQueue);
+        = new CHIPScenesClusterGetSceneMembershipResponseCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -5415,18 +5355,17 @@ private:
     }
     return YES;
 }
-- (BOOL)recallScene:(DefaultSuccessHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-              groupId:(uint16_t)groupId
+- (BOOL)recallScene:(uint16_t)groupId
               sceneId:(uint8_t)sceneId
        transitionTime:(uint16_t)transitionTime
+    completionHandler:(ResponseHandler)completionHandler
 {
-    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -5440,17 +5379,15 @@ private:
     }
     return YES;
 }
-- (BOOL)removeAllScenes:(ScenesClusterRemoveAllScenesResponseHandler)onSuccessCallback
-      onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                groupId:(uint16_t)groupId
+- (BOOL)removeAllScenes:(uint16_t)groupId completionHandler:(ResponseHandler)completionHandler
 {
     CHIPScenesClusterRemoveAllScenesResponseCallbackBridge * onSuccess
-        = new CHIPScenesClusterRemoveAllScenesResponseCallbackBridge(onSuccessCallback, _callbackQueue);
+        = new CHIPScenesClusterRemoveAllScenesResponseCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -5464,18 +5401,15 @@ private:
     }
     return YES;
 }
-- (BOOL)removeScene:(ScenesClusterRemoveSceneResponseHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-              groupId:(uint16_t)groupId
-              sceneId:(uint8_t)sceneId
+- (BOOL)removeScene:(uint16_t)groupId sceneId:(uint8_t)sceneId completionHandler:(ResponseHandler)completionHandler
 {
     CHIPScenesClusterRemoveSceneResponseCallbackBridge * onSuccess
-        = new CHIPScenesClusterRemoveSceneResponseCallbackBridge(onSuccessCallback, _callbackQueue);
+        = new CHIPScenesClusterRemoveSceneResponseCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -5489,18 +5423,15 @@ private:
     }
     return YES;
 }
-- (BOOL)storeScene:(ScenesClusterStoreSceneResponseHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-              groupId:(uint16_t)groupId
-              sceneId:(uint8_t)sceneId
+- (BOOL)storeScene:(uint16_t)groupId sceneId:(uint8_t)sceneId completionHandler:(ResponseHandler)completionHandler
 {
     CHIPScenesClusterStoreSceneResponseCallbackBridge * onSuccess
-        = new CHIPScenesClusterStoreSceneResponseCallbackBridge(onSuccessCallback, _callbackQueue);
+        = new CHIPScenesClusterStoreSceneResponseCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -5514,18 +5445,15 @@ private:
     }
     return YES;
 }
-- (BOOL)viewScene:(ScenesClusterViewSceneResponseHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-              groupId:(uint16_t)groupId
-              sceneId:(uint8_t)sceneId
+- (BOOL)viewScene:(uint16_t)groupId sceneId:(uint8_t)sceneId completionHandler:(ResponseHandler)completionHandler
 {
     CHIPScenesClusterViewSceneResponseCallbackBridge * onSuccess
-        = new CHIPScenesClusterViewSceneResponseCallbackBridge(onSuccessCallback, _callbackQueue);
+        = new CHIPScenesClusterViewSceneResponseCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -5540,14 +5468,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributeSceneCount:(Int8uAttributeHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributeSceneCount:(ResponseHandler)completionHandler
 {
-    CHIPInt8uAttributeCallbackBridge * onSuccess = new CHIPInt8uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt8uAttributeCallbackBridge * onSuccess = new CHIPInt8uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -5562,15 +5490,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributeCurrentScene:(Int8uAttributeHandler)onSuccessCallback
-                onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributeCurrentScene:(ResponseHandler)completionHandler
 {
-    CHIPInt8uAttributeCallbackBridge * onSuccess = new CHIPInt8uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt8uAttributeCallbackBridge * onSuccess = new CHIPInt8uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -5585,15 +5512,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributeCurrentGroup:(Int16uAttributeHandler)onSuccessCallback
-                onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributeCurrentGroup:(ResponseHandler)completionHandler
 {
-    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -5608,15 +5534,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributeSceneValid:(BooleanAttributeHandler)onSuccessCallback
-              onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributeSceneValid:(ResponseHandler)completionHandler
 {
-    CHIPBooleanAttributeCallbackBridge * onSuccess = new CHIPBooleanAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPBooleanAttributeCallbackBridge * onSuccess = new CHIPBooleanAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -5631,14 +5556,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributeNameSupport:(Int8uAttributeHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributeNameSupport:(ResponseHandler)completionHandler
 {
-    CHIPInt8uAttributeCallbackBridge * onSuccess = new CHIPInt8uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt8uAttributeCallbackBridge * onSuccess = new CHIPInt8uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -5653,15 +5578,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributeClusterRevision:(Int16uAttributeHandler)onSuccessCallback
-                   onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributeClusterRevision:(ResponseHandler)completionHandler
 {
-    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -5701,15 +5625,14 @@ private:
     return self;
 }
 
-- (BOOL)readAttributeMeasuredValue:(Int16sAttributeHandler)onSuccessCallback
-                 onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributeMeasuredValue:(ResponseHandler)completionHandler
 {
-    CHIPInt16sAttributeCallbackBridge * onSuccess = new CHIPInt16sAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt16sAttributeCallbackBridge * onSuccess = new CHIPInt16sAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -5724,51 +5647,56 @@ private:
     return YES;
 }
 
-- (BOOL)reportAttributeMeasuredValue:(DefaultSuccessHandler)onSuccessCallback
-                   onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                    onReportCallback:(Int16sAttributeHandler)onReportCallback
-                         minInterval:(uint16_t)minInterval
-                         maxInterval:(uint16_t)maxInterval
-                              change:(int16_t)change
+- (BOOL)configureAttributeMeasuredValue:(uint16_t)minInterval
+                            maxInterval:(uint16_t)maxInterval
+                                 change:(int16_t)change
+                      completionHandler:(ResponseHandler)completionHandler
 {
-    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
     }
 
-    CHIPInt16sAttributeCallbackBridge * onReport = new CHIPInt16sAttributeCallbackBridge(onReportCallback, _callbackQueue, true);
-    if (!onReport) {
-        delete onSuccess;
-        delete onFailure;
-        return NO;
-    }
-
-    CHIP_ERROR err = self.cppCluster.ReportAttributeMeasuredValue(
-        onSuccess->Cancel(), onFailure->Cancel(), onReport->Cancel(), minInterval, maxInterval, change);
+    CHIP_ERROR err = self.cppCluster.ConfigureAttributeMeasuredValue(
+        onSuccess->Cancel(), onFailure->Cancel(), minInterval, maxInterval, change);
     if (err != CHIP_NO_ERROR) {
         delete onSuccess;
         delete onFailure;
-        delete onReport;
         return NO;
     }
     return YES;
 }
 
-- (BOOL)readAttributeMinMeasuredValue:(Int16sAttributeHandler)onSuccessCallback
-                    onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)reportAttributeMeasuredValue:(ResponseHandler)reportHandler
 {
-    CHIPInt16sAttributeCallbackBridge * onSuccess = new CHIPInt16sAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt16sAttributeCallbackBridge * onReport = new CHIPInt16sAttributeCallbackBridge(reportHandler, _callbackQueue, true);
+    if (!onReport) {
+        return NO;
+    }
+
+    CHIP_ERROR err = self.cppCluster.ReportAttributeMeasuredValue(onReport->Cancel());
+    if (err != CHIP_NO_ERROR) {
+        delete onReport;
+        return NO;
+    }
+
+    return YES;
+}
+
+- (BOOL)readAttributeMinMeasuredValue:(ResponseHandler)completionHandler
+{
+    CHIPInt16sAttributeCallbackBridge * onSuccess = new CHIPInt16sAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -5783,15 +5711,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributeMaxMeasuredValue:(Int16sAttributeHandler)onSuccessCallback
-                    onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributeMaxMeasuredValue:(ResponseHandler)completionHandler
 {
-    CHIPInt16sAttributeCallbackBridge * onSuccess = new CHIPInt16sAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt16sAttributeCallbackBridge * onSuccess = new CHIPInt16sAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -5806,15 +5733,14 @@ private:
     return YES;
 }
 
-- (BOOL)readAttributeClusterRevision:(Int16uAttributeHandler)onSuccessCallback
-                   onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttributeClusterRevision:(ResponseHandler)completionHandler
 {
-    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPInt16uAttributeCallbackBridge * onSuccess = new CHIPInt16uAttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
