@@ -19,27 +19,8 @@
 #define CHIP_CLUSTERS_H
 
 #import <Foundation/Foundation.h>
-#include <stdbool.h>
 
-// Global Response Handlers
-typedef void (^DefaultSuccessHandler)(void);
-typedef void (^DefaultFailureHandler)(uint8_t status);
-typedef void (^BooleanAttributeHandler)(bool value);
-typedef void (^Int8uAttributeHandler)(uint8_t value);
-typedef void (^Int8sAttributeHandler)(int8_t value);
-typedef void (^Int16uAttributeHandler)(uint16_t value);
-typedef void (^Int16sAttributeHandler)(int16_t value);
-typedef void (^Int32uAttributeHandler)(uint32_t value);
-typedef void (^Int32sAttributeHandler)(int32_t value);
-typedef void (^Int64uAttributeHandler)(uint64_t value);
-typedef void (^Int64sAttributeHandler)(int64_t value);
-typedef void (^ReadReportingConfigurationReportedHandler)(uint16_t minInterval, uint16_t maxInterval);
-typedef void (^ReadReportingConfigurationReceivedHandler)(uint16_t timeout);
-
-// Cluster Specific Response Handlers
-
-// This is a temporary workarounds for attributes that are not correctly handled yet.
-typedef void (^UnsupportedAttributeHandler)(void);
+typedef void (^ResponseHandler)(NSError * error, NSDictionary * values);
 
 @class CHIPDevice;
 
@@ -48,21 +29,14 @@ NS_ASSUME_NONNULL_BEGIN
 @interface CHIPBarrierControl : NSObject
 
 - (nullable instancetype)initWithDevice:(CHIPDevice *)device endpoint:(uint8_t)endpoint queue:(dispatch_queue_t)queue;
-- (BOOL)barrierControlGoToPercent:(DefaultSuccessHandler)onSuccessCallback
-                onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                      percentOpen:(uint8_t)percentOpen;
-- (BOOL)barrierControlStop:(DefaultSuccessHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback;
+- (BOOL)barrierControlGoToPercent:(uint8_t)percentOpen completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)barrierControlStop:(ResponseHandler)completionHandler;
 
-- (BOOL)readAttributeBarrierMovingState:(Int8uAttributeHandler)onSuccessCallback
-                      onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)readAttributeBarrierSafetyStatus:(Int16uAttributeHandler)onSuccessCallback
-                       onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)readAttributeBarrierCapabilities:(Int8uAttributeHandler)onSuccessCallback
-                       onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)readAttributeBarrierPosition:(Int8uAttributeHandler)onSuccessCallback
-                   onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)readAttributeClusterRevision:(Int16uAttributeHandler)onSuccessCallback
-                   onFailureCallback:(DefaultFailureHandler)onFailureCallback;
+- (BOOL)readAttributeBarrierMovingState:(ResponseHandler)completionHandler;
+- (BOOL)readAttributeBarrierSafetyStatus:(ResponseHandler)completionHandler;
+- (BOOL)readAttributeBarrierCapabilities:(ResponseHandler)completionHandler;
+- (BOOL)readAttributeBarrierPosition:(ResponseHandler)completionHandler;
+- (BOOL)readAttributeClusterRevision:(ResponseHandler)completionHandler;
 
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;
@@ -76,14 +50,12 @@ NS_ASSUME_NONNULL_BEGIN
 @interface CHIPBasic : NSObject
 
 - (nullable instancetype)initWithDevice:(CHIPDevice *)device endpoint:(uint8_t)endpoint queue:(dispatch_queue_t)queue;
-- (BOOL)mfgSpecificPing:(DefaultSuccessHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)resetToFactoryDefaults:(DefaultSuccessHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback;
+- (BOOL)mfgSpecificPing:(ResponseHandler)completionHandler;
+- (BOOL)resetToFactoryDefaults:(ResponseHandler)completionHandler;
 
-- (BOOL)readAttributeZclVersion:(Int8uAttributeHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)readAttributePowerSource:(Int8uAttributeHandler)onSuccessCallback
-               onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)readAttributeClusterRevision:(Int16uAttributeHandler)onSuccessCallback
-                   onFailureCallback:(DefaultFailureHandler)onFailureCallback;
+- (BOOL)readAttributeZclVersion:(ResponseHandler)completionHandler;
+- (BOOL)readAttributePowerSource:(ResponseHandler)completionHandler;
+- (BOOL)readAttributeClusterRevision:(ResponseHandler)completionHandler;
 
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;
@@ -97,21 +69,18 @@ NS_ASSUME_NONNULL_BEGIN
 @interface CHIPBinding : NSObject
 
 - (nullable instancetype)initWithDevice:(CHIPDevice *)device endpoint:(uint8_t)endpoint queue:(dispatch_queue_t)queue;
-- (BOOL)bind:(DefaultSuccessHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-               nodeId:(uint64_t)nodeId
+- (BOOL)bind:(uint64_t)nodeId
               groupId:(uint16_t)groupId
            endpointId:(uint8_t)endpointId
-            clusterId:(uint16_t)clusterId;
-- (BOOL)unbind:(DefaultSuccessHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-               nodeId:(uint64_t)nodeId
+            clusterId:(uint16_t)clusterId
+    completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)unbind:(uint64_t)nodeId
               groupId:(uint16_t)groupId
            endpointId:(uint8_t)endpointId
-            clusterId:(uint16_t)clusterId;
+            clusterId:(uint16_t)clusterId
+    completionHandler:(ResponseHandler)completionHandler;
 
-- (BOOL)readAttributeClusterRevision:(Int16uAttributeHandler)onSuccessCallback
-                   onFailureCallback:(DefaultFailureHandler)onFailureCallback;
+- (BOOL)readAttributeClusterRevision:(ResponseHandler)completionHandler;
 
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;
@@ -125,255 +94,175 @@ NS_ASSUME_NONNULL_BEGIN
 @interface CHIPColorControl : NSObject
 
 - (nullable instancetype)initWithDevice:(CHIPDevice *)device endpoint:(uint8_t)endpoint queue:(dispatch_queue_t)queue;
-- (BOOL)moveColor:(DefaultSuccessHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                rateX:(int16_t)rateX
+- (BOOL)moveColor:(int16_t)rateX
                 rateY:(int16_t)rateY
           optionsMask:(uint8_t)optionsMask
-      optionsOverride:(uint8_t)optionsOverride;
-- (BOOL)moveColorTemperature:(DefaultSuccessHandler)onSuccessCallback
-           onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                    moveMode:(uint8_t)moveMode
+      optionsOverride:(uint8_t)optionsOverride
+    completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)moveColorTemperature:(uint8_t)moveMode
                         rate:(uint16_t)rate
      colorTemperatureMinimum:(uint16_t)colorTemperatureMinimum
      colorTemperatureMaximum:(uint16_t)colorTemperatureMaximum
                  optionsMask:(uint8_t)optionsMask
-             optionsOverride:(uint8_t)optionsOverride;
-- (BOOL)moveHue:(DefaultSuccessHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-             moveMode:(uint8_t)moveMode
+             optionsOverride:(uint8_t)optionsOverride
+           completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)moveHue:(uint8_t)moveMode
                  rate:(uint8_t)rate
           optionsMask:(uint8_t)optionsMask
-      optionsOverride:(uint8_t)optionsOverride;
-- (BOOL)moveSaturation:(DefaultSuccessHandler)onSuccessCallback
-     onFailureCallback:(DefaultFailureHandler)onFailureCallback
-              moveMode:(uint8_t)moveMode
+      optionsOverride:(uint8_t)optionsOverride
+    completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)moveSaturation:(uint8_t)moveMode
                   rate:(uint8_t)rate
            optionsMask:(uint8_t)optionsMask
-       optionsOverride:(uint8_t)optionsOverride;
-- (BOOL)moveToColor:(DefaultSuccessHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-               colorX:(uint16_t)colorX
+       optionsOverride:(uint8_t)optionsOverride
+     completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)moveToColor:(uint16_t)colorX
                colorY:(uint16_t)colorY
        transitionTime:(uint16_t)transitionTime
           optionsMask:(uint8_t)optionsMask
-      optionsOverride:(uint8_t)optionsOverride;
-- (BOOL)moveToColorTemperature:(DefaultSuccessHandler)onSuccessCallback
-             onFailureCallback:(DefaultFailureHandler)onFailureCallback
-              colorTemperature:(uint16_t)colorTemperature
+      optionsOverride:(uint8_t)optionsOverride
+    completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)moveToColorTemperature:(uint16_t)colorTemperature
                 transitionTime:(uint16_t)transitionTime
                    optionsMask:(uint8_t)optionsMask
-               optionsOverride:(uint8_t)optionsOverride;
-- (BOOL)moveToHue:(DefaultSuccessHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                  hue:(uint8_t)hue
+               optionsOverride:(uint8_t)optionsOverride
+             completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)moveToHue:(uint8_t)hue
             direction:(uint8_t)direction
        transitionTime:(uint16_t)transitionTime
           optionsMask:(uint8_t)optionsMask
-      optionsOverride:(uint8_t)optionsOverride;
-- (BOOL)moveToHueAndSaturation:(DefaultSuccessHandler)onSuccessCallback
-             onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                           hue:(uint8_t)hue
+      optionsOverride:(uint8_t)optionsOverride
+    completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)moveToHueAndSaturation:(uint8_t)hue
                     saturation:(uint8_t)saturation
                 transitionTime:(uint16_t)transitionTime
                    optionsMask:(uint8_t)optionsMask
-               optionsOverride:(uint8_t)optionsOverride;
-- (BOOL)moveToSaturation:(DefaultSuccessHandler)onSuccessCallback
-       onFailureCallback:(DefaultFailureHandler)onFailureCallback
-              saturation:(uint8_t)saturation
+               optionsOverride:(uint8_t)optionsOverride
+             completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)moveToSaturation:(uint8_t)saturation
           transitionTime:(uint16_t)transitionTime
              optionsMask:(uint8_t)optionsMask
-         optionsOverride:(uint8_t)optionsOverride;
-- (BOOL)stepColor:(DefaultSuccessHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                stepX:(int16_t)stepX
+         optionsOverride:(uint8_t)optionsOverride
+       completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)stepColor:(int16_t)stepX
                 stepY:(int16_t)stepY
        transitionTime:(uint16_t)transitionTime
           optionsMask:(uint8_t)optionsMask
-      optionsOverride:(uint8_t)optionsOverride;
-- (BOOL)stepColorTemperature:(DefaultSuccessHandler)onSuccessCallback
-           onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                    stepMode:(uint8_t)stepMode
+      optionsOverride:(uint8_t)optionsOverride
+    completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)stepColorTemperature:(uint8_t)stepMode
                     stepSize:(uint16_t)stepSize
               transitionTime:(uint16_t)transitionTime
      colorTemperatureMinimum:(uint16_t)colorTemperatureMinimum
      colorTemperatureMaximum:(uint16_t)colorTemperatureMaximum
                  optionsMask:(uint8_t)optionsMask
-             optionsOverride:(uint8_t)optionsOverride;
-- (BOOL)stepHue:(DefaultSuccessHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-             stepMode:(uint8_t)stepMode
+             optionsOverride:(uint8_t)optionsOverride
+           completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)stepHue:(uint8_t)stepMode
              stepSize:(uint8_t)stepSize
        transitionTime:(uint8_t)transitionTime
           optionsMask:(uint8_t)optionsMask
-      optionsOverride:(uint8_t)optionsOverride;
-- (BOOL)stepSaturation:(DefaultSuccessHandler)onSuccessCallback
-     onFailureCallback:(DefaultFailureHandler)onFailureCallback
-              stepMode:(uint8_t)stepMode
+      optionsOverride:(uint8_t)optionsOverride
+    completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)stepSaturation:(uint8_t)stepMode
               stepSize:(uint8_t)stepSize
         transitionTime:(uint8_t)transitionTime
            optionsMask:(uint8_t)optionsMask
-       optionsOverride:(uint8_t)optionsOverride;
-- (BOOL)stopMoveStep:(DefaultSuccessHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-          optionsMask:(uint8_t)optionsMask
-      optionsOverride:(uint8_t)optionsOverride;
+       optionsOverride:(uint8_t)optionsOverride
+     completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)stopMoveStep:(uint8_t)optionsMask
+      optionsOverride:(uint8_t)optionsOverride
+    completionHandler:(ResponseHandler)completionHandler;
 
-- (BOOL)readAttributeCurrentHue:(Int8uAttributeHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)reportAttributeCurrentHue:(DefaultSuccessHandler)onSuccessCallback
-                onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                 onReportCallback:(Int8uAttributeHandler)onReportCallback
-                      minInterval:(uint16_t)minInterval
-                      maxInterval:(uint16_t)maxInterval
-                           change:(uint8_t)change;
-- (BOOL)readAttributeCurrentSaturation:(Int8uAttributeHandler)onSuccessCallback
-                     onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)reportAttributeCurrentSaturation:(DefaultSuccessHandler)onSuccessCallback
-                       onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                        onReportCallback:(Int8uAttributeHandler)onReportCallback
-                             minInterval:(uint16_t)minInterval
-                             maxInterval:(uint16_t)maxInterval
-                                  change:(uint8_t)change;
-- (BOOL)readAttributeRemainingTime:(Int16uAttributeHandler)onSuccessCallback
-                 onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)readAttributeCurrentX:(Int16uAttributeHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)reportAttributeCurrentX:(DefaultSuccessHandler)onSuccessCallback
-              onFailureCallback:(DefaultFailureHandler)onFailureCallback
-               onReportCallback:(Int16uAttributeHandler)onReportCallback
-                    minInterval:(uint16_t)minInterval
-                    maxInterval:(uint16_t)maxInterval
-                         change:(uint16_t)change;
-- (BOOL)readAttributeCurrentY:(Int16uAttributeHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)reportAttributeCurrentY:(DefaultSuccessHandler)onSuccessCallback
-              onFailureCallback:(DefaultFailureHandler)onFailureCallback
-               onReportCallback:(Int16uAttributeHandler)onReportCallback
-                    minInterval:(uint16_t)minInterval
-                    maxInterval:(uint16_t)maxInterval
-                         change:(uint16_t)change;
-- (BOOL)readAttributeDriftCompensation:(Int8uAttributeHandler)onSuccessCallback
-                     onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)readAttributeCompensationText:(UnsupportedAttributeHandler)onSuccessCallback
-                    onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)readAttributeColorTemperature:(Int16uAttributeHandler)onSuccessCallback
-                    onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)reportAttributeColorTemperature:(DefaultSuccessHandler)onSuccessCallback
-                      onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                       onReportCallback:(Int16uAttributeHandler)onReportCallback
-                            minInterval:(uint16_t)minInterval
-                            maxInterval:(uint16_t)maxInterval
-                                 change:(uint16_t)change;
-- (BOOL)readAttributeColorMode:(Int8uAttributeHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)readAttributeColorControlOptions:(Int8uAttributeHandler)onSuccessCallback
-                       onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)writeAttributeColorControlOptions:(DefaultSuccessHandler)onSuccessCallback
-                        onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                                    value:(uint8_t)value;
-- (BOOL)readAttributeNumberOfPrimaries:(Int8uAttributeHandler)onSuccessCallback
-                     onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)readAttributePrimary1X:(Int16uAttributeHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)readAttributePrimary1Y:(Int16uAttributeHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)readAttributePrimary1Intensity:(Int8uAttributeHandler)onSuccessCallback
-                     onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)readAttributePrimary2X:(Int16uAttributeHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)readAttributePrimary2Y:(Int16uAttributeHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)readAttributePrimary2Intensity:(Int8uAttributeHandler)onSuccessCallback
-                     onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)readAttributePrimary3X:(Int16uAttributeHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)readAttributePrimary3Y:(Int16uAttributeHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)readAttributePrimary3Intensity:(Int8uAttributeHandler)onSuccessCallback
-                     onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)readAttributePrimary4X:(Int16uAttributeHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)readAttributePrimary4Y:(Int16uAttributeHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)readAttributePrimary4Intensity:(Int8uAttributeHandler)onSuccessCallback
-                     onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)readAttributePrimary5X:(Int16uAttributeHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)readAttributePrimary5Y:(Int16uAttributeHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)readAttributePrimary5Intensity:(Int8uAttributeHandler)onSuccessCallback
-                     onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)readAttributePrimary6X:(Int16uAttributeHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)readAttributePrimary6Y:(Int16uAttributeHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)readAttributePrimary6Intensity:(Int8uAttributeHandler)onSuccessCallback
-                     onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)readAttributeWhitePointX:(Int16uAttributeHandler)onSuccessCallback
-               onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)writeAttributeWhitePointX:(DefaultSuccessHandler)onSuccessCallback
-                onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                            value:(uint16_t)value;
-- (BOOL)readAttributeWhitePointY:(Int16uAttributeHandler)onSuccessCallback
-               onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)writeAttributeWhitePointY:(DefaultSuccessHandler)onSuccessCallback
-                onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                            value:(uint16_t)value;
-- (BOOL)readAttributeColorPointRX:(Int16uAttributeHandler)onSuccessCallback
-                onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)writeAttributeColorPointRX:(DefaultSuccessHandler)onSuccessCallback
-                 onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                             value:(uint16_t)value;
-- (BOOL)readAttributeColorPointRY:(Int16uAttributeHandler)onSuccessCallback
-                onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)writeAttributeColorPointRY:(DefaultSuccessHandler)onSuccessCallback
-                 onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                             value:(uint16_t)value;
-- (BOOL)readAttributeColorPointRIntensity:(Int8uAttributeHandler)onSuccessCallback
-                        onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)writeAttributeColorPointRIntensity:(DefaultSuccessHandler)onSuccessCallback
-                         onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                                     value:(uint8_t)value;
-- (BOOL)readAttributeColorPointGX:(Int16uAttributeHandler)onSuccessCallback
-                onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)writeAttributeColorPointGX:(DefaultSuccessHandler)onSuccessCallback
-                 onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                             value:(uint16_t)value;
-- (BOOL)readAttributeColorPointGY:(Int16uAttributeHandler)onSuccessCallback
-                onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)writeAttributeColorPointGY:(DefaultSuccessHandler)onSuccessCallback
-                 onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                             value:(uint16_t)value;
-- (BOOL)readAttributeColorPointGIntensity:(Int8uAttributeHandler)onSuccessCallback
-                        onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)writeAttributeColorPointGIntensity:(DefaultSuccessHandler)onSuccessCallback
-                         onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                                     value:(uint8_t)value;
-- (BOOL)readAttributeColorPointBX:(Int16uAttributeHandler)onSuccessCallback
-                onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)writeAttributeColorPointBX:(DefaultSuccessHandler)onSuccessCallback
-                 onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                             value:(uint16_t)value;
-- (BOOL)readAttributeColorPointBY:(Int16uAttributeHandler)onSuccessCallback
-                onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)writeAttributeColorPointBY:(DefaultSuccessHandler)onSuccessCallback
-                 onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                             value:(uint16_t)value;
-- (BOOL)readAttributeColorPointBIntensity:(Int8uAttributeHandler)onSuccessCallback
-                        onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)writeAttributeColorPointBIntensity:(DefaultSuccessHandler)onSuccessCallback
-                         onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                                     value:(uint8_t)value;
-- (BOOL)readAttributeEnhancedCurrentHue:(Int16uAttributeHandler)onSuccessCallback
-                      onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)readAttributeEnhancedColorMode:(Int8uAttributeHandler)onSuccessCallback
-                     onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)readAttributeColorLoopActive:(Int8uAttributeHandler)onSuccessCallback
-                   onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)readAttributeColorLoopDirection:(Int8uAttributeHandler)onSuccessCallback
-                      onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)readAttributeColorLoopTime:(Int16uAttributeHandler)onSuccessCallback
-                 onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)readAttributeColorCapabilities:(Int16uAttributeHandler)onSuccessCallback
-                     onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)readAttributeColorTempPhysicalMin:(Int16uAttributeHandler)onSuccessCallback
-                        onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)readAttributeColorTempPhysicalMax:(Int16uAttributeHandler)onSuccessCallback
-                        onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)readAttributeCoupleColorTempToLevelMinMireds:(Int16uAttributeHandler)onSuccessCallback
-                                   onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)readAttributeStartUpColorTemperatureMireds:(Int16uAttributeHandler)onSuccessCallback
-                                 onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)writeAttributeStartUpColorTemperatureMireds:(DefaultSuccessHandler)onSuccessCallback
-                                  onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                                              value:(uint16_t)value;
-- (BOOL)readAttributeClusterRevision:(Int16uAttributeHandler)onSuccessCallback
-                   onFailureCallback:(DefaultFailureHandler)onFailureCallback;
+- (BOOL)readAttributeCurrentHue:(ResponseHandler)completionHandler;
+- (BOOL)configureAttributeCurrentHue:(uint16_t)minInterval
+                         maxInterval:(uint16_t)maxInterval
+                              change:(uint8_t)change
+                   completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)reportAttributeCurrentHue:(ResponseHandler)reportHandler;
+- (BOOL)readAttributeCurrentSaturation:(ResponseHandler)completionHandler;
+- (BOOL)configureAttributeCurrentSaturation:(uint16_t)minInterval
+                                maxInterval:(uint16_t)maxInterval
+                                     change:(uint8_t)change
+                          completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)reportAttributeCurrentSaturation:(ResponseHandler)reportHandler;
+- (BOOL)readAttributeRemainingTime:(ResponseHandler)completionHandler;
+- (BOOL)readAttributeCurrentX:(ResponseHandler)completionHandler;
+- (BOOL)configureAttributeCurrentX:(uint16_t)minInterval
+                       maxInterval:(uint16_t)maxInterval
+                            change:(uint16_t)change
+                 completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)reportAttributeCurrentX:(ResponseHandler)reportHandler;
+- (BOOL)readAttributeCurrentY:(ResponseHandler)completionHandler;
+- (BOOL)configureAttributeCurrentY:(uint16_t)minInterval
+                       maxInterval:(uint16_t)maxInterval
+                            change:(uint16_t)change
+                 completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)reportAttributeCurrentY:(ResponseHandler)reportHandler;
+- (BOOL)readAttributeDriftCompensation:(ResponseHandler)completionHandler;
+- (BOOL)readAttributeCompensationText:(ResponseHandler)completionHandler;
+- (BOOL)readAttributeColorTemperature:(ResponseHandler)completionHandler;
+- (BOOL)configureAttributeColorTemperature:(uint16_t)minInterval
+                               maxInterval:(uint16_t)maxInterval
+                                    change:(uint16_t)change
+                         completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)reportAttributeColorTemperature:(ResponseHandler)reportHandler;
+- (BOOL)readAttributeColorMode:(ResponseHandler)completionHandler;
+- (BOOL)readAttributeColorControlOptions:(ResponseHandler)completionHandler;
+- (BOOL)writeAttributeColorControlOptions:(uint8_t)value completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)readAttributeNumberOfPrimaries:(ResponseHandler)completionHandler;
+- (BOOL)readAttributePrimary1X:(ResponseHandler)completionHandler;
+- (BOOL)readAttributePrimary1Y:(ResponseHandler)completionHandler;
+- (BOOL)readAttributePrimary1Intensity:(ResponseHandler)completionHandler;
+- (BOOL)readAttributePrimary2X:(ResponseHandler)completionHandler;
+- (BOOL)readAttributePrimary2Y:(ResponseHandler)completionHandler;
+- (BOOL)readAttributePrimary2Intensity:(ResponseHandler)completionHandler;
+- (BOOL)readAttributePrimary3X:(ResponseHandler)completionHandler;
+- (BOOL)readAttributePrimary3Y:(ResponseHandler)completionHandler;
+- (BOOL)readAttributePrimary3Intensity:(ResponseHandler)completionHandler;
+- (BOOL)readAttributePrimary4X:(ResponseHandler)completionHandler;
+- (BOOL)readAttributePrimary4Y:(ResponseHandler)completionHandler;
+- (BOOL)readAttributePrimary4Intensity:(ResponseHandler)completionHandler;
+- (BOOL)readAttributePrimary5X:(ResponseHandler)completionHandler;
+- (BOOL)readAttributePrimary5Y:(ResponseHandler)completionHandler;
+- (BOOL)readAttributePrimary5Intensity:(ResponseHandler)completionHandler;
+- (BOOL)readAttributePrimary6X:(ResponseHandler)completionHandler;
+- (BOOL)readAttributePrimary6Y:(ResponseHandler)completionHandler;
+- (BOOL)readAttributePrimary6Intensity:(ResponseHandler)completionHandler;
+- (BOOL)readAttributeWhitePointX:(ResponseHandler)completionHandler;
+- (BOOL)writeAttributeWhitePointX:(uint16_t)value completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)readAttributeWhitePointY:(ResponseHandler)completionHandler;
+- (BOOL)writeAttributeWhitePointY:(uint16_t)value completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)readAttributeColorPointRX:(ResponseHandler)completionHandler;
+- (BOOL)writeAttributeColorPointRX:(uint16_t)value completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)readAttributeColorPointRY:(ResponseHandler)completionHandler;
+- (BOOL)writeAttributeColorPointRY:(uint16_t)value completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)readAttributeColorPointRIntensity:(ResponseHandler)completionHandler;
+- (BOOL)writeAttributeColorPointRIntensity:(uint8_t)value completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)readAttributeColorPointGX:(ResponseHandler)completionHandler;
+- (BOOL)writeAttributeColorPointGX:(uint16_t)value completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)readAttributeColorPointGY:(ResponseHandler)completionHandler;
+- (BOOL)writeAttributeColorPointGY:(uint16_t)value completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)readAttributeColorPointGIntensity:(ResponseHandler)completionHandler;
+- (BOOL)writeAttributeColorPointGIntensity:(uint8_t)value completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)readAttributeColorPointBX:(ResponseHandler)completionHandler;
+- (BOOL)writeAttributeColorPointBX:(uint16_t)value completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)readAttributeColorPointBY:(ResponseHandler)completionHandler;
+- (BOOL)writeAttributeColorPointBY:(uint16_t)value completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)readAttributeColorPointBIntensity:(ResponseHandler)completionHandler;
+- (BOOL)writeAttributeColorPointBIntensity:(uint8_t)value completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)readAttributeEnhancedCurrentHue:(ResponseHandler)completionHandler;
+- (BOOL)readAttributeEnhancedColorMode:(ResponseHandler)completionHandler;
+- (BOOL)readAttributeColorLoopActive:(ResponseHandler)completionHandler;
+- (BOOL)readAttributeColorLoopDirection:(ResponseHandler)completionHandler;
+- (BOOL)readAttributeColorLoopTime:(ResponseHandler)completionHandler;
+- (BOOL)readAttributeColorCapabilities:(ResponseHandler)completionHandler;
+- (BOOL)readAttributeColorTempPhysicalMin:(ResponseHandler)completionHandler;
+- (BOOL)readAttributeColorTempPhysicalMax:(ResponseHandler)completionHandler;
+- (BOOL)readAttributeCoupleColorTempToLevelMinMireds:(ResponseHandler)completionHandler;
+- (BOOL)readAttributeStartUpColorTemperatureMireds:(ResponseHandler)completionHandler;
+- (BOOL)writeAttributeStartUpColorTemperatureMireds:(uint16_t)value completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)readAttributeClusterRevision:(ResponseHandler)completionHandler;
 
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;
@@ -387,107 +276,61 @@ NS_ASSUME_NONNULL_BEGIN
 @interface CHIPDoorLock : NSObject
 
 - (nullable instancetype)initWithDevice:(CHIPDevice *)device endpoint:(uint8_t)endpoint queue:(dispatch_queue_t)queue;
-- (BOOL)clearAllPins:(DefaultSuccessHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)clearAllRfids:(DefaultSuccessHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)clearHolidaySchedule:(DefaultSuccessHandler)onSuccessCallback
-           onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                  scheduleId:(uint8_t)scheduleId;
-- (BOOL)clearPin:(DefaultSuccessHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-               userId:(uint16_t)userId;
-- (BOOL)clearRfid:(DefaultSuccessHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-               userId:(uint16_t)userId;
-- (BOOL)clearWeekdaySchedule:(DefaultSuccessHandler)onSuccessCallback
-           onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                  scheduleId:(uint8_t)scheduleId
-                      userId:(uint16_t)userId;
-- (BOOL)clearYeardaySchedule:(DefaultSuccessHandler)onSuccessCallback
-           onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                  scheduleId:(uint8_t)scheduleId
-                      userId:(uint16_t)userId;
-- (BOOL)getHolidaySchedule:(DefaultSuccessHandler)onSuccessCallback
-         onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                scheduleId:(uint8_t)scheduleId;
-- (BOOL)getLogRecord:(DefaultSuccessHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-             logIndex:(uint16_t)logIndex;
-- (BOOL)getPin:(DefaultSuccessHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-               userId:(uint16_t)userId;
-- (BOOL)getRfid:(DefaultSuccessHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-               userId:(uint16_t)userId;
-- (BOOL)getUserType:(DefaultSuccessHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-               userId:(uint16_t)userId;
-- (BOOL)getWeekdaySchedule:(DefaultSuccessHandler)onSuccessCallback
-         onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                scheduleId:(uint8_t)scheduleId
-                    userId:(uint16_t)userId;
-- (BOOL)getYeardaySchedule:(DefaultSuccessHandler)onSuccessCallback
-         onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                scheduleId:(uint8_t)scheduleId
-                    userId:(uint16_t)userId;
-- (BOOL)lockDoor:(DoorLockClusterLockDoorResponseHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                  pin:(char *)pin;
-- (BOOL)setHolidaySchedule:(DefaultSuccessHandler)onSuccessCallback
-             onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                    scheduleId:(uint8_t)scheduleId
+- (BOOL)clearAllPins:(ResponseHandler)completionHandler;
+- (BOOL)clearAllRfids:(ResponseHandler)completionHandler;
+- (BOOL)clearHolidaySchedule:(uint8_t)scheduleId completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)clearPin:(uint16_t)userId completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)clearRfid:(uint16_t)userId completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)clearWeekdaySchedule:(uint8_t)scheduleId userId:(uint16_t)userId completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)clearYeardaySchedule:(uint8_t)scheduleId userId:(uint16_t)userId completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)getHolidaySchedule:(uint8_t)scheduleId completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)getLogRecord:(uint16_t)logIndex completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)getPin:(uint16_t)userId completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)getRfid:(uint16_t)userId completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)getUserType:(uint16_t)userId completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)getWeekdaySchedule:(uint8_t)scheduleId userId:(uint16_t)userId completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)getYeardaySchedule:(uint8_t)scheduleId userId:(uint16_t)userId completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)lockDoor:(char *)pin completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)setHolidaySchedule:(uint8_t)scheduleId
                 localStartTime:(uint32_t)localStartTime
                   localEndTime:(uint32_t)localEndTime
-    operatingModeDuringHoliday:(uint8_t)operatingModeDuringHoliday;
-- (BOOL)setPin:(DefaultSuccessHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-               userId:(uint16_t)userId
+    operatingModeDuringHoliday:(uint8_t)operatingModeDuringHoliday
+             completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)setPin:(uint16_t)userId
            userStatus:(uint8_t)userStatus
              userType:(uint8_t)userType
-                  pin:(char *)pin;
-- (BOOL)setRfid:(DefaultSuccessHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-               userId:(uint16_t)userId
+                  pin:(char *)pin
+    completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)setRfid:(uint16_t)userId
            userStatus:(uint8_t)userStatus
              userType:(uint8_t)userType
-                   id:(char *)id;
-- (BOOL)setUserType:(DefaultSuccessHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-               userId:(uint16_t)userId
-             userType:(uint8_t)userType;
-- (BOOL)setWeekdaySchedule:(DefaultSuccessHandler)onSuccessCallback
-         onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                scheduleId:(uint8_t)scheduleId
+                   id:(char *)id
+    completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)setUserType:(uint16_t)userId userType:(uint8_t)userType completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)setWeekdaySchedule:(uint8_t)scheduleId
                     userId:(uint16_t)userId
                   daysMask:(uint8_t)daysMask
                  startHour:(uint8_t)startHour
                startMinute:(uint8_t)startMinute
                    endHour:(uint8_t)endHour
-                 endMinute:(uint8_t)endMinute;
-- (BOOL)setYeardaySchedule:(DefaultSuccessHandler)onSuccessCallback
-         onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                scheduleId:(uint8_t)scheduleId
+                 endMinute:(uint8_t)endMinute
+         completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)setYeardaySchedule:(uint8_t)scheduleId
                     userId:(uint16_t)userId
             localStartTime:(uint32_t)localStartTime
-              localEndTime:(uint32_t)localEndTime;
-- (BOOL)unlockDoor:(DoorLockClusterUnlockDoorResponseHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                  pin:(char *)pin;
-- (BOOL)unlockWithTimeout:(DefaultSuccessHandler)onSuccessCallback
-        onFailureCallback:(DefaultFailureHandler)onFailureCallback
-         timeoutInSeconds:(uint16_t)timeoutInSeconds
-                      pin:(char *)pin;
+              localEndTime:(uint32_t)localEndTime
+         completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)unlockDoor:(char *)pin completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)unlockWithTimeout:(uint16_t)timeoutInSeconds pin:(char *)pin completionHandler:(ResponseHandler)completionHandler;
 
-- (BOOL)readAttributeLockState:(Int8uAttributeHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)reportAttributeLockState:(DefaultSuccessHandler)onSuccessCallback
-               onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                onReportCallback:(Int8uAttributeHandler)onReportCallback
-                     minInterval:(uint16_t)minInterval
-                     maxInterval:(uint16_t)maxInterval;
-- (BOOL)readAttributeLockType:(Int8uAttributeHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)readAttributeActuatorEnabled:(BooleanAttributeHandler)onSuccessCallback
-                   onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)readAttributeClusterRevision:(Int16uAttributeHandler)onSuccessCallback
-                   onFailureCallback:(DefaultFailureHandler)onFailureCallback;
+- (BOOL)readAttributeLockState:(ResponseHandler)completionHandler;
+- (BOOL)configureAttributeLockState:(uint16_t)minInterval
+                        maxInterval:(uint16_t)maxInterval
+                  completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)reportAttributeLockState:(ResponseHandler)reportHandler;
+- (BOOL)readAttributeLockType:(ResponseHandler)completionHandler;
+- (BOOL)readAttributeActuatorEnabled:(ResponseHandler)completionHandler;
+- (BOOL)readAttributeClusterRevision:(ResponseHandler)completionHandler;
 
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;
@@ -501,30 +344,15 @@ NS_ASSUME_NONNULL_BEGIN
 @interface CHIPGroups : NSObject
 
 - (nullable instancetype)initWithDevice:(CHIPDevice *)device endpoint:(uint8_t)endpoint queue:(dispatch_queue_t)queue;
-- (BOOL)addGroup:(GroupsClusterAddGroupResponseHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-              groupId:(uint16_t)groupId
-            groupName:(char *)groupName;
-- (BOOL)addGroupIfIdentifying:(DefaultSuccessHandler)onSuccessCallback
-            onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                      groupId:(uint16_t)groupId
-                    groupName:(char *)groupName;
-- (BOOL)getGroupMembership:(GroupsClusterGetGroupMembershipResponseHandler)onSuccessCallback
-         onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                groupCount:(uint8_t)groupCount
-                 groupList:(uint16_t)groupList;
-- (BOOL)removeAllGroups:(DefaultSuccessHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)removeGroup:(GroupsClusterRemoveGroupResponseHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-              groupId:(uint16_t)groupId;
-- (BOOL)viewGroup:(GroupsClusterViewGroupResponseHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-              groupId:(uint16_t)groupId;
+- (BOOL)addGroup:(uint16_t)groupId groupName:(char *)groupName completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)addGroupIfIdentifying:(uint16_t)groupId groupName:(char *)groupName completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)getGroupMembership:(uint8_t)groupCount groupList:(uint16_t)groupList completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)removeAllGroups:(ResponseHandler)completionHandler;
+- (BOOL)removeGroup:(uint16_t)groupId completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)viewGroup:(uint16_t)groupId completionHandler:(ResponseHandler)completionHandler;
 
-- (BOOL)readAttributeNameSupport:(Int8uAttributeHandler)onSuccessCallback
-               onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)readAttributeClusterRevision:(Int16uAttributeHandler)onSuccessCallback
-                   onFailureCallback:(DefaultFailureHandler)onFailureCallback;
+- (BOOL)readAttributeNameSupport:(ResponseHandler)completionHandler;
+- (BOOL)readAttributeClusterRevision:(ResponseHandler)completionHandler;
 
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;
@@ -539,18 +367,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (nullable instancetype)initWithDevice:(CHIPDevice *)device endpoint:(uint8_t)endpoint queue:(dispatch_queue_t)queue;
 
-- (BOOL)readAttributeZoneState:(Int8uAttributeHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)readAttributeZoneType:(Int16uAttributeHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)readAttributeZoneStatus:(Int16uAttributeHandler)onSuccessCallback
-              onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)readAttributeIasCieAddress:(Int64uAttributeHandler)onSuccessCallback
-                 onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)writeAttributeIasCieAddress:(DefaultSuccessHandler)onSuccessCallback
-                  onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                              value:(uint64_t)value;
-- (BOOL)readAttributeZoneId:(Int8uAttributeHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)readAttributeClusterRevision:(Int16uAttributeHandler)onSuccessCallback
-                   onFailureCallback:(DefaultFailureHandler)onFailureCallback;
+- (BOOL)readAttributeZoneState:(ResponseHandler)completionHandler;
+- (BOOL)readAttributeZoneType:(ResponseHandler)completionHandler;
+- (BOOL)readAttributeZoneStatus:(ResponseHandler)completionHandler;
+- (BOOL)readAttributeIasCieAddress:(ResponseHandler)completionHandler;
+- (BOOL)writeAttributeIasCieAddress:(uint64_t)value completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)readAttributeZoneId:(ResponseHandler)completionHandler;
+- (BOOL)readAttributeClusterRevision:(ResponseHandler)completionHandler;
 
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;
@@ -564,19 +387,12 @@ NS_ASSUME_NONNULL_BEGIN
 @interface CHIPIdentify : NSObject
 
 - (nullable instancetype)initWithDevice:(CHIPDevice *)device endpoint:(uint8_t)endpoint queue:(dispatch_queue_t)queue;
-- (BOOL)identify:(DefaultSuccessHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-         identifyTime:(uint16_t)identifyTime;
-- (BOOL)identifyQuery:(IdentifyClusterIdentifyQueryResponseHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback;
+- (BOOL)identify:(uint16_t)identifyTime completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)identifyQuery:(ResponseHandler)completionHandler;
 
-- (BOOL)readAttributeIdentifyTime:(Int16uAttributeHandler)onSuccessCallback
-                onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)writeAttributeIdentifyTime:(DefaultSuccessHandler)onSuccessCallback
-                 onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                             value:(uint16_t)value;
-- (BOOL)readAttributeClusterRevision:(Int16uAttributeHandler)onSuccessCallback
-                   onFailureCallback:(DefaultFailureHandler)onFailureCallback;
+- (BOOL)readAttributeIdentifyTime:(ResponseHandler)completionHandler;
+- (BOOL)writeAttributeIdentifyTime:(uint16_t)value completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)readAttributeClusterRevision:(ResponseHandler)completionHandler;
 
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;
@@ -590,54 +406,40 @@ NS_ASSUME_NONNULL_BEGIN
 @interface CHIPLevelControl : NSObject
 
 - (nullable instancetype)initWithDevice:(CHIPDevice *)device endpoint:(uint8_t)endpoint queue:(dispatch_queue_t)queue;
-- (BOOL)move:(DefaultSuccessHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-             moveMode:(uint8_t)moveMode
+- (BOOL)move:(uint8_t)moveMode
                  rate:(uint8_t)rate
            optionMask:(uint8_t)optionMask
-       optionOverride:(uint8_t)optionOverride;
-- (BOOL)moveToLevel:(DefaultSuccessHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                level:(uint8_t)level
+       optionOverride:(uint8_t)optionOverride
+    completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)moveToLevel:(uint8_t)level
        transitionTime:(uint16_t)transitionTime
            optionMask:(uint8_t)optionMask
-       optionOverride:(uint8_t)optionOverride;
-- (BOOL)moveToLevelWithOnOff:(DefaultSuccessHandler)onSuccessCallback
-           onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                       level:(uint8_t)level
-              transitionTime:(uint16_t)transitionTime;
-- (BOOL)moveWithOnOff:(DefaultSuccessHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-             moveMode:(uint8_t)moveMode
-                 rate:(uint8_t)rate;
-- (BOOL)step:(DefaultSuccessHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-             stepMode:(uint8_t)stepMode
+       optionOverride:(uint8_t)optionOverride
+    completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)moveToLevelWithOnOff:(uint8_t)level
+              transitionTime:(uint16_t)transitionTime
+           completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)moveWithOnOff:(uint8_t)moveMode rate:(uint8_t)rate completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)step:(uint8_t)stepMode
              stepSize:(uint8_t)stepSize
        transitionTime:(uint16_t)transitionTime
            optionMask:(uint8_t)optionMask
-       optionOverride:(uint8_t)optionOverride;
-- (BOOL)stepWithOnOff:(DefaultSuccessHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-             stepMode:(uint8_t)stepMode
+       optionOverride:(uint8_t)optionOverride
+    completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)stepWithOnOff:(uint8_t)stepMode
              stepSize:(uint8_t)stepSize
-       transitionTime:(uint16_t)transitionTime;
-- (BOOL)stop:(DefaultSuccessHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-           optionMask:(uint8_t)optionMask
-       optionOverride:(uint8_t)optionOverride;
-- (BOOL)stopWithOnOff:(DefaultSuccessHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback;
+       transitionTime:(uint16_t)transitionTime
+    completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)stop:(uint8_t)optionMask optionOverride:(uint8_t)optionOverride completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)stopWithOnOff:(ResponseHandler)completionHandler;
 
-- (BOOL)readAttributeCurrentLevel:(Int8uAttributeHandler)onSuccessCallback
-                onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)reportAttributeCurrentLevel:(DefaultSuccessHandler)onSuccessCallback
-                  onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                   onReportCallback:(Int8uAttributeHandler)onReportCallback
-                        minInterval:(uint16_t)minInterval
-                        maxInterval:(uint16_t)maxInterval
-                             change:(uint8_t)change;
-- (BOOL)readAttributeClusterRevision:(Int16uAttributeHandler)onSuccessCallback
-                   onFailureCallback:(DefaultFailureHandler)onFailureCallback;
+- (BOOL)readAttributeCurrentLevel:(ResponseHandler)completionHandler;
+- (BOOL)configureAttributeCurrentLevel:(uint16_t)minInterval
+                           maxInterval:(uint16_t)maxInterval
+                                change:(uint8_t)change
+                     completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)reportAttributeCurrentLevel:(ResponseHandler)reportHandler;
+- (BOOL)readAttributeClusterRevision:(ResponseHandler)completionHandler;
 
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;
@@ -651,18 +453,16 @@ NS_ASSUME_NONNULL_BEGIN
 @interface CHIPOnOff : NSObject
 
 - (nullable instancetype)initWithDevice:(CHIPDevice *)device endpoint:(uint8_t)endpoint queue:(dispatch_queue_t)queue;
-- (BOOL)off:(DefaultSuccessHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)on:(DefaultSuccessHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)toggle:(DefaultSuccessHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback;
+- (BOOL)off:(ResponseHandler)completionHandler;
+- (BOOL)on:(ResponseHandler)completionHandler;
+- (BOOL)toggle:(ResponseHandler)completionHandler;
 
-- (BOOL)readAttributeOnOff:(BooleanAttributeHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)reportAttributeOnOff:(DefaultSuccessHandler)onSuccessCallback
-           onFailureCallback:(DefaultFailureHandler)onFailureCallback
-            onReportCallback:(BooleanAttributeHandler)onReportCallback
-                 minInterval:(uint16_t)minInterval
-                 maxInterval:(uint16_t)maxInterval;
-- (BOOL)readAttributeClusterRevision:(Int16uAttributeHandler)onSuccessCallback
-                   onFailureCallback:(DefaultFailureHandler)onFailureCallback;
+- (BOOL)readAttributeOnOff:(ResponseHandler)completionHandler;
+- (BOOL)configureAttributeOnOff:(uint16_t)minInterval
+                    maxInterval:(uint16_t)maxInterval
+              completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)reportAttributeOnOff:(ResponseHandler)reportHandler;
+- (BOOL)readAttributeClusterRevision:(ResponseHandler)completionHandler;
 
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;
@@ -676,50 +476,30 @@ NS_ASSUME_NONNULL_BEGIN
 @interface CHIPScenes : NSObject
 
 - (nullable instancetype)initWithDevice:(CHIPDevice *)device endpoint:(uint8_t)endpoint queue:(dispatch_queue_t)queue;
-- (BOOL)addScene:(ScenesClusterAddSceneResponseHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-              groupId:(uint16_t)groupId
+- (BOOL)addScene:(uint16_t)groupId
               sceneId:(uint8_t)sceneId
        transitionTime:(uint16_t)transitionTime
             sceneName:(char *)sceneName
             clusterId:(uint16_t)clusterId
                length:(uint8_t)length
-                value:(uint8_t)value;
-- (BOOL)getSceneMembership:(ScenesClusterGetSceneMembershipResponseHandler)onSuccessCallback
-         onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                   groupId:(uint16_t)groupId;
-- (BOOL)recallScene:(DefaultSuccessHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-              groupId:(uint16_t)groupId
+                value:(uint8_t)value
+    completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)getSceneMembership:(uint16_t)groupId completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)recallScene:(uint16_t)groupId
               sceneId:(uint8_t)sceneId
-       transitionTime:(uint16_t)transitionTime;
-- (BOOL)removeAllScenes:(ScenesClusterRemoveAllScenesResponseHandler)onSuccessCallback
-      onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                groupId:(uint16_t)groupId;
-- (BOOL)removeScene:(ScenesClusterRemoveSceneResponseHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-              groupId:(uint16_t)groupId
-              sceneId:(uint8_t)sceneId;
-- (BOOL)storeScene:(ScenesClusterStoreSceneResponseHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-              groupId:(uint16_t)groupId
-              sceneId:(uint8_t)sceneId;
-- (BOOL)viewScene:(ScenesClusterViewSceneResponseHandler)onSuccessCallback
-    onFailureCallback:(DefaultFailureHandler)onFailureCallback
-              groupId:(uint16_t)groupId
-              sceneId:(uint8_t)sceneId;
+       transitionTime:(uint16_t)transitionTime
+    completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)removeAllScenes:(uint16_t)groupId completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)removeScene:(uint16_t)groupId sceneId:(uint8_t)sceneId completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)storeScene:(uint16_t)groupId sceneId:(uint8_t)sceneId completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)viewScene:(uint16_t)groupId sceneId:(uint8_t)sceneId completionHandler:(ResponseHandler)completionHandler;
 
-- (BOOL)readAttributeSceneCount:(Int8uAttributeHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)readAttributeCurrentScene:(Int8uAttributeHandler)onSuccessCallback
-                onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)readAttributeCurrentGroup:(Int16uAttributeHandler)onSuccessCallback
-                onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)readAttributeSceneValid:(BooleanAttributeHandler)onSuccessCallback
-              onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)readAttributeNameSupport:(Int8uAttributeHandler)onSuccessCallback
-               onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)readAttributeClusterRevision:(Int16uAttributeHandler)onSuccessCallback
-                   onFailureCallback:(DefaultFailureHandler)onFailureCallback;
+- (BOOL)readAttributeSceneCount:(ResponseHandler)completionHandler;
+- (BOOL)readAttributeCurrentScene:(ResponseHandler)completionHandler;
+- (BOOL)readAttributeCurrentGroup:(ResponseHandler)completionHandler;
+- (BOOL)readAttributeSceneValid:(ResponseHandler)completionHandler;
+- (BOOL)readAttributeNameSupport:(ResponseHandler)completionHandler;
+- (BOOL)readAttributeClusterRevision:(ResponseHandler)completionHandler;
 
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;
@@ -734,20 +514,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (nullable instancetype)initWithDevice:(CHIPDevice *)device endpoint:(uint8_t)endpoint queue:(dispatch_queue_t)queue;
 
-- (BOOL)readAttributeMeasuredValue:(Int16sAttributeHandler)onSuccessCallback
-                 onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)reportAttributeMeasuredValue:(DefaultSuccessHandler)onSuccessCallback
-                   onFailureCallback:(DefaultFailureHandler)onFailureCallback
-                    onReportCallback:(Int16sAttributeHandler)onReportCallback
-                         minInterval:(uint16_t)minInterval
-                         maxInterval:(uint16_t)maxInterval
-                              change:(int16_t)change;
-- (BOOL)readAttributeMinMeasuredValue:(Int16sAttributeHandler)onSuccessCallback
-                    onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)readAttributeMaxMeasuredValue:(Int16sAttributeHandler)onSuccessCallback
-                    onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)readAttributeClusterRevision:(Int16uAttributeHandler)onSuccessCallback
-                   onFailureCallback:(DefaultFailureHandler)onFailureCallback;
+- (BOOL)readAttributeMeasuredValue:(ResponseHandler)completionHandler;
+- (BOOL)configureAttributeMeasuredValue:(uint16_t)minInterval
+                            maxInterval:(uint16_t)maxInterval
+                                 change:(int16_t)change
+                      completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)reportAttributeMeasuredValue:(ResponseHandler)reportHandler;
+- (BOOL)readAttributeMinMeasuredValue:(ResponseHandler)completionHandler;
+- (BOOL)readAttributeMaxMeasuredValue:(ResponseHandler)completionHandler;
+- (BOOL)readAttributeClusterRevision:(ResponseHandler)completionHandler;
 
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;

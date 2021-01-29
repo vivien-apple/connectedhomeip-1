@@ -13,7 +13,7 @@ using namespace ::chip;
 
 class CHIPDefaultSuccessCallbackBridge : public Callback::Callback<DefaultSuccessCallback> {
 public:
-    CHIPDefaultSuccessCallbackBridge(DefaultSuccessHandler handler, dispatch_queue_t queue)
+    CHIPDefaultSuccessCallbackBridge(ResponseHandler handler, dispatch_queue_t queue)
         : Callback::Callback<DefaultSuccessCallback>(CallbackFn, this)
         , mHandler(handler)
         , mQueue(queue)
@@ -27,7 +27,7 @@ public:
         CHIPDefaultSuccessCallbackBridge * callback = reinterpret_cast<CHIPDefaultSuccessCallbackBridge *>(context);
         if (callback && callback->mQueue) {
             dispatch_async(callback->mQueue, ^{
-                callback->mHandler();
+                callback->mHandler(nil, nil);
                 callback->Cancel();
                 delete callback;
             });
@@ -35,13 +35,13 @@ public:
     };
 
 private:
-    DefaultSuccessHandler mHandler;
+    ResponseHandler mHandler;
     dispatch_queue_t mQueue;
 };
 
 class CHIPDefaultFailureCallbackBridge : public Callback::Callback<DefaultFailureCallback> {
 public:
-    CHIPDefaultFailureCallbackBridge(DefaultFailureHandler handler, dispatch_queue_t queue)
+    CHIPDefaultFailureCallbackBridge(ResponseHandler handler, dispatch_queue_t queue)
         : Callback::Callback<DefaultFailureCallback>(CallbackFn, this)
         , mHandler(handler)
         , mQueue(queue)
@@ -55,7 +55,8 @@ public:
         CHIPDefaultFailureCallbackBridge * callback = reinterpret_cast<CHIPDefaultFailureCallbackBridge *>(context);
         if (callback && callback->mQueue) {
             dispatch_async(callback->mQueue, ^{
-                callback->mHandler(status);
+                NSError* error = [NSError errorWithDomain:@"ZCL" code:status userInfo:@{NSLocalizedDescriptionKey:@""}];
+                callback->mHandler(error, nil);
                 callback->Cancel();
                 delete callback;
             });
@@ -63,13 +64,13 @@ public:
     };
 
 private:
-    DefaultFailureHandler mHandler;
+    ResponseHandler mHandler;
     dispatch_queue_t mQueue;
 };
 
 class CHIPUnsupportedAttributeCallbackBridge : public Callback::Callback<DefaultSuccessCallback> {
 public:
-    CHIPUnsupportedAttributeCallbackBridge(DefaultSuccessHandler handler, dispatch_queue_t queue)
+    CHIPUnsupportedAttributeCallbackBridge(ResponseHandler handler, dispatch_queue_t queue)
         : Callback::Callback<DefaultSuccessCallback>(CallbackFn, this)
     {
     }
@@ -81,7 +82,8 @@ public:
         CHIPUnsupportedAttributeCallbackBridge * callback = reinterpret_cast<CHIPUnsupportedAttributeCallbackBridge *>(context);
         if (callback && callback->mQueue) {
             dispatch_async(callback->mQueue, ^{
-                callback->mHandler();
+                NSError* error = [NSError errorWithDomain:@"ZCL" code:0 userInfo:@{NSLocalizedDescriptionKey:@"Unsuported attribute type"}];
+                callback->mHandler(error, nil);
                 callback->Cancel();
                 delete callback;
             });
@@ -89,13 +91,13 @@ public:
     };
 
 private:
-    DefaultSuccessHandler mHandler;
+    ResponseHandler mHandler;
     dispatch_queue_t mQueue;
 };
 
 class CHIPBooleanAttributeCallbackBridge : public Callback::Callback<BooleanAttributeCallback> {
 public:
-    CHIPBooleanAttributeCallbackBridge(BooleanAttributeHandler handler, dispatch_queue_t queue, bool keepAlive = false)
+    CHIPBooleanAttributeCallbackBridge(ResponseHandler handler, dispatch_queue_t queue, bool keepAlive = false)
         : Callback::Callback<BooleanAttributeCallback>(CallbackFn, this)
         , mHandler(handler)
         , mQueue(queue)
@@ -110,7 +112,7 @@ public:
         CHIPBooleanAttributeCallbackBridge * callback = reinterpret_cast<CHIPBooleanAttributeCallbackBridge *>(context);
         if (callback && callback->mQueue) {
             dispatch_async(callback->mQueue, ^{
-                callback->mHandler(value);
+                callback->mHandler(nil, @{ @"value": [NSNumber numberWithBool:value] });
                 if (!callback->mKeepAlive)
                 {
                     callback->Cancel();
@@ -121,14 +123,14 @@ public:
     };
 
 private:
-    BooleanAttributeHandler mHandler;
+    ResponseHandler mHandler;
     dispatch_queue_t mQueue;
     bool mKeepAlive;
 };
 
 class CHIPInt8uAttributeCallbackBridge : public Callback::Callback<Int8uAttributeCallback> {
 public:
-    CHIPInt8uAttributeCallbackBridge(Int8uAttributeHandler handler, dispatch_queue_t queue, bool keepAlive = false)
+    CHIPInt8uAttributeCallbackBridge(ResponseHandler handler, dispatch_queue_t queue, bool keepAlive = false)
         : Callback::Callback<Int8uAttributeCallback>(CallbackFn, this)
         , mHandler(handler)
         , mQueue(queue)
@@ -143,7 +145,7 @@ public:
         CHIPInt8uAttributeCallbackBridge * callback = reinterpret_cast<CHIPInt8uAttributeCallbackBridge *>(context);
         if (callback && callback->mQueue) {
             dispatch_async(callback->mQueue, ^{
-                callback->mHandler(value);
+                callback->mHandler(nil, @{ @"value": [NSNumber numberWithUnsignedChar:value] });
                 if (!callback->mKeepAlive)
                 {
                     callback->Cancel();
@@ -154,14 +156,14 @@ public:
     };
 
 private:
-    Int8uAttributeHandler mHandler;
+    ResponseHandler mHandler;
     dispatch_queue_t mQueue;
     bool mKeepAlive;
 };
 
 class CHIPInt8sAttributeCallbackBridge : public Callback::Callback<Int8sAttributeCallback> {
 public:
-    CHIPInt8sAttributeCallbackBridge(Int8sAttributeHandler handler, dispatch_queue_t queue, bool keepAlive = false)
+    CHIPInt8sAttributeCallbackBridge(ResponseHandler handler, dispatch_queue_t queue, bool keepAlive = false)
         : Callback::Callback<Int8sAttributeCallback>(CallbackFn, this)
         , mHandler(handler)
         , mQueue(queue)
@@ -176,7 +178,7 @@ public:
         CHIPInt8sAttributeCallbackBridge * callback = reinterpret_cast<CHIPInt8sAttributeCallbackBridge *>(context);
         if (callback && callback->mQueue) {
             dispatch_async(callback->mQueue, ^{
-                callback->mHandler(value);
+                callback->mHandler(nil, @{ @"value": [NSNumber numberWithChar:value] });
                 if (!callback->mKeepAlive)
                 {
                     callback->Cancel();
@@ -187,14 +189,14 @@ public:
     };
 
 private:
-    Int8sAttributeHandler mHandler;
+    ResponseHandler mHandler;
     dispatch_queue_t mQueue;
     bool mKeepAlive;
 };
 
 class CHIPInt16uAttributeCallbackBridge : public Callback::Callback<Int16uAttributeCallback> {
 public:
-    CHIPInt16uAttributeCallbackBridge(Int16uAttributeHandler handler, dispatch_queue_t queue, bool keepAlive = false)
+    CHIPInt16uAttributeCallbackBridge(ResponseHandler handler, dispatch_queue_t queue, bool keepAlive = false)
         : Callback::Callback<Int16uAttributeCallback>(CallbackFn, this)
         , mHandler(handler)
         , mQueue(queue)
@@ -209,7 +211,7 @@ public:
         CHIPInt16uAttributeCallbackBridge * callback = reinterpret_cast<CHIPInt16uAttributeCallbackBridge *>(context);
         if (callback && callback->mQueue) {
             dispatch_async(callback->mQueue, ^{
-                callback->mHandler(value);
+                callback->mHandler(nil, @{ @"value": [NSNumber numberWithUnsignedShort:value] });
                 if (!callback->mKeepAlive)
                 {
                     callback->Cancel();
@@ -220,14 +222,14 @@ public:
     };
 
 private:
-    Int16uAttributeHandler mHandler;
+    ResponseHandler mHandler;
     dispatch_queue_t mQueue;
     bool mKeepAlive;
 };
 
 class CHIPInt16sAttributeCallbackBridge : public Callback::Callback<Int16sAttributeCallback> {
 public:
-    CHIPInt16sAttributeCallbackBridge(Int16sAttributeHandler handler, dispatch_queue_t queue, bool keepAlive = false)
+    CHIPInt16sAttributeCallbackBridge(ResponseHandler handler, dispatch_queue_t queue, bool keepAlive = false)
         : Callback::Callback<Int16sAttributeCallback>(CallbackFn, this)
         , mHandler(handler)
         , mQueue(queue)
@@ -242,7 +244,7 @@ public:
         CHIPInt16sAttributeCallbackBridge * callback = reinterpret_cast<CHIPInt16sAttributeCallbackBridge *>(context);
         if (callback && callback->mQueue) {
             dispatch_async(callback->mQueue, ^{
-                callback->mHandler(value);
+                callback->mHandler(nil, @{ @"value": [NSNumber numberWithShort:value] });
                 if (!callback->mKeepAlive)
                 {
                     callback->Cancel();
@@ -253,7 +255,7 @@ public:
     };
 
 private:
-    Int16sAttributeHandler mHandler;
+    ResponseHandler mHandler;
     dispatch_queue_t mQueue;
     bool mKeepAlive;
 };
@@ -267,7 +269,7 @@ private:
 class CHIP{{asCamelCased parent.name false}}Cluster{{asCamelCased name false}}CallbackBridge : public Callback::Callback<{{asCamelCased parent.name false}}Cluster{{asCamelCased name false}}Callback>
 {
 public:
-    CHIP{{asCamelCased parent.name false}}Cluster{{asCamelCased name false}}CallbackBridge({{asCamelCased parent.name false}}Cluster{{asCamelCased name false}}Handler handler, dispatch_queue_t queue): Callback::Callback<{{asCamelCased parent.name false}}Cluster{{asCamelCased name false}}Callback>(CallbackFn, this), mHandler(handler), mQueue(queue) {}
+    CHIP{{asCamelCased parent.name false}}Cluster{{asCamelCased name false}}CallbackBridge(ResponseHandler handler, dispatch_queue_t queue): Callback::Callback<{{asCamelCased parent.name false}}Cluster{{asCamelCased name false}}Callback>(CallbackFn, this), mHandler(handler), mQueue(queue) {}
 
     ~CHIP{{asCamelCased parent.name false}}Cluster{{asCamelCased name false}}CallbackBridge() {};
 
@@ -277,7 +279,20 @@ public:
         if (callback && callback->mQueue)
         {
             dispatch_async(callback->mQueue, ^{
-                callback->mHandler({{#zcl_command_arguments}}{{#unless (isStrEqual label "status")}}{{asSymbol label}}{{#unless (isLastElement index count)}}, {{/unless}}{{/unless}}{{/zcl_command_arguments}});
+                callback->mHandler(nil, @{
+                  {{#zcl_command_arguments}}
+                  {{#unless (isStrEqual label "status")}}
+                  {{#if isArray}}
+                  // {{asSymbol label}}: {{asUnderlyingZclType type}}
+                  // Conversion from this type to Objc is not properly implemented yet
+                  {{else if (isShortString type)}}
+                  @"{{asSymbol label}}": [NSString stringWithFormat:@"%s", {{asSymbol label}}],
+                  {{else}}
+                  @"{{asSymbol label}}": [NSNumber numberWith{{asObjectiveCNumberType label type}}:{{asSymbol label}}],
+                  {{/if}}
+                  {{/unless}}
+                  {{/zcl_command_arguments}}
+                });
                 callback->Cancel();
                 delete callback;
             });
@@ -285,7 +300,7 @@ public:
     };
 
 private:
-    {{asCamelCased parent.name false}}Cluster{{asCamelCased name false}}Handler mHandler;
+    ResponseHandler mHandler;
     dispatch_queue_t mQueue;
 };
 
@@ -322,22 +337,22 @@ private:
 }
 
 {{#chip_server_cluster_commands}}
-{{#if (hasSpecificResponse name)}}
-- (BOOL){{asCamelCased name}}:({{asCamelCased parent.name false}}Cluster{{asCamelCased name false}}ResponseHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback{{#chip_server_cluster_command_arguments}} {{asCamelCased label}}:({{asBasicType chipType}}){{asCamelCased label}}{{/chip_server_cluster_command_arguments}}
+{{#if (zcl_command_arguments_count this.id)}}
+- (BOOL){{asCamelCased name}}:{{#chip_server_cluster_command_arguments}}{{#if (isFirstElement index)}}{{else}}{{asCamelCased label}}:{{/if}}({{asBasicType chipType}}){{asCamelCased label}} {{/chip_server_cluster_command_arguments}}completionHandler:(ResponseHandler)completionHandler
 {{else}}
-- (BOOL){{asCamelCased name}}:(DefaultSuccessHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback{{#chip_server_cluster_command_arguments}} {{asCamelCased label}}:({{asBasicType chipType}}){{asCamelCased label}}{{/chip_server_cluster_command_arguments}}
+- (BOOL){{asCamelCased name}}:(ResponseHandler)completionHandler
 {{/if}}
 {
 {{#if (hasSpecificResponse name)}}
-    CHIP{{asCamelCased parent.name false}}Cluster{{asCamelCased name false}}ResponseCallbackBridge * onSuccess = new CHIP{{asCamelCased parent.name false}}Cluster{{asCamelCased name false}}ResponseCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIP{{asCamelCased parent.name false}}Cluster{{asCamelCased name false}}ResponseCallbackBridge * onSuccess = new CHIP{{asCamelCased parent.name false}}Cluster{{asCamelCased name false}}ResponseCallbackBridge(completionHandler, _callbackQueue);
 {{else}}
-    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(completionHandler, _callbackQueue);
 {{/if}}
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -354,14 +369,14 @@ private:
 {{/chip_server_cluster_commands}}
 
 {{#chip_server_cluster_attributes}}
-- (BOOL)readAttribute{{asCamelCased name false}}:({{asCallbackAttributeType atomicTypeId}}AttributeHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback
+- (BOOL)readAttribute{{asCamelCased name false}}:(ResponseHandler)completionHandler
 {
-    CHIP{{asCallbackAttributeType atomicTypeId}}AttributeCallbackBridge * onSuccess = new CHIP{{asCallbackAttributeType atomicTypeId}}AttributeCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIP{{asCallbackAttributeType atomicTypeId}}AttributeCallbackBridge * onSuccess = new CHIP{{asCallbackAttributeType atomicTypeId}}AttributeCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -377,14 +392,14 @@ private:
 }
 
 {{#if (isWritableAttribute)}}
-- (BOOL)writeAttribute{{asCamelCased name false}}:(DefaultSuccessHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback value:({{asUnderlyingZclType type}})value
+- (BOOL)writeAttribute{{asCamelCased name false}}:({{asUnderlyingZclType type}})value completionHandler:(ResponseHandler)completionHandler
 {
-    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
@@ -401,33 +416,42 @@ private:
 
 {{/if}}
 {{#if (isReportableAttribute)}}
-- (BOOL) reportAttribute{{asCamelCased name false}}:(DefaultSuccessHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback onReportCallback:({{asCallbackAttributeType atomicTypeId}}AttributeHandler)onReportCallback minInterval:(uint16_t)minInterval  maxInterval:(uint16_t)maxInterval{{#unless (isDiscreteType)}} change:({{chipType}})change{{/unless}}
+- (BOOL) configureAttribute{{asCamelCased name false}}:(uint16_t)minInterval  maxInterval:(uint16_t)maxInterval{{#unless (isDiscreteType)}} change:({{chipType}})change{{/unless}} completionHandler:(ResponseHandler)completionHandler
 {
-    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(onSuccessCallback, _callbackQueue);
+    CHIPDefaultSuccessCallbackBridge * onSuccess = new CHIPDefaultSuccessCallbackBridge(completionHandler, _callbackQueue);
     if (!onSuccess) {
         return NO;
     }
 
-    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(onFailureCallback, _callbackQueue);
+    CHIPDefaultFailureCallbackBridge * onFailure = new CHIPDefaultFailureCallbackBridge(completionHandler, _callbackQueue);
     if (!onFailure) {
         delete onSuccess;
         return NO;
     }
 
-    CHIP{{asCallbackAttributeType atomicTypeId}}AttributeCallbackBridge * onReport = new CHIP{{asCallbackAttributeType atomicTypeId}}AttributeCallbackBridge(onReportCallback, _callbackQueue, true);
-    if (!onReport) {
-        delete onSuccess;
-        delete onFailure;
-        return NO;
-    }
 
-    CHIP_ERROR err = self.cppCluster.ReportAttribute{{asCamelCased name false}}(onSuccess->Cancel(), onFailure->Cancel(), onReport->Cancel(), minInterval, maxInterval{{#unless (isDiscreteType)}}, change{{/unless}});
+    CHIP_ERROR err = self.cppCluster.ConfigureAttribute{{asCamelCased name false}}(onSuccess->Cancel(), onFailure->Cancel(), minInterval, maxInterval{{#unless (isDiscreteType)}}, change{{/unless}});
     if (err != CHIP_NO_ERROR) {
         delete onSuccess;
         delete onFailure;
+        return NO;
+    }
+    return YES;
+}
+
+- (BOOL) reportAttribute{{asCamelCased name false}}:(ResponseHandler)reportHandler
+{
+    CHIP{{asCallbackAttributeType atomicTypeId}}AttributeCallbackBridge * onReport = new CHIP{{asCallbackAttributeType atomicTypeId}}AttributeCallbackBridge(reportHandler, _callbackQueue, true);
+    if (!onReport) {
+        return NO;
+    }
+
+    CHIP_ERROR err = self.cppCluster.ReportAttribute{{asCamelCased name false}}(onReport->Cancel());
+    if (err != CHIP_NO_ERROR) {
         delete onReport;
         return NO;
     }
+
     return YES;
 }
 

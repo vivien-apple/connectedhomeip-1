@@ -19,27 +19,8 @@
 #define CHIP_CLUSTERS_H
 
 #import <Foundation/Foundation.h>
-#include <stdbool.h>
 
-// Global Response Handlers
-typedef void (^DefaultSuccessHandler)(void);
-typedef void (^DefaultFailureHandler)(uint8_t status);
-typedef void (^BooleanAttributeHandler)(bool value);
-typedef void (^Int8uAttributeHandler)(uint8_t value);
-typedef void (^Int8sAttributeHandler)(int8_t value);
-typedef void (^Int16uAttributeHandler)(uint16_t value);
-typedef void (^Int16sAttributeHandler)(int16_t value);
-typedef void (^Int32uAttributeHandler)(uint32_t value);
-typedef void (^Int32sAttributeHandler)(int32_t value);
-typedef void (^Int64uAttributeHandler)(uint64_t value);
-typedef void (^Int64sAttributeHandler)(int64_t value);
-typedef void (^ReadReportingConfigurationReportedHandler)(uint16_t minInterval, uint16_t maxInterval);
-typedef void (^ReadReportingConfigurationReceivedHandler)(uint16_t timeout);
-
-// Cluster Specific Response Handlers
-
-// This is a temporary workarounds for attributes that are not correctly handled yet.
-typedef void (^UnsupportedAttributeHandler)(void);
+typedef void (^ResponseHandler)(NSError * error, NSDictionary * values);
 
 @class CHIPDevice;
 
@@ -48,18 +29,16 @@ NS_ASSUME_NONNULL_BEGIN
 @interface CHIPOnOff : NSObject
 
 - (nullable instancetype)initWithDevice:(CHIPDevice *)device endpoint:(uint8_t)endpoint queue:(dispatch_queue_t)queue;
-- (BOOL)off:(DefaultSuccessHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)on:(DefaultSuccessHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)toggle:(DefaultSuccessHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback;
+- (BOOL)off:(ResponseHandler)completionHandler;
+- (BOOL)on:(ResponseHandler)completionHandler;
+- (BOOL)toggle:(ResponseHandler)completionHandler;
 
-- (BOOL)readAttributeOnOff:(BooleanAttributeHandler)onSuccessCallback onFailureCallback:(DefaultFailureHandler)onFailureCallback;
-- (BOOL)reportAttributeOnOff:(DefaultSuccessHandler)onSuccessCallback
-           onFailureCallback:(DefaultFailureHandler)onFailureCallback
-            onReportCallback:(BooleanAttributeHandler)onReportCallback
-                 minInterval:(uint16_t)minInterval
-                 maxInterval:(uint16_t)maxInterval;
-- (BOOL)readAttributeClusterRevision:(Int16uAttributeHandler)onSuccessCallback
-                   onFailureCallback:(DefaultFailureHandler)onFailureCallback;
+- (BOOL)readAttributeOnOff:(ResponseHandler)completionHandler;
+- (BOOL)configureAttributeOnOff:(uint16_t)minInterval
+                    maxInterval:(uint16_t)maxInterval
+              completionHandler:(ResponseHandler)completionHandler;
+- (BOOL)reportAttributeOnOff:(ResponseHandler)reportHandler;
+- (BOOL)readAttributeClusterRevision:(ResponseHandler)completionHandler;
 
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;

@@ -458,6 +458,40 @@ function asCallbackAttributeType(attributeType)
   }
 }
 
+function asObjectiveCNumberType(label, type)
+{
+  function fn(pkgId)
+  {
+    const options = { 'hash' : {} };
+    return zclHelper.asUnderlyingZclType.call(this, type, options).then(zclType => {
+      switch (zclType) {
+      case 'uint8_t':
+        return 'UnsignedChar';
+      case 'uint16_t':
+        return 'UnsignedShort';
+      case 'uint32_t':
+        return 'UnsignedLong';
+      case 'uint64_t':
+        return 'UnsignedLongLong';
+      case 'int8_t':
+        return 'Char';
+      case 'int16_t':
+        return 'Short';
+      case 'int32_t':
+        return 'Long';
+      case 'int64_t':
+        return 'LongLong';
+      default:
+        error = label + ': Unhandled underlying type ' + zclType + ' for original type ' + type;
+        throw error;
+      }
+    })
+  }
+
+  const promise = templateUtil.ensureZclPackageId(this).then(fn.bind(this)).catch(err => console.log(err));
+  return templateUtil.templatePromise(this.global, promise)
+}
+
 //
 // Module exports
 //
@@ -466,6 +500,7 @@ exports.chip_server_clusters                  = chip_server_clusters;
 exports.chip_server_cluster_commands          = chip_server_cluster_commands;
 exports.chip_server_cluster_command_arguments = chip_server_cluster_command_arguments
 exports.asBasicType                           = ChipTypesHelper.asBasicType;
+exports.asObjectiveCNumberType                = asObjectiveCNumberType;
 exports.isSignedType                          = isSignedType;
 exports.isDiscreteType                        = isDiscreteType;
 exports.chip_server_cluster_attributes        = chip_server_cluster_attributes;

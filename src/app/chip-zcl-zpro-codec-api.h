@@ -392,11 +392,11 @@ chip::System::PacketBufferHandle encodeColorControlClusterReadCurrentHueAttribut
 
 /**
  * @brief
- *    Encode a Color Control server report command for the current hue attribute into buffer including the APS frame
+ *    Encode a Color Control server configure report command for the current hue attribute into buffer including the APS frame
  */
-chip::System::PacketBufferHandle encodeColorControlClusterReportCurrentHueAttribute(chip::EndpointId destinationEndpoint,
-                                                                                    uint16_t minInterval, uint16_t maxInterval,
-                                                                                    uint8_t change);
+chip::System::PacketBufferHandle encodeColorControlClusterConfigureCurrentHueAttribute(chip::EndpointId destinationEndpoint,
+                                                                                       uint16_t minInterval, uint16_t maxInterval,
+                                                                                       uint8_t change);
 
 /**
  * @brief
@@ -406,11 +406,12 @@ chip::System::PacketBufferHandle encodeColorControlClusterReadCurrentSaturationA
 
 /**
  * @brief
- *    Encode a Color Control server report command for the current saturation attribute into buffer including the APS frame
+ *    Encode a Color Control server configure report command for the current saturation attribute into buffer including the APS
+ * frame
  */
-chip::System::PacketBufferHandle encodeColorControlClusterReportCurrentSaturationAttribute(chip::EndpointId destinationEndpoint,
-                                                                                           uint16_t minInterval,
-                                                                                           uint16_t maxInterval, uint8_t change);
+chip::System::PacketBufferHandle encodeColorControlClusterConfigureCurrentSaturationAttribute(chip::EndpointId destinationEndpoint,
+                                                                                              uint16_t minInterval,
+                                                                                              uint16_t maxInterval, uint8_t change);
 
 /**
  * @brief
@@ -426,11 +427,11 @@ chip::System::PacketBufferHandle encodeColorControlClusterReadCurrentXAttribute(
 
 /**
  * @brief
- *    Encode a Color Control server report command for the current x attribute into buffer including the APS frame
+ *    Encode a Color Control server configure report command for the current x attribute into buffer including the APS frame
  */
-chip::System::PacketBufferHandle encodeColorControlClusterReportCurrentXAttribute(chip::EndpointId destinationEndpoint,
-                                                                                  uint16_t minInterval, uint16_t maxInterval,
-                                                                                  uint16_t change);
+chip::System::PacketBufferHandle encodeColorControlClusterConfigureCurrentXAttribute(chip::EndpointId destinationEndpoint,
+                                                                                     uint16_t minInterval, uint16_t maxInterval,
+                                                                                     uint16_t change);
 
 /**
  * @brief
@@ -440,11 +441,11 @@ chip::System::PacketBufferHandle encodeColorControlClusterReadCurrentYAttribute(
 
 /**
  * @brief
- *    Encode a Color Control server report command for the current y attribute into buffer including the APS frame
+ *    Encode a Color Control server configure report command for the current y attribute into buffer including the APS frame
  */
-chip::System::PacketBufferHandle encodeColorControlClusterReportCurrentYAttribute(chip::EndpointId destinationEndpoint,
-                                                                                  uint16_t minInterval, uint16_t maxInterval,
-                                                                                  uint16_t change);
+chip::System::PacketBufferHandle encodeColorControlClusterConfigureCurrentYAttribute(chip::EndpointId destinationEndpoint,
+                                                                                     uint16_t minInterval, uint16_t maxInterval,
+                                                                                     uint16_t change);
 
 /**
  * @brief
@@ -466,11 +467,11 @@ chip::System::PacketBufferHandle encodeColorControlClusterReadColorTemperatureAt
 
 /**
  * @brief
- *    Encode a Color Control server report command for the color temperature attribute into buffer including the APS frame
+ *    Encode a Color Control server configure report command for the color temperature attribute into buffer including the APS frame
  */
-chip::System::PacketBufferHandle encodeColorControlClusterReportColorTemperatureAttribute(chip::EndpointId destinationEndpoint,
-                                                                                          uint16_t minInterval,
-                                                                                          uint16_t maxInterval, uint16_t change);
+chip::System::PacketBufferHandle encodeColorControlClusterConfigureColorTemperatureAttribute(chip::EndpointId destinationEndpoint,
+                                                                                             uint16_t minInterval,
+                                                                                             uint16_t maxInterval, uint16_t change);
 
 /**
  * @brief
@@ -1033,10 +1034,10 @@ chip::System::PacketBufferHandle encodeDoorLockClusterReadLockStateAttribute(chi
 
 /**
  * @brief
- *    Encode a Door Lock server report command for the lock state attribute into buffer including the APS frame
+ *    Encode a Door Lock server configure report command for the lock state attribute into buffer including the APS frame
  */
-chip::System::PacketBufferHandle encodeDoorLockClusterReportLockStateAttribute(chip::EndpointId destinationEndpoint,
-                                                                               uint16_t minInterval, uint16_t maxInterval);
+chip::System::PacketBufferHandle encodeDoorLockClusterConfigureLockStateAttribute(chip::EndpointId destinationEndpoint,
+                                                                                  uint16_t minInterval, uint16_t maxInterval);
 
 /**
  * @brief
@@ -1331,11 +1332,11 @@ chip::System::PacketBufferHandle encodeLevelControlClusterReadCurrentLevelAttrib
 
 /**
  * @brief
- *    Encode a Level Control server report command for the current level attribute into buffer including the APS frame
+ *    Encode a Level Control server configure report command for the current level attribute into buffer including the APS frame
  */
-chip::System::PacketBufferHandle encodeLevelControlClusterReportCurrentLevelAttribute(chip::EndpointId destinationEndpoint,
-                                                                                      uint16_t minInterval, uint16_t maxInterval,
-                                                                                      uint8_t change);
+chip::System::PacketBufferHandle encodeLevelControlClusterConfigureCurrentLevelAttribute(chip::EndpointId destinationEndpoint,
+                                                                                         uint16_t minInterval, uint16_t maxInterval,
+                                                                                         uint8_t change);
 
 /**
  * @brief
@@ -1388,10 +1389,10 @@ chip::System::PacketBufferHandle encodeOnOffClusterReadOnOffAttribute(chip::Endp
 
 /**
  * @brief
- *    Encode a On/off server report command for the on/off attribute into buffer including the APS frame
+ *    Encode a On/off server configure report command for the on/off attribute into buffer including the APS frame
  */
-chip::System::PacketBufferHandle encodeOnOffClusterReportOnOffAttribute(chip::EndpointId destinationEndpoint, uint16_t minInterval,
-                                                                        uint16_t maxInterval);
+chip::System::PacketBufferHandle encodeOnOffClusterConfigureOnOffAttribute(chip::EndpointId destinationEndpoint,
+                                                                           uint16_t minInterval, uint16_t maxInterval);
 
 /**
  * @brief
@@ -1538,11 +1539,12 @@ encodeTemperatureMeasurementClusterReadMeasuredValueAttribute(chip::EndpointId d
 
 /**
  * @brief
- *    Encode a Temperature Measurement server report command for the measured value attribute into buffer including the APS frame
+ *    Encode a Temperature Measurement server configure report command for the measured value attribute into buffer including the
+ * APS frame
  */
 chip::System::PacketBufferHandle
-encodeTemperatureMeasurementClusterReportMeasuredValueAttribute(chip::EndpointId destinationEndpoint, uint16_t minInterval,
-                                                                uint16_t maxInterval, int16_t change);
+encodeTemperatureMeasurementClusterConfigureMeasuredValueAttribute(chip::EndpointId destinationEndpoint, uint16_t minInterval,
+                                                                   uint16_t maxInterval, int16_t change);
 
 /**
  * @brief

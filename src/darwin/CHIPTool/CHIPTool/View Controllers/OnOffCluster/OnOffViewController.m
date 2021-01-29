@@ -140,56 +140,65 @@
 
 - (IBAction)onButtonTapped:(id)sender
 {
-    CHIPDeviceCallback successHandler = ^(void) {
-        NSLog(@"Status: On command success");
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 5.0), dispatch_get_main_queue(), ^{
-            [self updateResult:@"Status: On command success"];
-        });
-    };
-
-    [self.onOff on:successHandler
-        onFailureCallback:^(uint8_t status) {
+    [self.onOff on:^(NSError *error, NSDictionary *values) {
+        NSString *resultString;
+        if (error == nil)
+        {
+            NSLog(@"Status: On command success");
+            resultString =@"Status: On command success";
+        }
+        else
+        {
             NSLog(@"Status: On command failure");
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 5.0), dispatch_get_main_queue(), ^{
-                [self updateResult:@"Status: On command failure"];
-            });
-        }];
+            resultString = [NSString stringWithFormat:@"An error occured: 0x%02lx", error.code];
+        }
+
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 5.0), dispatch_get_main_queue(), ^{
+            [self updateResult:resultString];
+        });
+    }];
 }
 
 - (IBAction)offButtonTapped:(id)sender
 {
-    CHIPDeviceCallback successHandler = ^(void) {
-        NSLog(@"Status: Off command success");
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 5.0), dispatch_get_main_queue(), ^{
-            [self updateResult:@"Status: Off command success"];
-        });
-    };
-
-    [self.onOff off:successHandler
-        onFailureCallback:^(uint8_t status) {
+    [self.onOff off:^(NSError *error, NSDictionary *values) {
+        NSString *resultString;
+        if (error == nil)
+        {
+            NSLog(@"Status: Off command success");
+            resultString =@"Status: Off command success";
+        }
+        else
+        {
             NSLog(@"Status: Off command failure");
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 5.0), dispatch_get_main_queue(), ^{
-                [self updateResult:@"Status: Off command failure"];
-            });
-        }];
+            resultString = [NSString stringWithFormat:@"An error occured: 0x%02lx", error.code];
+        }
+
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 5.0), dispatch_get_main_queue(), ^{
+            [self updateResult:resultString];
+        });
+    }];
 }
 
 - (IBAction)toggleButtonTapped:(id)sender
 {
-    CHIPDeviceCallback successHandler = ^(void) {
-        NSLog(@"Status: Toggle command success");
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 5.0), dispatch_get_main_queue(), ^{
-            [self updateResult:@"Status: Toggle command success"];
-        });
-    };
-
-    [self.onOff toggle:successHandler
-        onFailureCallback:^(uint8_t status) {
+    [self.onOff toggle:^(NSError *error, NSDictionary *values) {
+        NSString *resultString;
+        if (error == nil)
+        {
+            NSLog(@"Status: Toggle command success");
+            resultString =@"Status: Toggle command success";
+        }
+        else
+        {
             NSLog(@"Status: Toggle command failure");
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 5.0), dispatch_get_main_queue(), ^{
-                [self updateResult:@"Status: Toggle command failure"];
-            });
-        }];
+            resultString = [NSString stringWithFormat:@"An error occured: 0x%02lx", error.code];
+        }
+
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 5.0), dispatch_get_main_queue(), ^{
+            [self updateResult:resultString];
+        });
+    }];
 }
 
 // MARK: CHIPDeviceControllerDelegate
