@@ -18,10 +18,11 @@
 @property (nonatomic, strong) UITextField * deltaInFahrenheitTextField;
 @property (nonatomic, strong) UIButton * sendReportingSetup;
 
-@property (nonatomic, strong) CHIPTemperatureMeasurement * chipTempMeasurement;
+@property (nonatomic, strong) CHIPTemperatureMeasurement * temperature;
 @property (readwrite) CHIPDevice * chipDevice;
 @property (readwrite) CHIPDeviceController * chipController;
 
+@property (readonly) CHIPToolPersistentStorageDelegate * persistentStorage;
 @end
 
 @implementation TemperatureSensorViewController
@@ -36,10 +37,12 @@
     UITapGestureRecognizer * tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(dismissKeyboard)];
     [self.view addGestureRecognizer:tap];
 
+    _persistentStorage = [[CHIPToolPersistentStorageDelegate alloc] init];
+
     // initialize the device controller
-    dispatch_queue_t callbackQueue = dispatch_queue_create("com.zigbee.chip.tempsensorvc.callback", DISPATCH_QUEUE_SERIAL);
+    dispatch_queue_t callbackQueue = dispatch_queue_create("com.chip.persistentstorage.callback", DISPATCH_QUEUE_SERIAL);
     self.chipController = [CHIPDeviceController sharedController];
-    [self.chipController setDelegate:self queue:callbackQueue];
+    [self.chipController setPersistentStorageDelegate:_persistentStorage queue:callbackQueue];
 
     uint64_t deviceID = CHIPGetNextAvailableDeviceID();
     if (deviceID > 1) {
@@ -47,9 +50,9 @@
         deviceID--;
         NSError * error;
         self.chipDevice = [self.chipController getPairedDevice:deviceID error:&error];
-        self.chipTempMeasurement = [[CHIPTemperatureMeasurement alloc] initWithDevice:self.chipDevice
+        self.temperature = [[CHIPTemperatureMeasurement alloc] initWithDevice:self.chipDevice
                                                                              endpoint:1
-                                                                                queue:callbackQueue];
+                                                                             queue:dispatch_get_main_queue()];
     }
 
     [self readCurrentTemperature];
@@ -183,51 +186,32 @@
 
 - (void)readCurrentTemperature
 {
-    CHIPDeviceCallback completionHandler = ^(NSError * error) {
-        NSLog(@"Status: Read temperature request completed with error %@", [error description]);
-    };
-
-    [self.chipTempMeasurement readAttributeMeasuredValue:completionHandler];
+    [self.temperature readAttributeMeasuredValue:^(NSError * _Nullable error, NSDictionary * _Nullable values) {
+        if (error != nil) return;
+        NSNumber * value = values[@"value"];
+        [self updateTempInUI:value.shortValue];
+    }];
 }
 
 - (void)reportFromUserEnteredSettings
 {
-    CHIPDeviceCallback onCompletionCallback = ^(NSError * error) {
-        NSLog(@"Status: update reportAttributeMeasuredValue completed with error %@", [error description]);
-    };
-
-    CHIPDeviceCallback onChangeCallback = ^(NSError * error) {
-        NSLog(@"Status: Temp value changed with error %@", [error description]);
-    };
-    int minIntervalSeconds = [_minIntervalInSecondsTextField.text intValue] * 1000;
-    int maxIntervalSeconds = [_maxIntervalInSecondsTextField.text intValue] * 1000;
+    int minIntervalSeconds = [_minIntervalInSecondsTextField.text intValue];
+    int maxIntervalSeconds = [_maxIntervalInSecondsTextField.text intValue];
     int deltaInFahrenheit = [_deltaInFahrenheitTextField.text intValue];
 
     NSLog(@"Sending temp reporting values: min %@ max %@ value %@", @(minIntervalSeconds), @(maxIntervalSeconds),
         @(deltaInFahrenheit));
 
-    [self.chipTempMeasurement reportAttributeMeasuredValue:onCompletionCallback
-                                                  onChange:onChangeCallback
-                                               minInterval:minIntervalSeconds
-                                               maxInterval:maxIntervalSeconds
-                                                    change:deltaInFahrenheit];
-}
-
-// MARK: CHIPDeviceControllerDelegate
-- (void)deviceControllerOnConnected
-{
-    NSLog(@"Status: Device connected");
-}
-
-- (void)deviceControllerOnError:(nonnull NSError *)error
-{
-    NSLog(@"Status: Device Controller error %@", [error description]);
-}
-
-- (void)deviceControllerOnMessage:(nonnull NSData *)message
-{
-    NSLog(@"Status: Received a message.");
-    // TODO: Use callback APIs to show read response
+    [self.temperature configureAttributeMeasuredValue: minIntervalSeconds maxInterval:maxIntervalSeconds change:deltaInFahrenheit completionHandler:^(NSError *error, NSDictionary *values) {
+        if (error == nil) return;
+        NSLog(@"Status: update reportAttributeMeasuredValue completed with error %@", [error description]);
+    }];
+    
+    [self.temperature reportAttributeMeasuredValue:^(NSError *error, NSDictionary *values) {
+        if (error != nil) return;
+        NSNumber * value = values[@"value"];
+        [self updateTempInUI:value.shortValue];
+    }];
 }
 
 @end

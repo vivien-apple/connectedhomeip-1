@@ -54,16 +54,7 @@ constexpr chip::NodeId kLocalDeviceId = chip::kTestControllerNodeId;
 // queue used to call select on the system and inet layer fds., remove this with NW Framework.
 // primarily used to not block the work queue
 @property (atomic, readonly) dispatch_queue_t chipSelectQueue;
-/**
- *  The Controller delegate.
- *  Note: Getter is not thread safe.
- */
-@property (readonly, weak, nonatomic) id<CHIPDeviceControllerDelegate> delegate;
 
-/**
- * The delegate queue where delegate callbacks will run
- */
-@property (readonly, nonatomic) dispatch_queue_t delegateQueue;
 @property (readonly) chip::Controller::DeviceCommissioner * cppController;
 @property (readonly) CHIPDevicePairingDelegateBridge * pairingDelegateBridge;
 @property (readonly) CHIPPersistentStorageDelegateBridge * persistentStorageDelegateBridge;
@@ -237,19 +228,6 @@ constexpr chip::NodeId kLocalDeviceId = chip::kTestControllerNodeId;
 - (BOOL)disconnect:(NSError * __autoreleasing *)error
 {
     return YES;
-}
-
-- (void)setDelegate:(id<CHIPDeviceControllerDelegate>)delegate queue:(dispatch_queue_t)queue
-{
-    [self.lock lock];
-    if (delegate && queue) {
-        self->_delegate = delegate;
-        self->_delegateQueue = queue;
-    } else {
-        self->_delegate = nil;
-        self->_delegateQueue = NULL;
-    }
-    [self.lock unlock];
 }
 
 - (void)setPairingDelegate:(id<CHIPDevicePairingDelegate>)delegate queue:(dispatch_queue_t)queue

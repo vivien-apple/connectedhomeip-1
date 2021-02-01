@@ -25,11 +25,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef void (^ControllerOnConnectedBlock)(void);
-typedef void (^ControllerOnMessageBlock)(NSData * message);
-typedef void (^ControllerOnErrorBlock)(NSError * error);
-
-@protocol CHIPDeviceControllerDelegate;
 @protocol CHIPDevicePairingDelegate;
 @protocol CHIPPersistentStorageDelegate;
 
@@ -60,15 +55,6 @@ typedef void (^ControllerOnErrorBlock)(NSError * error);
  * Return the single CHIPDeviceController we support existing.
  */
 + (CHIPDeviceController *)sharedController;
-
-/**
- * Set the Delegate for the Device Controller as well as the Queue on which the Delegate callbacks will be triggered
- *
- * @param[in] delegate The delegate the Device Controller should use
- *
- * @param[in] queue The queue on which the Device Controller will deliver callbacks
- */
-- (void)setDelegate:(id<CHIPDeviceControllerDelegate>)delegate queue:(dispatch_queue_t)queue;
 
 /**
  * Set the Delegate for the Device Pairing  as well as the Queue on which the Delegate callbacks will be triggered

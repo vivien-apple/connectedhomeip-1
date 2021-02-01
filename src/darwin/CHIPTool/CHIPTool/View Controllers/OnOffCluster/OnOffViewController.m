@@ -24,7 +24,6 @@
 @property (weak, nonatomic) IBOutlet UIButton * onButton;
 @property (weak, nonatomic) IBOutlet UIButton * offButton;
 @property (weak, nonatomic) IBOutlet UIButton * toggleButton;
-@property (readwrite) CHIPOnOff * onOff;
 
 @property (nonatomic, strong) UILabel * resultLabel;
 
@@ -46,9 +45,8 @@
     _persistentStorage = [[CHIPToolPersistentStorageDelegate alloc] init];
 
     // initialize the device controller
-    dispatch_queue_t callbackQueue = dispatch_queue_create("com.zigbee.chip.onoffvc.callback", DISPATCH_QUEUE_SERIAL);
+    dispatch_queue_t callbackQueue = dispatch_queue_create("com.chip.persistentstorage.callback", DISPATCH_QUEUE_SERIAL);
     self.chipController = [CHIPDeviceController sharedController];
-    [self.chipController setDelegate:self queue:callbackQueue];
     [self.chipController setPersistentStorageDelegate:_persistentStorage queue:callbackQueue];
 
     uint64_t deviceID = CHIPGetNextAvailableDeviceID();
@@ -57,7 +55,6 @@
         deviceID--;
         NSError * error;
         self.chipDevice = [self.chipController getPairedDevice:deviceID error:&error];
-        self.onOff = [[CHIPOnOff alloc] initWithDevice:self.chipDevice endpoint:1 queue:callbackQueue];
     }
 }
 
@@ -140,92 +137,40 @@
 - (IBAction)onButtonTapped:(id)sender
 {
     UIButton * button = (UIButton *) sender;
-    NSInteger lightNumber = button.tag;
-    NSLog(@"Light %@ on button pressed.", @(lightNumber));
-    // TODO: Do something based on which light is selected
-    [self.onOff on:^(NSError *error, NSDictionary *values) {
-        NSString *resultString;
-        if (error == nil)
-        {
-            NSLog(@"Status: On command success");
-            resultString =@"Status: On command success";
-        }
-        else
-        {
-            NSLog(@"Status: On command failure");
-            resultString = [NSString stringWithFormat:@"An error occured: 0x%02lx", error.code];
-        }
-
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 5.0), dispatch_get_main_queue(), ^{
-            [self updateResult:resultString];
-        });
+    NSInteger endpoint = button.tag;
+    [self updateResult:[NSString stringWithFormat:@"On command sent on endpoint %@", @(endpoint)]];
+    
+    CHIPOnOff * onOff = [[CHIPOnOff alloc] initWithDevice:self.chipDevice endpoint:endpoint queue:dispatch_get_main_queue()];
+    [onOff on:^(NSError *error, NSDictionary *values) {
+        NSString * resultString = (error != nil) ? [NSString stringWithFormat:@"An error occured: 0x%02lx", error.code] : @"On command success";
+        [self updateResult:resultString];
     }];
 }
 
 - (IBAction)offButtonTapped:(id)sender
 {
     UIButton * button = (UIButton *) sender;
-    NSInteger lightNumber = button.tag;
-    NSLog(@"Light %@ off button pressed.", @(lightNumber));
-    // TODO: Do something based on which light is selected
-    [self.onOff off:^(NSError *error, NSDictionary *values) {
-        NSString *resultString;
-        if (error == nil)
-        {
-            NSLog(@"Status: Off command success");
-            resultString =@"Status: Off command success";
-        }
-        else
-        {
-            NSLog(@"Status: Off command failure");
-            resultString = [NSString stringWithFormat:@"An error occured: 0x%02lx", error.code];
-        }
-
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 5.0), dispatch_get_main_queue(), ^{
-            [self updateResult:resultString];
-        });
+    NSInteger endpoint = button.tag;
+    [self updateResult:[NSString stringWithFormat:@"Off command sent on endpoint %@", @(endpoint)]];
+    
+    CHIPOnOff * onOff = [[CHIPOnOff alloc] initWithDevice:self.chipDevice endpoint:endpoint queue:dispatch_get_main_queue()];
+    [onOff off:^(NSError *error, NSDictionary *values) {
+        NSString * resultString = (error != nil) ? [NSString stringWithFormat:@"An error occured: 0x%02lx", error.code] : @"Off command success";
+        [self updateResult:resultString];
     }];
 }
 
 - (IBAction)toggleButtonTapped:(id)sender
 {
     UIButton * button = (UIButton *) sender;
-    NSInteger lightNumber = button.tag;
-    NSLog(@"Light %@ toggle button pressed.", @(lightNumber));
-    // TODO: Do something based on which light is selected
-    [self.onOff toggle:^(NSError *error, NSDictionary *values) {
-        NSString *resultString;
-        if (error == nil)
-        {
-            NSLog(@"Status: Toggle command success");
-            resultString =@"Status: Toggle command success";
-        }
-        else
-        {
-            NSLog(@"Status: Toggle command failure");
-            resultString = [NSString stringWithFormat:@"An error occured: 0x%02lx", error.code];
-        }
-
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 5.0), dispatch_get_main_queue(), ^{
-            [self updateResult:resultString];
-        });
+    NSInteger endpoint = button.tag;
+    [self updateResult:[NSString stringWithFormat:@"Toggle command sent on endpoint %@", @(endpoint)]];
+    
+    CHIPOnOff * onOff = [[CHIPOnOff alloc] initWithDevice:self.chipDevice endpoint:endpoint queue:dispatch_get_main_queue()];
+    [onOff toggle:^(NSError *error, NSDictionary *values) {
+        NSString * resultString = (error != nil) ? [NSString stringWithFormat:@"An error occured: 0x%02lx", error.code] : @"Toggle command success";
+        [self updateResult:resultString];
     }];
 }
 
-// MARK: CHIPDeviceControllerDelegate
-- (void)deviceControllerOnConnected
-{
-    NSLog(@"Status: Device connected");
-}
-
-- (void)deviceControllerOnError:(nonnull NSError *)error
-{
-    NSLog(@"Status: Device Controller error %@", [error description]);
-    if (error) {
-        NSString * stringError = [@"Error: " stringByAppendingString:error.description];
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 5.0), dispatch_get_main_queue(), ^{
-            [self updateResult:stringError];
-        });
-    }
-}
 @end

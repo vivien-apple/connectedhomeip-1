@@ -20,8 +20,6 @@
 #import "CHIPUIViewUtils.h"
 #import "DefaultsUtils.h"
 
-#define RESULT_DISPLAY_DURATION 5.0 * NSEC_PER_SEC
-
 @interface EchoViewController ()
 
 @property (strong, nonatomic) UITextField * messageTextField;
@@ -31,7 +29,6 @@
 @property (nonatomic, strong) UIStackView * stackView;
 
 @property (readwrite) CHIPBasic * basic;
-
 @property (readwrite) CHIPDeviceController * chipController;
 @property (readwrite) CHIPDevice * chipDevice;
 
@@ -55,9 +52,8 @@
     [self.view addGestureRecognizer:tap];
 
     // initialize the device controller
-    dispatch_queue_t callbackQueue = dispatch_queue_create("com.zigbee.chip.echovc.callback", DISPATCH_QUEUE_SERIAL);
+    dispatch_queue_t callbackQueue = dispatch_queue_create("com.chip.persistentstorage.callback", DISPATCH_QUEUE_SERIAL);
     self.chipController = [CHIPDeviceController sharedController];
-    [self.chipController setDelegate:self queue:callbackQueue];
     [self.chipController setPersistentStorageDelegate:_persistentStorage queue:callbackQueue];
 
     uint64_t deviceID = CHIPGetNextAvailableDeviceID();
@@ -66,7 +62,7 @@
         deviceID--;
         NSError * error;
         self.chipDevice = [self.chipController getPairedDevice:deviceID error:&error];
-        self.basic = [[CHIPBasic alloc] initWithDevice:self.chipDevice endpoint:1 queue:callbackQueue];
+        self.basic = [[CHIPBasic alloc] initWithDevice:self.chipDevice endpoint:1 queue:dispatch_get_main_queue()];
     }
 }
 
@@ -140,41 +136,13 @@
     // send message
     if ([self.chipDevice isActive]) {
         [self updateResult:@"MfgSpecificPing command sent..."];
-
+        
         [self.basic mfgSpecificPing:^(NSError *error, NSDictionary *values) {
-            NSString *resultString;
-            if (error == nil)
-            {
-                resultString = @"MfgSpecificPing command: success!";
-            }
-            else
-            {
-                resultString = [NSString stringWithFormat:@"An error occured: 0x%02lx", error.code];
-            }
-
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 5.0), dispatch_get_main_queue(), ^{
-                [self updateResult:resultString];
-            });
+            NSString *resultString = (error == nil) ? @"MfgSpecificPing command: success!" :[NSString stringWithFormat:@"An error occured: 0x%02lx", error.code];
+            [self updateResult:resultString];
         }];
     } else {
         [self updateResult:@"Controller not connected"];
-    }
-}
-
-// MARK: CHIPDeviceControllerDelegate
-- (void)deviceControllerOnConnected
-{
-    NSLog(@"Status: Device connected");
-}
-
-- (void)deviceControllerOnError:(nonnull NSError *)error
-{
-    NSLog(@"Status: Device Controller error %@", [error description]);
-    if (error) {
-        NSString * stringError = [@"Error: " stringByAppendingString:error.description];
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 5.0), dispatch_get_main_queue(), ^{
-            [self updateResult:stringError];
-        });
     }
 }
 
