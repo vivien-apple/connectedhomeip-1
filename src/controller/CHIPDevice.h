@@ -252,7 +252,8 @@ public:
 
     PASESessionSerializable & GetPairing() { return mPairing; }
 
-    void AddResponseHandler(Callback::Cancelable * onSuccessCallback, Callback::Cancelable * onFailureCallback);
+    uint8_t GetNextSequenceNumber() { return mSequenceNumber++; };
+    void AddResponseHandler(uint8_t seqNum, Callback::Cancelable * onSuccessCallback, Callback::Cancelable * onFailureCallback);
     void AddReportHandler(EndpointId endpoint, ClusterId cluster, AttributeId attribute, Callback::Cancelable * onReportCallback);
 
 private:
@@ -296,6 +297,8 @@ private:
     app::CommandSender * mCommandSender;
 
     SecureSessionHandle mSecureSession = {};
+
+    uint8_t mSequenceNumber = 0;
 
     app::CHIPCallbacksMgr & mCallbacksMgr = app::CHIPCallbacksMgr::GetInstance();
 
