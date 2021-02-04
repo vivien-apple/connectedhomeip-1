@@ -7,27 +7,28 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		1ED6461B25C2C28500E90B56 /* DataModelHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1ED6461A25C2C28500E90B56 /* DataModelHandler.cpp */; };
-		1ED6461D25C2C2A500E90B56 /* util.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1ED6461C25C2C2A500E90B56 /* util.cpp */; };
-		1ED6461F25C2C34A00E90B56 /* process-global-message.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1ED6461E25C2C34A00E90B56 /* process-global-message.cpp */; };
-		1ED6462125C2C35E00E90B56 /* process-cluster-message.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1ED6462025C2C35E00E90B56 /* process-cluster-message.cpp */; };
-		1ED6462325C2C37400E90B56 /* message.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1ED6462225C2C37400E90B56 /* message.cpp */; };
-		1ED6462525C2C44400E90B56 /* attribute-storage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1ED6462425C2C44400E90B56 /* attribute-storage.cpp */; };
-		1ED6462725C2C47E00E90B56 /* af-event.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1ED6462625C2C47E00E90B56 /* af-event.cpp */; };
-		1ED6462925C2C4D300E90B56 /* ember-print.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1ED6462825C2C4D200E90B56 /* ember-print.cpp */; };
-		1ED6462B25C2C50E00E90B56 /* attribute-table.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1ED6462A25C2C50E00E90B56 /* attribute-table.cpp */; };
-		1ED6462D25C2C53F00E90B56 /* attribute-size.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1ED6462C25C2C53F00E90B56 /* attribute-size.cpp */; };
-		1ED6462F25C2C57300E90B56 /* client-api.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1ED6462E25C2C57300E90B56 /* client-api.cpp */; };
-		1ED6463325C2C6A500E90B56 /* call-command-handler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1ED6463225C2C6A500E90B56 /* call-command-handler.cpp */; };
-		1ED6463525C2C6B700E90B56 /* callback-stub.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1ED6463425C2C6B700E90B56 /* callback-stub.cpp */; };
-		1ED6463725C2C70000E90B56 /* af-main-common.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1ED6463625C2C70000E90B56 /* af-main-common.cpp */; };
-		1ED6463925C2C73A00E90B56 /* binding-table.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1ED6463825C2C73A00E90B56 /* binding-table.cpp */; };
-		1ED6463B25C2C74900E90B56 /* chip-message-send.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1ED6463A25C2C74900E90B56 /* chip-message-send.cpp */; };
-		1ED6463D25C2C75B00E90B56 /* reporting.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1ED6463C25C2C75B00E90B56 /* reporting.cpp */; };
-		1ED6463F25C2C77600E90B56 /* reporting-default-configuration.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1ED6463E25C2C77600E90B56 /* reporting-default-configuration.cpp */; };
-		1ED6464125C2D44100E90B56 /* CHIPClientCallbacks.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1ED6464025C2D44100E90B56 /* CHIPClientCallbacks.cpp */; };
-		1ED6464325C37A0500E90B56 /* CHIPClustersObjc.h in Headers */ = {isa = PBXBuildFile; fileRef = 1ED6464225C37A0500E90B56 /* CHIPClustersObjc.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		1ED6464525C37A1B00E90B56 /* CHIPClustersObjc.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1ED6464425C37A1A00E90B56 /* CHIPClustersObjc.mm */; };
+		1EC4CE3A25CC263E00D7304F /* reporting.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1EC4CE3825CC263E00D7304F /* reporting.cpp */; };
+		1EC4CE3B25CC263E00D7304F /* reporting-default-configuration.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1EC4CE3925CC263E00D7304F /* reporting-default-configuration.cpp */; };
+		1EC4CE3D25CC265200D7304F /* DataModelHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1EC4CE3C25CC265200D7304F /* DataModelHandler.cpp */; };
+		1EC4CE4B25CC267700D7304F /* binding-table.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1EC4CE3E25CC267600D7304F /* binding-table.cpp */; };
+		1EC4CE4C25CC267700D7304F /* ember-print.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1EC4CE3F25CC267600D7304F /* ember-print.cpp */; };
+		1EC4CE4D25CC267700D7304F /* process-global-message.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1EC4CE4025CC267600D7304F /* process-global-message.cpp */; };
+		1EC4CE4E25CC267700D7304F /* attribute-size.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1EC4CE4125CC267600D7304F /* attribute-size.cpp */; };
+		1EC4CE4F25CC267700D7304F /* process-cluster-message.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1EC4CE4225CC267600D7304F /* process-cluster-message.cpp */; };
+		1EC4CE5025CC267700D7304F /* client-api.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1EC4CE4325CC267600D7304F /* client-api.cpp */; };
+		1EC4CE5125CC267700D7304F /* message.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1EC4CE4425CC267600D7304F /* message.cpp */; };
+		1EC4CE5225CC267700D7304F /* CallbacksMgr.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1EC4CE4525CC267600D7304F /* CallbacksMgr.cpp */; };
+		1EC4CE5325CC267700D7304F /* chip-message-send.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1EC4CE4625CC267600D7304F /* chip-message-send.cpp */; };
+		1EC4CE5425CC267700D7304F /* util.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1EC4CE4725CC267600D7304F /* util.cpp */; };
+		1EC4CE5525CC267700D7304F /* attribute-table.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1EC4CE4825CC267600D7304F /* attribute-table.cpp */; };
+		1EC4CE5625CC267700D7304F /* af-main-common.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1EC4CE4925CC267700D7304F /* af-main-common.cpp */; };
+		1EC4CE5725CC267700D7304F /* attribute-storage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1EC4CE4A25CC267700D7304F /* attribute-storage.cpp */; };
+		1EC4CE5D25CC26E900D7304F /* CHIPClustersObjc.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1EC4CE5925CC26E900D7304F /* CHIPClustersObjc.mm */; };
+		1EC4CE5E25CC26E900D7304F /* call-command-handler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1EC4CE5A25CC26E900D7304F /* call-command-handler.cpp */; };
+		1EC4CE5F25CC26E900D7304F /* callback-stub.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1EC4CE5B25CC26E900D7304F /* callback-stub.cpp */; };
+		1EC4CE6025CC26E900D7304F /* CHIPClientCallbacks.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1EC4CE5C25CC26E900D7304F /* CHIPClientCallbacks.cpp */; };
+		1EC4CE6225CC271B00D7304F /* af-event.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1EC4CE6125CC271B00D7304F /* af-event.cpp */; };
+		1EC4CE6425CC276600D7304F /* CHIPClustersObjc.h in Headers */ = {isa = PBXBuildFile; fileRef = 1EC4CE6325CC276600D7304F /* CHIPClustersObjc.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2C222AD0255C620600E446B9 /* CHIPDevice.h in Headers */ = {isa = PBXBuildFile; fileRef = 2C222ACE255C620600E446B9 /* CHIPDevice.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2C222AD1255C620600E446B9 /* CHIPDevice.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2C222ACF255C620600E446B9 /* CHIPDevice.mm */; };
 		2C222ADF255C811800E446B9 /* CHIPDevice_Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 2C222ADE255C811800E446B9 /* CHIPDevice_Internal.h */; };
@@ -66,27 +67,28 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		1ED6461A25C2C28500E90B56 /* DataModelHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DataModelHandler.cpp; path = ../../../app/server/DataModelHandler.cpp; sourceTree = "<group>"; };
-		1ED6461C25C2C2A500E90B56 /* util.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = util.cpp; path = ../../../app/util/util.cpp; sourceTree = "<group>"; };
-		1ED6461E25C2C34A00E90B56 /* process-global-message.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "process-global-message.cpp"; path = "../../../app/util/process-global-message.cpp"; sourceTree = "<group>"; };
-		1ED6462025C2C35E00E90B56 /* process-cluster-message.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "process-cluster-message.cpp"; path = "../../../app/util/process-cluster-message.cpp"; sourceTree = "<group>"; };
-		1ED6462225C2C37400E90B56 /* message.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = message.cpp; path = ../../../app/util/message.cpp; sourceTree = "<group>"; };
-		1ED6462425C2C44400E90B56 /* attribute-storage.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "attribute-storage.cpp"; path = "../../../app/util/attribute-storage.cpp"; sourceTree = "<group>"; };
-		1ED6462625C2C47E00E90B56 /* af-event.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "af-event.cpp"; path = "../../../app/util/af-event.cpp"; sourceTree = "<group>"; };
-		1ED6462825C2C4D200E90B56 /* ember-print.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "ember-print.cpp"; path = "../../../app/util/ember-print.cpp"; sourceTree = "<group>"; };
-		1ED6462A25C2C50E00E90B56 /* attribute-table.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "attribute-table.cpp"; path = "../../../app/util/attribute-table.cpp"; sourceTree = "<group>"; };
-		1ED6462C25C2C53F00E90B56 /* attribute-size.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "attribute-size.cpp"; path = "../../../app/util/attribute-size.cpp"; sourceTree = "<group>"; };
-		1ED6462E25C2C57300E90B56 /* client-api.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "client-api.cpp"; path = "../../../app/util/client-api.cpp"; sourceTree = "<group>"; };
-		1ED6463225C2C6A500E90B56 /* call-command-handler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "call-command-handler.cpp"; path = "gen/call-command-handler.cpp"; sourceTree = "<group>"; };
-		1ED6463425C2C6B700E90B56 /* callback-stub.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "callback-stub.cpp"; path = "gen/callback-stub.cpp"; sourceTree = "<group>"; };
-		1ED6463625C2C70000E90B56 /* af-main-common.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "af-main-common.cpp"; path = "../../../app/util/af-main-common.cpp"; sourceTree = "<group>"; };
-		1ED6463825C2C73A00E90B56 /* binding-table.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "binding-table.cpp"; path = "../../../app/util/binding-table.cpp"; sourceTree = "<group>"; };
-		1ED6463A25C2C74900E90B56 /* chip-message-send.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "chip-message-send.cpp"; path = "../../../app/util/chip-message-send.cpp"; sourceTree = "<group>"; };
-		1ED6463C25C2C75B00E90B56 /* reporting.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = reporting.cpp; path = ../../../app/reporting/reporting.cpp; sourceTree = "<group>"; };
-		1ED6463E25C2C77600E90B56 /* reporting-default-configuration.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "reporting-default-configuration.cpp"; path = "../../../app/reporting/reporting-default-configuration.cpp"; sourceTree = "<group>"; };
-		1ED6464025C2D44100E90B56 /* CHIPClientCallbacks.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = CHIPClientCallbacks.cpp; path = gen/CHIPClientCallbacks.cpp; sourceTree = "<group>"; };
-		1ED6464225C37A0500E90B56 /* CHIPClustersObjc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CHIPClustersObjc.h; path = gen/CHIPClustersObjc.h; sourceTree = "<group>"; };
-		1ED6464425C37A1A00E90B56 /* CHIPClustersObjc.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = CHIPClustersObjc.mm; path = gen/CHIPClustersObjc.mm; sourceTree = "<group>"; };
+		1EC4CE3825CC263E00D7304F /* reporting.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = reporting.cpp; path = ../../../app/reporting/reporting.cpp; sourceTree = "<group>"; };
+		1EC4CE3925CC263E00D7304F /* reporting-default-configuration.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "reporting-default-configuration.cpp"; path = "../../../app/reporting/reporting-default-configuration.cpp"; sourceTree = "<group>"; };
+		1EC4CE3C25CC265200D7304F /* DataModelHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DataModelHandler.cpp; path = ../../../app/server/DataModelHandler.cpp; sourceTree = "<group>"; };
+		1EC4CE3E25CC267600D7304F /* binding-table.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "binding-table.cpp"; path = "../../../app/util/binding-table.cpp"; sourceTree = "<group>"; };
+		1EC4CE3F25CC267600D7304F /* ember-print.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "ember-print.cpp"; path = "../../../app/util/ember-print.cpp"; sourceTree = "<group>"; };
+		1EC4CE4025CC267600D7304F /* process-global-message.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "process-global-message.cpp"; path = "../../../app/util/process-global-message.cpp"; sourceTree = "<group>"; };
+		1EC4CE4125CC267600D7304F /* attribute-size.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "attribute-size.cpp"; path = "../../../app/util/attribute-size.cpp"; sourceTree = "<group>"; };
+		1EC4CE4225CC267600D7304F /* process-cluster-message.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "process-cluster-message.cpp"; path = "../../../app/util/process-cluster-message.cpp"; sourceTree = "<group>"; };
+		1EC4CE4325CC267600D7304F /* client-api.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "client-api.cpp"; path = "../../../app/util/client-api.cpp"; sourceTree = "<group>"; };
+		1EC4CE4425CC267600D7304F /* message.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = message.cpp; path = ../../../app/util/message.cpp; sourceTree = "<group>"; };
+		1EC4CE4525CC267600D7304F /* CallbacksMgr.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = CallbacksMgr.cpp; path = ../../../app/util/CallbacksMgr.cpp; sourceTree = "<group>"; };
+		1EC4CE4625CC267600D7304F /* chip-message-send.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "chip-message-send.cpp"; path = "../../../app/util/chip-message-send.cpp"; sourceTree = "<group>"; };
+		1EC4CE4725CC267600D7304F /* util.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = util.cpp; path = ../../../app/util/util.cpp; sourceTree = "<group>"; };
+		1EC4CE4825CC267600D7304F /* attribute-table.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "attribute-table.cpp"; path = "../../../app/util/attribute-table.cpp"; sourceTree = "<group>"; };
+		1EC4CE4925CC267700D7304F /* af-main-common.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "af-main-common.cpp"; path = "../../../app/util/af-main-common.cpp"; sourceTree = "<group>"; };
+		1EC4CE4A25CC267700D7304F /* attribute-storage.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "attribute-storage.cpp"; path = "../../../app/util/attribute-storage.cpp"; sourceTree = "<group>"; };
+		1EC4CE5925CC26E900D7304F /* CHIPClustersObjc.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = CHIPClustersObjc.mm; path = gen/CHIPClustersObjc.mm; sourceTree = "<group>"; };
+		1EC4CE5A25CC26E900D7304F /* call-command-handler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "call-command-handler.cpp"; path = "gen/call-command-handler.cpp"; sourceTree = "<group>"; };
+		1EC4CE5B25CC26E900D7304F /* callback-stub.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "callback-stub.cpp"; path = "gen/callback-stub.cpp"; sourceTree = "<group>"; };
+		1EC4CE5C25CC26E900D7304F /* CHIPClientCallbacks.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = CHIPClientCallbacks.cpp; path = gen/CHIPClientCallbacks.cpp; sourceTree = "<group>"; };
+		1EC4CE6125CC271B00D7304F /* af-event.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "af-event.cpp"; path = "../../../app/util/af-event.cpp"; sourceTree = "<group>"; };
+		1EC4CE6325CC276600D7304F /* CHIPClustersObjc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CHIPClustersObjc.h; path = gen/CHIPClustersObjc.h; sourceTree = "<group>"; };
 		2C222ACE255C620600E446B9 /* CHIPDevice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CHIPDevice.h; sourceTree = "<group>"; };
 		2C222ACF255C620600E446B9 /* CHIPDevice.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = CHIPDevice.mm; sourceTree = "<group>"; };
 		2C222ADE255C811800E446B9 /* CHIPDevice_Internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CHIPDevice_Internal.h; sourceTree = "<group>"; };
@@ -139,6 +141,43 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		1EC4CE3525CC259700D7304F /* CHIPApp */ = {
+			isa = PBXGroup;
+			children = (
+				1EC4CE6125CC271B00D7304F /* af-event.cpp */,
+				1EC4CE4925CC267700D7304F /* af-main-common.cpp */,
+				1EC4CE4125CC267600D7304F /* attribute-size.cpp */,
+				1EC4CE4A25CC267700D7304F /* attribute-storage.cpp */,
+				1EC4CE4825CC267600D7304F /* attribute-table.cpp */,
+				1EC4CE3E25CC267600D7304F /* binding-table.cpp */,
+				1EC4CE4525CC267600D7304F /* CallbacksMgr.cpp */,
+				1EC4CE4625CC267600D7304F /* chip-message-send.cpp */,
+				1EC4CE4325CC267600D7304F /* client-api.cpp */,
+				1EC4CE3F25CC267600D7304F /* ember-print.cpp */,
+				1EC4CE4425CC267600D7304F /* message.cpp */,
+				1EC4CE4225CC267600D7304F /* process-cluster-message.cpp */,
+				1EC4CE4025CC267600D7304F /* process-global-message.cpp */,
+				1EC4CE4725CC267600D7304F /* util.cpp */,
+				1EC4CE3C25CC265200D7304F /* DataModelHandler.cpp */,
+				1EC4CE3925CC263E00D7304F /* reporting-default-configuration.cpp */,
+				1EC4CE3825CC263E00D7304F /* reporting.cpp */,
+			);
+			name = CHIPApp;
+			path = CHIP;
+			sourceTree = SOURCE_ROOT;
+		};
+		1EC4CE5825CC26AB00D7304F /* CHIPGeneratedFiles */ = {
+			isa = PBXGroup;
+			children = (
+				1EC4CE6325CC276600D7304F /* CHIPClustersObjc.h */,
+				1EC4CE5A25CC26E900D7304F /* call-command-handler.cpp */,
+				1EC4CE5B25CC26E900D7304F /* callback-stub.cpp */,
+				1EC4CE5C25CC26E900D7304F /* CHIPClientCallbacks.cpp */,
+				1EC4CE5925CC26E900D7304F /* CHIPClustersObjc.mm */,
+			);
+			name = CHIPGeneratedFiles;
+			sourceTree = "<group>";
+		};
 		B20252832459E34F00F97062 = {
 			isa = PBXGroup;
 			children = (
@@ -162,27 +201,8 @@
 		B202528F2459E34F00F97062 /* CHIP */ = {
 			isa = PBXGroup;
 			children = (
-				1ED6464425C37A1A00E90B56 /* CHIPClustersObjc.mm */,
-				1ED6464225C37A0500E90B56 /* CHIPClustersObjc.h */,
-				1ED6464025C2D44100E90B56 /* CHIPClientCallbacks.cpp */,
-				1ED6463E25C2C77600E90B56 /* reporting-default-configuration.cpp */,
-				1ED6463C25C2C75B00E90B56 /* reporting.cpp */,
-				1ED6463A25C2C74900E90B56 /* chip-message-send.cpp */,
-				1ED6463825C2C73A00E90B56 /* binding-table.cpp */,
-				1ED6463625C2C70000E90B56 /* af-main-common.cpp */,
-				1ED6463425C2C6B700E90B56 /* callback-stub.cpp */,
-				1ED6463225C2C6A500E90B56 /* call-command-handler.cpp */,
-				1ED6462E25C2C57300E90B56 /* client-api.cpp */,
-				1ED6462C25C2C53F00E90B56 /* attribute-size.cpp */,
-				1ED6462A25C2C50E00E90B56 /* attribute-table.cpp */,
-				1ED6462825C2C4D200E90B56 /* ember-print.cpp */,
-				1ED6462625C2C47E00E90B56 /* af-event.cpp */,
-				1ED6462425C2C44400E90B56 /* attribute-storage.cpp */,
-				1ED6462225C2C37400E90B56 /* message.cpp */,
-				1ED6462025C2C35E00E90B56 /* process-cluster-message.cpp */,
-				1ED6461E25C2C34A00E90B56 /* process-global-message.cpp */,
-				1ED6461C25C2C2A500E90B56 /* util.cpp */,
-				1ED6461A25C2C28500E90B56 /* DataModelHandler.cpp */,
+				1EC4CE5825CC26AB00D7304F /* CHIPGeneratedFiles */,
+				1EC4CE3525CC259700D7304F /* CHIPApp */,
 				2C222ADE255C811800E446B9 /* CHIPDevice_Internal.h */,
 				2C222ACE255C620600E446B9 /* CHIPDevice.h */,
 				2C222ACF255C620600E446B9 /* CHIPDevice.mm */,
@@ -240,10 +260,10 @@
 				991DC0842475F45400C13860 /* CHIPDeviceController.h in Headers */,
 				B2E0D7B2245B0B5C003C5B48 /* CHIPManualSetupPayloadParser.h in Headers */,
 				B2E0D7B1245B0B5C003C5B48 /* CHIP.h in Headers */,
-				1ED6464325C37A0500E90B56 /* CHIPClustersObjc.h in Headers */,
 				B2E0D7B8245B0B5C003C5B48 /* CHIPSetupPayload.h in Headers */,
 				2C8C8FC1253E0C2100797F05 /* CHIPPersistentStorageDelegate.h in Headers */,
 				B2E0D7B5245B0B5C003C5B48 /* CHIPQRCodeSetupPayloadParser.h in Headers */,
+				1EC4CE6425CC276600D7304F /* CHIPClustersObjc.h in Headers */,
 				2C8C8FC0253E0C2100797F05 /* CHIPPersistentStorageDelegateBridge.h in Headers */,
 				2C222ADF255C811800E446B9 /* CHIPDevice_Internal.h in Headers */,
 				991DC08B247704DC00C13860 /* CHIPLogging.h in Headers */,
@@ -371,34 +391,35 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1ED6463D25C2C75B00E90B56 /* reporting.cpp in Sources */,
-				1ED6463925C2C73A00E90B56 /* binding-table.cpp in Sources */,
-				1ED6461F25C2C34A00E90B56 /* process-global-message.cpp in Sources */,
-				1ED6462F25C2C57300E90B56 /* client-api.cpp in Sources */,
-				1ED6463525C2C6B700E90B56 /* callback-stub.cpp in Sources */,
-				1ED6464125C2D44100E90B56 /* CHIPClientCallbacks.cpp in Sources */,
-				1ED6464525C37A1B00E90B56 /* CHIPClustersObjc.mm in Sources */,
-				1ED6463B25C2C74900E90B56 /* chip-message-send.cpp in Sources */,
-				1ED6462D25C2C53F00E90B56 /* attribute-size.cpp in Sources */,
-				1ED6462325C2C37400E90B56 /* message.cpp in Sources */,
-				1ED6463725C2C70000E90B56 /* af-main-common.cpp in Sources */,
-				1ED6463325C2C6A500E90B56 /* call-command-handler.cpp in Sources */,
 				2C8C8FC2253E0C2100797F05 /* CHIPPersistentStorageDelegateBridge.mm in Sources */,
-				1ED6463F25C2C77600E90B56 /* reporting-default-configuration.cpp in Sources */,
-				1ED6462125C2C35E00E90B56 /* process-cluster-message.cpp in Sources */,
-				1ED6462925C2C4D300E90B56 /* ember-print.cpp in Sources */,
+				1EC4CE5025CC267700D7304F /* client-api.cpp in Sources */,
 				2CB7163C252E8A7C0026E2BB /* CHIPDevicePairingDelegateBridge.mm in Sources */,
-				1ED6461B25C2C28500E90B56 /* DataModelHandler.cpp in Sources */,
+				1EC4CE5625CC267700D7304F /* af-main-common.cpp in Sources */,
+				1EC4CE5425CC267700D7304F /* util.cpp in Sources */,
 				2C222AD1255C620600E446B9 /* CHIPDevice.mm in Sources */,
+				1EC4CE4C25CC267700D7304F /* ember-print.cpp in Sources */,
 				991DC0892475F47D00C13860 /* CHIPDeviceController.mm in Sources */,
-				1ED6462525C2C44400E90B56 /* attribute-storage.cpp in Sources */,
+				1EC4CE3A25CC263E00D7304F /* reporting.cpp in Sources */,
+				1EC4CE5325CC267700D7304F /* chip-message-send.cpp in Sources */,
 				B2E0D7B7245B0B5C003C5B48 /* CHIPQRCodeSetupPayloadParser.mm in Sources */,
+				1EC4CE5F25CC26E900D7304F /* callback-stub.cpp in Sources */,
+				1EC4CE4B25CC267700D7304F /* binding-table.cpp in Sources */,
+				1EC4CE5225CC267700D7304F /* CallbacksMgr.cpp in Sources */,
+				1EC4CE6225CC271B00D7304F /* af-event.cpp in Sources */,
+				1EC4CE4E25CC267700D7304F /* attribute-size.cpp in Sources */,
+				1EC4CE4D25CC267700D7304F /* process-global-message.cpp in Sources */,
+				1EC4CE5125CC267700D7304F /* message.cpp in Sources */,
+				1EC4CE5D25CC26E900D7304F /* CHIPClustersObjc.mm in Sources */,
 				B2E0D7B3245B0B5C003C5B48 /* CHIPError.mm in Sources */,
-				1ED6461D25C2C2A500E90B56 /* util.cpp in Sources */,
+				1EC4CE5E25CC26E900D7304F /* call-command-handler.cpp in Sources */,
+				1EC4CE3B25CC263E00D7304F /* reporting-default-configuration.cpp in Sources */,
+				1EC4CE4F25CC267700D7304F /* process-cluster-message.cpp in Sources */,
+				1EC4CE3D25CC265200D7304F /* DataModelHandler.cpp in Sources */,
+				1EC4CE5725CC267700D7304F /* attribute-storage.cpp in Sources */,
+				1EC4CE5525CC267700D7304F /* attribute-table.cpp in Sources */,
 				B2E0D7B9245B0B5C003C5B48 /* CHIPSetupPayload.mm in Sources */,
-				1ED6462B25C2C50E00E90B56 /* attribute-table.cpp in Sources */,
 				B2E0D7B6245B0B5C003C5B48 /* CHIPManualSetupPayloadParser.mm in Sources */,
-				1ED6462725C2C47E00E90B56 /* af-event.cpp in Sources */,
+				1EC4CE6025CC26E900D7304F /* CHIPClientCallbacks.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
