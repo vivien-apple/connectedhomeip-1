@@ -18,7 +18,6 @@
 #ifndef CHIP_DEVICE_CONTROLLER_H
 #define CHIP_DEVICE_CONTROLLER_H
 
-#import <CHIP/CHIPDeviceStatusDelegate.h>
 #import <Foundation/Foundation.h>
 
 @class CHIPDevice;
@@ -28,14 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol CHIPDevicePairingDelegate;
 @protocol CHIPPersistentStorageDelegate;
 
-@interface AddressInfo : NSObject
-
-@property (readonly, copy) NSString * ip;
-- (instancetype)initWithIP:(NSString *)ip;
-
-@end
-
-@interface CHIPDeviceController : NSObject <CHIPDeviceStatusDelegate>
+@interface CHIPDeviceController : NSObject
 
 - (BOOL)pairDevice:(uint64_t)deviceID
      discriminator:(uint16_t)discriminator
@@ -45,8 +37,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)stopDevicePairing:(uint64_t)deviceID error:(NSError * __autoreleasing *)error;
 
 - (CHIPDevice *)getPairedDevice:(uint64_t)deviceID error:(NSError * __autoreleasing *)error;
-
-- (BOOL)disconnect:(NSError * __autoreleasing *)error;
 
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;
@@ -73,28 +63,6 @@ NS_ASSUME_NONNULL_BEGIN
  * @param[in] queue The queue on which the callbacks will be delivered
  */
 - (void)setPersistentStorageDelegate:(id<CHIPPersistentStorageDelegate>)delegate queue:(dispatch_queue_t)queue;
-
-@end
-
-/**
- * The protocol definition for the CHIPDeviceControllerDelegate
- *
- * All delegate methods will be called on the supplied Delegate Queue.
- */
-@protocol CHIPDeviceControllerDelegate <NSObject>
-
-/**
- * Notify the delegate when a connection request succeeds
- *
- */
-- (void)deviceControllerOnConnected;
-
-/**
- * Notify the Delegate that an error occurred
- *
- * @param[in] error The error that occurred
- */
-- (void)deviceControllerOnError:(NSError *)error;
 
 @end
 

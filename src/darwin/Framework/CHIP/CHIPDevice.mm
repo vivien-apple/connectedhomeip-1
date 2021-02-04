@@ -15,17 +15,7 @@
  *    limitations under the License.
  */
 
-#import <Foundation/Foundation.h>
-
-#include <app/chip-zcl-zpro-codec.h>
-#include <controller/CHIPDevice.h>
-
-#import "CHIPDevice.h"
 #import "CHIPDevice_Internal.h"
-#import "CHIPError.h"
-#import "CHIPLogging.h"
-
-#include <system/SystemPacketBuffer.h>
 
 @interface CHIPDevice ()
 
@@ -55,11 +45,6 @@
 - (chip::Controller::Device *)internalDevice
 {
     return _cppDevice;
-}
-
-- (BOOL)disconnect:(NSError * __autoreleasing *)error
-{
-    return YES;
 }
 
 - (BOOL)isActive

@@ -20,13 +20,10 @@
 
 #import <Foundation/Foundation.h>
 
-#import <CHIP/CHIPError.h>
-
 NS_ASSUME_NONNULL_BEGIN
 
 @interface CHIPDevice : NSObject
 
-- (BOOL)disconnect:(NSError * __autoreleasing *)error;
 - (BOOL)isActive;
 
 - (instancetype)init NS_UNAVAILABLE;
