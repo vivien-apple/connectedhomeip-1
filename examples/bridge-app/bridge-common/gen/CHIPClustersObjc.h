@@ -28,6 +28,43 @@ typedef void (^ResponseHandler)(NSError * _Nullable error, NSDictionary * _Nulla
 
 NS_ASSUME_NONNULL_BEGIN
 
+@interface CHIPBasic : NSObject
+
+- (nullable instancetype)initWithDevice:(CHIPDevice *)device endpoint:(uint8_t)endpoint queue:(dispatch_queue_t)queue;
+- (BOOL)mfgSpecificPing:(ResponseHandler)completionHandler;
+- (BOOL)resetToFactoryDefaults:(ResponseHandler)completionHandler;
+
+- (BOOL)readAttributeZclVersion:(ResponseHandler)completionHandler;
+- (BOOL)readAttributePowerSource:(ResponseHandler)completionHandler;
+- (BOOL)readAttributeClusterRevision:(ResponseHandler)completionHandler;
+
+- (instancetype)init NS_UNAVAILABLE;
++ (instancetype)new NS_UNAVAILABLE;
+
+@end
+
+NS_ASSUME_NONNULL_END
+
+NS_ASSUME_NONNULL_BEGIN
+
+@interface CHIPDescriptor : NSObject
+
+- (nullable instancetype)initWithDevice:(CHIPDevice *)device endpoint:(uint8_t)endpoint queue:(dispatch_queue_t)queue;
+
+- (BOOL)readAttributeServer:(ResponseHandler)completionHandler;
+- (BOOL)readAttributeClient:(ResponseHandler)completionHandler;
+- (BOOL)readAttributeParts:(ResponseHandler)completionHandler;
+- (BOOL)readAttributeClusterRevision:(ResponseHandler)completionHandler;
+
+- (instancetype)init NS_UNAVAILABLE;
++ (instancetype)new NS_UNAVAILABLE;
+
+@end
+
+NS_ASSUME_NONNULL_END
+
+NS_ASSUME_NONNULL_BEGIN
+
 @interface CHIPLevelControl : NSObject
 
 - (nullable instancetype)initWithDevice:(CHIPDevice *)device endpoint:(uint8_t)endpoint queue:(dispatch_queue_t)queue;
@@ -64,11 +101,6 @@ NS_ASSUME_NONNULL_BEGIN
                                 change:(uint8_t)change
                      completionHandler:(ResponseHandler)completionHandler;
 - (BOOL)reportAttributeCurrentLevel:(ResponseHandler)reportHandler;
-- (BOOL)readAttributeRemainingTime:(ResponseHandler)completionHandler;
-- (BOOL)readAttributeOptions:(ResponseHandler)completionHandler;
-- (BOOL)writeAttributeOptions:(uint8_t)value completionHandler:(ResponseHandler)completionHandler;
-- (BOOL)readAttributeStartUpCurrentLevel:(ResponseHandler)completionHandler;
-- (BOOL)writeAttributeStartUpCurrentLevel:(uint8_t)value completionHandler:(ResponseHandler)completionHandler;
 - (BOOL)readAttributeClusterRevision:(ResponseHandler)completionHandler;
 
 - (instancetype)init NS_UNAVAILABLE;
@@ -84,13 +116,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (nullable instancetype)initWithDevice:(CHIPDevice *)device endpoint:(uint8_t)endpoint queue:(dispatch_queue_t)queue;
 - (BOOL)off:(ResponseHandler)completionHandler;
-- (BOOL)offWithEffect:(uint8_t)effectId effectVariant:(uint8_t)effectVariant completionHandler:(ResponseHandler)completionHandler;
 - (BOOL)on:(ResponseHandler)completionHandler;
-- (BOOL)onWithRecallGlobalScene:(ResponseHandler)completionHandler;
-- (BOOL)onWithTimedOff:(uint8_t)onOffControl
-                onTime:(uint16_t)onTime
-           offWaitTime:(uint16_t)offWaitTime
-     completionHandler:(ResponseHandler)completionHandler;
 - (BOOL)toggle:(ResponseHandler)completionHandler;
 
 - (BOOL)readAttributeOnOff:(ResponseHandler)completionHandler;
@@ -98,13 +124,6 @@ NS_ASSUME_NONNULL_BEGIN
                     maxInterval:(uint16_t)maxInterval
               completionHandler:(ResponseHandler)completionHandler;
 - (BOOL)reportAttributeOnOff:(ResponseHandler)reportHandler;
-- (BOOL)readAttributeGlobalSceneControl:(ResponseHandler)completionHandler;
-- (BOOL)readAttributeOnTime:(ResponseHandler)completionHandler;
-- (BOOL)writeAttributeOnTime:(uint16_t)value completionHandler:(ResponseHandler)completionHandler;
-- (BOOL)readAttributeOffWaitTime:(ResponseHandler)completionHandler;
-- (BOOL)writeAttributeOffWaitTime:(uint16_t)value completionHandler:(ResponseHandler)completionHandler;
-- (BOOL)readAttributeStartUpOnOff:(ResponseHandler)completionHandler;
-- (BOOL)writeAttributeStartUpOnOff:(uint8_t)value completionHandler:(ResponseHandler)completionHandler;
 - (BOOL)readAttributeClusterRevision:(ResponseHandler)completionHandler;
 
 - (instancetype)init NS_UNAVAILABLE;
