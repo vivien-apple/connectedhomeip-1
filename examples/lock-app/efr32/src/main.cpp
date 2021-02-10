@@ -25,19 +25,38 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include <FreeRTOS.h>
+#include <mbedtls/threading.h>
+
 #include <platform/CHIPDeviceLayer.h>
+#include <support/CHIPMem.h>
+#include <support/CHIPPlatformMemory.h>
 
 #include <AppTask.h>
 
 #include "AppConfig.h"
+#include "DataModelHandler.h"
+#include "Server.h"
 #include "init_board.h"
 #include "init_mcu.h"
 
 #if DISPLAY_ENABLED
-#include "init_lcd.h"
+#include "lcd.h"
 #endif
 
-#include <FreeRTOS.h>
+#if CHIP_ENABLE_OPENTHREAD
+#include <mbedtls/platform.h>
+#include <openthread/cli.h>
+#include <openthread/dataset.h>
+#include <openthread/error.h>
+#include <openthread/heap.h>
+#include <openthread/icmp6.h>
+#include <openthread/instance.h>
+#include <openthread/link.h>
+#include <openthread/platform/openthread-system.h>
+#include <openthread/tasklet.h>
+#include <openthread/thread.h>
+#endif // CHIP_ENABLE_OPENTHREAD
 
 using namespace ::chip;
 using namespace ::chip::Inet;
@@ -75,31 +94,57 @@ int main(void)
 {
     int ret = CHIP_ERROR_MAX;
 
+#if CHIP_ENABLE_OPENTHREAD
+    initOtSysEFR();
+#else
     initMcu();
     initBoard();
-
+    efr32RandomInit();
 #if DISPLAY_ENABLED
     initLCD();
 #endif
-
 #if EFR32_LOG_ENABLED
-    if (efr32LogInit() != 0)
-    {
-        appError(ret);
-    }
+    efr32LogInit();
 #endif
+#endif
+
+    mbedtls_platform_set_calloc_free(CHIPPlatformMemoryCalloc, CHIPPlatformMemoryFree);
+
+    // Initialize mbedtls threading support on EFR32
+    THREADING_setup();
 
     EFR32_LOG("==================================================");
     EFR32_LOG("chip-efr32-lock-example starting");
     EFR32_LOG("==================================================");
 
     EFR32_LOG("Init CHIP Stack");
+
+    // Init Chip memory management before the stack
+    chip::Platform::MemoryInit();
+
     ret = PlatformMgr().InitChipStack();
     if (ret != CHIP_NO_ERROR)
     {
         EFR32_LOG("PlatformMgr().InitChipStack() failed");
         appError(ret);
     }
+
+#if CHIP_ENABLE_OPENTHREAD
+    EFR32_LOG("Initializing OpenThread stack");
+    ret = ThreadStackMgr().InitThreadStack();
+    if (ret != CHIP_NO_ERROR)
+    {
+        EFR32_LOG("ThreadStackMgr().InitThreadStack() failed");
+        appError(ret);
+    }
+
+    ret = ConnectivityMgr().SetThreadDeviceType(ConnectivityManager::kThreadDeviceType_Router);
+    if (ret != CHIP_NO_ERROR)
+    {
+        EFR32_LOG("ConnectivityMgr().SetThreadDeviceType() failed");
+        appError(ret);
+    }
+#endif // CHIP_ENABLE_OPENTHREAD
 
     EFR32_LOG("Starting Platform Manager Event Loop");
     ret = PlatformMgr().StartEventLoopTask();
@@ -108,6 +153,18 @@ int main(void)
         EFR32_LOG("PlatformMgr().StartEventLoopTask() failed");
         appError(ret);
     }
+
+#if CHIP_ENABLE_OPENTHREAD
+    EFR32_LOG("Starting OpenThread task");
+
+    // Start OpenThread task
+    ret = ThreadStackMgrImpl().StartThreadTask();
+    if (ret != CHIP_NO_ERROR)
+    {
+        EFR32_LOG("ThreadStackMgr().StartThreadTask() failed");
+        appError(ret);
+    }
+#endif // CHIP_ENABLE_OPENTHREAD
 
     EFR32_LOG("Starting App Task");
     ret = GetAppTask().StartAppTask();
@@ -119,6 +176,8 @@ int main(void)
 
     EFR32_LOG("Starting FreeRTOS scheduler");
     vTaskStartScheduler();
+
+    chip::Platform::MemoryShutdown();
 
     // Should never get here.
     EFR32_LOG("vTaskStartScheduler() failed");

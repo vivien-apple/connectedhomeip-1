@@ -73,6 +73,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <support/CHIPPlatformMemory.h>
+
 #include "lwip/opt.h"
 #include "lwip/stats.h"
 #include "lwip/sys.h"
@@ -133,7 +135,7 @@ static struct sys_thread * introduce_thread(pthread_t id)
 {
     struct sys_thread * thread;
 
-    thread = (struct sys_thread *) malloc(sizeof(struct sys_thread));
+    thread = (struct sys_thread *) CHIPPlatformMemoryAlloc(sizeof(struct sys_thread));
 
     if (thread != NULL)
     {
@@ -179,7 +181,7 @@ static void finish_thread(struct sys_thread * thread)
         }
 
         pthread_mutex_unlock(&threads_mutex);
-        free(thread);
+        CHIPPlatformMemoryFree(thread);
     }
 }
 /*-----------------------------------------------------------------------------------*/
@@ -217,10 +219,8 @@ err_t sys_thread_finish(sys_thread_t t)
         finish_thread(t);
         return ERR_OK;
     }
-    else
-    {
-        return ERR_VAL;
-    }
+
+    return ERR_VAL;
 }
 /*-----------------------------------------------------------------------------------*/
 err_t sys_mbox_new_extra(void * pool, struct sys_mbox ** mb, int size)
@@ -233,7 +233,7 @@ err_t sys_mbox_new(struct sys_mbox ** mb, int size)
     struct sys_mbox * mbox;
     LWIP_UNUSED_ARG(size);
 
-    mbox = (struct sys_mbox *) malloc(sizeof(struct sys_mbox));
+    mbox = (struct sys_mbox *) CHIPPlatformMemoryAlloc(sizeof(struct sys_mbox));
     if (mbox == NULL)
     {
         return ERR_MEM;
@@ -262,7 +262,7 @@ void sys_mbox_free(struct sys_mbox ** mb)
         sys_sem_free_internal(mbox->mutex);
         mbox->not_empty = mbox->not_full = mbox->mutex = NULL;
         /*  LWIP_DEBUGF("sys_mbox_free: mbox 0x%lx\n", mbox); */
-        free(mbox);
+        CHIPPlatformMemoryFree(mbox);
     }
 }
 /*-----------------------------------------------------------------------------------*/
@@ -443,7 +443,7 @@ static struct sys_sem * sys_sem_new_internal(u8_t count)
 {
     struct sys_sem * sem;
 
-    sem = (struct sys_sem *) malloc(sizeof(struct sys_sem));
+    sem = (struct sys_sem *) CHIPPlatformMemoryAlloc(sizeof(struct sys_sem));
     if (sem != NULL)
     {
         sem->c = count;
@@ -490,24 +490,22 @@ static u32_t cond_wait(pthread_cond_t * cond, pthread_mutex_t * mutex, u32_t tim
         {
             return SYS_ARCH_TIMEOUT;
         }
-        else
-        {
-            /* Calculate for how long we waited for the cond. */
-            gettimeofday(&rtime2, NULL);
-            tdiff = (rtime2.tv_sec - rtime1.tv_sec) * 1000 + (rtime2.tv_usec - rtime1.tv_usec) / 1000;
 
-            if (tdiff <= 0)
-            {
-                return 0;
-            }
-            return (u32_t) tdiff;
+        /* Calculate for how long we waited for the cond. */
+        gettimeofday(&rtime2, NULL);
+        tdiff = (rtime2.tv_sec - rtime1.tv_sec) * 1000 + (rtime2.tv_usec - rtime1.tv_usec) / 1000;
+
+        if (tdiff <= 0)
+        {
+            return 0;
         }
+
+        return (u32_t) tdiff;
     }
-    else
-    {
-        pthread_cond_wait(cond, mutex);
-        return 0;
-    }
+
+    pthread_cond_wait(cond, mutex);
+
+    return 0;
 }
 /*-----------------------------------------------------------------------------------*/
 u32_t sys_arch_sem_wait(struct sys_sem ** s, u32_t timeout)
@@ -539,7 +537,7 @@ u32_t sys_arch_sem_wait(struct sys_sem ** s, u32_t timeout)
     }
     sem->c--;
     pthread_mutex_unlock(&(sem->mutex));
-    return (u32_t) time_needed;
+    return time_needed;
 }
 /*-----------------------------------------------------------------------------------*/
 void sys_sem_signal(struct sys_sem ** s)
@@ -564,7 +562,7 @@ static void sys_sem_free_internal(struct sys_sem * sem)
 {
     pthread_cond_destroy(&(sem->cond));
     pthread_mutex_destroy(&(sem->mutex));
-    free(sem);
+    CHIPPlatformMemoryFree(sem);
 }
 /*-----------------------------------------------------------------------------------*/
 void sys_sem_free(struct sys_sem ** sem)
@@ -691,7 +689,7 @@ void ppp_trace(int level, const char * format, ...)
 }
 #endif
 
-#if LWIP_DEBUG
+#ifdef LWIP_DEBUG
 
 unsigned char gLwIP_DebugFlags = 0;
 

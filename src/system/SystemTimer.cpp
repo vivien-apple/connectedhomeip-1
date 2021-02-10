@@ -84,7 +84,7 @@ ObjectPool<Timer, CHIP_SYSTEM_CONFIG_NUM_TIMERS> Timer::sPool;
  *
  *  @return A timestamp in milliseconds.
  */
-Timer::Epoch Timer::GetCurrentEpoch(void)
+Timer::Epoch Timer::GetCurrentEpoch()
 {
     return Platform::Layer::GetClock_MonotonicMS();
 }
@@ -130,7 +130,7 @@ Error Timer::Start(uint32_t aDelayMilliseconds, OnCompleteFunct aOnComplete, voi
 
     this->AppState     = aAppState;
     this->mAwakenEpoch = Timer::GetCurrentEpoch() + static_cast<Epoch>(aDelayMilliseconds);
-    if (!__sync_bool_compare_and_swap(&this->OnComplete, NULL, aOnComplete))
+    if (!__sync_bool_compare_and_swap(&this->OnComplete, nullptr, aOnComplete))
     {
         chipDie();
     }
@@ -169,9 +169,9 @@ Error Timer::Start(uint32_t aDelayMilliseconds, OnCompleteFunct aOnComplete, voi
         lTimer->mNextTimer = this;
     }
 #endif // CHIP_SYSTEM_CONFIG_USE_LWIP
-#if CHIP_SYSTEM_CONFIG_USE_SOCKETS
+#if CHIP_SYSTEM_CONFIG_USE_SOCKETS || CHIP_SYSTEM_CONFIG_USE_NETWORK_FRAMEWORK
     lLayer.WakeSelect();
-#endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS
+#endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS || CHIP_SYSTEM_CONFIG_USE_NETWORK_FRAMEWORK
 
     return CHIP_SYSTEM_NO_ERROR;
 }
@@ -183,7 +183,7 @@ Error Timer::ScheduleWork(OnCompleteFunct aOnComplete, void * aAppState)
 
     this->AppState     = aAppState;
     this->mAwakenEpoch = Timer::GetCurrentEpoch();
-    if (!__sync_bool_compare_and_swap(&this->OnComplete, NULL, aOnComplete))
+    if (!__sync_bool_compare_and_swap(&this->OnComplete, nullptr, aOnComplete))
     {
         chipDie();
     }
@@ -191,9 +191,9 @@ Error Timer::ScheduleWork(OnCompleteFunct aOnComplete, void * aAppState)
 #if CHIP_SYSTEM_CONFIG_USE_LWIP
     err = lLayer.PostEvent(*this, chip::System::kEvent_ScheduleWork, 0);
 #endif // CHIP_SYSTEM_CONFIG_USE_LWIP
-#if CHIP_SYSTEM_CONFIG_USE_SOCKETS
+#if CHIP_SYSTEM_CONFIG_USE_SOCKETS || CHIP_SYSTEM_CONFIG_USE_NETWORK_FRAMEWORK
     lLayer.WakeSelect();
-#endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS
+#endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS || CHIP_SYSTEM_CONFIG_USE_NETWORK_FRAMEWORK
 
     return err;
 }
@@ -211,12 +211,12 @@ Error Timer::Cancel()
     OnCompleteFunct lOnComplete = this->OnComplete;
 
     // Check if the timer is armed
-    VerifyOrExit(lOnComplete != NULL, );
+    VerifyOrExit(lOnComplete != nullptr, );
     // Atomically disarm if the value has not changed
-    VerifyOrExit(__sync_bool_compare_and_swap(&this->OnComplete, lOnComplete, NULL), );
+    VerifyOrExit(__sync_bool_compare_and_swap(&this->OnComplete, lOnComplete, nullptr), );
 
     // Since this thread changed the state of OnComplete, release the timer.
-    this->AppState = NULL;
+    this->AppState = nullptr;
 
 #if CHIP_SYSTEM_CONFIG_USE_LWIP
     if (lLayer.mTimerList)
@@ -261,16 +261,16 @@ void Timer::HandleComplete()
     void * lAppState                  = this->AppState;
 
     // Check if timer is armed
-    VerifyOrExit(lOnComplete != NULL, );
+    VerifyOrExit(lOnComplete != nullptr, );
     // Atomically disarm if the value has not changed.
-    VerifyOrExit(__sync_bool_compare_and_swap(&this->OnComplete, lOnComplete, NULL), );
+    VerifyOrExit(__sync_bool_compare_and_swap(&this->OnComplete, lOnComplete, nullptr), );
 
     // Since this thread changed the state of OnComplete, release the timer.
-    AppState = NULL;
+    AppState = nullptr;
     this->Release();
 
     // Invoke the app's callback, if it's still valid.
-    if (lOnComplete != NULL)
+    if (lOnComplete != nullptr)
         lOnComplete(&lLayer, lAppState, CHIP_SYSTEM_NO_ERROR);
 
 exit:

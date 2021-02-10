@@ -23,18 +23,18 @@
  *
  */
 
-#ifndef __SECURESESSION_H__
-#define __SECURESESSION_H__
+#pragma once
 
 #include <core/CHIPCore.h>
-#include <transport/MessageHeader.h>
+#include <crypto/CHIPCryptoPAL.h>
+#include <transport/raw/MessageHeader.h>
 
 namespace chip {
 
 class DLL_EXPORT SecureSession
 {
 public:
-    SecureSession(void);
+    SecureSession();
     SecureSession(SecureSession &&)      = default;
     SecureSession(const SecureSession &) = default;
     SecureSession & operator=(const SecureSession &) = default;
@@ -45,15 +45,32 @@ public:
      *   Derive a shared key. The derived key will be used for encryting/decrypting
      *   data exchanged on the secure channel.
      *
+     * @param local_keypair      A pointer to local ECP keypair
      * @param remote_public_key  A pointer to peer's public key
-     * @param public_key_length  Length of remote_public_key
-     * @param local_private_key  A pointer to local private key
-     * @param private_key_length Length of local_private_key
+     * @param salt               A pointer to the initial salt used for deriving the keys
+     * @param salt_length        Length of the initial salt
+     * @param info               A pointer to the initial info
+     * @param info_length        Length of the initial info
      * @return CHIP_ERROR        The result of key derivation
      */
-    CHIP_ERROR Init(const unsigned char * remote_public_key, const size_t public_key_length,
-                    const unsigned char * local_private_key, const size_t private_key_length, const unsigned char * salt,
-                    const size_t salt_length, const unsigned char * info, const size_t info_length);
+    CHIP_ERROR Init(const Crypto::P256Keypair & local_keypair, const Crypto::P256PublicKey & remote_public_key,
+                    const uint8_t * salt, size_t salt_length, const uint8_t * info, size_t info_length);
+
+    /**
+     * @brief
+     *   Derive a shared key. The derived key will be used for encryting/decrypting
+     *   data exchanged on the secure channel.
+     *
+     * @param secret             A pointer to the shared secret
+     * @param secret_length      Length of the shared secret
+     * @param salt               A pointer to the initial salt used for deriving the keys
+     * @param salt_length        Length of the initial salt
+     * @param info               A pointer to the initial info
+     * @param info_length        Length of the initial info
+     * @return CHIP_ERROR        The result of key derivation
+     */
+    CHIP_ERROR InitFromSecret(const uint8_t * secret, size_t secret_length, const uint8_t * salt, size_t salt_length,
+                              const uint8_t * info, size_t info_length);
 
     /**
      * @brief
@@ -62,10 +79,13 @@ public:
      * @param input Unencrypted input data
      * @param input_length Length of the input data
      * @param output Output buffer for encrypted data
-     * @param header message header structure
+     * @param header message header structure. Encryption type will be set on the header.
+     * @param mac - output the resulting mac
+     *
      * @return CHIP_ERROR The result of encryption
      */
-    CHIP_ERROR Encrypt(const unsigned char * input, size_t input_length, unsigned char * output, MessageHeader & header);
+    CHIP_ERROR Encrypt(const uint8_t * input, size_t input_length, uint8_t * output, PacketHeader & header,
+                       MessageAuthenticationCode & mac);
 
     /**
      * @brief
@@ -76,8 +96,10 @@ public:
      * @param output Output buffer for decrypted data
      * @param header message header structure
      * @return CHIP_ERROR The result of decryption
+     * @param mac Input mac
      */
-    CHIP_ERROR Decrypt(const unsigned char * input, size_t input_length, unsigned char * output, const MessageHeader & header);
+    CHIP_ERROR Decrypt(const uint8_t * input, size_t input_length, uint8_t * output, const PacketHeader & header,
+                       const MessageAuthenticationCode & mac);
 
     /**
      * @brief
@@ -86,37 +108,25 @@ public:
      *
      * @return number of bytes.
      */
-    size_t EncryptionOverhead(void);
+    size_t EncryptionOverhead();
 
     /**
      * Clears the internal state of secure session back to the state of a new object.
      */
-    void Reset(void);
-
-    /**
-     * @brief
-     *   The keypair for the secure channel. This is a utility function that will be used
-     *   until we have automatic key exchange in place. The function is useful only for
-     *   example applications for now. It will eventually be removed.
-     *
-     * @param remote_public_key  A pointer to peer's public key
-     * @param public_key_length  Length of remote_public_key
-     * @param local_private_key  A pointer to local private key
-     * @param private_key_length Length of local_private_key
-     * @return CHIP_ERROR        The result of key derivation
-     */
-    [[deprecated("Available until actual key exchange is implemented")]] CHIP_ERROR
-    TemporaryManualKeyExchange(const unsigned char * remote_public_key, const size_t public_key_length,
-                               const unsigned char * local_private_key, const size_t private_key_length);
+    void Reset();
 
 private:
     static constexpr size_t kAES_CCM128_Key_Length = 16;
 
     bool mKeyAvailable;
-    uint64_t mNextIV;
     uint8_t mKey[kAES_CCM128_Key_Length];
+
+    static CHIP_ERROR GetIV(const PacketHeader & header, uint8_t * iv, size_t len);
+
+    // Use unencrypted header as additional authenticated data (AAD) during encryption and decryption.
+    // The encryption operations includes AAD when message authentication tag is generated. This tag
+    // is used at the time of decryption to integrity check the received data.
+    static CHIP_ERROR GetAdditionalAuthData(const PacketHeader & header, uint8_t * aad, uint16_t & len);
 };
 
 } // namespace chip
-
-#endif // __SECURESESSION_H__

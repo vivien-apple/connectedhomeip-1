@@ -23,8 +23,9 @@
  *
  */
 
-#ifndef INETARGPARSER_H_
-#define INETARGPARSER_H_
+#pragma once
+
+#include <core/CHIPConfig.h>
 
 #if CHIP_CONFIG_ENABLE_ARG_PARSER
 
@@ -41,5 +42,3 @@ bool ParseIPAddress(const char * str, chip::Inet::IPAddress & output);
 } // namespace chip
 
 #endif // CHIP_CONFIG_ENABLE_ARG_PARSER
-
-#endif // INETARGPARSER_H_

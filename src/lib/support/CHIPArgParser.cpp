@@ -43,6 +43,11 @@
 #include <stdarg.h>
 #include <stdint.h>
 #include <string.h>
+#include <strings.h>
+#include <support/SafeInt.h>
+
+#include <support/CHIPMem.h>
+#include <support/CHIPMemString.h>
 
 /*
  * TODO: Revisit these if and when fabric ID and node ID support has
@@ -63,7 +68,7 @@ using namespace chip;
 
 static char * MakeShortOptions(OptionSet ** optSets);
 static struct option * MakeLongOptions(OptionSet ** optSets);
-static int32_t SplitArgs(char * argStr, char **& argList, char * initialArg = NULL);
+static int32_t SplitArgs(char * argStr, char **& argList, char * initialArg = nullptr);
 static bool GetNextArg(char *& parsePoint);
 static size_t CountOptionSets(OptionSet * optSets[]);
 static size_t CountAllOptions(OptionSet * optSets[]);
@@ -80,7 +85,7 @@ static bool HelpTextContainsShortOption(char optChar, const char * helpText);
 
 static inline bool IsShortOptionChar(int ch)
 {
-    return isascii(ch) && isgraph(ch);
+    return isgraph(ch);
 }
 
 /**
@@ -90,7 +95,7 @@ static inline bool IsShortOptionChar(int ch)
  * @details
  * This value will be NULL when no call to ParseArgs() is in progress.
  */
-OptionSet ** gActiveOptionSets = NULL;
+OptionSet ** gActiveOptionSets = nullptr;
 
 /**
  * @brief
@@ -285,15 +290,15 @@ bool ParseArgs(const char * progName, int argc, char * argv[], OptionSet * optSe
     bool res = false;
     char optName[64];
     char * optArg;
-    char * shortOpts         = NULL;
-    struct option * longOpts = NULL;
+    char * shortOpts         = nullptr;
+    struct option * longOpts = nullptr;
     OptionSet * curOptSet;
     OptionDef * curOpt;
     bool handlerRes;
 
     // The getopt() functions do not support recursion, so exit immediately with an
     // error if called recursively.
-    if (gActiveOptionSets != NULL)
+    if (gActiveOptionSets != nullptr)
     {
         PrintArgError("INTERNAL ERROR: ParseArgs() called recursively\n", progName);
         return false;
@@ -301,7 +306,7 @@ bool ParseArgs(const char * progName, int argc, char * argv[], OptionSet * optSe
 
     // The C standard mandates that argv[argc] == NULL and certain versions of getopt() require this
     // to function properly.  So fail if this is not true.
-    if (argv[argc] != NULL)
+    if (argv[argc] != nullptr)
     {
         PrintArgError("INTERNAL ERROR: argv[argc] != NULL\n", progName);
         return false;
@@ -317,7 +322,7 @@ bool ParseArgs(const char * progName, int argc, char * argv[], OptionSet * optSe
 
     // Generate a short options string in the format expected by getopt_long().
     shortOpts = MakeShortOptions(optSets);
-    if (shortOpts == NULL)
+    if (shortOpts == nullptr)
     {
         PrintArgError("%s: Memory allocation failure\n", progName);
         goto done;
@@ -325,7 +330,7 @@ bool ParseArgs(const char * progName, int argc, char * argv[], OptionSet * optSe
 
     // Generate a list of long option structures in the format expected by getopt_long().
     longOpts = MakeLongOptions(optSets);
-    if (longOpts == NULL)
+    if (longOpts == nullptr)
     {
         PrintArgError("%s: Memory allocation failure\n", progName);
         goto done;
@@ -341,7 +346,7 @@ bool ParseArgs(const char * progName, int argc, char * argv[], OptionSet * optSe
         int optIndex = -1;
 
         // Attempt to match the current option argument (argv[optind]) against the defined long and short options.
-        optarg = NULL;
+        optarg = nullptr;
         optopt = 0;
         id     = getopt_long(argc, argv, shortOpts, longOpts, &optIndex);
 
@@ -395,7 +400,7 @@ bool ParseArgs(const char * progName, int argc, char * argv[], OptionSet * optSe
 
         // Prevent handlers from inadvertently using the getopt global optarg.
         optArg = optarg;
-        optarg = NULL;
+        optarg = nullptr;
 
         // Call the option handler function defined for the matching option set.
         // Exit immediately if the option handler failed.
@@ -405,7 +410,7 @@ bool ParseArgs(const char * progName, int argc, char * argv[], OptionSet * optSe
     }
 
     // If supplied, call the non-option argument handler with the remaining arguments (if any).
-    if (nonOptArgHandler != NULL)
+    if (nonOptArgHandler != nullptr)
     {
         if (!nonOptArgHandler(progName, argc - optind, argv + optind))
             goto done;
@@ -422,12 +427,12 @@ bool ParseArgs(const char * progName, int argc, char * argv[], OptionSet * optSe
 
 done:
 
-    if (shortOpts != NULL)
-        free(shortOpts);
-    if (longOpts != NULL)
-        free(longOpts);
+    if (shortOpts != nullptr)
+        chip::Platform::MemoryFree(shortOpts);
+    if (longOpts != nullptr)
+        chip::Platform::MemoryFree(longOpts);
 
-    gActiveOptionSets = NULL;
+    gActiveOptionSets = nullptr;
 
     return res;
 }
@@ -439,7 +444,7 @@ bool ParseArgs(const char * progName, int argc, char * argv[], OptionSet * optSe
 
 bool ParseArgs(const char * progName, int argc, char * argv[], OptionSet * optSets[])
 {
-    return ParseArgs(progName, argc, argv, optSets, NULL, false);
+    return ParseArgs(progName, argc, argv, optSets, nullptr, false);
 }
 
 /**
@@ -488,30 +493,27 @@ bool ParseArgs(const char * progName, int argc, char * argv[], OptionSet * optSe
 bool ParseArgsFromString(const char * progName, const char * argStr, OptionSet * optSets[],
                          NonOptionArgHandlerFunct nonOptArgHandler, bool ignoreUnknown)
 {
-    char * argStrCopy = NULL;
-    char ** argv      = NULL;
+    char ** argv = nullptr;
     int argc;
     bool res;
 
-    argStrCopy = strdup(argStr);
-    if (argStrCopy == NULL)
+    chip::Platform::ScopedMemoryString argStrCopy(argStr, strlen(argStr));
+    if (!argStrCopy)
     {
         PrintArgError("%s: Memory allocation failure\n", progName);
         return false;
     }
 
-    argc = SplitArgs(argStrCopy, argv, (char *) progName);
+    argc = SplitArgs(argStrCopy.Get(), argv, const_cast<char *>(progName));
     if (argc < 0)
     {
         PrintArgError("%s: Memory allocation failure\n", progName);
-        free(argStrCopy);
         return false;
     }
 
     res = ParseArgs(progName, argc, argv, optSets, nonOptArgHandler, ignoreUnknown);
 
-    free(argStrCopy);
-    free(argv);
+    chip::Platform::MemoryFree(argv);
 
     return res;
 }
@@ -524,7 +526,7 @@ bool ParseArgsFromString(const char * progName, const char * argStr, OptionSet *
 
 bool ParseArgsFromString(const char * progName, const char * argStr, OptionSet * optSets[])
 {
-    return ParseArgsFromString(progName, argStr, optSets, NULL, false);
+    return ParseArgsFromString(progName, argStr, optSets, nullptr, false);
 }
 
 /**
@@ -559,14 +561,14 @@ bool ParseArgsFromEnvVar(const char * progName, const char * varName, OptionSet 
                          NonOptionArgHandlerFunct nonOptArgHandler, bool ignoreUnknown)
 {
     const char * argStr = getenv(varName);
-    if (argStr == NULL)
+    if (argStr == nullptr)
         return true;
     return ParseArgsFromString(progName, argStr, optSets, nonOptArgHandler, ignoreUnknown);
 }
 
 bool ParseArgsFromEnvVar(const char * progName, const char * varName, OptionSet * optSets[])
 {
-    return ParseArgsFromEnvVar(progName, varName, optSets, NULL, false);
+    return ParseArgsFromEnvVar(progName, varName, optSets, nullptr, false);
 }
 
 bool ParseArgsFromEnvVar(const char * progName, const char * varName, OptionSet * optSets[],
@@ -588,27 +590,27 @@ void PrintOptionHelp(OptionSet * optSets[], FILE * s)
 {
     // Get a list of the unique help group names for the given option sets.
     const char ** helpGroupNames = MakeUniqueHelpGroupNamesList(optSets);
-    if (helpGroupNames == NULL)
+    if (helpGroupNames == nullptr)
     {
         PrintArgError("Memory allocation failure\n");
         return;
     }
 
     // For each help group...
-    for (size_t nameIndex = 0; helpGroupNames[nameIndex] != NULL; nameIndex++)
+    for (size_t nameIndex = 0; helpGroupNames[nameIndex] != nullptr; nameIndex++)
     {
         // Print the group name.
         PutStringWithBlankLine(s, helpGroupNames[nameIndex]);
 
         // Print the option help text for all options that have the same group name.
-        for (size_t optSetIndex = 0; optSets[optSetIndex] != NULL; optSetIndex++)
+        for (size_t optSetIndex = 0; optSets[optSetIndex] != nullptr; optSetIndex++)
             if (strcasecmp(helpGroupNames[nameIndex], optSets[optSetIndex]->HelpGroupName) == 0)
             {
                 PutStringWithBlankLine(s, optSets[optSetIndex]->OptionHelp);
             }
     }
 
-    free(helpGroupNames);
+    chip::Platform::MemoryFree(helpGroupNames);
 }
 
 /**
@@ -712,9 +714,13 @@ bool ParseInt(const char * str, uint32_t & output, int base)
     char * parseEnd;
     unsigned long v;
 
-    errno  = 0;
-    v      = strtoul(str, &parseEnd, base);
-    output = v;
+    errno = 0;
+    v     = strtoul(str, &parseEnd, base);
+    if (!CanCastTo<uint32_t>(v))
+    {
+        return false;
+    }
+    output = static_cast<uint32_t>(v);
 
     return parseEnd > str && *parseEnd == 0 && (v != ULONG_MAX || errno == 0);
 }
@@ -740,9 +746,13 @@ bool ParseInt(const char * str, int32_t & output, int base)
     char * parseEnd;
     long v;
 
-    errno  = 0;
-    v      = strtol(str, &parseEnd, base);
-    output = v;
+    errno = 0;
+    v     = strtol(str, &parseEnd, base);
+    if (!CanCastTo<int32_t>(v))
+    {
+        return false;
+    }
+    output = static_cast<int32_t>(v);
 
     return parseEnd > str && *parseEnd == 0 && ((v != LONG_MIN && v != LONG_MAX) || errno == 0);
 }
@@ -849,7 +859,7 @@ bool ParseInt(const char * str, int16_t & output)
 
     if ((ParseInt(str, output32, base)) && (output32 <= SHRT_MAX))
     {
-        output = ((1 << 16) - 1) & output32;
+        output = static_cast<int16_t>(UINT16_MAX & output32);
         return true;
     }
 
@@ -1007,10 +1017,10 @@ bool ParseSubnetId(const char * str, uint16_t & subnetId)
  */
 bool ParseHexString(const char * hexStr, uint32_t strLen, uint8_t * outBuf, uint32_t outBufSize, uint32_t & outDataLen)
 {
-    bool isFirstNibble = true;
-    uint8_t firstNibbleVal;
-    const char * p   = hexStr;
-    uint32_t dataLen = 0;
+    bool isFirstNibble     = true;
+    uint8_t firstNibbleVal = 0;
+    const char * p         = hexStr;
+    uint32_t dataLen       = 0;
 
     outDataLen = 0;
 
@@ -1022,18 +1032,18 @@ bool ParseHexString(const char * hexStr, uint32_t strLen, uint8_t * outBuf, uint
         if (c == 0)
             break;
         if (c >= '0' && c <= '9')
-            nibbleVal = c - '0';
+            nibbleVal = static_cast<uint8_t>(c - '0');
         else if (c >= 'a' && c <= 'f')
-            nibbleVal = 10 + (c - 'a');
+            nibbleVal = static_cast<uint8_t>(10 + (c - 'a'));
         else if (c >= 'A' && c <= 'F')
-            nibbleVal = 10 + (c - 'A');
+            nibbleVal = static_cast<uint8_t>(10 + (c - 'A'));
         else if (isspace(c))
             continue;
         else if (isFirstNibble && (c == ':' || c == ';' || c == ',' || c == '.' || c == '-'))
             continue;
         else
         {
-            outDataLen = p - hexStr;
+            outDataLen = static_cast<decltype(strLen)>(p - hexStr);
             return false;
         }
 
@@ -1050,7 +1060,7 @@ bool ParseHexString(const char * hexStr, uint32_t strLen, uint8_t * outBuf, uint
                 return false;
             }
 
-            *outBuf = firstNibbleVal << 4 | nibbleVal;
+            *outBuf = static_cast<uint8_t>(firstNibbleVal << 4 | nibbleVal);
 
             outBuf++;
             outBufSize--;
@@ -1062,7 +1072,7 @@ bool ParseHexString(const char * hexStr, uint32_t strLen, uint8_t * outBuf, uint
 
     if (!isFirstNibble)
     {
-        outDataLen = p - hexStr;
+        outDataLen = static_cast<decltype(strLen)>(p - hexStr);
         return false;
     }
 
@@ -1074,10 +1084,8 @@ bool ParseHexString(const char * hexStr, uint32_t strLen, uint8_t * outBuf, uint
 // ===== HelpOptions Methods =====
 
 HelpOptions::HelpOptions(const char * appName, const char * appUsage, const char * appVersion) :
-    HelpOptions(appName, appUsage, appVersion, NULL)
-{
-    return;
-}
+    HelpOptions(appName, appUsage, appVersion, nullptr)
+{}
 
 HelpOptions::HelpOptions(const char * appName, const char * appUsage, const char * appVersion, const char * appDesc)
 {
@@ -1121,7 +1129,7 @@ void HelpOptions::PrintBriefUsage(FILE * s)
 void HelpOptions::PrintLongUsage(OptionSet ** optSets, FILE * s)
 {
     PutStringWithBlankLine(s, AppUsage);
-    if (AppDesc != NULL)
+    if (AppDesc != nullptr)
     {
         PutStringWithBlankLine(s, AppDesc);
     }
@@ -1131,7 +1139,7 @@ void HelpOptions::PrintLongUsage(OptionSet ** optSets, FILE * s)
 void HelpOptions::PrintVersion(FILE * s)
 {
     fprintf(s, "%s ", AppName);
-    PutStringWithNewLine(s, (AppVersion != NULL) ? AppVersion : "(unknown version)");
+    PutStringWithNewLine(s, (AppVersion != nullptr) ? AppVersion : "(unknown version)");
 }
 
 bool HelpOptions::HandleOption(const char * progName, OptionSet * optSet, int id, const char * name, const char * arg)
@@ -1177,26 +1185,26 @@ static char * MakeShortOptions(OptionSet ** optSets)
     // The buffer needs to be big enough to hold up to 3 characters per short option plus an initial
     // ":" and a terminating null.
     size_t arraySize = 2 + (totalOptions * 3);
-    char * shortOpts = (char *) malloc(arraySize);
-    if (shortOpts == NULL)
-        return NULL;
+    char * shortOpts = static_cast<char *>(chip::Platform::MemoryAlloc(arraySize));
+    if (shortOpts == nullptr)
+        return nullptr;
 
     // Prefix the string with ':'.  This tells getopt() to signal missing option arguments distinct
     // from unknown options.
     shortOpts[i++] = ':';
 
     // For each option set...
-    for (; *optSets != NULL; optSets++)
+    for (; *optSets != nullptr; optSets++)
     {
         // For each option in the current option set...
-        for (OptionDef * optDef = (*optSets)->OptionDefs; optDef->Name != NULL; optDef++)
+        for (OptionDef * optDef = (*optSets)->OptionDefs; optDef->Name != nullptr; optDef++)
         {
             // If the option id (val) is suitable as a short option character, add it to the short
             // option string. Append ":" if the option requires an argument and "::" if the argument
             // is optional.
             if (IsShortOptionChar(optDef->Id))
             {
-                shortOpts[i++] = (char) optDef->Id;
+                shortOpts[i++] = static_cast<char>(optDef->Id);
                 if (optDef->ArgType != kNoArgument)
                     shortOpts[i++] = ':';
                 if (optDef->ArgType == kArgumentOptional)
@@ -1217,27 +1225,27 @@ static struct option * MakeLongOptions(OptionSet ** optSets)
 
     // Allocate an array to hold the list of long options.
     size_t arraySize         = (sizeof(struct option) * (totalOptions + 1));
-    struct option * longOpts = (struct option *) malloc(arraySize);
-    if (longOpts == NULL)
-        return NULL;
+    struct option * longOpts = static_cast<struct option *>(chip::Platform::MemoryAlloc(arraySize));
+    if (longOpts == nullptr)
+        return nullptr;
 
     // For each option set...
     size_t i = 0;
-    for (; *optSets != NULL; optSets++)
+    for (; *optSets != nullptr; optSets++)
     {
         // Copy the option definitions into the long options array.
-        for (OptionDef * optDef = (*optSets)->OptionDefs; optDef->Name != NULL; optDef++)
+        for (OptionDef * optDef = (*optSets)->OptionDefs; optDef->Name != nullptr; optDef++)
         {
             longOpts[i].name    = optDef->Name;
-            longOpts[i].has_arg = (int) optDef->ArgType;
-            longOpts[i].flag    = NULL;
+            longOpts[i].has_arg = static_cast<int>(optDef->ArgType);
+            longOpts[i].flag    = nullptr;
             longOpts[i].val     = optDef->Id;
             i++;
         }
     }
 
     // Terminate the long options array.
-    longOpts[i].name = NULL;
+    longOpts[i].name = nullptr;
 
     return longOpts;
 }
@@ -1248,19 +1256,19 @@ static int32_t SplitArgs(char * argStr, char **& argList, char * initialArg)
     {
         InitialArgListSize = 10
     };
-    int32_t argListSize = 0;
-    int32_t argCount    = 0;
+    size_t argListSize = 0;
+    int32_t argCount   = 0;
 
     // Allocate an array to hold pointers to the arguments.
-    argList = (char **) malloc(sizeof(char *) * InitialArgListSize);
-    if (argList == NULL)
+    argList = static_cast<char **>(chip::Platform::MemoryAlloc(sizeof(char *) * InitialArgListSize));
+    if (argList == nullptr)
         return -1;
     argListSize = InitialArgListSize;
 
     // If an initial argument was supplied, make it the first argument in the array.
-    if (initialArg != NULL)
+    if (initialArg != nullptr)
     {
-        argList[0] = (char *) initialArg;
+        argList[0] = initialArg;
         argCount   = 1;
     }
 
@@ -1275,11 +1283,11 @@ static int32_t SplitArgs(char * argStr, char **& argList, char * initialArg)
 
         // Grow the arg list array if needed. Note that we reserve one slot at the end of the array
         // for a NULL entry.
-        if (argListSize == argCount + 1)
+        if (argListSize == static_cast<size_t>(argCount + 1))
         {
             argListSize *= 2;
-            argList = (char **) realloc(argList, argListSize);
-            if (argList == NULL)
+            argList = static_cast<char **>(chip::Platform::MemoryRealloc(argList, argListSize));
+            if (argList == nullptr)
                 return -1;
         }
 
@@ -1289,7 +1297,7 @@ static int32_t SplitArgs(char * argStr, char **& argList, char * initialArg)
 
     // Set the last element in the array to NULL, but do not include this in the count of elements.
     // This is mandated by the C standard and some versions of getopt_long() depend on it.
-    argList[argCount] = NULL;
+    argList[argCount] = nullptr;
 
     return argCount;
 }
@@ -1364,7 +1372,7 @@ static bool GetNextArg(char *& parsePoint)
 static size_t CountOptionSets(OptionSet ** optSets)
 {
     size_t count = 0;
-    for (; *optSets != NULL; optSets++)
+    for (; *optSets != nullptr; optSets++)
         count++;
     return count;
 }
@@ -1372,30 +1380,30 @@ static size_t CountOptionSets(OptionSet ** optSets)
 static size_t CountAllOptions(OptionSet ** optSets)
 {
     size_t count = 0;
-    for (; *optSets != NULL; optSets++)
-        for (OptionDef * optDef = (*optSets)->OptionDefs; optDef->Name != NULL; optDef++)
+    for (; *optSets != nullptr; optSets++)
+        for (OptionDef * optDef = (*optSets)->OptionDefs; optDef->Name != nullptr; optDef++)
             count++;
     return count;
 }
 
 static void FindOptionByIndex(OptionSet ** optSets, int optIndex, OptionSet *& optSet, OptionDef *& optDef)
 {
-    for (optSet = *optSets; optSet != NULL; optSet = *++optSets)
-        for (optDef = (*optSets)->OptionDefs; optDef->Name != NULL; optDef++)
+    for (optSet = *optSets; optSet != nullptr; optSet = *++optSets)
+        for (optDef = (*optSets)->OptionDefs; optDef->Name != nullptr; optDef++)
             if (optIndex-- == 0)
                 return;
-    optSet = NULL;
-    optDef = NULL;
+    optSet = nullptr;
+    optDef = nullptr;
 }
 
 static void FindOptionById(OptionSet ** optSets, int optId, OptionSet *& optSet, OptionDef *& optDef)
 {
-    for (optSet = *optSets; optSet != NULL; optSet = *++optSets)
-        for (optDef = (*optSets)->OptionDefs; optDef->Name != NULL; optDef++)
+    for (optSet = *optSets; optSet != nullptr; optSet = *++optSets)
+        for (optDef = (*optSets)->OptionDefs; optDef->Name != nullptr; optDef++)
             if (optDef->Id == optId)
                 return;
-    optSet = NULL;
-    optDef = NULL;
+    optSet = nullptr;
+    optDef = nullptr;
 }
 
 static const char ** MakeUniqueHelpGroupNamesList(OptionSet * optSets[])
@@ -1403,13 +1411,13 @@ static const char ** MakeUniqueHelpGroupNamesList(OptionSet * optSets[])
     size_t numOptSets = CountOptionSets(optSets);
     size_t numGroups  = 0;
 
-    const char ** groupNames = (const char **) malloc(sizeof(const char *) * (numOptSets + 1));
-    if (groupNames == NULL)
-        return NULL;
+    const char ** groupNames = static_cast<const char **>(chip::Platform::MemoryAlloc(sizeof(const char *) * (numOptSets + 1)));
+    if (groupNames == nullptr)
+        return nullptr;
 
     for (size_t optSetIndex = 0; optSetIndex < numOptSets; optSetIndex++)
     {
-        if (optSets[optSetIndex] != NULL && optSets[optSetIndex]->OptionDefs[0].Name != NULL)
+        if (optSets[optSetIndex] != nullptr && optSets[optSetIndex]->OptionDefs[0].Name != nullptr)
         {
             for (size_t i = 0; i < numGroups; i++)
                 if (strcasecmp(groupNames[i], optSets[optSetIndex]->HelpGroupName) == 0)
@@ -1419,7 +1427,7 @@ static const char ** MakeUniqueHelpGroupNamesList(OptionSet * optSets[])
         }
     }
 
-    groupNames[numGroups] = NULL;
+    groupNames[numGroups] = nullptr;
 
     return groupNames;
 }
@@ -1449,9 +1457,9 @@ static bool SanityCheckOptions(OptionSet * optSets[])
     bool res = true;
 
     // Verify OptionHandler pointer
-    for (OptionSet ** optSetP = optSets; *optSetP != NULL; optSetP++)
+    for (OptionSet ** optSetP = optSets; *optSetP != nullptr; optSetP++)
     {
-        if ((*optSetP)->OptionHandler == NULL)
+        if ((*optSetP)->OptionHandler == nullptr)
         {
             PrintArgError("INTERNAL ERROR: Null OptionHandler in OptionSet (%s)\n", (*optSetP)->HelpGroupName);
             res = false;
@@ -1461,14 +1469,14 @@ static bool SanityCheckOptions(OptionSet * optSets[])
     // Verify that no two option sets use the same short option character.
     // (Re-use of the same short option character is allowed within a single option set
     // to allow for aliasing of long options).
-    for (OptionSet ** optSetP = optSets; *optSetP != NULL; optSetP++)
-        for (OptionDef * optionDef = (*optSetP)->OptionDefs; optionDef->Name != NULL; optionDef++)
+    for (OptionSet ** optSetP = optSets; *optSetP != nullptr; optSetP++)
+        for (OptionDef * optionDef = (*optSetP)->OptionDefs; optionDef->Name != nullptr; optionDef++)
             if (IsShortOptionChar(optionDef->Id))
             {
-                for (OptionSet ** optSetP2 = optSets; *optSetP2 != NULL; optSetP2++)
+                for (OptionSet ** optSetP2 = optSets; *optSetP2 != nullptr; optSetP2++)
                     if (optSetP2 != optSetP)
                     {
-                        for (OptionDef * optionDef2 = (*optSetP2)->OptionDefs; optionDef2->Name != NULL; optionDef2++)
+                        for (OptionDef * optionDef2 = (*optSetP2)->OptionDefs; optionDef2->Name != nullptr; optionDef2++)
                             if (optionDef->Id == optionDef2->Id)
                             {
                                 PrintArgError("INTERNAL ERROR: Multiple command line options configured to use "
@@ -1481,8 +1489,8 @@ static bool SanityCheckOptions(OptionSet * optSets[])
 
     // Fail if the option help texts do not contain a description for each option, including both
     // the option's long and short forms.
-    for (OptionSet ** optSetP = optSets; *optSetP != NULL; optSetP++)
-        for (OptionDef * optionDef = (*optSetP)->OptionDefs; optionDef->Name != NULL; optionDef++)
+    for (OptionSet ** optSetP = optSets; *optSetP != nullptr; optSetP++)
+        for (OptionDef * optionDef = (*optSetP)->OptionDefs; optionDef->Name != nullptr; optionDef++)
         {
             if (!HelpTextContainsLongOption(optionDef->Name, (*optSetP)->OptionHelp))
             {
@@ -1490,7 +1498,8 @@ static bool SanityCheckOptions(OptionSet * optSets[])
                 res = false;
             }
 
-            if (IsShortOptionChar(optionDef->Id) && !HelpTextContainsShortOption(optionDef->Id, (*optSetP)->OptionHelp))
+            if (IsShortOptionChar(optionDef->Id) &&
+                !HelpTextContainsShortOption(static_cast<char>(optionDef->Id), (*optSetP)->OptionHelp))
             {
                 PrintArgError("INTERNAL ERROR: No help text defined for option: -%c\n", optionDef->Id);
                 res = false;
@@ -1504,7 +1513,7 @@ static bool HelpTextContainsLongOption(const char * optName, const char * helpTe
 {
     size_t nameLen = strlen(optName);
 
-    for (const char * p = helpText; (p = strstr(p, optName)) != NULL; p += nameLen)
+    for (const char * p = helpText; (p = strstr(p, optName)) != nullptr; p += nameLen)
         if ((p - helpText) >= 2 && p[-1] == '-' && p[-2] == '-' && !isalnum(p[nameLen]) && p[nameLen] != '-')
             return true;
 
@@ -1518,7 +1527,7 @@ static bool HelpTextContainsShortOption(char optChar, const char * helpText)
     optStr[1] = optChar;
     optStr[2] = 0;
 
-    for (const char * p = helpText; (p = strstr(p, optStr)) != NULL; p += 2)
+    for (const char * p = helpText; (p = strstr(p, optStr)) != nullptr; p += 2)
         if ((p == helpText || (!isalnum(p[-1]) && p[-1] != '-')) && !isalnum(p[2]) && p[2] != '-')
             return true;
 

@@ -33,7 +33,7 @@
 #endif // CHIP_SHELL_PROMPT
 
 #ifndef CHIP_SHELL_MAX_MODULES
-#define CHIP_SHELL_MAX_MODULES 4
+#define CHIP_SHELL_MAX_MODULES 10
 #endif // CHIP_SHELL_MAX_MODULES
 
 #ifndef CHIP_SHELL_MAX_LINE_SIZE
@@ -46,9 +46,6 @@
 
 namespace chip {
 namespace Shell {
-
-/// Counts number of elements inside the array
-#define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
 
 /**
  * Callback to execute an individual shell command.
@@ -124,7 +121,6 @@ public:
      *
      * @param on_command            An iterator callback to be called for each command.
      * @param arg                   A context variable to be passed to each command iterated.
-     * @param streamer              The streamer to write shell output to.
      */
     void ForEachCommand(shell_command_iterator_t * on_command, void * arg);
 

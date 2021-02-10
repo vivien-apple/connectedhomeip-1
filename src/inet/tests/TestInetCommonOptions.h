@@ -23,8 +23,7 @@
  *
  */
 
-#ifndef CHIP_TEST_INET_COMMON_OPTIONS_H_
-#define CHIP_TEST_INET_COMMON_OPTIONS_H_
+#pragma once
 
 #include <vector>
 
@@ -73,7 +72,7 @@ public:
 
     NetworkOptions();
 
-    virtual bool HandleOption(const char * progName, OptionSet * optSet, int id, const char * name, const char * arg);
+    bool HandleOption(const char * progName, OptionSet * optSet, int id, const char * name, const char * arg) override;
 };
 
 extern NetworkOptions gNetworkOptions;
@@ -91,8 +90,7 @@ public:
 
     FaultInjectionOptions();
 
-    virtual bool HandleOption(const char * progName, OptionSet * optSet, int id, const char * name, const char * arg);
+    bool HandleOption(const char * progName, OptionSet * optSet, int id, const char * name, const char * arg) override;
 };
 
 extern FaultInjectionOptions gFaultInjectionOptions;
-#endif // CHIP_TEST_INET_COMMON_OPTIONS_H_

@@ -19,6 +19,7 @@
 #include <nlunit-test.h>
 
 #include <support/CHIPCounter.h>
+#include <support/UnitTestRegistration.h>
 
 static void CheckStartWithZero(nlTestSuite * inSuite, void * inContext)
 {
@@ -76,7 +77,7 @@ static int TestTeardown(void * inContext)
     return (SUCCESS);
 }
 
-int main(int argc, char * argv[])
+int TestCHIPCounter(void)
 {
     // clang-format off
     nlTestSuite theSuite = {
@@ -87,11 +88,10 @@ int main(int argc, char * argv[])
     };
     // clang-format on
 
-    // Generate machine-readable, comma-separated value (CSV) output.
-    nl_test_set_output_style(OUTPUT_CSV);
-
     // Run test suit againt one context.
-    nlTestRunner(&theSuite, NULL);
+    nlTestRunner(&theSuite, nullptr);
 
     return nlTestRunnerStats(&theSuite);
 }
+
+CHIP_REGISTER_TEST_SUITE(TestCHIPCounter)

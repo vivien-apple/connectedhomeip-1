@@ -1,6 +1,6 @@
 /*
  *
- *    Copyright (c) 2020 Project CHIP Authors
+ *    Copyright (c) 2020-2021 Project CHIP Authors
  *    All rights reserved.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,33 +23,100 @@
  *
  */
 
-#ifndef __SECURESESSIONMGR_H__
-#define __SECURESESSIONMGR_H__
+#pragma once
 
 #include <utility>
 
 #include <core/CHIPCore.h>
-#include <core/ReferenceCounted.h>
 #include <inet/IPAddress.h>
 #include <inet/IPEndPointBasis.h>
+#include <support/CodeUtils.h>
+#include <support/DLLUtil.h>
+#include <transport/AdminPairingTable.h>
+#include <transport/PASESession.h>
 #include <transport/PeerConnections.h>
 #include <transport/SecureSession.h>
-#include <transport/UDP.h>
+#include <transport/TransportMgr.h>
+#include <transport/raw/Base.h>
+#include <transport/raw/PeerAddress.h>
+#include <transport/raw/Tuple.h>
 
 namespace chip {
 
-using namespace System;
-
 class SecureSessionMgr;
+
+class SecureSessionHandle
+{
+public:
+    SecureSessionHandle() : mPeerNodeId(kAnyNodeId), mPeerKeyId(0) {}
+    SecureSessionHandle(NodeId peerNodeId, uint16_t peerKeyId) : mPeerNodeId(peerNodeId), mPeerKeyId(peerKeyId) {}
+
+    bool operator==(const SecureSessionHandle & that) const
+    {
+        return mPeerNodeId == that.mPeerNodeId && mPeerKeyId == that.mPeerKeyId;
+    }
+
+private:
+    friend class SecureSessionMgr;
+    NodeId mPeerNodeId;
+    uint16_t mPeerKeyId;
+};
+
+/**
+ * @brief
+ *  Tracks ownership of a encrypted packet buffer.
+ *
+ *  EncryptedPacketBufferHandle is a kind of PacketBufferHandle class and used to hold a packet buffer
+ *  object whose payload has already been encrypted.
+ */
+class EncryptedPacketBufferHandle final : public System::PacketBufferHandle
+{
+public:
+    EncryptedPacketBufferHandle() : mMsgId(0) {}
+    EncryptedPacketBufferHandle(EncryptedPacketBufferHandle && aBuffer) :
+        PacketBufferHandle(std::move(aBuffer)), mMsgId(aBuffer.mMsgId)
+    {}
+
+    void operator=(EncryptedPacketBufferHandle && aBuffer)
+    {
+        PacketBufferHandle::operator=(std::move(aBuffer));
+        mMsgId                      = aBuffer.mMsgId;
+    }
+
+    uint32_t GetMsgId() const { return mMsgId; }
+
+    /**
+     * Creates a copy of the data in this packet.
+     *
+     * Does NOT support chained buffers.
+     *
+     * @returns empty handle on allocation failure.
+     */
+    EncryptedPacketBufferHandle CloneData() { return EncryptedPacketBufferHandle(PacketBufferHandle::CloneData()); }
+
+private:
+    // Allow SecureSessionMgr to assign or construct us from a PacketBufferHandle
+    friend class SecureSessionMgr;
+
+    EncryptedPacketBufferHandle(PacketBufferHandle && aBuffer) : PacketBufferHandle(std::move(aBuffer)), mMsgId(0) {}
+
+    void operator=(PacketBufferHandle && aBuffer)
+    {
+        PacketBufferHandle::operator=(std::move(aBuffer));
+        mMsgId                      = 0;
+    }
+
+    uint32_t mMsgId; // The message identifier of the CHIP message awaiting acknowledgment.
+};
 
 /**
  * @brief
  *   This class provides a skeleton for the callback functions. The functions will be
- *   called by SecureSssionMgr object on specific events. If the user of SecureSessionMgr
+ *   called by SecureSssionMgrBase object on specific events. If the user of SecureSessionMgr
  *   is interested in receiving these callbacks, they can specialize this class and handle
  *   each trigger in their implementation of this class.
  */
-class DLL_EXPORT SecureSessionMgrCallback : public ReferenceCounted<SecureSessionMgrCallback>
+class DLL_EXPORT SecureSessionMgrDelegate
 {
 public:
     /**
@@ -57,37 +124,138 @@ public:
      *   Called when a new message is received. The function must internally release the
      *   msgBuf after processing it.
      *
-     * @param header  messageheader
-     * @param state connection state
-     * @param msgBuf received message
+     * @param packetHeader  The message header
+     * @param payloadHeader The payload header
+     * @param session       The handle to the secure session
+     * @param msgBuf        The received message
+     * @param mgr           A pointer to the SecureSessionMgr
      */
-    virtual void OnMessageReceived(const MessageHeader & header, Transport::PeerConnectionState * state,
-                                   System::PacketBuffer * msgBuf, SecureSessionMgr * mgr)
+    virtual void OnMessageReceived(const PacketHeader & packetHeader, const PayloadHeader & payloadHeader,
+                                   SecureSessionHandle session, System::PacketBufferHandle msgBuf, SecureSessionMgr * mgr)
     {}
 
     /**
      * @brief
      *   Called when received message processing resulted in error
      *
-     * @param error error code
-     * @param source network entity that sent the message
+     * @param error   error code
+     * @param source  network entity that sent the message
+     * @param mgr     A pointer to the SecureSessionMgr
      */
     virtual void OnReceiveError(CHIP_ERROR error, const Transport::PeerAddress & source, SecureSessionMgr * mgr) {}
 
     /**
      * @brief
-     *   Called when a new connection is being established
+     *   Called when a new pairing is being established
      *
-     * @param state connection state
+     * @param session The handle to the secure session
+     * @param mgr     A pointer to the SecureSessionMgr
      */
-    virtual void OnNewConnection(Transport::PeerConnectionState * state, SecureSessionMgr * mgr) {}
+    virtual void OnNewConnection(SecureSessionHandle session, SecureSessionMgr * mgr) {}
 
-    virtual ~SecureSessionMgrCallback() {}
+    /**
+     * @brief
+     *   Called when a new connection is closing
+     *
+     * @param session The handle to the secure session
+     * @param mgr     A pointer to the SecureSessionMgr
+     */
+    virtual void OnConnectionExpired(SecureSessionHandle session, SecureSessionMgr * mgr) {}
+
+    virtual ~SecureSessionMgrDelegate() {}
 };
 
-class DLL_EXPORT SecureSessionMgr : public ReferenceCounted<SecureSessionMgr>
+class DLL_EXPORT SecureSessionMgr : public TransportMgrDelegate
 {
 public:
+    SecureSessionMgr();
+    ~SecureSessionMgr() override;
+
+    /**
+     * @brief
+     *   Send a message to a currently connected peer.
+     *
+     * @details
+     *   msgBuf contains the data to be transmitted.  If bufferRetainSlot is not null and this function
+     *   returns success, the encrypted data that was sent, as well as various other information needed
+     *   to retransmit it, will be stored in *bufferRetainSlot.
+     */
+    CHIP_ERROR SendMessage(SecureSessionHandle session, System::PacketBufferHandle && msgBuf);
+    CHIP_ERROR SendMessage(SecureSessionHandle session, PayloadHeader & payloadHeader, System::PacketBufferHandle && msgBuf,
+                           EncryptedPacketBufferHandle * bufferRetainSlot = nullptr);
+    CHIP_ERROR SendEncryptedMessage(SecureSessionHandle session, EncryptedPacketBufferHandle msgBuf,
+                                    EncryptedPacketBufferHandle * bufferRetainSlot);
+
+    Transport::PeerConnectionState * GetPeerConnectionState(SecureSessionHandle session);
+
+    /**
+     * @brief
+     *   Set the callback object.
+     *
+     * @details
+     *   Release if there was an existing callback object
+     */
+    void SetDelegate(SecureSessionMgrDelegate * cb) { mCB = cb; }
+
+    /**
+     * @brief
+     *   Establish a new pairing with a peer node
+     *
+     * @details
+     *   This method sets up a new pairing with the peer node. It also
+     *   establishes the security keys for secure communication with the
+     *   peer node.
+     */
+    CHIP_ERROR NewPairing(const Optional<Transport::PeerAddress> & peerAddr, NodeId peerNodeId, PASESession * pairing,
+                          Transport::AdminId admin, Transport::Base * transport = nullptr);
+
+    /**
+     * @brief
+     *   Return the System Layer pointer used by current SecureSessionMgr.
+     */
+    System::Layer * SystemLayer() { return mSystemLayer; }
+
+    /**
+     * @brief
+     *   Initialize a Secure Session Manager
+     *
+     * @param localNodeId    Node id for the current node
+     * @param systemLayer    System, layer to use
+     * @param transportMgr   Transport to use
+     * @param admins         A table of device administrators
+     */
+    CHIP_ERROR Init(NodeId localNodeId, System::Layer * systemLayer, TransportMgrBase * transportMgr,
+                    Transport::AdminPairingTable * admins);
+
+    /**
+     * @brief
+     *   Set local node ID
+     *
+     * @param nodeId    Node id for the current node
+     */
+    void SetLocalNodeID(NodeId nodeId) { mLocalNodeId = nodeId; }
+
+    /**
+     * @brief
+     *   Return the transport type of current connection to the node with id peerNodeId.
+     *   'Transport::Type::kUndefined' will be returned if the connection to the specified
+     *   peer node does not exist.
+     */
+    Transport::Type GetTransportType(NodeId peerNodeId);
+
+protected:
+    /**
+     * @brief
+     *   Handle received secure message. Implements TransportMgrDelegate
+     *
+     * @param header    the received message header
+     * @param source    the source address of the package
+     * @param msgBuf    the buffer of (encrypted) payload
+     */
+    void OnMessageReceived(const PacketHeader & header, const Transport::PeerAddress & source,
+                           System::PacketBufferHandle msgBuf) override;
+
+private:
     /**
      *    The State of a secure transport object.
      */
@@ -97,89 +265,35 @@ public:
         kInitialized, /**< State when the object is ready connect to other peers. */
     };
 
-    /**
-     * @brief
-     *   Initialize a Secure Transport
-     *
-     * @param inet    Inet layer to use
-     * @param listenParams  Listen settings for the transport
-     *
-     * @note This is not a final API as it is UDP specific. Class will be updated to support
-     * separate Transports (UDP, BLE, TCP, optional ipv4 for testing etc.). This API is currently
-     * UDP-specific and that will change.
-     */
-    CHIP_ERROR Init(NodeId localNodeId, Inet::InetLayer * inet, const Transport::UdpListenParameters & listenParams);
-
-    /**
-     * Establishes a connection to the given peer node.
-     *
-     * A connection needs to be established before SendMessage can be called.
-     */
-    CHIP_ERROR Connect(NodeId peerNodeId, const Transport::PeerAddress & peerAddress);
-
-    /**
-     * @brief
-     *   Send a message to a currently connected peer
-     *
-     * @details
-     *   This method calls <tt>chip::System::PacketBuffer::Free</tt> on
-     *   behalf of the caller regardless of the return status.
-     */
-    CHIP_ERROR SendMessage(NodeId peerNodeId, System::PacketBuffer * msgBuf);
-
-    SecureSessionMgr();
-    virtual ~SecureSessionMgr();
-
-    /**
-     * @brief
-     *   Set the callback object.
-     *
-     * @details
-     *   Release if there was an existing callback object
-     */
-    void SetDelegate(SecureSessionMgrCallback * cb)
+    enum class EncryptionState
     {
-        if (mCB != nullptr)
-        {
-            mCB->Release();
-        }
-        mCB = cb->Retain();
-    }
-
-private:
-    // TODO: add support for multiple transports (TCP, BLE to be added)
-    Transport::UDP mTransport;
+        kPayloadIsEncrypted,
+        kPayloadIsUnencrypted,
+    };
 
     System::Layer * mSystemLayer = nullptr;
-    NodeId mLocalNodeId;                                                                //< Id of the current node
-    Transport::PeerConnections<CHIP_CONFIG_PEER_CONNECTION_POOL_SIZE> mPeerConnections; //< Active connections to other peers
-    State mState;                                                                       //< Initialization state of the object
+    NodeId mLocalNodeId;                                                                // < Id of the current node
+    Transport::PeerConnections<CHIP_CONFIG_PEER_CONNECTION_POOL_SIZE> mPeerConnections; // < Active connections to other peers
+    State mState;                                                                       // < Initialization state of the object
 
-    SecureSessionMgrCallback * mCB = nullptr;
+    SecureSessionMgrDelegate * mCB         = nullptr;
+    TransportMgrBase * mTransportMgr       = nullptr;
+    Transport::AdminPairingTable * mAdmins = nullptr;
+
+    CHIP_ERROR SendMessage(SecureSessionHandle session, PayloadHeader & payloadHeader, PacketHeader & packetHeader,
+                           System::PacketBufferHandle msgBuf, EncryptedPacketBufferHandle * bufferRetainSlot,
+                           EncryptionState encryptionState);
 
     /** Schedules a new oneshot timer for checking connection expiry. */
-    void ScheduleExpiryTimer(void);
+    void ScheduleExpiryTimer();
 
     /** Cancels any active timers for connection expiry checks. */
-    void CancelExpiryTimer(void);
-
-    /**
-     * Allocates a new connection for the given source.
-     *
-     * @param header The header that was received when the connection was established
-     * @param address Where the connection originated from
-     * @param state [out] the newly allocated connection state for the connection
-     */
-    CHIP_ERROR AllocateNewConnection(const MessageHeader & header, const Transport::PeerAddress & address,
-                                     Transport::PeerConnectionState ** state);
-
-    static void HandleDataReceived(const MessageHeader & header, const Transport::PeerAddress & source,
-                                   System::PacketBuffer * msgBuf, SecureSessionMgr * transport);
+    void CancelExpiryTimer();
 
     /**
      * Called when a specific connection expires.
      */
-    static void HandleConnectionExpired(const Transport::PeerConnectionState & state, SecureSessionMgr * mgr);
+    void HandleConnectionExpired(const Transport::PeerConnectionState & state);
 
     /**
      * Callback for timer expiry check
@@ -187,6 +301,54 @@ private:
     static void ExpiryTimerCallback(System::Layer * layer, void * param, System::Error error);
 };
 
-} // namespace chip
+namespace MessagePacketBuffer {
+/**
+ * Maximum size of a message footer, in bytes.
+ */
+constexpr uint16_t kMaxFooterSize = kMaxTagLen;
 
-#endif // __SECURESESSIONMGR_H__
+/**
+ * Allocates a packet buffer with space for message headers and footers.
+ *
+ *  Fails and returns \c nullptr if no memory is available, or if the size requested is too large.
+ *
+ *  @param[in]  aAvailableSize  Minimum number of octets to for application data.
+ *
+ *  @return     On success, a PacketBufferHandle to the allocated buffer. On fail, \c nullptr.
+ */
+inline System::PacketBufferHandle New(size_t aAvailableSize)
+{
+    static_assert(CHIP_SYSTEM_CONFIG_PACKETBUFFER_CAPACITY_MAX > kMaxFooterSize, "inadequate capacity");
+    if (aAvailableSize > CHIP_SYSTEM_CONFIG_PACKETBUFFER_CAPACITY_MAX - kMaxFooterSize)
+    {
+        return System::PacketBufferHandle();
+    }
+    return System::PacketBufferHandle::New(aAvailableSize + kMaxFooterSize);
+}
+
+/**
+ * Allocates a packet buffer with initial contents.
+ *
+ *  @param[in]  aData           Initial buffer contents.
+ *  @param[in]  aDataSize       Size of initial buffer contents.
+ *
+ *  @return     On success, a PacketBufferHandle to the allocated buffer. On fail, \c nullptr.
+ */
+inline System::PacketBufferHandle NewWithData(const void * aData, size_t aDataSize)
+{
+    return System::PacketBufferHandle::NewWithData(aData, aDataSize, kMaxFooterSize);
+}
+
+/**
+ * Check whether a packet buffer has enough space for a message footer.
+ *
+ * @returns true if there is space, false otherwise.
+ */
+inline bool HasFooterSpace(const System::PacketBufferHandle & aBuffer)
+{
+    return aBuffer->AvailableDataLength() >= kMaxFooterSize;
+}
+
+} // namespace MessagePacketBuffer
+
+} // namespace chip

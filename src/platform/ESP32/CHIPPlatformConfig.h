@@ -23,15 +23,20 @@
  *          the ESP32 platform.
  */
 
-#ifndef CHIP_PLATFORM_CONFIG_H
-#define CHIP_PLATFORM_CONFIG_H
+#pragma once
+
+/* Force sdkconfig to be added as a dependecy. That file is also included as a sideffect of
+ * esp_err.h -> assert.h -> sdkconfig.h however since esp_err.h and above are -isystem includes,
+ * they are not added as dependencies by GN build systems.
+ *
+ * This triggers a rebuild of files including CHIPPlatformConfig if sdkconfig.h changes.
+ */
+#include <sdkconfig.h>
 
 #include "esp_err.h"
 
 // ==================== General Platform Adaptations ====================
 
-#define CHIP_CONFIG_MAX_TUNNELS 0
-#define CHIP_CONFIG_ENABLE_TUNNELING 0
 #define CHIP_CONFIG_PERSISTED_STORAGE_ENC_MSG_CNTR_ID "enc-msg-counter"
 // The ESP NVS implementation limits key names to 15 characters.
 #define CHIP_CONFIG_PERSISTED_STORAGE_MAX_KEY_LENGTH 15
@@ -55,7 +60,7 @@
 // ==================== Security Adaptations ====================
 
 #define CHIP_CONFIG_USE_OPENSSL_ECC 0
-#define CHIP_CONFIG_USE_MICRO_ECC 1
+#define CHIP_CONFIG_USE_MICRO_ECC 0
 
 #define CHIP_CONFIG_HASH_IMPLEMENTATION_OPENSSL 0
 #define CHIP_CONFIG_HASH_IMPLEMENTATION_MINCRYPT 1
@@ -85,8 +90,7 @@
 #define CHIP_CONFIG_MAX_PEER_NODES CONFIG_MAX_PEER_NODES
 #define CHIP_CONFIG_MAX_UNSOLICITED_MESSAGE_HANDLERS CONFIG_MAX_UNSOLICITED_MESSAGE_HANDLERS
 #define CHIP_CONFIG_MAX_EXCHANGE_CONTEXTS CONFIG_MAX_EXCHANGE_CONTEXTS
-#define CHIP_CONFIG_WRMP_TIMER_DEFAULT_PERIOD CONFIG_WRMP_TIMER_DEFAULT_PERIOD
-#define CHIP_CONFIG_SHORT_ERROR_STR CONFIG_SHORT_ERROR_STR
+#define CHIP_CONFIG_RMP_TIMER_DEFAULT_PERIOD_SHIFT CONFIG_RMP_TIMER_DEFAULT_PERIOD_SHIFT
 #define CHIP_CONFIG_MAX_SESSION_KEYS CONFIG_MAX_SESSION_KEYS
 #define CHIP_CONFIG_USE_APP_GROUP_KEYS_FOR_MSG_ENC CONFIG_USE_APP_GROUP_KEYS_FOR_MSG_ENC
 #define CHIP_CONFIG_MAX_CACHED_MSG_ENC_APP_KEYS CONFIG_MAX_CACHED_MSG_ENC_APP_KEYS
@@ -102,5 +106,3 @@
 #define CHIP_CONFIG_ENABLE_CASE_INITIATOR CONFIG_ENABLE_CASE_INITIATOR
 #define CHIP_CONFIG_ENABLE_CASE_RESPONDER CONFIG_ENABLE_CASE_RESPONDER
 #define CHIP_CONFIG_DEFAULT_INCOMING_CONNECTION_IDLE_TIMEOUT CONFIG_DEFAULT_INCOMING_CONNECTION_IDLE_TIMEOUT
-
-#endif /* CHIP_PLATFORM_CONFIG_H */

@@ -17,8 +17,7 @@
  *    limitations under the License.
  */
 
-#ifndef APP_TASK_H
-#define APP_TASK_H
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -26,10 +25,10 @@
 #include "AppEvent.h"
 #include "BoltLockManager.h"
 
-#include <platform/CHIPDeviceLayer.h>
-
 #include "FreeRTOS.h"
 #include "timers.h" // provides FreeRTOS timer support
+#include <ble/BLEEndPoint.h>
+#include <platform/CHIPDeviceLayer.h>
 
 class AppTask
 {
@@ -58,9 +57,9 @@ private:
     static void FunctionTimerEventHandler(AppEvent * aEvent);
     static void FunctionHandler(AppEvent * aEvent);
     static void LockActionEventHandler(AppEvent * aEvent);
-    static void InstallEventHandler(AppEvent * aEvent);
-
     static void TimerEventHandler(TimerHandle_t xTimer);
+
+    static void UpdateClusterState(void);
 
     void StartTimer(uint32_t aTimeoutMs);
 
@@ -68,13 +67,15 @@ private:
     {
         kFunction_NoneSelected   = 0,
         kFunction_SoftwareUpdate = 0,
-        kFunction_FactoryReset,
+        kFunction_StartThread    = 1,
+        kFunction_FactoryReset   = 2,
 
         kFunction_Invalid
     } Function;
 
     Function_t mFunction;
     bool mFunctionTimerActive;
+    bool mSyncClusterToButtonAction;
 
     static AppTask sAppTask;
 };
@@ -83,5 +84,3 @@ inline AppTask & GetAppTask(void)
 {
     return AppTask::sAppTask;
 }
-
-#endif // APP_TASK_H

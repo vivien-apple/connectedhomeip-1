@@ -16,8 +16,7 @@
  *    limitations under the License.
  */
 
-#ifndef CONNECTIVITY_MANAGER_IMPL_H
-#define CONNECTIVITY_MANAGER_IMPL_H
+#pragma once
 
 #include <platform/ConnectivityManager.h>
 #include <platform/internal/GenericConnectivityManagerImpl.h>
@@ -31,9 +30,7 @@
 #else
 #include <platform/internal/GenericConnectivityManagerImpl_NoThread.h>
 #endif
-#include <platform/internal/GenericConnectivityManagerImpl_NoTunnel.h>
 #include <platform/internal/GenericConnectivityManagerImpl_NoWiFi.h>
-#include <support/FlagUtils.hpp>
 
 namespace Inet {
 class IPAddress;
@@ -57,8 +54,7 @@ class ConnectivityManagerImpl final : public ConnectivityManager,
 #else
                                       public Internal::GenericConnectivityManagerImpl_NoThread<ConnectivityManagerImpl>,
 #endif
-                                      public Internal::GenericConnectivityManagerImpl_NoWiFi<ConnectivityManagerImpl>,
-                                      public Internal::GenericConnectivityManagerImpl_NoTunnel<ConnectivityManagerImpl>
+                                      public Internal::GenericConnectivityManagerImpl_NoWiFi<ConnectivityManagerImpl>
 {
     // Allow the ConnectivityManager interface class to delegate method calls to
     // the implementation methods provided by this class.
@@ -120,5 +116,3 @@ inline ConnectivityManagerImpl & ConnectivityMgrImpl(void)
 
 } // namespace DeviceLayer
 } // namespace chip
-
-#endif // CONNECTIVITY_MANAGER_IMPL_H

@@ -8,27 +8,11 @@
 .DS_Store
 
 # Build System
-Makefile.in
-aclocal.m4
-autom4te.cache
-output/
-/build/
-examples/**/build
-config.log
-config.status
-configure
-src/include/BuildConfig.h.in
-src/include/BuildConfig.h.in~
+out/
+/src/test_driver/nrfconnect/build/
 
-# Repos stuff
-.repos-warning-stamp
-
-# Example specific rules
-examples/**/sdkconfig
-examples/**/sdkconfig.old
-
-# ESP32 QEMU build
-src/test_driver/esp32/build
+# Environment directory
+.environment/
 
 # Temporary Directories
 .tmp/
@@ -51,3 +35,16 @@ TAGS
 # Patch files
 *.rej
 *.orig
+
+# C-Lion / IDEA files
+.idea/**
+
+# Python bytecodes
+__pycache__
+*.pyc
+
+# Doxygen outputs
+docs/html
+
+# VSCode java extensions
+.project

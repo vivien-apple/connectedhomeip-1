@@ -25,13 +25,14 @@
  *      control blocks, as the system is configured accordingly.
  */
 
-#ifndef TCPENDPOINT_H
-#define TCPENDPOINT_H
+#pragma once
 
 #include <inet/EndPointBasis.h>
 #include <inet/IPAddress.h>
 
 #include <system/SystemPacketBuffer.h>
+
+#include <utility>
 
 namespace chip {
 namespace Inet {
@@ -107,7 +108,7 @@ public:
      *  On LwIP, this method must not be called with the LwIP stack lock
      *  already acquired.
      */
-    INET_ERROR Bind(IPAddressType addrType, IPAddress addr, uint16_t port, bool reuseAddr = false);
+    INET_ERROR Bind(IPAddressType addrType, const IPAddress & addr, uint16_t port, bool reuseAddr = false);
 
     /**
      * @brief   Prepare the endpoint to receive TCP messages.
@@ -136,7 +137,7 @@ public:
      *
      * @param[in]   addr        the destination IP address
      * @param[in]   port        the destination TCP port
-     * @param[in]   intf        an optional network interface indicator
+     * @param[in]   intfId      an optional network interface indicator
      *
      * @retval  INET_NO_ERROR       success: \c msg is queued for transmit.
      * @retval  INET_ERROR_NOT_IMPLEMENTED  system implementation not complete.
@@ -144,16 +145,16 @@ public:
      * @retval  INET_ERROR_WRONG_ADDRESS_TYPE
      *      the destination address and the bound interface address do not
      *      have matching protocol versions or address type, or the destination
-     *      address is an IPv6 link-local address and \c intf is not specified.
+     *      address is an IPv6 link-local address and \c intfId is not specified.
      *
      * @retval  other                   another system or platform error
      *
      * @details
      *      If possible, then this method initiates a TCP connection to the
-     *      destination \c addr (with \c intf used as the scope
+     *      destination \c addr (with \c intfId used as the scope
      *      identifier for IPv6 link-local destinations) and \c port.
      */
-    INET_ERROR Connect(IPAddress addr, uint16_t port, InterfaceId intf = INET_NULL_INTERFACEID);
+    INET_ERROR Connect(const IPAddress & addr, uint16_t port, InterfaceId intfId = INET_NULL_INTERFACEID);
 
     /**
      * @brief   Extract IP address and TCP port of remote endpoint.
@@ -193,12 +194,8 @@ public:
      *
      * @retval  INET_NO_ERROR           success: address and port extracted.
      * @retval  INET_ERROR_INCORRECT_STATE  TCP connection not established.
-     *
-     * @details
-     *  The <tt>chip::System::PacketBuffer::Free</tt> method is called on the \c data argument
-     *  regardless of whether the transmission is successful or failed.
      */
-    INET_ERROR Send(chip::System::PacketBuffer * data, bool push = true);
+    INET_ERROR Send(chip::System::PacketBufferHandle data, bool push = true);
 
     /**
      * @brief   Disable reception.
@@ -207,7 +204,7 @@ public:
      *  Disable all event handlers. Data sent to an endpoint that disables
      *  reception will be acknowledged until the receive window is exhausted.
      */
-    void DisableReceive(void);
+    void DisableReceive();
 
     /**
      * @brief   Enable reception.
@@ -216,18 +213,25 @@ public:
      *  Enable all event handlers. Data sent to an endpoint that disables
      *  reception will be acknowledged until the receive window is exhausted.
      */
-    void EnableReceive(void);
+    void EnableReceive();
 
     /**
      *  @brief EnableNoDelay
      */
-    INET_ERROR EnableNoDelay(void);
+    INET_ERROR EnableNoDelay();
 
     /**
-     * @brief   Enable the TCP "keep-alive" option.
+     * @brief
+     *    Enable TCP keepalive probes on the associated TCP connection.
      *
-     * @param[in]   interval        time in seconds between probe requests.
-     * @param[in]   timeoutCount    number of probes to send before timeout.
+     *  @param[in] interval
+     *    The interval (in seconds) between keepalive probes.  This value also controls
+     *    the time between last data packet sent and the transmission of the first keepalive
+     *    probe.
+     *
+     *  @param[in] timeoutCount
+     *    The maximum number of unacknowledged probes before the connection will be deemed
+     *    to have failed.
      *
      * @retval  INET_NO_ERROR           success: address and port extracted.
      * @retval  INET_ERROR_INCORRECT_STATE  TCP connection not established.
@@ -235,6 +239,12 @@ public:
      * @retval  INET_ERROR_NOT_IMPLEMENTED  system implementation not complete.
      *
      * @retval  other                   another system or platform error
+     *
+     *  @note
+     *    This method can only be called when the endpoint is in one of the connected states.
+     *
+     *    This method can be called multiple times to adjust the keepalive interval or timeout
+     *    count.
      *
      * @details
      *  Start automatically  transmitting TCP "keep-alive" probe segments every
@@ -256,7 +266,7 @@ public:
      *
      * @retval  other                   another system or platform error
      */
-    INET_ERROR DisableKeepAlive(void);
+    INET_ERROR DisableKeepAlive();
 
     /**
      * @brief   Set the TCP TCP_USER_TIMEOUT socket option.
@@ -306,19 +316,19 @@ public:
      *  This method may only be called by data reception event handlers to
      *  put an unacknowledged portion of data back on the receive queue. The
      *  operational semantics are undefined if the caller is outside the scope
-     *  of a data reception event handler, \c data is not the \c chip::System::PacketBuffer
+     *  of a data reception event handler, \c data is not the packet buffer
      *  provided to the handler, or \c data does not contain the unacknowledged
      *  portion remaining after the bytes acknowledged by a prior call to the
      *  <tt>AckReceive(uint16_t len)</tt> method.
      */
-    INET_ERROR PutBackReceivedData(chip::System::PacketBuffer * data);
+    INET_ERROR PutBackReceivedData(chip::System::PacketBufferHandle data);
 
     /**
      * @brief   Extract the length of the data awaiting first transmit.
      *
      * @return  Number of untransmitted bytes in the transmit queue.
      */
-    uint32_t PendingSendLength(void);
+    uint32_t PendingSendLength();
 
     /**
      * @brief   Extract the length of the unacknowledged receive data.
@@ -326,7 +336,7 @@ public:
      * @return  Number of bytes in the receive queue that have not yet been
      *      acknowledged with <tt>AckReceive(uint16_t len)</tt>.
      */
-    uint32_t PendingReceiveLength(void);
+    uint32_t PendingReceiveLength();
 
     /**
      * @brief   Initiate TCP half close, in other words, finished with sending.
@@ -336,7 +346,7 @@ public:
      *
      * @retval  other                   another system or platform error
      */
-    INET_ERROR Shutdown(void);
+    INET_ERROR Shutdown();
 
     /**
      * @brief   Initiate TCP full close, in other words, finished with both send and
@@ -347,12 +357,12 @@ public:
      *
      * @retval  other                   another system or platform error
      */
-    INET_ERROR Close(void);
+    INET_ERROR Close();
 
     /**
      * @brief   Abortively close the endpoint, in other words, send RST packets.
      */
-    void Abort(void);
+    void Abort();
 
     /**
      * @brief   Initiate (or continue) TCP full close, ignoring errors.
@@ -361,20 +371,20 @@ public:
      *  The object is returned to the free pool, and all remaining user
      *  references are subsequently invalid.
      */
-    void Free(void);
+    void Free();
 
     /**
      * @brief   Extract whether TCP connection is established.
      */
-    bool IsConnected(void) const;
+    bool IsConnected() const;
 
-    void SetConnectTimeout(const uint32_t connTimeoutMsecs);
+    void SetConnectTimeout(uint32_t connTimeoutMsecs);
 
 #if INET_TCP_IDLE_CHECK_INTERVAL > 0
     /**
      * @brief   Set timer event for idle activity.
      *
-     * @param[in]   timeoutMS
+     * @param[in]   timeoutMS The timeout in milliseconds
      *
      * @details
      *  Set the idle timer interval to \c timeoutMS milliseconds. A zero
@@ -389,14 +399,14 @@ public:
      * @details
      *  Reset the idle timer to zero.
      */
-    void MarkActive(void);
+    void MarkActive();
 
     /**
      * @brief   Obtain an identifier for the endpoint.
      *
      * @return  Returns an opaque unique identifier for use logs.
      */
-    uint16_t LogId(void);
+    uint16_t LogId();
 
     /**
      * @brief   Type of connection establishment event handling function.
@@ -432,7 +442,7 @@ public:
      *  the \c AckReceive method. The \c Free method on the data buffer must
      *  also be invoked unless the \c PutBackReceivedData is used instead.
      */
-    typedef void (*OnDataReceivedFunct)(TCPEndPoint * endPoint, chip::System::PacketBuffer * data);
+    typedef void (*OnDataReceivedFunct)(TCPEndPoint * endPoint, chip::System::PacketBufferHandle data);
 
     /**
      * The endpoint's message text reception event handling function delegate.
@@ -549,11 +559,16 @@ public:
     OnTCPSendIdleChangedFunct OnTCPSendIdleChanged;
 #endif // INET_CONFIG_ENABLE_TCP_SEND_IDLE_CALLBACKS
 
+    /**
+     * Size of the largest TCP packet that can be received.
+     */
+    constexpr static size_t kMaxReceiveMessageSize = System::kMaxPacketBufferSizeWithoutReserve;
+
 private:
     static chip::System::ObjectPool<TCPEndPoint, INET_CONFIG_NUM_TCP_ENDPOINTS> sPool;
 
-    chip::System::PacketBuffer * mRcvQueue;
-    chip::System::PacketBuffer * mSendQueue;
+    chip::System::PacketBufferHandle mRcvQueue;
+    chip::System::PacketBufferHandle mSendQueue;
 #if INET_TCP_IDLE_CHECK_INTERVAL > 0
     uint16_t mIdleTimeout;       // in units of INET_TCP_IDLE_CHECK_INTERVAL; zero means no timeout
     uint16_t mRemainingIdleTime; // in units of INET_TCP_IDLE_CHECK_INTERVAL
@@ -581,11 +596,11 @@ private:
 
     static void TCPUserTimeoutHandler(chip::System::Layer * aSystemLayer, void * aAppState, chip::System::Error aError);
 
-    void StartTCPUserTimeoutTimer(void);
+    void StartTCPUserTimeoutTimer();
 
-    void StopTCPUserTimeoutTimer(void);
+    void StopTCPUserTimeoutTimer();
 
-    void RestartTCPUserTimeoutTimer(void);
+    void RestartTCPUserTimeoutTimer();
 
     void ScheduleNextTCPUserTimeoutPoll(uint32_t aTimeOut);
 
@@ -604,13 +619,13 @@ private:
 
 #endif // INET_CONFIG_OVERRIDE_SYSTEM_TCP_USER_TIMEOUT
 
-    TCPEndPoint(void);                // not defined
+    TCPEndPoint();                    // not defined
     TCPEndPoint(const TCPEndPoint &); // not defined
-    ~TCPEndPoint(void);               // not defined
+    ~TCPEndPoint();                   // not defined
 
     void Init(InetLayer * inetLayer);
-    INET_ERROR DriveSending(void);
-    void DriveReceiving(void);
+    INET_ERROR DriveSending();
+    void DriveReceiving();
     void HandleConnectComplete(INET_ERROR err);
     void HandleAcceptError(INET_ERROR err);
     INET_ERROR DoClose(INET_ERROR err, bool suppressCallback);
@@ -618,16 +633,30 @@ private:
 
     static void TCPConnectTimeoutHandler(chip::System::Layer * aSystemLayer, void * aAppState, chip::System::Error aError);
 
-    void StartConnectTimerIfSet(void);
-    void StopConnectTimer(void);
+    void StartConnectTimerIfSet();
+    void StopConnectTimer();
 
 #if CHIP_SYSTEM_CONFIG_USE_LWIP
-    chip::System::PacketBuffer * mUnsentQueue;
-    uint16_t mUnsentOffset;
+    struct BufferOffset
+    {
+        BufferOffset(System::PacketBufferHandle && aBuffer) : buffer(std::move(aBuffer)), offset(0) {}
+        BufferOffset(BufferOffset && aOther)
+        {
+            buffer = std::move(aOther.buffer);
+            offset = aOther.offset;
+        }
+        chip::System::PacketBufferHandle buffer;
+        uint16_t offset;
+    };
 
+    uint16_t mUnackedLength; // Amount sent but awaiting ACK. Used as a form of reference count
+                             // to hang-on to backing packet buffers until they are no longer needed.
+
+    uint16_t RemainingToSend();
+    BufferOffset FindStartOfUnsent();
     INET_ERROR GetPCB(IPAddressType addrType);
     void HandleDataSent(uint16_t len);
-    void HandleDataReceived(chip::System::PacketBuffer * buf);
+    void HandleDataReceived(chip::System::PacketBufferHandle buf);
     void HandleIncomingConnection(TCPEndPoint * pcb);
     void HandleError(INET_ERROR err);
 
@@ -641,11 +670,11 @@ private:
 
 #if CHIP_SYSTEM_CONFIG_USE_SOCKETS
     INET_ERROR GetSocket(IPAddressType addrType);
-    SocketEvents PrepareIO(void);
-    void HandlePendingIO(void);
-    void ReceiveData(void);
-    void HandleIncomingConnection(void);
-    INET_ERROR BindSrcAddrFromIntf(IPAddressType addrType, InterfaceId intf);
+    SocketEvents PrepareIO();
+    void HandlePendingIO();
+    void ReceiveData();
+    void HandleIncomingConnection();
+    INET_ERROR BindSrcAddrFromIntf(IPAddressType addrType, InterfaceId intfId);
 #endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS
 };
 
@@ -659,17 +688,17 @@ inline uint16_t TCPEndPoint::MaxTCPSendQueuePolls(void)
 }
 #endif // INET_CONFIG_ENABLE_TCP_SEND_IDLE_CALLBACKS && INET_CONFIG_OVERRIDE_SYSTEM_TCP_USER_TIMEOUT
 
-inline bool TCPEndPoint::IsConnected(void) const
+inline bool TCPEndPoint::IsConnected() const
 {
     return IsConnected(State);
 }
 
-inline uint16_t TCPEndPoint::LogId(void)
+inline uint16_t TCPEndPoint::LogId()
 {
     return static_cast<uint16_t>(reinterpret_cast<intptr_t>(this));
 }
 
-inline void TCPEndPoint::MarkActive(void)
+inline void TCPEndPoint::MarkActive()
 {
 #if INET_TCP_IDLE_CHECK_INTERVAL > 0
     mRemainingIdleTime = mIdleTimeout;
@@ -678,5 +707,3 @@ inline void TCPEndPoint::MarkActive(void)
 
 } // namespace Inet
 } // namespace chip
-
-#endif // !defined(TCPENDPOINT_H)

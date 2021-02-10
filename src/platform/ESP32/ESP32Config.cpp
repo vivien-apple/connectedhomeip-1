@@ -29,6 +29,8 @@
 
 #include <core/CHIPEncoding.h>
 #include <platform/ESP32/ESP32Utils.h>
+#include <support/CHIPMem.h>
+#include <support/CHIPMemString.h>
 #include <support/CodeUtils.h>
 #include <support/logging/CHIPLogging.h>
 
@@ -54,9 +56,11 @@ const ESP32Config::Key ESP32Config::kConfigKey_MfrDeviceICACerts   = { kConfigNa
 const ESP32Config::Key ESP32Config::kConfigKey_MfrDevicePrivateKey = { kConfigNamespace_ChipFactory, "device-key" };
 const ESP32Config::Key ESP32Config::kConfigKey_ProductRevision     = { kConfigNamespace_ChipFactory, "product-rev" };
 const ESP32Config::Key ESP32Config::kConfigKey_ManufacturingDate   = { kConfigNamespace_ChipFactory, "mfg-date" };
-const ESP32Config::Key ESP32Config::kConfigKey_PairingCode         = { kConfigNamespace_ChipFactory, "pairing-code" };
+const ESP32Config::Key ESP32Config::kConfigKey_SetupPinCode        = { kConfigNamespace_ChipFactory, "pin-code" };
+const ESP32Config::Key ESP32Config::kConfigKey_SetupDiscriminator  = { kConfigNamespace_ChipFactory, "discriminator" };
 
 // Keys stored in the chip-config namespace
+const ESP32Config::Key ESP32Config::kConfigKey_FabricId                    = { kConfigNamespace_ChipConfig, "fabric-id" };
 const ESP32Config::Key ESP32Config::kConfigKey_ServiceConfig               = { kConfigNamespace_ChipConfig, "service-config" };
 const ESP32Config::Key ESP32Config::kConfigKey_PairedAccountId             = { kConfigNamespace_ChipConfig, "account-id" };
 const ESP32Config::Key ESP32Config::kConfigKey_ServiceId                   = { kConfigNamespace_ChipConfig, "service-id" };
@@ -361,21 +365,17 @@ exit:
 CHIP_ERROR ESP32Config::WriteConfigValueStr(Key key, const char * str, size_t strLen)
 {
     CHIP_ERROR err;
-    char * strCopy = NULL;
+    chip::Platform::ScopedMemoryBuffer<char> strCopy;
 
     if (str != NULL)
     {
-        strCopy = strndup(str, strLen);
-        VerifyOrExit(strCopy != NULL, err = CHIP_ERROR_NO_MEMORY);
+        strCopy.Calloc(strLen + 1);
+        VerifyOrExit(strCopy, err = CHIP_ERROR_NO_MEMORY);
+        strncpy(strCopy.Get(), str, strLen);
     }
-
-    err = ESP32Config::WriteConfigValueStr(key, strCopy);
+    err = ESP32Config::WriteConfigValueStr(key, strCopy.Get());
 
 exit:
-    if (strCopy != NULL)
-    {
-        free(strCopy);
-    }
     return err;
 }
 

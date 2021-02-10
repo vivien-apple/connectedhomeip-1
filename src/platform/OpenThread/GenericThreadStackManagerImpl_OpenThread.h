@@ -23,8 +23,7 @@
  *          for use on platforms that use OpenThread.
  */
 
-#ifndef GENERIC_THREAD_STACK_MANAGER_IMPL_OPENTHREAD_H
-#define GENERIC_THREAD_STACK_MANAGER_IMPL_OPENTHREAD_H
+#pragma once
 
 #include <openthread/instance.h>
 
@@ -62,7 +61,7 @@ protected:
     // ===== Methods that implement the ThreadStackManager abstract interface.
 
     void _ProcessThreadActivity(void);
-    bool _HaveRouteToAddress(const IPAddress & destAddr);
+    bool _HaveRouteToAddress(const Inet::IPAddress & destAddr);
     void _OnPlatformEvent(const ChipDeviceEvent * event);
     bool _IsThreadEnabled(void);
     CHIP_ERROR _SetThreadEnabled(bool val);
@@ -81,6 +80,7 @@ protected:
     CHIP_ERROR _GetAndLogThreadTopologyMinimal(void);
     CHIP_ERROR _GetAndLogThreadTopologyFull(void);
     CHIP_ERROR _GetPrimary802154MACAddress(uint8_t * buf);
+    CHIP_ERROR _GetSlaacIPv6Address(chip::Inet::IPAddress & addr);
     void _OnWoBLEAdvertisingStart(void);
     void _OnWoBLEAdvertisingStop(void);
 
@@ -88,13 +88,19 @@ protected:
 
     CHIP_ERROR DoInit(otInstance * otInst);
     bool IsThreadAttachedNoLock(void);
+    bool IsThreadInterfaceUpNoLock(void);
     CHIP_ERROR AdjustPollingInterval(void);
+
+    CHIP_ERROR _JoinerStart(void);
 
 private:
     // ===== Private members for use by this class only.
 
     otInstance * mOTInst;
     ConnectivityManager::ThreadPollingConfig mPollingConfig;
+
+    static void OnJoinerComplete(otError aError, void * aContext);
+    void OnJoinerComplete(otError aError);
 
     inline ImplClass * Impl() { return static_cast<ImplClass *>(this); }
 };
@@ -126,5 +132,3 @@ inline void GenericThreadStackManagerImpl_OpenThread<ImplClass>::_OnWoBLEAdverti
 } // namespace Internal
 } // namespace DeviceLayer
 } // namespace chip
-
-#endif // GENERIC_THREAD_STACK_MANAGER_IMPL_OPENTHREAD_H

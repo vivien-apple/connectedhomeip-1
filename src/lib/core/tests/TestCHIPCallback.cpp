@@ -21,10 +21,9 @@
  *      This file implements a test for  CHIP Callback
  *
  */
-
-#include "TestCore.h"
-
-#include "core/CHIPCallback.h"
+#include <core/CHIPCallback.h>
+#include <support/CHIPMem.h>
+#include <support/UnitTestRegistration.h>
 
 #include <nlunit-test.h>
 
@@ -47,11 +46,14 @@ public:
         // always first thing: cancel to take ownership of
         //  cb members
         Enqueue(cb->Cancel());
-    };
+    }
 
     void Dispatch()
     {
-        Cancelable ready = DequeueAll();
+        Cancelable ready;
+
+        DequeueAll(ready);
+
         // runs the ready list
         while (ready.mNext != &ready)
         {
@@ -132,7 +134,7 @@ static void ResumerTest(nlTestSuite * inSuite, void * inContext)
     resumer.Dispatch();
     NL_TEST_ASSERT(inSuite, n == 3);
 
-    Callback<> * pcb = new Callback<>(reinterpret_cast<CallFn>(increment), &n);
+    Callback<> * pcb = chip::Platform::New<Callback<>>(reinterpret_cast<CallFn>(increment), &n);
 
     n = 1;
     // cancel on destruct
@@ -141,7 +143,7 @@ static void ResumerTest(nlTestSuite * inSuite, void * inContext)
     NL_TEST_ASSERT(inSuite, n == 2);
 
     resumer.Resume(pcb);
-    delete pcb;
+    chip::Platform::Delete(pcb);
     resumer.Dispatch();
     NL_TEST_ASSERT(inSuite, n == 2);
 }
@@ -211,6 +213,29 @@ static void NotifierTest(nlTestSuite * inSuite, void * inContext)
     notifier.Register(&cb);
     notifier.Notify(8);
     NL_TEST_ASSERT(inSuite, n == 1);
+
+    cb.Cancel();
+    cancelcb.Cancel();
+}
+
+/**
+ *  Set up the test suite.
+ */
+int TestCHIPCallback_Setup(void * inContext)
+{
+    CHIP_ERROR error = chip::Platform::MemoryInit();
+    if (error != CHIP_NO_ERROR)
+        return FAILURE;
+    return SUCCESS;
+}
+
+/**
+ *  Tear down the test suite.
+ */
+int TestCHIPCallback_Teardown(void * inContext)
+{
+    chip::Platform::MemoryShutdown();
+    return SUCCESS;
 }
 
 /**
@@ -234,12 +259,14 @@ int TestCHIPCallback(void)
 	{
         "CHIPCallback",
         &sTests[0],
-        NULL,
-        NULL
+        TestCHIPCallback_Setup,
+        TestCHIPCallback_Teardown
     };
     // clang-format on
 
-    nlTestRunner(&theSuite, NULL);
+    nlTestRunner(&theSuite, nullptr);
 
     return (nlTestRunnerStats(&theSuite));
 }
+
+CHIP_REGISTER_TEST_SUITE(TestCHIPCallback)

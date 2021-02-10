@@ -33,7 +33,9 @@
 #include <platform/Linux/CHIPLinuxStorage.h>
 #include <platform/internal/CHIPDeviceLayerInternal.h>
 #include <support/Base64.h>
+#include <support/CHIPMem.h>
 #include <support/CodeUtils.h>
+#include <support/ScopedBuffer.h>
 #include <support/logging/CHIPLogging.h>
 
 namespace chip {
@@ -85,7 +87,7 @@ CHIP_ERROR ChipLinuxStorage::ReadValue(const char * key, bool & val)
     mLock.lock();
 
     retval = ChipLinuxStorageIni::GetUIntValue(key, result);
-    val    = (result == 0 ? false : true);
+    val    = (result != 0);
 
     mLock.unlock();
 
@@ -150,11 +152,11 @@ CHIP_ERROR ChipLinuxStorage::WriteValue(const char * key, bool val)
 
     if (val)
     {
-        retval = WriteValue(key, (uint32_t) 1);
+        retval = WriteValue(key, static_cast<uint32_t>(1));
     }
     else
     {
-        retval = WriteValue(key, (uint32_t) 0);
+        retval = WriteValue(key, static_cast<uint32_t>(0));
     }
 
     return retval;
@@ -197,8 +199,8 @@ CHIP_ERROR ChipLinuxStorage::WriteValueBin(const char * key, const uint8_t * dat
 {
     static const size_t kMaxBlobSize = 5 * 1024;
 
-    CHIP_ERROR retval         = CHIP_NO_ERROR;
-    char * encodedData        = NULL;
+    CHIP_ERROR retval = CHIP_NO_ERROR;
+    chip::Platform::ScopedMemoryBuffer<char> encodedData;
     size_t encodedDataLen     = 0;
     size_t expectedEncodedLen = ((dataLen + 3) * 4) / 3;
 
@@ -212,8 +214,7 @@ CHIP_ERROR ChipLinuxStorage::WriteValueBin(const char * key, const uint8_t * dat
     // Allocate just enough space for the encoded data, and the NULL terminator
     if (retval == CHIP_NO_ERROR)
     {
-        encodedData = (char *) malloc(expectedEncodedLen + 1);
-        if (encodedData == NULL)
+        if (!encodedData.Alloc(expectedEncodedLen + 1))
         {
             retval = CHIP_ERROR_NO_MEMORY;
         }
@@ -222,20 +223,16 @@ CHIP_ERROR ChipLinuxStorage::WriteValueBin(const char * key, const uint8_t * dat
     // Encode it
     if (retval == CHIP_NO_ERROR)
     {
-        encodedDataLen              = Base64Encode(data, dataLen, encodedData);
+        // We tested above that dataLen is no more than kMaxBlobSize.
+        static_assert(kMaxBlobSize < UINT16_MAX, "dataLen won't fit");
+        encodedDataLen              = Base64Encode(data, static_cast<uint16_t>(dataLen), encodedData.Get());
         encodedData[encodedDataLen] = 0;
     }
 
     // Store it
     if (retval == CHIP_NO_ERROR)
     {
-        WriteValueStr(key, (const char *) encodedData);
-    }
-
-    // Free memory
-    if (encodedData)
-    {
-        free(encodedData);
+        WriteValueStr(key, encodedData.Get());
     }
 
     return retval;
@@ -263,7 +260,7 @@ CHIP_ERROR ChipLinuxStorage::ClearValue(const char * key)
     return retval;
 }
 
-CHIP_ERROR ChipLinuxStorage::ClearAll(void)
+CHIP_ERROR ChipLinuxStorage::ClearAll()
 {
     CHIP_ERROR retval = CHIP_NO_ERROR;
 
@@ -280,7 +277,7 @@ CHIP_ERROR ChipLinuxStorage::ClearAll(void)
     }
     else
     {
-        retval = CHIP_ERROR_PERSISTED_STORAGE_FAIL;
+        retval = CHIP_ERROR_WRITE_FAILED;
     }
 
     return retval;
@@ -299,7 +296,7 @@ bool ChipLinuxStorage::HasValue(const char * key)
     return retval;
 }
 
-CHIP_ERROR ChipLinuxStorage::Commit(void)
+CHIP_ERROR ChipLinuxStorage::Commit()
 {
     CHIP_ERROR retval = CHIP_NO_ERROR;
 
@@ -313,7 +310,7 @@ CHIP_ERROR ChipLinuxStorage::Commit(void)
     }
     else
     {
-        retval = CHIP_ERROR_PERSISTED_STORAGE_FAIL;
+        retval = CHIP_ERROR_WRITE_FAILED;
     }
 
     return retval;

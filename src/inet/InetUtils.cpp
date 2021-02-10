@@ -25,6 +25,7 @@
  */
 
 #include <string.h>
+#include <type_traits>
 
 #include <support/DLLUtil.h>
 
@@ -39,11 +40,11 @@ namespace Inet {
  *  following formats:
  *
  *    * <host-name>
- *    * <host-name>:<port>
+ *    * <host-name>:\<port\>
  *    * <ip-4-addr>
- *    * <ip-4-addr>:<port>
+ *    * <ip-4-addr>:\<port\>
  *    * <ip-6-addr>
- *    * [<ip-6-addr>]:<port>
+ *    * [<ip-6-addr>]:\<port\>
  *
  *  @param[in]  aString     The human-reable string to parse.
  *
@@ -80,13 +81,16 @@ DLL_EXPORT INET_ERROR ParseHostAndPort(const char * aString, uint16_t aStringLen
     if (*aString == '[')
     {
         // Search for the end bracket.
-        p = (const char *) memchr(aString, ']', aStringLen);
-        if (p == NULL)
+        p = static_cast<const char *>(memchr(aString, ']', aStringLen));
+        if (p == nullptr)
             return INET_ERROR_INVALID_HOST_NAME;
 
         // Return the IPv6 address.
-        aHost    = aString + 1;
-        aHostLen = p - aHost;
+        aHost = aString + 1;
+        // Cast is safe because we know p != aString, so p >= aHost, and at the
+        // same time p - aString < aStringLen, which is uint16_t.
+        static_assert(std::is_same<decltype(aStringLen), uint16_t>::value, "String length might be too big");
+        aHostLen = static_cast<uint16_t>(p - aHost);
 
         // Skip the end bracket.
         p++;
@@ -96,19 +100,25 @@ DLL_EXPORT INET_ERROR ParseHostAndPort(const char * aString, uint16_t aStringLen
     else
     {
         // Search for a colon.
-        p = (const char *) memchr(aString, ':', aStringLen);
+        p = static_cast<const char *>(memchr(aString, ':', aStringLen));
 
         // If the string contains no colons, then it is a host name or
         // IPv4 address without a port.
         //
         // If the string contains MULTIPLE colons, then it is an IPv6
         // address without a port.
-        if (p == NULL || memchr(p + 1, ':', end - p - 1) != NULL)
+        //
+        // Note: The cast is safe because p points into the string of p is not
+        // null, so end - p - 1 can't be negative.
+        if (p == nullptr || memchr(p + 1, ':', static_cast<size_t>(end - p - 1)) != nullptr)
             p = end;
 
         // Return the host/address portion.
-        aHost    = aString;
-        aHostLen = p - aString;
+        aHost = aString;
+        // Cast is safe because we know p - aString < aStringLen, which is
+        // uint16_t.
+        static_assert(std::is_same<decltype(aStringLen), uint16_t>::value, "String length might be too big");
+        aHostLen = static_cast<uint16_t>(p - aString);
     }
 
     // Enforce the DNS limit on the maximum length of a host name.
@@ -130,7 +140,7 @@ DLL_EXPORT INET_ERROR ParseHostAndPort(const char * aString, uint16_t aStringLen
         aPort = 0;
         for (; p < end; p++)
             if (*p >= '0' && *p <= '9')
-                aPort = (aPort * 10) + (*p - '0');
+                aPort = static_cast<uint16_t>((aPort * 10) + (*p - '0'));
             else
                 return INET_ERROR_INVALID_HOST_NAME;
     }
@@ -149,17 +159,17 @@ DLL_EXPORT INET_ERROR ParseHostAndPort(const char * aString, uint16_t aStringLen
  *  formats:
  *
  *    * <host-name>
- *    * <host-name>%<interface>
- *    * <host-name>:<port>
- *    * <host-name>:<port>%<interface>
+ *    * <host-name>%\<interface\>
+ *    * <host-name>:\<port\>
+ *    * <host-name>:\<port\>%\<interface\>
  *    * <ip-4-addr>
- *    * <ip-4-addr>%<interface>
- *    * <ip-4-addr>:<port>
- *    * <ip-4-addr>:<port>%<interface>
+ *    * <ip-4-addr>%\<interface\>
+ *    * <ip-4-addr>:\<port\>
+ *    * <ip-4-addr>:\<port\>%\<interface\>
  *    * <ip-6-addr>
- *    * <ip-6-addr>%<interface>
- *    * [<ip-6-addr>]:<port>
- *    * [<ip-6-addr>]:<port>%<interface>
+ *    * <ip-6-addr>%\<interface\>
+ *    * [<ip-6-addr>]:\<port\>
+ *    * [<ip-6-addr>]:\<port\>%\<interface\>
  *
  *  @param[in]  aString        The human-reable string to parse.
  *
@@ -191,7 +201,7 @@ DLL_EXPORT INET_ERROR ParseHostPortAndInterface(const char * aString, uint16_t a
 {
     const char * end = aString + aStringLen;
 
-    aInterface    = NULL;
+    aInterface    = nullptr;
     aInterfaceLen = 0;
 
     for (uint16_t i = 1; i < aStringLen; i++)
@@ -200,8 +210,8 @@ DLL_EXPORT INET_ERROR ParseHostPortAndInterface(const char * aString, uint16_t a
         if (ch == '%')
         {
             aInterface    = end - i + 1;
-            aInterfaceLen = i - 1;
-            aStringLen -= i;
+            aInterfaceLen = static_cast<uint16_t>(i - 1);
+            aStringLen    = static_cast<uint16_t>(aStringLen - i);
             break;
         }
         if (ch == ':' || ch == ']')

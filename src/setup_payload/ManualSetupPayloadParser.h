@@ -25,7 +25,7 @@
 
 #include <core/CHIPError.h>
 #include <string>
-using namespace std;
+#include <utility>
 
 namespace chip {
 
@@ -36,11 +36,11 @@ namespace chip {
 class ManualSetupPayloadParser
 {
 private:
-    string mDecimalStringRepresentation;
+    std::string mDecimalStringRepresentation;
 
 public:
-    ManualSetupPayloadParser(string decimalRepresentation) : mDecimalStringRepresentation(decimalRepresentation){};
+    ManualSetupPayloadParser(std::string decimalRepresentation) : mDecimalStringRepresentation(std::move(decimalRepresentation)) {}
     CHIP_ERROR populatePayload(SetupPayload & outPayload);
 };
 
-}; // namespace chip
+} // namespace chip

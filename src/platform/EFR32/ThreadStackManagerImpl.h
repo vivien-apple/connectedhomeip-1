@@ -23,11 +23,13 @@
  *          stack.
  */
 
-#ifndef THREAD_STACK_MANAGER_IMPL_H
-#define THREAD_STACK_MANAGER_IMPL_H
+#pragma once
 
 #include <platform/FreeRTOS/GenericThreadStackManagerImpl_FreeRTOS.h>
 #include <platform/OpenThread/GenericThreadStackManagerImpl_OpenThread_LwIP.h>
+
+#include <openthread/tasklet.h>
+#include <openthread/thread.h>
 
 extern "C" void otSysEventSignalPending(void);
 
@@ -54,9 +56,11 @@ class ThreadStackManagerImpl final : public ThreadStackManager,
 
     // Allow the generic implementation base classes to call helper methods on
     // this class.
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
     friend Internal::GenericThreadStackManagerImpl_OpenThread<ThreadStackManagerImpl>;
     friend Internal::GenericThreadStackManagerImpl_OpenThread_LwIP<ThreadStackManagerImpl>;
     friend Internal::GenericThreadStackManagerImpl_FreeRTOS<ThreadStackManagerImpl>;
+#endif
 
     // Allow glue functions called by OpenThread to call helper methods on this
     // class.
@@ -68,6 +72,8 @@ public:
 
     using ThreadStackManager::InitThreadStack;
     CHIP_ERROR InitThreadStack(otInstance * otInst);
+    void _OnCHIPoBLEAdvertisingStart(void);
+    void _OnCHIPoBLEAdvertisingStop(void);
 
 private:
     // ===== Methods that implement the ThreadStackManager abstract interface.
@@ -113,5 +119,3 @@ inline ThreadStackManagerImpl & ThreadStackMgrImpl(void)
 
 } // namespace DeviceLayer
 } // namespace chip
-
-#endif // THREAD_STACK_MANAGER_IMPL_H

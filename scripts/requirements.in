@@ -1,0 +1,33 @@
+pip-tools
+
+# esp-idf
+pyelftools>=0.22
+click>=5.0
+pyserial>=3.0
+future>=0.15.2
+cryptography>=3.2
+pyparsing>=2.0.3,<2.4.0
+pyelftools>=0.22
+
+# cirque tests
+requests>=2.24.0
+
+# device controller wheel package
+wheel==0.34.2
+
+# mobly tests
+portpicker
+mobly
+
+# zephyr
+west>=0.9.0
+
+# happy tests
+lockfile
+psutil >= 5.7.3
+
+# pigweed
+ipython
+coloredlogs
+watchdog
+protobuf

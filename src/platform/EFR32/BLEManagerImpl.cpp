@@ -1,6 +1,6 @@
 /*
  *
- *    Copyright (c) 2020 Project CHIP Authors
+ *    Copyright (c) 2020-2021 Project CHIP Authors
  *    Copyright (c) 2019 Nest Labs, Inc.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
@@ -84,17 +84,18 @@ const ChipBleUUID ChipUUID_CHIPoBLEChar_TX = { { 0x18, 0xEE, 0x2E, 0xF5, 0x26, 0
 
 BLEManagerImpl BLEManagerImpl::sInstance;
 
-/***************************************************************************/ /**
-                                                                               * Setup the bluetooth init function.
-                                                                               *
-                                                                               * @return error code for the gecko_init
-                                                                               *function
-                                                                               *
-                                                                               * All bluetooth specific initialization
-                                                                               *code should be here like gecko_init(),
-                                                                               * gecko_init_whitelisting(),
-                                                                               *gecko_init_multiprotocol() and so on.
-                                                                               ******************************************************************************/
+/***************************************************************************/
+/**
+ * Setup the bluetooth init function.
+ *
+ * @return error code for the gecko_init
+ * function
+ *
+ * All bluetooth specific initialization
+ * code should be here like gecko_init(),
+ * gecko_init_whitelisting(),
+ * gecko_init_multiprotocol() and so on.
+ ******************************************************************************/
 extern "C" errorcode_t initialize_bluetooth()
 {
     errorcode_t err = gecko_init(&config);
@@ -157,7 +158,7 @@ CHIP_ERROR BLEManagerImpl::_Init()
                 CHIP_DEVICE_CONFIG_BLE_APP_TASK_PRIORITY,                         /* Priority at which the task is created. */
                 NULL);                                                            /* Variable to hold the task's data structure. */
 
-    mFlags = kFlag_AdvertisingEnabled;
+    mFlags = CHIP_DEVICE_CONFIG_CHIPOBLE_ENABLE_ADVERTISING_AUTOSTART ? kFlag_AdvertisingEnabled : 0;
     PlatformMgr().ScheduleWork(DriveBLEState, 0);
 
 exit:
@@ -185,11 +186,11 @@ void BLEManagerImpl::bluetoothStackEventHandler(void * p_arg)
     while (1)
     {
         // wait for Bluetooth stack events, do not consume set flag
-        flags |= xEventGroupWaitBits(bluetooth_event_flags,            /* The event group being tested. */
-                                     BLUETOOTH_EVENT_FLAG_EVT_WAITING, /* The bits within the event group to wait for. */
-                                     pdFALSE,                          /* Dont clear flags before returning */
-                                     pdFALSE,                          /* Any flag will do, dont wait for all flags to be set */
-                                     portMAX_DELAY);                   /* Wait for maximum duration for bit to be set */
+        flags = xEventGroupWaitBits(bluetooth_event_flags,            /* The event group being tested. */
+                                    BLUETOOTH_EVENT_FLAG_EVT_WAITING, /* The bits within the event group to wait for. */
+                                    pdFALSE,                          /* Dont clear flags before returning */
+                                    pdFALSE,                          /* Any flag will do, dont wait for all flags to be set */
+                                    portMAX_DELAY);                   /* Wait for maximum duration for bit to be set */
 
         if (flags & BLUETOOTH_EVENT_FLAG_EVT_WAITING)
         {
@@ -264,7 +265,7 @@ void BLEManagerImpl::bluetoothStackEventHandler(void * p_arg)
 
         PlatformMgr().UnlockChipStack();
 
-        flags = vRaiseEventFlagBasedOnContext(bluetooth_event_flags, BLUETOOTH_EVENT_FLAG_EVT_HANDLED, NULL);
+        vRaiseEventFlagBasedOnContext(bluetooth_event_flags, BLUETOOTH_EVENT_FLAG_EVT_HANDLED);
     }
 }
 
@@ -342,7 +343,9 @@ CHIP_ERROR BLEManagerImpl::_SetDeviceName(const char * deviceName)
         strcpy(mDeviceName, deviceName);
         SetFlag(mFlags, kFlag_DeviceNameSet, true);
         ChipLogProgress(DeviceLayer, "Setting device name to : \"%s\"", deviceName);
-        gecko_cmd_gatt_server_write_attribute_value(gattdb_device_name, 0, strlen(deviceName), (uint8_t *) deviceName);
+        static_assert(kMaxDeviceNameLength <= UINT16_MAX, "deviceName length might not fit in a uint8_t");
+        gecko_cmd_gatt_server_write_attribute_value(gattdb_device_name, 0, static_cast<uint8_t>(strlen(deviceName)),
+                                                    (uint8_t *) deviceName);
     }
     else
     {
@@ -374,7 +377,7 @@ void BLEManagerImpl::_OnPlatformEvent(const ChipDeviceEvent * event)
     case DeviceEventType::kCHIPoBLEWriteReceived: {
         ChipLogProgress(DeviceLayer, "_OnPlatformEvent kCHIPoBLEWriteReceived");
         HandleWriteReceived(event->CHIPoBLEWriteReceived.ConId, &CHIP_BLE_SVC_ID, &ChipUUID_CHIPoBLEChar_RX,
-                            event->CHIPoBLEWriteReceived.Data);
+                            PacketBufferHandle::Adopt(event->CHIPoBLEWriteReceived.Data));
     }
     break;
 
@@ -433,7 +436,7 @@ uint16_t BLEManagerImpl::GetMTU(BLE_CONNECTION_OBJECT conId) const
 }
 
 bool BLEManagerImpl::SendIndication(BLE_CONNECTION_OBJECT conId, const ChipBleUUID * svcId, const ChipBleUUID * charId,
-                                    PacketBuffer * data)
+                                    PacketBufferHandle data)
 {
     CHIP_ERROR err              = CHIP_NO_ERROR;
     CHIPoBLEConState * conState = GetConnectionState(conId);
@@ -447,12 +450,14 @@ bool BLEManagerImpl::SendIndication(BLE_CONNECTION_OBJECT conId, const ChipBleUU
     // start timer for light indication confirmation
     gecko_cmd_hardware_set_soft_timer(TIMER_S_2_TIMERTICK(1), timerHandle, true);
 
-    rsp = gecko_cmd_gatt_server_send_characteristic_notification(conId, cId, data->DataLength(), data->Start());
+    // TODO: We might need to check the length here before casting.
+    // https://github.com/project-chip/connectedhomeip/issues/2595
+    rsp =
+        gecko_cmd_gatt_server_send_characteristic_notification(conId, cId, static_cast<uint8_t>(data->DataLength()), data->Start());
 
     err = MapBLEError(rsp->result);
 
 exit:
-    PacketBuffer::Free(data);
     if (err != CHIP_NO_ERROR)
     {
         ChipLogError(DeviceLayer, "BLEManagerImpl::SendIndication() failed: %s", ErrorStr(err));
@@ -462,14 +467,14 @@ exit:
 }
 
 bool BLEManagerImpl::SendWriteRequest(BLE_CONNECTION_OBJECT conId, const ChipBleUUID * svcId, const ChipBleUUID * charId,
-                                      PacketBuffer * pBuf)
+                                      PacketBufferHandle pBuf)
 {
     ChipLogProgress(DeviceLayer, "BLEManagerImpl::SendWriteRequest() not supported");
     return false;
 }
 
 bool BLEManagerImpl::SendReadRequest(BLE_CONNECTION_OBJECT conId, const ChipBleUUID * svcId, const ChipBleUUID * charId,
-                                     PacketBuffer * pBuf)
+                                     PacketBufferHandle pBuf)
 {
     ChipLogProgress(DeviceLayer, "BLEManagerImpl::SendReadRequest() not supported");
     return false;
@@ -523,7 +528,7 @@ void BLEManagerImpl::DriveBLEState(void)
     }
 
     // Otherwise, stop advertising if it is enabled.
-    else if (GetFlag(mFlags, kFlag_AdvertisingEnabled))
+    else if (GetFlag(mFlags, kFlag_Advertising))
     {
         err = StopAdvertising();
         SuccessOrExit(err);
@@ -560,21 +565,30 @@ CHIP_ERROR BLEManagerImpl::ConfigureAdvertisingData(void)
 
         mDeviceName[kMaxDeviceNameLength] = 0;
 
-        gecko_cmd_gatt_server_write_attribute_value(gattdb_device_name, 0, strlen(mDeviceName), (uint8_t *) mDeviceName);
+        // TODO: This cast might not be OK.
+        // https://github.com/project-chip/connectedhomeip/issues/2596
+        gecko_cmd_gatt_server_write_attribute_value(gattdb_device_name, 0, static_cast<uint8_t>(strlen(mDeviceName)),
+                                                    (uint8_t *) mDeviceName);
     }
 
-    mDeviceNameLength   = strlen(mDeviceName);   // Device Name length + length field
-    mDeviceIdInfoLength = sizeof(mDeviceIdInfo); // Servicedatalen + length+ UUID (Short)
+    // TODO: This cast might not be OK.
+    // https://github.com/project-chip/connectedhomeip/issues/2596
+    mDeviceNameLength   = static_cast<uint8_t>(strlen(mDeviceName)); // Device Name length + length field
+    mDeviceIdInfoLength = sizeof(mDeviceIdInfo);                     // Servicedatalen + length+ UUID (Short)
 
     index                 = 0;
     responseData[index++] = 0x02;                     // length
     responseData[index++] = CHIP_ADV_DATA_TYPE_FLAGS; // AD type : flags
     responseData[index++] = CHIP_ADV_DATA_FLAGS;      // AD value
 
-    responseData[index++] = mDeviceNameLength + 1;                // length
-    responseData[index++] = CHIP_ADV_DATA_TYPE_NAME;              // AD type : name
-    memcpy(&responseData[index], mDeviceName, mDeviceNameLength); // AD value
-    index += mDeviceNameLength;
+    // TODO: This cast might not be OK.
+    // https://github.com/project-chip/connectedhomeip/issues/2596
+    responseData[index++] = static_cast<uint8_t>(mDeviceNameLength + 1); // length
+    responseData[index++] = CHIP_ADV_DATA_TYPE_NAME;                     // AD type : name
+    memcpy(&responseData[index], mDeviceName, mDeviceNameLength);        // AD value
+    // TODO: This cast might not be OK.
+    // https://github.com/project-chip/connectedhomeip/issues/2596
+    index = static_cast<uint8_t>(index + mDeviceNameLength);
 
     responseData[index++] = CHIP_ADV_SHORT_UUID_LEN + 1;  // AD length
     responseData[index++] = CHIP_ADV_DATA_TYPE_UUID;      // AD type : uuid
@@ -593,12 +607,14 @@ CHIP_ERROR BLEManagerImpl::ConfigureAdvertisingData(void)
 
     index = 0;
 
-    advData[index++] = mDeviceIdInfoLength + CHIP_ADV_SHORT_UUID_LEN + 1; // AD length
-    advData[index++] = CHIP_ADV_DATA_TYPE_SERVICE_DATA;                   // AD type : Service Data
-    advData[index++] = ShortUUID_CHIPoBLEService[0];                      // AD value
+    static_assert(sizeof(mDeviceIdInfo) + CHIP_ADV_SHORT_UUID_LEN + 1 <= UINT8_MAX, "Our length won't fit in a uint8_t");
+    static_assert(2 + CHIP_ADV_SHORT_UUID_LEN + sizeof(mDeviceIdInfo) + 1 <= MAX_ADV_DATA_LEN, "Our buffer is not big enough");
+    advData[index++] = static_cast<uint8_t>(mDeviceIdInfoLength + CHIP_ADV_SHORT_UUID_LEN + 1); // AD length
+    advData[index++] = CHIP_ADV_DATA_TYPE_SERVICE_DATA;                                         // AD type : Service Data
+    advData[index++] = ShortUUID_CHIPoBLEService[0];                                            // AD value
     advData[index++] = ShortUUID_CHIPoBLEService[1];
     memcpy(&advData[index], (void *) &mDeviceIdInfo, mDeviceIdInfoLength); // AD value
-    index += mDeviceIdInfoLength;
+    index = static_cast<uint8_t>(index + mDeviceIdInfoLength);
 
     setAdvDataRsp = gecko_cmd_le_gap_bt5_set_adv_data(CHIP_ADV_CHIPOBLE_SERVICE_HANDLE, CHIP_ADV_DATA, index, (uint8_t *) &advData);
 
@@ -620,6 +636,7 @@ CHIP_ERROR BLEManagerImpl::StartAdvertising(void)
     err = ConfigureAdvertisingData();
     SuccessOrExit(err);
 
+    SetFlag(mFlags, kFlag_Advertising, true);
     ClearFlag(mFlags, kFlag_RestartAdvertising);
 
     interval_min = interval_max =
@@ -659,8 +676,23 @@ exit:
 void BLEManagerImpl::UpdateMtu(volatile struct gecko_cmd_packet * evt)
 {
     CHIPoBLEConState * bleConnState = GetConnectionState(evt->data.evt_gatt_mtu_exchanged.connection);
-    bleConnState->mtu               = evt->data.evt_gatt_mtu_exchanged.mtu;
-    ;
+    if (bleConnState != NULL)
+    {
+        // bleConnState->MTU is a 10-bit field inside a uint16_t.  We're
+        // assigning to it from a uint16_t, and compilers warn about
+        // possibly not fitting.  There's no way to suppress that warning
+        // via explicit cast; we have to disable the warning around the
+        // assignment.
+        //
+        // TODO: https://github.com/project-chip/connectedhomeip/issues/2569
+        // tracks making this safe with a check or explaining why no check
+        // is needed.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wconversion"
+        bleConnState->mtu = evt->data.evt_gatt_mtu_exchanged.mtu;
+#pragma GCC diagnostic pop
+        ;
+    }
 }
 
 void BLEManagerImpl::HandleBootEvent(void)
@@ -719,7 +751,7 @@ void BLEManagerImpl::HandleConnectionCloseEvent(volatile struct gecko_cmd_packet
 
         // Arrange to re-enable connectable advertising in case it was disabled due to the
         // maximum connection limit being reached.
-        ClearFlag(mFlags, kFlag_Advertising);
+        SetFlag(mFlags, kFlag_RestartAdvertising, true);
         PlatformMgr().ScheduleWork(DriveBLEState, 0);
     }
 }
@@ -785,16 +817,13 @@ exit:
 void BLEManagerImpl::HandleRXCharWrite(volatile struct gecko_cmd_packet * evt)
 {
     CHIP_ERROR err = CHIP_NO_ERROR;
-    PacketBuffer * buf;
+    System::PacketBufferHandle buf;
     uint16_t writeLen = evt->data.evt_gatt_server_user_write_request.value.len;
     uint8_t * data    = (uint8_t *) evt->data.evt_gatt_server_user_write_request.value.data;
 
-    // Copy the data to a PacketBuffer.
-    buf = PacketBuffer::New(0);
-    VerifyOrExit(buf != NULL, err = CHIP_ERROR_NO_MEMORY);
-    VerifyOrExit(buf->AvailableDataLength() >= writeLen, err = CHIP_ERROR_BUFFER_TOO_SMALL);
-    memcpy(buf->Start(), data, writeLen);
-    buf->SetDataLength(writeLen);
+    // Copy the data to a packet buffer.
+    buf = System::PacketBufferHandle::NewWithData(data, writeLen, 0, 0);
+    VerifyOrExit(!buf.IsNull(), err = CHIP_ERROR_NO_MEMORY);
 
     ChipLogDetail(DeviceLayer, "Write request/command received for CHIPoBLE RX characteristic (con %" PRIu16 ", len %" PRIu16 ")",
                   evt->data.evt_gatt_server_user_write_request.connection, buf->DataLength());
@@ -804,9 +833,8 @@ void BLEManagerImpl::HandleRXCharWrite(volatile struct gecko_cmd_packet * evt)
         ChipDeviceEvent event;
         event.Type                        = DeviceEventType::kCHIPoBLEWriteReceived;
         event.CHIPoBLEWriteReceived.ConId = evt->data.evt_gatt_server_user_write_request.connection;
-        event.CHIPoBLEWriteReceived.Data  = buf;
+        event.CHIPoBLEWriteReceived.Data  = std::move(buf).UnsafeRelease();
         PlatformMgr().PostEvent(&event);
-        buf = NULL;
     }
 
 exit:
@@ -814,7 +842,6 @@ exit:
     {
         ChipLogError(DeviceLayer, "HandleRXCharWrite() failed: %s", ErrorStr(err));
     }
-    PacketBuffer::Free(buf);
 }
 
 void BLEManagerImpl::HandleTxConfirmationEvent(volatile struct gecko_cmd_packet * evt)

@@ -32,6 +32,7 @@
 #include "InetLayer.h"
 #include "InetLayerEvents.h"
 
+#include <support/CHIPMemString.h>
 #include <support/CodeUtils.h>
 #include <support/DLLUtil.h>
 
@@ -41,7 +42,7 @@
 #include <lwip/tcpip.h>
 #endif // CHIP_SYSTEM_CONFIG_USE_LWIP
 
-#if CHIP_SYSTEM_CONFIG_USE_SOCKETS
+#if CHIP_SYSTEM_CONFIG_USE_SOCKETS && CHIP_SYSTEM_CONFIG_USE_BSD_IFADDRS
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/socket.h>
@@ -56,7 +57,11 @@
 #else // !defined(__ANDROID__)
 #include <ifaddrs.h>
 #endif // !defined(__ANDROID__)
-#endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS
+#endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS && CHIP_SYSTEM_CONFIG_USE_BSD_IFADDRS
+
+#if CHIP_SYSTEM_CONFIG_USE_ZEPHYR_NET_IF
+#include <net/net_if.h>
+#endif // CHIP_SYSTEM_CONFIG_USE_ZEPHYR_NET_IF
 
 #include <stdio.h>
 #include <string.h>
@@ -91,23 +96,34 @@ DLL_EXPORT INET_ERROR GetInterfaceName(InterfaceId intfId, char * nameBuf, size_
         return INET_NO_ERROR;
 #endif // CHIP_SYSTEM_CONFIG_USE_LWIP
 
-#if CHIP_SYSTEM_CONFIG_USE_SOCKETS
+#if CHIP_SYSTEM_CONFIG_USE_SOCKETS && CHIP_SYSTEM_CONFIG_USE_BSD_IFADDRS
         char intfName[IF_NAMESIZE];
-        if (if_indextoname(intfId, intfName) == NULL)
+        if (if_indextoname(intfId, intfName) == nullptr)
             return chip::System::MapErrorPOSIX(errno);
         if (strlen(intfName) >= nameBufSize)
             return INET_ERROR_NO_MEMORY;
         strcpy(nameBuf, intfName);
         return INET_NO_ERROR;
-#endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS
-    }
-    else
-    {
-        if (nameBufSize < 1)
+#endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS && CHIP_SYSTEM_CONFIG_USE_BSD_IFADDRS
+
+#if CHIP_SYSTEM_CONFIG_USE_ZEPHYR_NET_IF
+        net_if * currentInterface = net_if_get_by_index(intfId);
+        if (!currentInterface)
+            return INET_ERROR_INCORRECT_STATE;
+        const char * name = net_if_get_device(currentInterface)->name;
+        if (strlen(name) >= nameBufSize)
             return INET_ERROR_NO_MEMORY;
-        nameBuf[0] = 0;
+        strcpy(nameBuf, name);
         return INET_NO_ERROR;
+
+#endif // CHIP_SYSTEM_CONFIG_USE_ZEPHYR_NET_IF
     }
+
+    if (nameBufSize < 1)
+        return INET_ERROR_NO_MEMORY;
+
+    nameBuf[0] = 0;
+    return INET_NO_ERROR;
 }
 
 /**
@@ -153,15 +169,30 @@ DLL_EXPORT INET_ERROR InterfaceNameToId(const char * intfName, InterfaceId & int
     return INET_ERROR_UNKNOWN_INTERFACE;
 #endif // CHIP_SYSTEM_CONFIG_USE_LWIP
 
-#if CHIP_SYSTEM_CONFIG_USE_SOCKETS
+#if CHIP_SYSTEM_CONFIG_USE_SOCKETS && CHIP_SYSTEM_CONFIG_USE_BSD_IFADDRS
     intfId = if_nametoindex(intfName);
     if (intfId == 0)
         return (errno == ENXIO) ? INET_ERROR_UNKNOWN_INTERFACE : chip::System::MapErrorPOSIX(errno);
     return INET_NO_ERROR;
-#endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS
-}
+#endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS && CHIP_SYSTEM_CONFIG_USE_BSD_IFADDRS
 
-#if CHIP_SYSTEM_CONFIG_USE_SOCKETS
+#if CHIP_SYSTEM_CONFIG_USE_ZEPHYR_NET_IF
+    int currentId = 0;
+    net_if * currentInterface;
+
+    while ((currentInterface = net_if_get_by_index(++currentId)) != nullptr)
+    {
+        if (strcmp(net_if_get_device(currentInterface)->name, intfName) == 0)
+        {
+            intfId = currentId;
+            return INET_NO_ERROR;
+        }
+    }
+    return INET_ERROR_UNKNOWN_INTERFACE;
+#endif // CHIP_SYSTEM_CONFIG_USE_ZEPHYR_NET_IF
+} // namespace Inet
+
+#if CHIP_SYSTEM_CONFIG_USE_SOCKETS && CHIP_SYSTEM_CONFIG_USE_BSD_IFADDRS
 
 static int sIOCTLSocket = -1;
 
@@ -170,7 +201,7 @@ static int sIOCTLSocket = -1;
  *
  * This function is thread-safe on all platforms.
  */
-int GetIOCTLSocket(void)
+int GetIOCTLSocket()
 {
     if (sIOCTLSocket == -1)
     {
@@ -201,7 +232,7 @@ int GetIOCTLSocket(void)
  *
  *   NB: This function is NOT thread-safe with respect to \c GetIOCTLSocket.
  */
-void CloseIOCTLSocket(void)
+void CloseIOCTLSocket()
 {
     if (sIOCTLSocket == -1)
     {
@@ -210,7 +241,7 @@ void CloseIOCTLSocket(void)
     }
 }
 
-#endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS
+#endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS && CHIP_SYSTEM_CONFIG_USE_BSD_IFADDRS
 
 /**
  * @fn      InterfaceIterator::InterfaceIterator(void)
@@ -222,17 +253,158 @@ void CloseIOCTLSocket(void)
  *     this constructor may allocate resources recycled by the destructor.
  */
 
-#if CHIP_SYSTEM_CONFIG_USE_SOCKETS
+#if CHIP_SYSTEM_CONFIG_USE_SOCKETS && CHIP_SYSTEM_CONFIG_USE_BSD_IFADDRS
 
-InterfaceIterator::InterfaceIterator(void)
+#if __ANDROID__ && __ANDROID_API__ < 24
+
+static struct if_nameindex * backport_if_nameindex(void);
+static void backport_if_freenameindex(struct if_nameindex *);
+
+static void backport_if_freenameindex(struct if_nameindex * inArray)
 {
-    mIntfArray       = NULL;
-    mCurIntf         = 0;
-    mIntfFlags       = 0;
-    mIntfFlagsCached = 0;
+    if (inArray == NULL)
+    {
+        return;
+    }
+
+    for (size_t i = 0; inArray[i].if_index != 0; i++)
+    {
+        if (inArray[i].if_name != NULL)
+        {
+            free(inArray[i].if_name);
+        }
+    }
+
+    free(inArray);
 }
 
-#endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS
+static struct if_nameindex * backport_if_nameindex(void)
+{
+    int err;
+    unsigned index;
+    size_t intfIter              = 0;
+    size_t maxIntfNum            = 0;
+    size_t numIntf               = 0;
+    size_t numAddrs              = 0;
+    struct if_nameindex * retval = NULL;
+    struct if_nameindex * tmpval = NULL;
+    struct ifaddrs * addrList    = NULL;
+    struct ifaddrs * addrIter    = NULL;
+    const char * lastIntfName    = "";
+
+    err = getifaddrs(&addrList);
+    VerifyOrExit(err >= 0, );
+
+    // coalesce on consecutive interface names
+    for (addrIter = addrList; addrIter != NULL; addrIter = addrIter->ifa_next)
+    {
+        numAddrs++;
+        if (strcmp(addrIter->ifa_name, lastIntfName) == 0)
+        {
+            continue;
+        }
+        numIntf++;
+        lastIntfName = addrIter->ifa_name;
+    }
+
+    tmpval = (struct if_nameindex *) malloc((numIntf + 1) * sizeof(struct if_nameindex));
+    VerifyOrExit(tmpval != NULL, );
+    memset(tmpval, 0, (numIntf + 1) * sizeof(struct if_nameindex));
+
+    lastIntfName = "";
+    for (addrIter = addrList; addrIter != NULL; addrIter = addrIter->ifa_next)
+    {
+        if (strcmp(addrIter->ifa_name, lastIntfName) == 0)
+        {
+            continue;
+        }
+
+        index = if_nametoindex(addrIter->ifa_name);
+        if (index != 0)
+        {
+            tmpval[intfIter].if_index = index;
+            tmpval[intfIter].if_name  = strdup(addrIter->ifa_name);
+            intfIter++;
+        }
+        lastIntfName = addrIter->ifa_name;
+    }
+
+    // coalesce on interface index
+    maxIntfNum = 0;
+    for (size_t i = 0; tmpval[i].if_index != 0; i++)
+    {
+        if (maxIntfNum < tmpval[i].if_index)
+        {
+            maxIntfNum = tmpval[i].if_index;
+        }
+    }
+
+    retval = (struct if_nameindex *) malloc((maxIntfNum + 1) * sizeof(struct if_nameindex));
+    VerifyOrExit(retval != NULL, );
+    memset(retval, 0, (maxIntfNum + 1) * sizeof(struct if_nameindex));
+
+    for (size_t i = 0; tmpval[i].if_index != 0; i++)
+    {
+        struct if_nameindex * intf = &tmpval[i];
+        if (retval[intf->if_index - 1].if_index == 0)
+        {
+            retval[intf->if_index - 1] = *intf;
+        }
+        else
+        {
+            free(intf->if_name);
+            intf->if_index = 0;
+            intf->if_name  = 0;
+        }
+    }
+
+    intfIter = 0;
+
+    // coalesce potential gaps between indeces
+    for (size_t i = 0; i < maxIntfNum; i++)
+    {
+        if (retval[i].if_index != 0)
+        {
+            retval[intfIter] = retval[i];
+            intfIter++;
+        }
+    }
+
+    for (size_t i = intfIter; i < maxIntfNum; i++)
+    {
+        retval[i].if_index = 0;
+        retval[i].if_name  = NULL;
+    }
+
+exit:
+    if (tmpval != NULL)
+    {
+        free(tmpval);
+    }
+
+    if (addrList != NULL)
+    {
+        freeifaddrs(addrList);
+    }
+
+    return retval;
+}
+
+#endif // __ANDROID__ && __ANDROID_API__ < 24
+
+InterfaceIterator::InterfaceIterator()
+{
+    mIntfArray       = nullptr;
+    mCurIntf         = 0;
+    mIntfFlags       = 0;
+    mIntfFlagsCached = false;
+}
+
+#endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS && CHIP_SYSTEM_CONFIG_USE_BSD_IFADDRS
+
+#if CHIP_SYSTEM_CONFIG_USE_ZEPHYR_NET_IF
+InterfaceIterator::InterfaceIterator() : mCurrentInterface(net_if_get_by_index(mCurrentId)) {}
+#endif // CHIP_SYSTEM_CONFIG_USE_ZEPHYR_NET_IF
 
 /**
  * @fn      InterfaceIterator::~InterfaceIterator(void)
@@ -243,18 +415,22 @@ InterfaceIterator::InterfaceIterator(void)
  *     Recycles any resources allocated by the constructor.
  */
 
-#if CHIP_SYSTEM_CONFIG_USE_SOCKETS
+#if CHIP_SYSTEM_CONFIG_USE_SOCKETS && CHIP_SYSTEM_CONFIG_USE_BSD_IFADDRS
 
-InterfaceIterator::~InterfaceIterator(void)
+InterfaceIterator::~InterfaceIterator()
 {
-    if (mIntfArray != NULL)
+    if (mIntfArray != nullptr)
     {
+#if __ANDROID__ && __ANDROID_API__ < 24
+        backport_if_freenameindex(mIntfArray);
+#else
         if_freenameindex(mIntfArray);
-        mIntfArray = NULL;
+#endif
+        mIntfArray = nullptr;
     }
 }
 
-#endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS
+#endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS && CHIP_SYSTEM_CONFIG_USE_BSD_IFADDRS
 
 /**
  * @fn      bool InterfaceIterator::HasCurrent(void)
@@ -265,14 +441,19 @@ InterfaceIterator::~InterfaceIterator(void)
  *          \c false if positioned beyond the end of the interface list.
  */
 
-#if CHIP_SYSTEM_CONFIG_USE_SOCKETS || CHIP_SYSTEM_CONFIG_USE_NETWORK_FRAMEWORK
+#if CHIP_SYSTEM_CONFIG_USE_BSD_IFADDRS
+bool InterfaceIterator::HasCurrent()
+{
+    return (mIntfArray != nullptr) ? mIntfArray[mCurIntf].if_index != 0 : Next();
+}
+#endif // CHIP_SYSTEM_CONFIG_USE_BSD_IFADDRS
 
+#if CHIP_SYSTEM_CONFIG_USE_ZEPHYR_NET_IF
 bool InterfaceIterator::HasCurrent(void)
 {
-    return (mIntfArray != NULL) ? mIntfArray[mCurIntf].if_index != 0 : Next();
+    return mCurrentInterface != nullptr;
 }
-
-#endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS || CHIP_SYSTEM_CONFIG_USE_NETWORK_FRAMEWORK
+#endif // CHIP_SYSTEM_CONFIG_USE_ZEPHYR_NET_IF
 
 /**
  * @fn      bool InterfaceIterator::Next(void)
@@ -294,13 +475,17 @@ bool InterfaceIterator::HasCurrent(void)
  *     interfaces, *except* in the case of LwIP systems when the currently selected
  *     interface is removed from the list, which causes iteration to end immediately.
  */
-bool InterfaceIterator::Next(void)
+bool InterfaceIterator::Next()
 {
-#if CHIP_SYSTEM_CONFIG_USE_SOCKETS
+#if CHIP_SYSTEM_CONFIG_USE_SOCKETS && CHIP_SYSTEM_CONFIG_USE_BSD_IFADDRS
 
-    if (mIntfArray == NULL)
+    if (mIntfArray == nullptr)
     {
+#if __ANDROID__ && __ANDROID_API__ < 24
+        mIntfArray = backport_if_nameindex();
+#else
         mIntfArray = if_nameindex();
+#endif
     }
     else if (mIntfArray[mCurIntf].if_index != 0)
     {
@@ -308,9 +493,14 @@ bool InterfaceIterator::Next(void)
         mIntfFlags       = 0;
         mIntfFlagsCached = false;
     }
-    return (mIntfArray != NULL && mIntfArray[mCurIntf].if_index != 0);
+    return (mIntfArray != nullptr && mIntfArray[mCurIntf].if_index != 0);
 
-#endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS
+#endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS && CHIP_SYSTEM_CONFIG_USE_BSD_IFADDRS
+
+#if CHIP_SYSTEM_CONFIG_USE_ZEPHYR_NET_IF
+    mCurrentInterface = net_if_get_by_index(++mCurrentId);
+    return HasCurrent();
+#endif // CHIP_SYSTEM_CONFIG_USE_ZEPHYR_NET_IF
 
 #if CHIP_SYSTEM_CONFIG_USE_LWIP
 
@@ -350,14 +540,19 @@ bool InterfaceIterator::Next(void)
  * @retval  id                      the current network interface id.
  */
 
-#if CHIP_SYSTEM_CONFIG_USE_SOCKETS
-
-InterfaceId InterfaceIterator::GetInterfaceId(void)
+#if CHIP_SYSTEM_CONFIG_USE_SOCKETS && CHIP_SYSTEM_CONFIG_USE_BSD_IFADDRS
+InterfaceId InterfaceIterator::GetInterfaceId()
 {
     return (HasCurrent()) ? mIntfArray[mCurIntf].if_index : INET_NULL_INTERFACEID;
 }
+#endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS && CHIP_SYSTEM_CONFIG_USE_BSD_IFADDRS
 
-#endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS
+#if CHIP_SYSTEM_CONFIG_USE_ZEPHYR_NET_IF
+InterfaceId InterfaceIterator::GetInterfaceId(void)
+{
+    return HasCurrent() ? mCurrentId : INET_NULL_INTERFACEID;
+}
+#endif // CHIP_SYSTEM_CONFIG_USE_ZEPHYR_NET_IF
 
 /**
  * @brief   Get the name of the current network interface
@@ -382,11 +577,15 @@ INET_ERROR InterfaceIterator::GetInterfaceName(char * nameBuf, size_t nameBufSiz
 
     VerifyOrExit(HasCurrent(), err = INET_ERROR_INCORRECT_STATE);
 
-#if CHIP_SYSTEM_CONFIG_USE_SOCKETS
+#if CHIP_SYSTEM_CONFIG_USE_SOCKETS && CHIP_SYSTEM_CONFIG_USE_BSD_IFADDRS
     VerifyOrExit(strlen(mIntfArray[mCurIntf].if_name) < nameBufSize, err = INET_ERROR_NO_MEMORY);
     strncpy(nameBuf, mIntfArray[mCurIntf].if_name, nameBufSize);
     err = INET_NO_ERROR;
-#endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS
+#endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS && CHIP_SYSTEM_CONFIG_USE_BSD_IFADDRS
+
+#if CHIP_SYSTEM_CONFIG_USE_ZEPHYR_NET_IF
+    err = ::chip::Inet::GetInterfaceName(mCurrentId, nameBuf, nameBufSize);
+#endif // CHIP_SYSTEM_CONFIG_USE_ZEPHYR_NET_IF
 
 #if CHIP_SYSTEM_CONFIG_USE_LWIP
     err = ::chip::Inet::GetInterfaceName(mCurNetif, nameBuf, nameBufSize);
@@ -402,11 +601,15 @@ exit:
  * @return  \c true if current network interface is up, \c false if not
  *          or if the iterator is positioned beyond the end of the list.
  */
-bool InterfaceIterator::IsUp(void)
+bool InterfaceIterator::IsUp()
 {
-#if CHIP_SYSTEM_CONFIG_USE_SOCKETS
+#if CHIP_SYSTEM_CONFIG_USE_SOCKETS && CHIP_SYSTEM_CONFIG_USE_BSD_IFADDRS
     return (GetFlags() & IFF_UP) != 0;
-#endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS
+#endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS && CHIP_SYSTEM_CONFIG_USE_BSD_IFADDRS
+
+#if CHIP_SYSTEM_CONFIG_USE_ZEPHYR_NET_IF
+    return HasCurrent() && net_if_is_up(mCurrentInterface);
+#endif // CHIP_SYSTEM_CONFIG_USE_ZEPHYR_NET_IF
 
 #if CHIP_SYSTEM_CONFIG_USE_LWIP
     return HasCurrent() && netif_is_up(mCurNetif);
@@ -419,11 +622,15 @@ bool InterfaceIterator::IsUp(void)
  * @return  \c true if current network interface supports multicast, \c false
  *          if not, or if the iterator is positioned beyond the end of the list.
  */
-bool InterfaceIterator::SupportsMulticast(void)
+bool InterfaceIterator::SupportsMulticast()
 {
-#if CHIP_SYSTEM_CONFIG_USE_SOCKETS
+#if CHIP_SYSTEM_CONFIG_USE_SOCKETS && CHIP_SYSTEM_CONFIG_USE_BSD_IFADDRS
     return (GetFlags() & IFF_MULTICAST) != 0;
-#endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS
+#endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS && CHIP_SYSTEM_CONFIG_USE_BSD_IFADDRS
+
+#if CHIP_SYSTEM_CONFIG_USE_ZEPHYR_NET_IF
+    return HasCurrent() && NET_IF_MAX_IPV6_MADDR > 0;
+#endif // CHIP_SYSTEM_CONFIG_USE_ZEPHYR_NET_IF
 
 #if CHIP_SYSTEM_CONFIG_USE_LWIP
     return HasCurrent() &&
@@ -441,26 +648,30 @@ bool InterfaceIterator::SupportsMulticast(void)
  * @return  \c true if current network interface has a broadcast address, \c false
  *          if not, or if the iterator is positioned beyond the end of the list.
  */
-bool InterfaceIterator::HasBroadcastAddress(void)
+bool InterfaceIterator::HasBroadcastAddress()
 {
-#if CHIP_SYSTEM_CONFIG_USE_SOCKETS
+#if CHIP_SYSTEM_CONFIG_USE_SOCKETS && CHIP_SYSTEM_CONFIG_USE_BSD_IFADDRS
     return (GetFlags() & IFF_BROADCAST) != 0;
-#endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS
+#endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS && CHIP_SYSTEM_CONFIG_USE_BSD_IFADDRS
+
+#if CHIP_SYSTEM_CONFIG_USE_ZEPHYR_NET_IF
+    // Zephyr seems to handle broadcast address for IPv4 implicitly
+    return HasCurrent() && INET_CONFIG_ENABLE_IPV4;
+#endif // CHIP_SYSTEM_CONFIG_USE_ZEPHYR_NET_IF
 
 #if CHIP_SYSTEM_CONFIG_USE_LWIP
     return HasCurrent() && (mCurNetif->flags & NETIF_FLAG_BROADCAST) != 0;
 #endif // CHIP_SYSTEM_CONFIG_USE_LWIP
 }
 
+#if CHIP_SYSTEM_CONFIG_USE_SOCKETS && CHIP_SYSTEM_CONFIG_USE_BSD_IFADDRS
+
 /**
  * @fn      short InterfaceIterator::GetFlags(void)
  *
  * @brief   Returns the ifr_flags value for the current interface.
  */
-
-#if CHIP_SYSTEM_CONFIG_USE_SOCKETS
-
-short InterfaceIterator::GetFlags(void)
+short InterfaceIterator::GetFlags()
 {
     struct ifreq intfData;
 
@@ -480,8 +691,9 @@ short InterfaceIterator::GetFlags(void)
     return mIntfFlags;
 }
 
-#endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS
+#endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS && CHIP_SYSTEM_CONFIG_USE_BSD_IFADDRS
 
+#if CHIP_SYSTEM_CONFIG_USE_BSD_IFADDRS
 /**
  * @fn      InterfaceAddressIterator::InterfaceAddressIterator(void)
  *
@@ -491,16 +703,16 @@ short InterfaceIterator::GetFlags(void)
  *     Starts the iterator at the first network address. On some platforms,
  *     this constructor may allocate resources recycled by the destructor.
  */
-
-#if CHIP_SYSTEM_CONFIG_USE_SOCKETS || CHIP_SYSTEM_CONFIG_USE_NETWORK_FRAMEWORK
-
-InterfaceAddressIterator::InterfaceAddressIterator(void)
+InterfaceAddressIterator::InterfaceAddressIterator()
 {
-    mAddrsList = NULL;
-    mCurAddr   = NULL;
+    mAddrsList = nullptr;
+    mCurAddr   = nullptr;
 }
+#endif // CHIP_SYSTEM_CONFIG_USE_BSD_IFADDRS
 
-#endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS || CHIP_SYSTEM_CONFIG_USE_NETWORK_FRAMEWORK
+#if CHIP_SYSTEM_CONFIG_USE_ZEPHYR_NET_IF
+InterfaceAddressIterator::InterfaceAddressIterator() = default;
+#endif // CHIP_SYSTEM_CONFIG_USE_ZEPHYR_NET_IF
 
 /**
  * @fn      InterfaceAddressIterator::~InterfaceAddressIterator(void)
@@ -511,18 +723,16 @@ InterfaceAddressIterator::InterfaceAddressIterator(void)
  *  Recycles any resources allocated by the constructor.
  */
 
-#if CHIP_SYSTEM_CONFIG_USE_SOCKETS || CHIP_SYSTEM_CONFIG_USE_NETWORK_FRAMEWORK
-
-InterfaceAddressIterator::~InterfaceAddressIterator(void)
+#if CHIP_SYSTEM_CONFIG_USE_BSD_IFADDRS
+InterfaceAddressIterator::~InterfaceAddressIterator()
 {
-    if (mAddrsList != NULL)
+    if (mAddrsList != nullptr)
     {
         freeifaddrs(mAddrsList);
-        mAddrsList = mCurAddr = NULL;
+        mAddrsList = mCurAddr = nullptr;
     }
 }
-
-#endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS || CHIP_SYSTEM_CONFIG_USE_NETWORK_FRAMEWORK
+#endif // CHIP_SYSTEM_CONFIG_USE_BSD_IFADDRS
 
 /**
  * @fn      bool InterfaceIterator::HasCurrent(void)
@@ -532,18 +742,18 @@ InterfaceAddressIterator::~InterfaceAddressIterator(void)
  * @return  \c true if the iterator is positioned on an interface address;
  *          \c false if positioned beyond the end of the address list.
  */
-bool InterfaceAddressIterator::HasCurrent(void)
+bool InterfaceAddressIterator::HasCurrent()
 {
-#if CHIP_SYSTEM_CONFIG_USE_SOCKETS || CHIP_SYSTEM_CONFIG_USE_NETWORK_FRAMEWORK
+#if CHIP_SYSTEM_CONFIG_USE_BSD_IFADDRS
+    return (mAddrsList != nullptr) ? (mCurAddr != nullptr) : Next();
+#endif // CHIP_SYSTEM_CONFIG_USE_BSD_IFADDRS
 
-    return (mAddrsList != NULL) ? (mCurAddr != NULL) : Next();
-
-#endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS || CHIP_SYSTEM_CONFIG_USE_NETWORK_FRAMEWORK
+#if CHIP_SYSTEM_CONFIG_USE_ZEPHYR_NET_IF
+    return mIntfIter.HasCurrent() && (mCurAddrIndex >= 0 || Next());
+#endif // CHIP_SYSTEM_CONFIG_USE_ZEPHYR_NET_IF
 
 #if CHIP_SYSTEM_CONFIG_USE_LWIP
-
     return mIntfIter.HasCurrent() && ((mCurAddrIndex != kBeforeStartIndex) || Next());
-
 #endif // CHIP_SYSTEM_CONFIG_USE_LWIP
 }
 
@@ -563,13 +773,12 @@ bool InterfaceAddressIterator::HasCurrent(void)
  *     themselves are never destroyed.  Additionally, iteration on LwIP systems
  *     will terminate early if the current interface is removed from the list.
  */
-bool InterfaceAddressIterator::Next(void)
+bool InterfaceAddressIterator::Next()
 {
-#if CHIP_SYSTEM_CONFIG_USE_SOCKETS
-
+#if CHIP_SYSTEM_CONFIG_USE_SOCKETS && CHIP_SYSTEM_CONFIG_USE_BSD_IFADDRS
     while (true)
     {
-        if (mAddrsList == NULL)
+        if (mAddrsList == nullptr)
         {
             int res = getifaddrs(&mAddrsList);
             if (res < 0)
@@ -578,17 +787,17 @@ bool InterfaceAddressIterator::Next(void)
             }
             mCurAddr = mAddrsList;
         }
-        else if (mCurAddr != NULL)
+        else if (mCurAddr != nullptr)
         {
             mCurAddr = mCurAddr->ifa_next;
         }
 
-        if (mCurAddr == NULL)
+        if (mCurAddr == nullptr)
         {
             return false;
         }
 
-        if (mCurAddr->ifa_addr != NULL &&
+        if (mCurAddr->ifa_addr != nullptr &&
             (mCurAddr->ifa_addr->sa_family == AF_INET6
 #if INET_CONFIG_ENABLE_IPV4
              || mCurAddr->ifa_addr->sa_family == AF_INET
@@ -598,11 +807,29 @@ bool InterfaceAddressIterator::Next(void)
             return true;
         }
     }
+#endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS && CHIP_SYSTEM_CONFIG_USE_BSD_IFADDRS
 
-#endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS
+#if CHIP_SYSTEM_CONFIG_USE_ZEPHYR_NET_IF
+    while (mIntfIter.HasCurrent())
+    {
+        if (mCurAddrIndex == -1) // first address for the current interface
+        {
+            const net_if_config * config = net_if_get_config(net_if_get_by_index(mIntfIter.GetInterfaceId()));
+            mIpv6                        = config->ip.ipv6;
+        }
+
+        while (++mCurAddrIndex < NET_IF_MAX_IPV6_ADDR)
+            if (mIpv6->unicast[mCurAddrIndex].is_used)
+                return true;
+
+        mCurAddrIndex = -1;
+        mIntfIter.Next();
+    }
+
+    return false;
+#endif // CHIP_SYSTEM_CONFIG_USE_ZEPHYR_NET_IF
 
 #if CHIP_SYSTEM_CONFIG_USE_LWIP
-
     mCurAddrIndex++;
 
     while (mIntfIter.HasCurrent())
@@ -633,7 +860,6 @@ bool InterfaceAddressIterator::Next(void)
     }
 
     return false;
-
 #endif // CHIP_SYSTEM_CONFIG_USE_LWIP
 }
 
@@ -645,13 +871,17 @@ bool InterfaceAddressIterator::Next(void)
  * @return  the current interface address or \c IPAddress::Any if the iterator
  *          is positioned beyond the end of the address list.
  */
-IPAddress InterfaceAddressIterator::GetAddress(void)
+IPAddress InterfaceAddressIterator::GetAddress()
 {
     if (HasCurrent())
     {
-#if CHIP_SYSTEM_CONFIG_USE_SOCKETS
+#if CHIP_SYSTEM_CONFIG_USE_SOCKETS && CHIP_SYSTEM_CONFIG_USE_BSD_IFADDRS
         return IPAddress::FromSockAddr(*mCurAddr->ifa_addr);
-#endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS
+#endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS && CHIP_SYSTEM_CONFIG_USE_BSD_IFADDRS
+
+#if CHIP_SYSTEM_CONFIG_USE_ZEPHYR_NET_IF
+        return IPAddress::FromIPv6(mIpv6->unicast[mCurAddrIndex].address.in6_addr);
+#endif // CHIP_SYSTEM_CONFIG_USE_ZEPHYR_NET_IF
 
 #if CHIP_SYSTEM_CONFIG_USE_LWIP
         struct netif * curIntf = mIntfIter.GetInterfaceId();
@@ -689,22 +919,28 @@ IPAddress InterfaceAddressIterator::GetAddress(void)
  *     something else. On most platforms, the system's interface address
  *     structure can represent arbitrary prefix lengths between 0 and 128.
  */
-uint8_t InterfaceAddressIterator::GetPrefixLength(void)
+uint8_t InterfaceAddressIterator::GetPrefixLength()
 {
     if (HasCurrent())
     {
-#if CHIP_SYSTEM_CONFIG_USE_SOCKETS
+#if CHIP_SYSTEM_CONFIG_USE_SOCKETS && CHIP_SYSTEM_CONFIG_USE_BSD_IFADDRS
         if (mCurAddr->ifa_addr->sa_family == AF_INET6)
         {
-            struct sockaddr_in6 & netmask = *(struct sockaddr_in6 *) (mCurAddr->ifa_netmask);
+            struct sockaddr_in6 & netmask = *reinterpret_cast<struct sockaddr_in6 *>(mCurAddr->ifa_netmask);
             return NetmaskToPrefixLength(netmask.sin6_addr.s6_addr, 16);
         }
         if (mCurAddr->ifa_addr->sa_family == AF_INET)
         {
-            struct sockaddr_in & netmask = *(struct sockaddr_in *) (mCurAddr->ifa_netmask);
-            return NetmaskToPrefixLength((const uint8_t *) &netmask.sin_addr.s_addr, 4);
+            struct sockaddr_in & netmask = *reinterpret_cast<struct sockaddr_in *>(mCurAddr->ifa_netmask);
+            return NetmaskToPrefixLength(reinterpret_cast<const uint8_t *>(&netmask.sin_addr.s_addr), 4);
         }
-#endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS
+#endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS && CHIP_SYSTEM_CONFIG_USE_BSD_IFADDRS
+
+#if CHIP_SYSTEM_CONFIG_USE_ZEPHYR_NET_IF
+        net_if * const iface              = net_if_get_by_index(mIntfIter.GetInterfaceId());
+        net_if_ipv6_prefix * const prefix = net_if_ipv6_prefix_get(iface, &mIpv6->unicast[mCurAddrIndex].address.in6_addr);
+        return prefix ? prefix->len : 128;
+#endif // CHIP_SYSTEM_CONFIG_USE_ZEPHYR_NET_IF
 
 #if CHIP_SYSTEM_CONFIG_USE_LWIP
         if (mCurAddrIndex < LWIP_IPV6_NUM_ADDRESSES)
@@ -732,17 +968,17 @@ uint8_t InterfaceAddressIterator::GetPrefixLength(void)
  * @return  the interface id or \c INET_NULL_INTERFACEID if the iterator
  *          is positioned beyond the end of the address list.
  */
-InterfaceId InterfaceAddressIterator::GetInterfaceId(void)
+InterfaceId InterfaceAddressIterator::GetInterfaceId()
 {
     if (HasCurrent())
     {
-#if CHIP_SYSTEM_CONFIG_USE_SOCKETS
+#if CHIP_SYSTEM_CONFIG_USE_SOCKETS && CHIP_SYSTEM_CONFIG_USE_BSD_IFADDRS
         return if_nametoindex(mCurAddr->ifa_name);
-#endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS
+#endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS && CHIP_SYSTEM_CONFIG_USE_BSD_IFADDRS
 
-#if CHIP_SYSTEM_CONFIG_USE_LWIP
+#if CHIP_SYSTEM_CONFIG_USE_LWIP || CHIP_SYSTEM_CONFIG_USE_ZEPHYR_NET_IF
         return mIntfIter.GetInterfaceId();
-#endif // CHIP_SYSTEM_CONFIG_USE_LWIP
+#endif // CHIP_SYSTEM_CONFIG_USE_LWIP || CHIP_SYSTEM_CONFIG_USE_ZEPHYR_NET_IF
     }
     return INET_NULL_INTERFACEID;
 }
@@ -773,15 +1009,15 @@ INET_ERROR InterfaceAddressIterator::GetInterfaceName(char * nameBuf, size_t nam
 
     VerifyOrExit(HasCurrent(), err = INET_ERROR_INCORRECT_STATE);
 
-#if CHIP_SYSTEM_CONFIG_USE_SOCKETS
+#if CHIP_SYSTEM_CONFIG_USE_SOCKETS && CHIP_SYSTEM_CONFIG_USE_BSD_IFADDRS
     VerifyOrExit(strlen(mCurAddr->ifa_name) < nameBufSize, err = INET_ERROR_NO_MEMORY);
     strncpy(nameBuf, mCurAddr->ifa_name, nameBufSize);
     err = INET_NO_ERROR;
-#endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS
+#endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS && CHIP_SYSTEM_CONFIG_USE_BSD_IFADDRS
 
-#if CHIP_SYSTEM_CONFIG_USE_LWIP
+#if CHIP_SYSTEM_CONFIG_USE_LWIP || CHIP_SYSTEM_CONFIG_USE_ZEPHYR_NET_IF
     err = mIntfIter.GetInterfaceName(nameBuf, nameBufSize);
-#endif // CHIP_SYSTEM_CONFIG_USE_LWIP
+#endif // CHIP_SYSTEM_CONFIG_USE_LWIP || CHIP_SYSTEM_CONFIG_USE_ZEPHYR_NET_IF
 
 exit:
     return err;
@@ -796,17 +1032,17 @@ exit:
  * @return  \c true if current network interface is up, \c false if not, or
  *          if the iterator is not positioned on an interface address.
  */
-bool InterfaceAddressIterator::IsUp(void)
+bool InterfaceAddressIterator::IsUp()
 {
     if (HasCurrent())
     {
-#if CHIP_SYSTEM_CONFIG_USE_SOCKETS
+#if CHIP_SYSTEM_CONFIG_USE_SOCKETS && CHIP_SYSTEM_CONFIG_USE_BSD_IFADDRS
         return (mCurAddr->ifa_flags & IFF_UP) != 0;
-#endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS
+#endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS && CHIP_SYSTEM_CONFIG_USE_BSD_IFADDRS
 
-#if CHIP_SYSTEM_CONFIG_USE_LWIP
+#if CHIP_SYSTEM_CONFIG_USE_LWIP || CHIP_SYSTEM_CONFIG_USE_ZEPHYR_NET_IF
         return mIntfIter.IsUp();
-#endif // CHIP_SYSTEM_CONFIG_USE_LWIP
+#endif // CHIP_SYSTEM_CONFIG_USE_LWIP || CHIP_SYSTEM_CONFIG_USE_ZEPHYR_NET_IF
     }
     return false;
 }
@@ -820,17 +1056,17 @@ bool InterfaceAddressIterator::IsUp(void)
  * @return  \c true if multicast is supported, \c false if not, or
  *          if the iterator is not positioned on an interface address.
  */
-bool InterfaceAddressIterator::SupportsMulticast(void)
+bool InterfaceAddressIterator::SupportsMulticast()
 {
     if (HasCurrent())
     {
-#if CHIP_SYSTEM_CONFIG_USE_SOCKETS
+#if CHIP_SYSTEM_CONFIG_USE_SOCKETS && CHIP_SYSTEM_CONFIG_USE_BSD_IFADDRS
         return (mCurAddr->ifa_flags & IFF_MULTICAST) != 0;
-#endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS
+#endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS && CHIP_SYSTEM_CONFIG_USE_BSD_IFADDRS
 
-#if CHIP_SYSTEM_CONFIG_USE_LWIP
+#if CHIP_SYSTEM_CONFIG_USE_LWIP || CHIP_SYSTEM_CONFIG_USE_ZEPHYR_NET_IF
         return mIntfIter.SupportsMulticast();
-#endif // CHIP_SYSTEM_CONFIG_USE_LWIP
+#endif // CHIP_SYSTEM_CONFIG_USE_LWIP || CHIP_SYSTEM_CONFIG_USE_ZEPHYR_NET_IF
     }
     return false;
 }
@@ -844,17 +1080,17 @@ bool InterfaceAddressIterator::SupportsMulticast(void)
  * @return  \c true if the interface has a broadcast address, \c false if not, or
  *          if the iterator is not positioned on an interface address.
  */
-bool InterfaceAddressIterator::HasBroadcastAddress(void)
+bool InterfaceAddressIterator::HasBroadcastAddress()
 {
     if (HasCurrent())
     {
-#if CHIP_SYSTEM_CONFIG_USE_SOCKETS
+#if CHIP_SYSTEM_CONFIG_USE_SOCKETS && CHIP_SYSTEM_CONFIG_USE_BSD_IFADDRS
         return (mCurAddr->ifa_flags & IFF_BROADCAST) != 0;
-#endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS
+#endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS && CHIP_SYSTEM_CONFIG_USE_BSD_IFADDRS
 
-#if CHIP_SYSTEM_CONFIG_USE_LWIP
+#if CHIP_SYSTEM_CONFIG_USE_LWIP || CHIP_SYSTEM_CONFIG_USE_ZEPHYR_NET_IF
         return mIntfIter.HasBroadcastAddress();
-#endif // CHIP_SYSTEM_CONFIG_USE_LWIP
+#endif // CHIP_SYSTEM_CONFIG_USE_LWIP || CHIP_SYSTEM_CONFIG_USE_ZEPHYR_NET_IF
     }
     return false;
 }
@@ -887,20 +1123,20 @@ uint8_t NetmaskToPrefixLength(const uint8_t * netmask, uint16_t netmaskLen)
 {
     uint8_t prefixLen = 0;
 
-    for (uint8_t i = 0; i < netmaskLen; i++, prefixLen += 8)
+    for (uint16_t i = 0; i < netmaskLen; i++, prefixLen = static_cast<uint8_t>(prefixLen + 8u))
     {
         uint8_t b = netmask[i];
         if (b != 0xFF)
         {
             if ((b & 0xF0) == 0xF0)
-                prefixLen += 4;
+                prefixLen = static_cast<uint8_t>(prefixLen + 4u);
             else
-                b = b >> 4;
+                b = static_cast<uint8_t>(b >> 4);
 
             if ((b & 0x0C) == 0x0C)
-                prefixLen += 2;
+                prefixLen = static_cast<uint8_t>(prefixLen + 2u);
             else
-                b = b >> 2;
+                b = static_cast<uint8_t>(b >> 2);
 
             if ((b & 0x02) == 0x02)
                 prefixLen++;

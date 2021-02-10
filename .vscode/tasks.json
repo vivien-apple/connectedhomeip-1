@@ -9,71 +9,65 @@
                 "kind": "build",
                 "isDefault": true
             },
-            "dependsOn": "Bootstrap",
             "isBackground": false,
             "presentation": {
                 "reveal": "always",
                 "panel": "shared"
             },
-            "problemMatcher": ["$gcc"]
+            "problemMatcher": {
+                "base": "$gcc",
+                "fileLocation": ["relative", "${workspaceFolder}/out/default/"]
+            }
         },
         {
-            "label": "Auto-enforce coding style",
+            "label": "Build & Test (all)",
             "type": "shell",
-            "command": "scripts/helpers/auto_enforce_code_style.sh",
-            "group": "none",
-            "dependsOn": "Bootstrap",
+            "command": "./gn_build.sh",
+            "group": "build",
             "isBackground": false,
             "presentation": {
                 "reveal": "always",
                 "panel": "shared"
             },
-            "problemMatcher": ["$gcc"]
+            "problemMatcher": {
+                "base": "$gcc",
+                "fileLocation": ["relative", "${workspaceFolder}/out/debug/"]
+            }
         },
         {
-            "label": "Verify coding style conformance",
+            "label": "Update compilation database",
             "type": "shell",
-            "command": "scripts/helpers/code_style_check.sh",
+            "command": "scripts/helpers/update_compile_commands.sh",
             "group": "none",
-            "dependsOn": "Bootstrap",
-            "problemMatcher": ["$gcc"]
+            "dependsOn": "Build & Test (all)",
+            "isBackground": false,
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            },
+            "problemMatcher": []
         },
         {
             "label": "Run Unit and Functional Tests",
             "type": "shell",
             "command": "scripts/tests/all_tests.sh",
-            "group": "none",
-            "dependsOn": "Bootstrap",
-            "problemMatcher": ["$gcc"]
-        },
-        {
-            "label": "Run Distribution Generation",
-            "type": "shell",
-            "command": "scripts/build/distribution_check.sh",
-            "group": "none",
-            "dependsOn": "Bootstrap",
-            "problemMatcher": ["$gcc"]
-        },
-        {
-            "label": "Run Code Coverage",
-            "type": "shell",
-            "command": "scripts/tools/codecoverage.sh; code -r build/default/src/chip.info/index.html",
-            "group": "none",
-            "dependsOn": "Bootstrap",
-            "problemMatcher": ["$gcc"]
-        },
-        {
-            "label": "Clean",
-            "type": "shell",
-            "command": "scripts/helpers/clean.sh",
-            "group": "none",
-            "dependsOn": "Bootstrap",
-            "problemMatcher": ["$gcc"]
+            "group": "test",
+            "problemMatcher": {
+                "base": "$gcc",
+                "fileLocation": ["relative", "${workspaceFolder}/out/default/"]
+            }
         },
         {
             "label": "Bootstrap",
             "type": "shell",
-            "command": "scripts/build/bootstrap.sh",
+            "command": "bash scripts/bootstrap.sh",
+            "group": "none",
+            "problemMatcher": ["$gcc"]
+        },
+        {
+            "label": "Clean Output",
+            "type": "shell",
+            "command": "scripts/helpers/clean.sh",
             "group": "none",
             "problemMatcher": ["$gcc"]
         },
@@ -85,66 +79,158 @@
             "problemMatcher": ["$gcc"]
         },
         {
-            "label": "Run Setup Payload Tests",
+            "label": "Build Shell",
             "type": "shell",
-            "command": "scripts/tests/setup_payload_tests.sh",
-            "group": "none",
-            "dependsOn": "Bootstrap",
+            "command": "scripts/examples/gn_build_example.sh examples/shell out/shell",
+            "group": "build",
+            "problemMatcher": {
+                "base": "$gcc",
+                "fileLocation": ["relative", "${workspaceFolder}/out/shell/"]
+            }
+        },
+        {
+            "label": "Build Chip Tool",
+            "type": "shell",
+            "command": "scripts/examples/gn_build_example.sh examples/chip-tool out/chip_tool",
+            "group": "build",
+            "problemMatcher": {
+                "base": "$gcc",
+                "fileLocation": [
+                    "relative",
+                    "${workspaceFolder}/out/chip_tool/"
+                ]
+            }
+        },
+        {
+            "label": "Build Lighting App (Linux)",
+            "type": "shell",
+            "command": "scripts/examples/gn_build_example.sh examples/lighting-app/linux out/lighting-app",
+            "group": "build",
+            "problemMatcher": {
+                "base": "$gcc",
+                "fileLocation": [
+                    "relative",
+                    "${workspaceFolder}/out/lighting-app/"
+                ]
+            }
+        },
+        {
+            "label": "Build QPG6100 Lock Example",
+            "type": "shell",
+            "command": "scripts/examples/gn_build_example.sh examples/lock-app/qpg6100 out/qpg6100_lock_app",
+            "group": "build",
+            "problemMatcher": {
+                "base": "$gcc",
+                "fileLocation": [
+                    "relative",
+                    "${workspaceFolder}/out/qpg6100_lock_app/"
+                ]
+            }
+        },
+        {
+            "label": "Build EFR32 Lock Example",
+            "type": "shell",
+            "command": "scripts/examples/gn_build_example.sh examples/lock-app/efr32 out/efr32_lock_app",
+            "group": "build",
+            "problemMatcher": {
+                "base": "$gcc",
+                "fileLocation": [
+                    "relative",
+                    "${workspaceFolder}/out/efr32_lock_app/"
+                ]
+            }
+        },
+        {
+            "label": "Build EFR32 Light Example",
+            "type": "shell",
+            "command": "scripts/examples/gn_build_example.sh examples/lighting-app/efr32 out/efr32_lighting_app",
+            "group": "build",
+            "problemMatcher": {
+                "base": "$gcc",
+                "fileLocation": [
+                    "relative",
+                    "${workspaceFolder}/out/efr32_lighting/"
+                ]
+            }
+        },
+        {
+            "label": "Build Minimal MDNS Example",
+            "type": "shell",
+            "command": "scripts/examples/gn_build_example.sh examples/minimal-mdns out/minimal_mdns 'chip_build_tools=false is_debug=false optimize_for_size=true'",
+            "group": "build",
+            "problemMatcher": {
+                "base": "$gcc",
+                "fileLocation": [
+                    "relative",
+                    "${workspaceFolder}/out/minimal_mdns/"
+                ]
+            }
+        },
+        {
+            "label": "Build ESP32 all-clusters-app Example",
+            "type": "shell",
+            "command": "scripts/examples/build-all-clusters-app.py",
+            "group": "build",
             "problemMatcher": ["$gcc"]
         },
         {
-            "label": "Build QRCode Payload Tests",
+            "label": "Build Android App",
             "type": "shell",
-            "command": "scripts/tests/qrcode_payload_tests.sh",
-            "group": "none",
-            "dependsOn": "Bootstrap",
+            "command": "TARGET_CPU=arm64 scripts/examples/android_app.sh",
+            "group": "build",
             "problemMatcher": ["$gcc"]
         },
         {
-            "label": "Build & Run Crypto Tests",
+            "label": "Build nRF Connect Lock Example (nRF52840)",
             "type": "shell",
-            "command": "scripts/tests/crypt_tests.sh",
-            "group": "none",
-            "problemMatcher": ["$gcc"]
+            "command": "source scripts/activate.sh && scripts/examples/nrfconnect_example.sh lock-app nrf52840dk_nrf52840",
+            "group": "build",
+            "problemMatcher": {
+                "base": "$gcc",
+                "fileLocation": [
+                    "relative",
+                    "${workspaceFolder}/examples/lock-app/nrfconnect/build"
+                ]
+            }
         },
         {
-            "label": "Build nRF5 Lock App",
+            "label": "Build nRF Connect Lighting Example (nRF52840)",
             "type": "shell",
-            "command": "scripts/examples/nrf_lock_app.sh",
-            "group": "none",
-            "dependsOn": "Clean Tree",
-            "problemMatcher": ["$gcc"]
+            "command": "source scripts/activate.sh && scripts/examples/nrfconnect_example.sh lighting-app nrf52840dk_nrf52840",
+            "group": "build",
+            "problemMatcher": {
+                "base": "$gcc",
+                "fileLocation": [
+                    "relative",
+                    "${workspaceFolder}/examples/lighting-app/nrfconnect/build"
+                ]
+            }
         },
         {
-            "label": "Build openSSL crypto Tests",
+            "label": "Build nRF Connect Shell Example (nRF52840)",
             "type": "shell",
-            "command": "scripts/tests/openssl_tests.sh",
-            "group": "none",
-            "problemMatcher": ["$gcc"]
+            "command": "source scripts/activate.sh && scripts/examples/nrfconnect_example.sh shell nrf52840dk_nrf52840",
+            "group": "build",
+            "problemMatcher": {
+                "base": "$gcc",
+                "fileLocation": [
+                    "relative",
+                    "${workspaceFolder}/examples/shell/nrfconnect/build"
+                ]
+            }
         },
         {
-            "label": "Build ESP32 Echo Example",
+            "label": "Build nRF Connect Pigweed Example (nRF52840)",
             "type": "shell",
-            "command": "scripts/examples/esp_echo_app.sh",
-            "group": "none",
-            "dependsOn": "Clean Tree",
-            "problemMatcher": ["$gcc"]
-        },
-        {
-            "label": "Build Standalone Echo Client",
-            "type": "shell",
-            "command": "scripts/examples/standalone_echo_client.sh",
-            "group": "none",
-            "dependsOn": "Clean Tree",
-            "problemMatcher": ["$gcc"]
-        },
-        {
-            "label": "Build Standalone Shell",
-            "type": "shell",
-            "command": "scripts/examples/standalone_shell.sh",
-            "group": "none",
-            "dependsOn": "Clean Tree",
-            "problemMatcher": ["$gcc"]
+            "command": "source scripts/activate.sh && scripts/examples/nrfconnect_example.sh pigweed-app nrf52840dk_nrf52840",
+            "group": "build",
+            "problemMatcher": {
+                "base": "$gcc",
+                "fileLocation": [
+                    "relative",
+                    "${workspaceFolder}/examples/pigweed-app/nrfconnect/build"
+                ]
+            }
         }
     ]
 }

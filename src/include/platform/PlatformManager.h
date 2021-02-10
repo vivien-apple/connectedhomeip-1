@@ -21,8 +21,7 @@
  *          Defines the public interface for the Device Layer PlatformManager object.
  */
 
-#ifndef PLATFORM_MANAGER_H
-#define PLATFORM_MANAGER_H
+#pragma once
 
 #include <platform/CHIPDeviceEvent.h>
 
@@ -31,10 +30,11 @@ namespace System {
 namespace Platform {
 namespace Layer {
 
-System::Error PostEvent(System::Layer &, void *, System::Object &, System::EventType, uintptr_t);
-System::Error DispatchEvents(System::Layer &, void *);
-System::Error DispatchEvent(System::Layer &, void *, System::Event);
-System::Error StartTimer(System::Layer &, void *, uint32_t);
+System::Error PostEvent(System::Layer & aLayer, void * aContext, System::Object & aTarget, System::EventType aType,
+                        uintptr_t aArgument);
+System::Error DispatchEvents(System::Layer & aLayer, void * aContext);
+System::Error DispatchEvent(System::Layer & aLayer, void * aContext, System::Event aEvent);
+System::Error StartTimer(System::Layer & aLayer, void * aContext, uint32_t aMilliseconds);
 
 } // namespace Layer
 } // namespace Platform
@@ -46,6 +46,7 @@ class PlatformManagerImpl;
 class ConnectivityManagerImpl;
 class ConfigurationManagerImpl;
 class TraitManager;
+class ThreadStackManagerImpl;
 class TimeSyncManager;
 namespace Internal {
 class FabricProvisioningServer;
@@ -59,6 +60,8 @@ template <class>
 class GenericPlatformManagerImpl_FreeRTOS;
 template <class>
 class GenericPlatformManagerImpl_POSIX;
+template <class>
+class GenericPlatformManagerImpl_Zephyr;
 template <class>
 class GenericConnectivityManagerImpl_Thread;
 template <class>
@@ -84,11 +87,12 @@ public:
     CHIP_ERROR AddEventHandler(EventHandlerFunct handler, intptr_t arg = 0);
     void RemoveEventHandler(EventHandlerFunct handler, intptr_t arg = 0);
     void ScheduleWork(AsyncWorkFunct workFunct, intptr_t arg = 0);
-    void RunEventLoop(void);
-    CHIP_ERROR StartEventLoopTask(void);
-    void LockChipStack(void);
-    bool TryLockChipStack(void);
-    void UnlockChipStack(void);
+    void RunEventLoop();
+    CHIP_ERROR StartEventLoopTask();
+    void LockChipStack();
+    bool TryLockChipStack();
+    void UnlockChipStack();
+    CHIP_ERROR Shutdown();
 
 private:
     // ===== Members for internal use by the following friends.
@@ -97,6 +101,7 @@ private:
     friend class ConnectivityManagerImpl;
     friend class ConfigurationManagerImpl;
     friend class TraitManager;
+    friend class ThreadStackManagerImpl;
     friend class TimeSyncManager;
     friend class Internal::FabricProvisioningServer;
     friend class Internal::ServiceProvisioningServer;
@@ -108,6 +113,8 @@ private:
     template <class>
     friend class Internal::GenericPlatformManagerImpl_POSIX;
     template <class>
+    friend class Internal::GenericPlatformManagerImpl_Zephyr;
+    template <class>
     friend class Internal::GenericConnectivityManagerImpl_Thread;
     template <class>
     friend class Internal::GenericThreadStackManagerImpl_OpenThread;
@@ -116,14 +123,14 @@ private:
     template <class>
     friend class Internal::GenericConfigurationManagerImpl;
     // Parentheses used to fix clang parsing issue with these declarations
-    friend ::chip::System::Error ::chip::System::Platform::Layer::PostEvent(::chip::System::Layer & aLayer, void * aContext,
-                                                                            ::chip::System::Object & aTarget,
-                                                                            ::chip::System::EventType aType, uintptr_t aArgument);
-    friend ::chip::System::Error ::chip::System::Platform::Layer::DispatchEvents(::chip::System::Layer & aLayer, void * aContext);
-    friend ::chip::System::Error ::chip::System::Platform::Layer::DispatchEvent(::chip::System::Layer & aLayer, void * aContext,
-                                                                                ::chip::System::Event aEvent);
-    friend ::chip::System::Error ::chip::System::Platform::Layer::StartTimer(::chip::System::Layer & aLayer, void * aContext,
-                                                                             uint32_t aMilliseconds);
+    friend ::chip::System::Error(::chip::System::Platform::Layer::PostEvent)(::chip::System::Layer & aLayer, void * aContext,
+                                                                             ::chip::System::Object & aTarget,
+                                                                             ::chip::System::EventType aType, uintptr_t aArgument);
+    friend ::chip::System::Error(::chip::System::Platform::Layer::DispatchEvents)(::chip::System::Layer & aLayer, void * aContext);
+    friend ::chip::System::Error(::chip::System::Platform::Layer::DispatchEvent)(::chip::System::Layer & aLayer, void * aContext,
+                                                                                 ::chip::System::Event aEvent);
+    friend ::chip::System::Error(::chip::System::Platform::Layer::StartTimer)(::chip::System::Layer & aLayer, void * aContext,
+                                                                              uint32_t aMilliseconds);
 
     void PostEvent(const ChipDeviceEvent * event);
     void DispatchEvent(const ChipDeviceEvent * event);
@@ -146,7 +153,7 @@ protected:
  * chip applications should use this to access features of the PlatformManager object
  * that are common to all platforms.
  */
-extern PlatformManager & PlatformMgr(void);
+extern PlatformManager & PlatformMgr();
 
 /**
  * Returns the platform-specific implementation of the PlatformManager singleton object.
@@ -154,7 +161,7 @@ extern PlatformManager & PlatformMgr(void);
  * chip applications can use this to gain access to features of the PlatformManager
  * that are specific to the selected platform.
  */
-extern PlatformManagerImpl & PlatformMgrImpl(void);
+extern PlatformManagerImpl & PlatformMgrImpl();
 
 } // namespace DeviceLayer
 } // namespace chip
@@ -164,10 +171,10 @@ extern PlatformManagerImpl & PlatformMgrImpl(void);
  */
 #ifdef EXTERNAL_PLATFORMMANAGERIMPL_HEADER
 #include EXTERNAL_PLATFORMMANAGERIMPL_HEADER
-#else
+#elif defined(CHIP_DEVICE_LAYER_TARGET)
 #define PLATFORMMANAGERIMPL_HEADER <platform/CHIP_DEVICE_LAYER_TARGET/PlatformManagerImpl.h>
 #include PLATFORMMANAGERIMPL_HEADER
-#endif
+#endif // defined(CHIP_DEVICE_LAYER_TARGET)
 
 namespace chip {
 namespace DeviceLayer {
@@ -192,27 +199,27 @@ inline void PlatformManager::ScheduleWork(AsyncWorkFunct workFunct, intptr_t arg
     static_cast<ImplClass *>(this)->_ScheduleWork(workFunct, arg);
 }
 
-inline void PlatformManager::RunEventLoop(void)
+inline void PlatformManager::RunEventLoop()
 {
     static_cast<ImplClass *>(this)->_RunEventLoop();
 }
 
-inline CHIP_ERROR PlatformManager::StartEventLoopTask(void)
+inline CHIP_ERROR PlatformManager::StartEventLoopTask()
 {
     return static_cast<ImplClass *>(this)->_StartEventLoopTask();
 }
 
-inline void PlatformManager::LockChipStack(void)
+inline void PlatformManager::LockChipStack()
 {
     static_cast<ImplClass *>(this)->_LockChipStack();
 }
 
-inline bool PlatformManager::TryLockChipStack(void)
+inline bool PlatformManager::TryLockChipStack()
 {
     return static_cast<ImplClass *>(this)->_TryLockChipStack();
 }
 
-inline void PlatformManager::UnlockChipStack(void)
+inline void PlatformManager::UnlockChipStack()
 {
     static_cast<ImplClass *>(this)->_UnlockChipStack();
 }
@@ -232,7 +239,10 @@ inline CHIP_ERROR PlatformManager::StartChipTimer(uint32_t durationMS)
     return static_cast<ImplClass *>(this)->_StartChipTimer(durationMS);
 }
 
+inline CHIP_ERROR PlatformManager::Shutdown()
+{
+    return static_cast<ImplClass *>(this)->_Shutdown();
+}
+
 } // namespace DeviceLayer
 } // namespace chip
-
-#endif // PLATFORM_MANAGER_H

@@ -27,14 +27,9 @@
 
 namespace chip {
 
-PersistedCounter::PersistedCounter(void) :
-    MonotonicallyIncreasingCounter(), mId(chip::Platform::PersistedStorage::kEmptyKey), mEpoch(0), mNextEpoch(0)
-{}
+PersistedCounter::PersistedCounter() : mId(chip::Platform::PersistedStorage::kEmptyKey), mEpoch(0), mNextEpoch(0) {}
 
-PersistedCounter::~PersistedCounter(void)
-{
-    return;
-}
+PersistedCounter::~PersistedCounter() {}
 
 CHIP_ERROR
 PersistedCounter::Init(const chip::Platform::PersistedStorage::Key aId, uint32_t aEpoch)
@@ -68,7 +63,7 @@ exit:
 }
 
 CHIP_ERROR
-PersistedCounter::Advance(void)
+PersistedCounter::Advance()
 {
     CHIP_ERROR err = CHIP_NO_ERROR;
 

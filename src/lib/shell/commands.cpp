@@ -23,6 +23,7 @@
 #include "CHIPVersion.h"
 
 #include "shell.h"
+#include <support/CodeUtils.h>
 
 #include <assert.h>
 #include <ctype.h>
@@ -49,7 +50,7 @@ int cmd_help_iterator(shell_command_t * command, void * arg)
 
 int cmd_help(int argc, char ** argv)
 {
-    shell_command_foreach(cmd_help_iterator, NULL);
+    shell_command_foreach(cmd_help_iterator, nullptr);
     return 0;
 }
 
@@ -67,7 +68,7 @@ static shell_command_t cmds[] = {
 
 void Shell::RegisterDefaultCommands()
 {
-    RegisterCommands(cmds, ARRAY_SIZE(cmds));
+    RegisterCommands(cmds, ArraySize(cmds));
 }
 
 } // namespace Shell

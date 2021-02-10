@@ -14,15 +14,17 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-#include "TestQRCodeTLV.h"
 #include "TestHelpers.h"
 
-#include <iostream>
 #include <nlbyteorder.h>
 #include <nlunit-test.h>
 
+#include <support/UnitTestRegistration.h>
+
 using namespace chip;
 using namespace std;
+
+namespace {
 
 void TestOptionalDataAddRemove(nlTestSuite * inSuite, void * inContext)
 {
@@ -31,7 +33,7 @@ void TestOptionalDataAddRemove(nlTestSuite * inSuite, void * inContext)
     CHIP_ERROR err;
 
     optionalData = payload.getAllOptionalVendorData();
-    NL_TEST_ASSERT(inSuite, optionalData.size() == 0);
+    NL_TEST_ASSERT(inSuite, optionalData.empty());
 
     err = payload.addOptionalVendorData(kOptionalDefaultStringTag, kOptionalDefaultStringValue);
     NL_TEST_ASSERT(inSuite, err == CHIP_NO_ERROR);
@@ -55,19 +57,19 @@ void TestOptionalDataAddRemove(nlTestSuite * inSuite, void * inContext)
     NL_TEST_ASSERT(inSuite, err == CHIP_NO_ERROR);
 
     optionalData = payload.getAllOptionalVendorData();
-    NL_TEST_ASSERT(inSuite, optionalData.size() == 0);
+    NL_TEST_ASSERT(inSuite, optionalData.empty());
 
     err = payload.removeOptionalVendorData(kOptionalDefaultStringTag);
     NL_TEST_ASSERT(inSuite, err == CHIP_ERROR_KEY_NOT_FOUND);
 
     optionalData = payload.getAllOptionalVendorData();
-    NL_TEST_ASSERT(inSuite, optionalData.size() == 0);
+    NL_TEST_ASSERT(inSuite, optionalData.empty());
 
     err = payload.removeOptionalVendorData(kOptionalDefaultIntTag);
     NL_TEST_ASSERT(inSuite, err == CHIP_ERROR_KEY_NOT_FOUND);
 
     optionalData = payload.getAllOptionalVendorData();
-    NL_TEST_ASSERT(inSuite, optionalData.size() == 0);
+    NL_TEST_ASSERT(inSuite, optionalData.empty());
 }
 
 void TestSimpleWrite(nlTestSuite * inSuite, void * inContext)
@@ -128,11 +130,11 @@ void TestSerialNumberAddRemove(nlTestSuite * inSuite, void * inContext)
 
     NL_TEST_ASSERT(inSuite, inPayload.addSerialNumber(kSerialNumberDefaultStringValue) == CHIP_NO_ERROR);
     NL_TEST_ASSERT(inSuite, inPayload.getSerialNumber(sn) == CHIP_NO_ERROR);
-    NL_TEST_ASSERT(inSuite, sn.compare(kSerialNumberDefaultStringValue) == 0);
+    NL_TEST_ASSERT(inSuite, sn == kSerialNumberDefaultStringValue);
 
     NL_TEST_ASSERT(inSuite, inPayload.addSerialNumber(kSerialNumberDefaultUInt32Value) == CHIP_NO_ERROR);
     NL_TEST_ASSERT(inSuite, inPayload.getSerialNumber(sn) == CHIP_NO_ERROR);
-    NL_TEST_ASSERT(inSuite, sn.compare(to_string(kSerialNumberDefaultUInt32Value)) == 0);
+    NL_TEST_ASSERT(inSuite, sn == to_string(kSerialNumberDefaultUInt32Value));
 
     NL_TEST_ASSERT(inSuite, inPayload.removeSerialNumber() == CHIP_NO_ERROR);
     NL_TEST_ASSERT(inSuite, inPayload.getSerialNumber(sn) == CHIP_ERROR_KEY_NOT_FOUND);
@@ -253,7 +255,7 @@ void TestPayloadBinary(nlTestSuite * inSuite, void * inContext)
  *  Test Suite that lists all the test functions.
  */
 // clang-format off
-static const nlTest sTests[] =
+const nlTest sTests[] =
 {
     NL_TEST_DEF("Test Simple Write",                TestSimpleWrite),
     NL_TEST_DEF("Test Simple Read",                 TestSimpleRead),
@@ -280,17 +282,39 @@ struct TestContext
 };
 
 /**
+ *  Set up the test suite.
+ */
+int TestQRCodeTLV_Setup(void * inContext)
+{
+    CHIP_ERROR error = chip::Platform::MemoryInit();
+    if (error != CHIP_NO_ERROR)
+        return FAILURE;
+    return SUCCESS;
+}
+
+/**
+ *  Tear down the test suite.
+ */
+int TestQRCodeTLV_Teardown(void * inContext)
+{
+    chip::Platform::MemoryShutdown();
+    return SUCCESS;
+}
+
+} // namespace
+
+/**
  *  Main
  */
-int TestQRCodeTLV(void)
+int TestQRCodeTLV()
 {
     // clang-format off
     nlTestSuite theSuite =
     {
         "chip-qrcode-optional-info-tests",
         &sTests[0],
-        NULL,
-        NULL
+        TestQRCodeTLV_Setup,
+        TestQRCodeTLV_Teardown
     };
     // clang-format on
     TestContext context;
@@ -305,3 +329,5 @@ int TestQRCodeTLV(void)
 
     return nlTestRunnerStats(&theSuite);
 }
+
+CHIP_REGISTER_TEST_SUITE(TestQRCodeTLV);

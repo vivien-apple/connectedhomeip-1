@@ -28,8 +28,7 @@
  *
  */
 
-#ifndef BLEERROR_H_
-#define BLEERROR_H_
+#pragma once
 
 #include "BleConfig.h"
 
@@ -420,10 +419,8 @@ typedef BLE_CONFIG_ERROR_TYPE BLE_ERROR;
 namespace chip {
 namespace Ble {
 
-extern void RegisterLayerErrorFormatter(void);
+extern void RegisterLayerErrorFormatter();
 extern bool FormatLayerError(char * buf, uint16_t bufSize, int32_t err);
 
 } /* namespace Ble */
 } /* namespace chip */
-
-#endif /* BLEERROR_H_ */

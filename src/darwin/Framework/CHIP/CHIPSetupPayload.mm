@@ -16,6 +16,7 @@
  */
 
 #import "CHIPSetupPayload.h"
+#import "CHIPError.h"
 #import <setup_payload/SetupPayload.h>
 
 @implementation CHIPOptionalQRCodeInfo
@@ -32,8 +33,8 @@
     case chip::RendezvousInformationFlags::kNone:
         rv = kRendezvousInformationNone;
         break;
-    case chip::RendezvousInformationFlags::kSoftAP:
-        rv = kRendezvousInformationSoftAP;
+    case chip::RendezvousInformationFlags::kWiFi:
+        rv = kRendezvousInformationWiFi;
         break;
     case chip::RendezvousInformationFlags::kBLE:
         rv = kRendezvousInformationBLE;
@@ -80,7 +81,7 @@
 - (NSArray<CHIPOptionalQRCodeInfo *> *)getAllOptionalVendorData:(NSError * __autoreleasing *)error
 {
     NSMutableArray<CHIPOptionalQRCodeInfo *> * allOptionalData = [NSMutableArray new];
-    vector<chip::OptionalQRCodeInfo> chipOptionalData = _chipSetupPayload.getAllOptionalVendorData();
+    std::vector<chip::OptionalQRCodeInfo> chipOptionalData = _chipSetupPayload.getAllOptionalVendorData();
     for (chip::OptionalQRCodeInfo chipInfo : chipOptionalData) {
         CHIPOptionalQRCodeInfo * info = [CHIPOptionalQRCodeInfo new];
         info.tag = [NSNumber numberWithUnsignedChar:chipInfo.tag];

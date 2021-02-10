@@ -26,8 +26,7 @@
  *
  */
 
-#ifndef CHIP_PROJECT_CONFIG_H
-#define CHIP_PROJECT_CONFIG_H
+#pragma once
 
 /**
  * CHIP_DEVICE_CONFIG_ENABLE_TEST_DEVICE_IDENTITY
@@ -40,23 +39,24 @@
 #define CHIP_DEVICE_CONFIG_ENABLE_TEST_DEVICE_IDENTITY 34
 
 // Use a default pairing code if one hasn't been provisioned in flash.
-#define CHIP_DEVICE_CONFIG_USE_TEST_PAIRING_CODE "CHIPUS"
+#define CHIP_DEVICE_CONFIG_USE_TEST_SETUP_PIN_CODE 12345678
+#define CHIP_DEVICE_CONFIG_USE_TEST_SETUP_DISCRIMINATOR 0xF00
 
-// For convenience, enable Chip Security Test Mode and disable the requirement for
-// authentication in various protocols.
+// For convenience, Chip Security Test Mode can be enabled and the
+// requirement for authentication in various protocols can be disabled.
 //
 //    WARNING: These options make it possible to circumvent basic Chip security functionality,
 //    including message encryption. Because of this they MUST NEVER BE ENABLED IN PRODUCTION BUILDS.
 //
-#define CHIP_CONFIG_SECURITY_TEST_MODE 1
-#define CHIP_CONFIG_REQUIRE_AUTH 0
+#define CHIP_CONFIG_SECURITY_TEST_MODE 0
+#define CHIP_CONFIG_REQUIRE_AUTH 1
 
 /**
  * CHIP_DEVICE_CONFIG_DEVICE_VENDOR_ID
  *
- * 0xE100: Google's Vendor Id.
+ * 0x235A: Chip's Vendor Id.
  */
-#define CHIP_DEVICE_CONFIG_DEVICE_VENDOR_ID 0xE100
+#define CHIP_DEVICE_CONFIG_DEVICE_VENDOR_ID 0x235A
 
 /**
  * CHIP_DEVICE_CONFIG_DEVICE_PRODUCT_ID
@@ -121,5 +121,3 @@
  * A size, in bytes, of the individual debug event logging buffer.
  */
 #define CHIP_DEVICE_CONFIG_EVENT_LOGGING_DEBUG_BUFFER_SIZE (512)
-
-#endif // CHIP_PROJECT_CONFIG_H

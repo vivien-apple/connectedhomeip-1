@@ -22,8 +22,7 @@
  *          platforms based on the Silicon Labs SDK.
  */
 
-#ifndef EFR32_CONFIG_H
-#define EFR32_CONFIG_H
+#pragma once
 
 #include <functional>
 
@@ -79,8 +78,9 @@ public:
     static constexpr Key kConfigKey_MfrDeviceCert       = EFR32ConfigKey(kChipFactory_KeyBase, 0x02);
     static constexpr Key kConfigKey_MfrDevicePrivateKey = EFR32ConfigKey(kChipFactory_KeyBase, 0x03);
     static constexpr Key kConfigKey_ManufacturingDate   = EFR32ConfigKey(kChipFactory_KeyBase, 0x04);
-    static constexpr Key kConfigKey_PairingCode         = EFR32ConfigKey(kChipFactory_KeyBase, 0x05);
+    static constexpr Key kConfigKey_SetupPinCode        = EFR32ConfigKey(kChipFactory_KeyBase, 0x05);
     static constexpr Key kConfigKey_MfrDeviceICACerts   = EFR32ConfigKey(kChipFactory_KeyBase, 0x06);
+    static constexpr Key kConfigKey_SetupDiscriminator  = EFR32ConfigKey(kChipFactory_KeyBase, 0x07);
     // CHIP Config Keys
     static constexpr Key kConfigKey_FabricId                    = EFR32ConfigKey(kChipConfig_KeyBase, 0x00);
     static constexpr Key kConfigKey_ServiceConfig               = EFR32ConfigKey(kChipConfig_KeyBase, 0x01);
@@ -101,7 +101,7 @@ public:
 
     // Set key id limits for each group.
     static constexpr Key kMinConfigKey_ChipFactory = EFR32ConfigKey(kChipFactory_KeyBase, 0x00);
-    static constexpr Key kMaxConfigKey_ChipFactory = EFR32ConfigKey(kChipFactory_KeyBase, 0x06);
+    static constexpr Key kMaxConfigKey_ChipFactory = EFR32ConfigKey(kChipFactory_KeyBase, 0x07);
     static constexpr Key kMinConfigKey_ChipConfig  = EFR32ConfigKey(kChipConfig_KeyBase, 0x00);
     static constexpr Key kMaxConfigKey_ChipConfig  = EFR32ConfigKey(kChipConfig_KeyBase, 0x1C);
     static constexpr Key kMinConfigKey_ChipCounter = EFR32ConfigKey(kChipCounter_KeyBase, 0x00);
@@ -138,10 +138,9 @@ protected:
 
 private:
     static CHIP_ERROR MapNvm3Error(Ecode_t nvm3Res);
+    static void OnExit(void);
 };
 
 } // namespace Internal
 } // namespace DeviceLayer
 } // namespace chip
-
-#endif // EFR32_CONFIG_H

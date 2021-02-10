@@ -22,8 +22,10 @@
  *          internal BLEManager object.
  */
 
-#ifndef BLE_MANAGER_H
-#define BLE_MANAGER_H
+#pragma once
+
+#include <platform/ConnectivityManager.h>
+#include <support/CodeUtils.h>
 
 #if CHIP_DEVICE_CONFIG_ENABLE_CHIPOBLE
 
@@ -50,19 +52,19 @@ public:
 
     using CHIPoBLEServiceMode = ConnectivityManager::CHIPoBLEServiceMode;
 
-    CHIP_ERROR Init(void);
-    CHIPoBLEServiceMode GetCHIPoBLEServiceMode(void);
+    CHIP_ERROR Init();
+    CHIPoBLEServiceMode GetCHIPoBLEServiceMode();
     CHIP_ERROR SetCHIPoBLEServiceMode(CHIPoBLEServiceMode val);
-    bool IsAdvertisingEnabled(void);
+    bool IsAdvertisingEnabled();
     CHIP_ERROR SetAdvertisingEnabled(bool val);
-    bool IsFastAdvertisingEnabled(void);
+    bool IsFastAdvertisingEnabled();
     CHIP_ERROR SetFastAdvertisingEnabled(bool val);
-    bool IsAdvertising(void);
+    bool IsAdvertising();
     CHIP_ERROR GetDeviceName(char * buf, size_t bufSize);
     CHIP_ERROR SetDeviceName(const char * deviceName);
-    uint16_t NumConnections(void);
+    uint16_t NumConnections();
     void OnPlatformEvent(const ChipDeviceEvent * event);
-    chip::Ble::BleLayer * GetBleLayer(void) const;
+    chip::Ble::BleLayer * GetBleLayer();
 
 protected:
     // Construction/destruction limited to subclasses.
@@ -81,7 +83,7 @@ protected:
  * Internal components should use this to access features of the BLEManager object
  * that are common to all platforms.
  */
-extern BLEManager & BLEMgr(void);
+extern BLEManager & BLEMgr();
 
 /**
  * Returns the platform-specific implementation of the BLEManager singleton object.
@@ -89,7 +91,7 @@ extern BLEManager & BLEMgr(void);
  * chip applications can use this to gain access to features of the BLEManager
  * that are specific to the selected platform.
  */
-extern BLEManagerImpl & BLEMgrImpl(void);
+extern BLEManagerImpl & BLEMgrImpl();
 
 } // namespace Internal
 } // namespace DeviceLayer
@@ -100,21 +102,21 @@ extern BLEManagerImpl & BLEMgrImpl(void);
  */
 #ifdef EXTERNAL_BLEMANAGERIMPL_HEADER
 #include EXTERNAL_BLEMANAGERIMPL_HEADER
-#else
+#elif defined(CHIP_DEVICE_LAYER_TARGET)
 #define BLEMANAGERIMPL_HEADER <platform/CHIP_DEVICE_LAYER_TARGET/BLEManagerImpl.h>
 #include BLEMANAGERIMPL_HEADER
-#endif
+#endif // defined(CHIP_DEVICE_LAYER_TARGET)
 
 namespace chip {
 namespace DeviceLayer {
 namespace Internal {
 
-inline CHIP_ERROR BLEManager::Init(void)
+inline CHIP_ERROR BLEManager::Init()
 {
     return static_cast<ImplClass *>(this)->_Init();
 }
 
-inline BLEManager::CHIPoBLEServiceMode BLEManager::GetCHIPoBLEServiceMode(void)
+inline BLEManager::CHIPoBLEServiceMode BLEManager::GetCHIPoBLEServiceMode()
 {
     return static_cast<ImplClass *>(this)->_GetCHIPoBLEServiceMode();
 }
@@ -124,7 +126,7 @@ inline CHIP_ERROR BLEManager::SetCHIPoBLEServiceMode(CHIPoBLEServiceMode val)
     return static_cast<ImplClass *>(this)->_SetCHIPoBLEServiceMode(val);
 }
 
-inline bool BLEManager::IsAdvertisingEnabled(void)
+inline bool BLEManager::IsAdvertisingEnabled()
 {
     return static_cast<ImplClass *>(this)->_IsAdvertisingEnabled();
 }
@@ -134,7 +136,7 @@ inline CHIP_ERROR BLEManager::SetAdvertisingEnabled(bool val)
     return static_cast<ImplClass *>(this)->_SetAdvertisingEnabled(val);
 }
 
-inline bool BLEManager::IsFastAdvertisingEnabled(void)
+inline bool BLEManager::IsFastAdvertisingEnabled()
 {
     return static_cast<ImplClass *>(this)->_IsFastAdvertisingEnabled();
 }
@@ -144,7 +146,7 @@ inline CHIP_ERROR BLEManager::SetFastAdvertisingEnabled(bool val)
     return static_cast<ImplClass *>(this)->_SetFastAdvertisingEnabled(val);
 }
 
-inline bool BLEManager::IsAdvertising(void)
+inline bool BLEManager::IsAdvertising()
 {
     return static_cast<ImplClass *>(this)->_IsAdvertising();
 }
@@ -159,7 +161,7 @@ inline CHIP_ERROR BLEManager::SetDeviceName(const char * deviceName)
     return static_cast<ImplClass *>(this)->_SetDeviceName(deviceName);
 }
 
-inline uint16_t BLEManager::NumConnections(void)
+inline uint16_t BLEManager::NumConnections()
 {
     return static_cast<ImplClass *>(this)->_NumConnections();
 }
@@ -169,9 +171,9 @@ inline void BLEManager::OnPlatformEvent(const ChipDeviceEvent * event)
     return static_cast<ImplClass *>(this)->_OnPlatformEvent(event);
 }
 
-inline chip::Ble::BleLayer * BLEManager::GetBleLayer(void) const
+inline chip::Ble::BleLayer * BLEManager::GetBleLayer()
 {
-    return static_cast<const ImplClass *>(this)->_GetBleLayer();
+    return static_cast<ImplClass *>(this)->_GetBleLayer();
 }
 
 } // namespace Internal
@@ -179,5 +181,3 @@ inline chip::Ble::BleLayer * BLEManager::GetBleLayer(void) const
 } // namespace chip
 
 #endif // CHIP_DEVICE_CONFIG_ENABLE_CHIPOBLE
-
-#endif // BLE_MANAGER_H

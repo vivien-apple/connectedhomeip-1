@@ -22,8 +22,7 @@
  *
  */
 
-#ifndef EVENT_LOGGING_H
-#define EVENT_LOGGING_H
+#pragma once
 
 namespace chip {
 namespace DeviceLayer {
@@ -32,10 +31,8 @@ namespace Internal {
 /**
  * Defines the event logging resources and initializes event logging management subsystem.
  */
-extern CHIP_ERROR InitChipEventLogging(void);
+extern CHIP_ERROR InitChipEventLogging();
 
 } // namespace Internal
 } // namespace DeviceLayer
 } // namespace chip
-
-#endif // EVENT_LOGGING_H

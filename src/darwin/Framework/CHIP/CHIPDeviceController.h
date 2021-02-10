@@ -18,34 +18,25 @@
 #ifndef CHIP_DEVICE_CONTROLLER_H
 #define CHIP_DEVICE_CONTROLLER_H
 
-#import "CHIPError.h"
 #import <Foundation/Foundation.h>
+
+@class CHIPDevice;
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef void (^ControllerOnMessageBlock)(NSData * message);
-typedef void (^ControllerOnErrorBlock)(NSError * error);
-
-@interface AddressInfo : NSObject
-
-@property (readonly, copy) NSString * ip;
-- (instancetype)initWithIP:(NSString *)ip;
-
-@end
+@protocol CHIPDevicePairingDelegate;
+@protocol CHIPPersistentStorageDelegate;
 
 @interface CHIPDeviceController : NSObject
 
-- (BOOL)connect:(NSString *)ipAddress
-      local_key:(NSData *)local_key
-       peer_key:(NSData *)peer_key
-          error:(NSError * __autoreleasing *)error;
-- (nullable AddressInfo *)getAddressInfo;
-- (BOOL)sendMessage:(NSData *)message error:(NSError * __autoreleasing *)error;
-// We can't include definitions of ChipZclClusterId_t and ChipZclCommandId_t
-// here, but they're just integers, so pass them that way.
-- (BOOL)sendCHIPCommand:(uint16_t)cluster command:(uint16_t)command;
-- (BOOL)disconnect:(NSError * __autoreleasing *)error;
-- (BOOL)isConnected;
+- (BOOL)pairDevice:(uint64_t)deviceID
+     discriminator:(uint16_t)discriminator
+      setupPINCode:(uint32_t)setupPINCode
+             error:(NSError * __autoreleasing *)error;
+- (BOOL)unpairDevice:(uint64_t)deviceID error:(NSError * __autoreleasing *)error;
+- (BOOL)stopDevicePairing:(uint64_t)deviceID error:(NSError * __autoreleasing *)error;
+
+- (CHIPDevice *)getPairedDevice:(uint64_t)deviceID error:(NSError * __autoreleasing *)error;
 
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;
@@ -56,19 +47,22 @@ typedef void (^ControllerOnErrorBlock)(NSError * error);
 + (CHIPDeviceController *)sharedController;
 
 /**
- * Register callbacks for network activity.
+ * Set the Delegate for the Device Pairing  as well as the Queue on which the Delegate callbacks will be triggered
  *
- * @param[in] appCallbackQueue the queue that should be used to deliver the
- *                             message/error callbacks for this consumer.
+ * @param[in] delegate The delegate the pairing process should use
  *
- * @param[in] onMessage the block to call when the controller gets a message
- *                      from the network.
- *
- * @param[in] onError the block to call when there is a network error.
+ * @param[in] queue The queue on which the callbacks will be delivered
  */
-- (void)registerCallbacks:(dispatch_queue_t)appCallbackQueue
-                onMessage:(ControllerOnMessageBlock)onMessage
-                  onError:(ControllerOnErrorBlock)onError;
+- (void)setPairingDelegate:(id<CHIPDevicePairingDelegate>)delegate queue:(dispatch_queue_t)queue;
+
+/**
+ * Set the Delegate for the persistent storage  as well as the Queue on which the Delegate callbacks will be triggered
+ *
+ * @param[in] delegate The delegate for persistent storage
+ *
+ * @param[in] queue The queue on which the callbacks will be delivered
+ */
+- (void)setPersistentStorageDelegate:(id<CHIPPersistentStorageDelegate>)delegate queue:(dispatch_queue_t)queue;
 
 @end
 

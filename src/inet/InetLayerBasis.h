@@ -23,8 +23,7 @@
  *      the pending or resulting I/O events on a socket.
  */
 
-#ifndef INETLAYERBASIS_H
-#define INETLAYERBASIS_H
+#pragma once
 
 #include <inet/InetConfig.h>
 
@@ -53,11 +52,11 @@ class InetLayer;
 class InetLayerBasis : public chip::System::Object
 {
 public:
-    InetLayer & Layer(void) const;
+    InetLayer & Layer() const;
     bool IsCreatedByInetLayer(const InetLayer & aInetLayer) const;
 
 protected:
-    void InitInetLayerBasis(InetLayer & aInetLayer, void * aAppState = NULL);
+    void InitInetLayerBasis(InetLayer & aInetLayer, void * aAppState = nullptr);
 
 private:
     InetLayer * mInetLayer; /**< Pointer to the InetLayer object that owns this object. */
@@ -66,7 +65,7 @@ private:
 /**
  *  Returns a reference to the Inet layer object that owns this basis object.
  */
-inline InetLayer & InetLayerBasis::Layer(void) const
+inline InetLayer & InetLayerBasis::Layer() const
 {
     return *mInetLayer;
 }
@@ -125,6 +124,12 @@ public:
      *
      */
     SocketEvents(const SocketEvents & other) { Value = other.Value; }
+
+    /**
+     *  Copy assignment operator for the SocketEvents class.
+     *
+     */
+    SocketEvents & operator=(const SocketEvents & other) = default;
 
     /**
      *  Check if any of the bit flags for the socket events are set.
@@ -216,5 +221,3 @@ public:
 
 } // namespace Inet
 } // namespace chip
-
-#endif // !defined(INETLAYERBASIS_H)

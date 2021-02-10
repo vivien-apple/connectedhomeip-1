@@ -33,6 +33,8 @@
 #include <support/DLLUtil.h>
 #include <support/ErrorStr.h>
 
+#include <core/CHIPConfig.h>
+
 // Include local headers
 #if CHIP_SYSTEM_CONFIG_USE_LWIP
 #include <lwip/err.h>
@@ -43,6 +45,8 @@
 #endif // !CHIP_SYSTEM_CONFIG_PLATFORM_PROVIDES_POSIX_ERROR_FUNCTIONS
 
 #include <stddef.h>
+
+#include <limits>
 
 #if !CHIP_SYSTEM_CONFIG_PLATFORM_PROVIDES_POSIX_ERROR_FUNCTIONS
 
@@ -88,7 +92,7 @@
  *      layer.
  */
 #ifndef CHIP_SYSTEM_LWIP_ERROR_MAX
-#define CHIP_SYSTEM_LWIP_ERROR_MAX 3999
+#define CHIP_SYSTEM_LWIP_ERROR_MAX 3128
 #endif // CHIP_SYSTEM_LWIP_ERROR_MAX
 
 #endif // !CHIP_SYSTEM_CONFIG_PLATFORM_PROVIDES_LWIP_ERROR_FUNCTIONS
@@ -100,9 +104,9 @@ namespace System {
 /**
  * Register a text error formatter for System Layer errors.
  */
-void RegisterLayerErrorFormatter(void)
+void RegisterLayerErrorFormatter()
 {
-    static ErrorFormatter sSystemLayerErrorFormatter = { FormatLayerError, NULL };
+    static ErrorFormatter sSystemLayerErrorFormatter = { FormatLayerError, nullptr };
 
     RegisterErrorFormatter(&sSystemLayerErrorFormatter);
 }
@@ -121,7 +125,7 @@ void RegisterLayerErrorFormatter(void)
  */
 bool FormatLayerError(char * buf, uint16_t bufSize, int32_t err)
 {
-    const char * desc = NULL;
+    const char * desc = nullptr;
 
     if (err < CHIP_SYSTEM_ERROR_MIN || err > CHIP_SYSTEM_ERROR_MAX)
     {
@@ -169,7 +173,7 @@ bool FormatLayerError(char * buf, uint16_t bufSize, int32_t err)
  * underlying POSIX network and OS stack errors into a platform- or system-specific range. Error codes beyond those currently
  * defined by POSIX or the ISO C/C++ standards are mapped similar to the standard ones.
  *
- *  @param[in] e  The POSIX network or OS error to map.
+ *  @param[in] aError  The POSIX network or OS error to map.
  *
  *  @return The mapped POSIX network or OS error.
  */
@@ -182,7 +186,7 @@ DLL_EXPORT Error MapErrorPOSIX(int aError)
  * This implements a function to return an NULL-terminated OS-specific descriptive C string, associated with the specified, mapped
  * OS error.
  *
- *  @param[in] err  The mapped OS-specific error to describe.
+ *  @param[in] aError  The mapped OS-specific error to describe.
  *
  *  @return A NULL-terminated, OS-specific descriptive C string describing the error.
  */
@@ -196,7 +200,7 @@ DLL_EXPORT const char * DescribeErrorPOSIX(Error aError)
  * This implements an introspection function for CHIP System Layer errors that allows the caller to determine whether the
  * specified error is an internal, underlying OS error.
  *
- *  @param[in] err  The mapped error to determine whether it is an OS error.
+ *  @param[in] aError  The mapped error to determine whether it is an OS error.
  *
  *  @return True if the specified error is an OS error; otherwise, false.
  */
@@ -210,9 +214,9 @@ DLL_EXPORT bool IsErrorPOSIX(Error aError)
 /**
  * Register a text error formatter for POSIX errors.
  */
-void RegisterPOSIXErrorFormatter(void)
+void RegisterPOSIXErrorFormatter()
 {
-    static ErrorFormatter sPOSIXErrorFormatter = { FormatPOSIXError, NULL };
+    static ErrorFormatter sPOSIXErrorFormatter = { FormatPOSIXError, nullptr };
 
     RegisterErrorFormatter(&sPOSIXErrorFormatter);
 }
@@ -244,10 +248,21 @@ bool FormatPOSIXError(char * buf, uint16_t bufSize, int32_t err)
         FormatError(buf, bufSize, "OS", err, desc);
         return true;
     }
-    else
-    {
-        return false;
-    }
+
+    return false;
+}
+
+/**
+ * This implements a mapping function for CHIP System Layer errors that allows mapping integers in the number space of the
+ * Zephyr OS user API stack errors into the POSIX range.
+ *
+ *  @param[in] aError  The native Zephyr API error to map.
+ *
+ *  @return The mapped POSIX error.
+ */
+DLL_EXPORT Error MapErrorZephyr(int aError)
+{
+    return MapErrorPOSIX(-aError);
 }
 
 #if CHIP_SYSTEM_CONFIG_USE_LWIP
@@ -257,13 +272,15 @@ bool FormatPOSIXError(char * buf, uint16_t bufSize, int32_t err)
  * This implements a mapping function for CHIP System Layer errors that allows mapping underlying LwIP network stack errors into a
  * platform- or system-specific range.
  *
- *  @param[in] e  The LwIP error to map.
+ *  @param[in] aError  The LwIP error to map.
  *
  *  @return The mapped LwIP network or OS error.
  *
  */
 DLL_EXPORT Error MapErrorLwIP(err_t aError)
 {
+    static_assert(std::numeric_limits<err_t>::min() == CHIP_SYSTEM_LWIP_ERROR_MIN - CHIP_SYSTEM_LWIP_ERROR_MAX,
+                  "Can't represent all LWIP errors");
     return (aError == ERR_OK ? CHIP_SYSTEM_NO_ERROR : CHIP_SYSTEM_LWIP_ERROR_MIN - aError);
 }
 
@@ -271,14 +288,27 @@ DLL_EXPORT Error MapErrorLwIP(err_t aError)
  * This implements a function to return an NULL-terminated LwIP-specific descriptive C string, associated with the specified,
  * mapped LwIP error.
  *
- *  @param[in] err  The mapped LwIP-specific error to describe.
+ *  @param[in] aError  The mapped LwIP-specific error to describe.
  *
  *  @return A NULL-terminated, LwIP-specific descriptive C string describing the error.
  *
  */
 DLL_EXPORT const char * DescribeErrorLwIP(Error aError)
 {
-    const err_t lError = -((aError) -CHIP_SYSTEM_LWIP_ERROR_MIN);
+    if (!IsErrorLwIP(aError))
+    {
+        return nullptr;
+    }
+
+    // Error might be a signed or unsigned type.  But we know the value is no
+    // larger than CHIP_SYSTEM_LWIP_ERROR_MAX and that this means it's safe to
+    // store in int.
+    static_assert(INT_MAX > CHIP_SYSTEM_LWIP_ERROR_MAX, "Our subtraction will fail");
+    const int lErrorWithoutOffset = aError - CHIP_SYSTEM_LWIP_ERROR_MIN;
+    // Cast is safe because the range from CHIP_SYSTEM_LWIP_ERROR_MIN to
+    // CHIP_SYSTEM_LWIP_ERROR_MAX all fits inside err_t.  See static_assert in
+    // MapErrorLwIP.
+    const err_t lError = static_cast<err_t>(-lErrorWithoutOffset);
 
     // If we are not compiling with LWIP_DEBUG asserted, the unmapped
     // local value may go unused.
@@ -293,7 +323,7 @@ DLL_EXPORT const char * DescribeErrorLwIP(Error aError)
  * allows the caller to determine whether the specified error is an
  * internal, underlying LwIP error.
  *
- *  @param[in] err  The mapped error to determine whether it is a LwIP error.
+ *  @param[in] aError  The mapped error to determine whether it is a LwIP error.
  *
  *  @return True if the specified error is a LwIP error; otherwise, false.
  *

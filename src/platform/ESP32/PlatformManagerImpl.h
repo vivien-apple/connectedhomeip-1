@@ -23,8 +23,7 @@
  *          for the ESP32 platform.
  */
 
-#ifndef PLATFORM_MANAGER_IMPL_H
-#define PLATFORM_MANAGER_IMPL_H
+#pragma once
 
 #include <platform/internal/GenericPlatformManagerImpl_FreeRTOS.h>
 
@@ -42,13 +41,15 @@ class PlatformManagerImpl final : public PlatformManager, public Internal::Gener
 
     // Allow the generic implementation base class to call helper methods on
     // this class.
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
     friend Internal::GenericPlatformManagerImpl_FreeRTOS<PlatformManagerImpl>;
+#endif
 
 public:
     // ===== Platform-specific members that may be accessed directly by the application.
 
     CHIP_ERROR InitLwIPCoreLock(void);
-    static esp_err_t HandleESPSystemEvent(void * ctx, system_event_t * event);
+    static void HandleESPSystemEvent(void * arg, esp_event_base_t eventBase, int32_t eventId, void * eventData);
 
 private:
     // ===== Methods that implement the PlatformManager abstract interface.
@@ -87,5 +88,3 @@ inline PlatformManagerImpl & PlatformMgrImpl(void)
 
 } // namespace DeviceLayer
 } // namespace chip
-
-#endif // PLATFORM_MANAGER_IMPL_H

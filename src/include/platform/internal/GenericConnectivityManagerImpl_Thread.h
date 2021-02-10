@@ -22,8 +22,7 @@
  *          for use on platforms that support Thread.
  */
 
-#ifndef GENERIC_CONNECTIVITY_MANAGER_IMPL_THREAD_H
-#define GENERIC_CONNECTIVITY_MANAGER_IMPL_THREAD_H
+#pragma once
 
 #include <platform/ThreadStackManager.h>
 
@@ -52,24 +51,24 @@ class GenericConnectivityManagerImpl_Thread
 protected:
     // ===== Methods that implement the ConnectivityManager abstract interface.
 
-    void _Init(void);
+    void _Init();
     void _OnPlatformEvent(const ChipDeviceEvent * event);
-    ConnectivityManager::ThreadMode _GetThreadMode(void);
+    ConnectivityManager::ThreadMode _GetThreadMode();
     CHIP_ERROR _SetThreadMode(ConnectivityManager::ThreadMode val);
-    bool _IsThreadEnabled(void);
-    bool _IsThreadApplicationControlled(void);
-    ConnectivityManager::ThreadDeviceType _GetThreadDeviceType(void);
+    bool _IsThreadEnabled();
+    bool _IsThreadApplicationControlled();
+    ConnectivityManager::ThreadDeviceType _GetThreadDeviceType();
     CHIP_ERROR _SetThreadDeviceType(ConnectivityManager::ThreadDeviceType deviceType);
     void _GetThreadPollingConfig(ConnectivityManager::ThreadPollingConfig & pollingConfig);
     CHIP_ERROR _SetThreadPollingConfig(const ConnectivityManager::ThreadPollingConfig & pollingConfig);
-    bool _IsThreadAttached(void);
-    bool _IsThreadProvisioned(void);
-    void _ErasePersistentInfo(void);
-    bool _HaveServiceConnectivityViaThread(void);
+    bool _IsThreadAttached();
+    bool _IsThreadProvisioned();
+    void _ErasePersistentInfo();
+    bool _HaveServiceConnectivityViaThread();
 
     // ===== Members for use by the implementation subclass.
 
-    void UpdateServiceConnectivity(void);
+    void UpdateServiceConnectivity();
 
 private:
     // ===== Private members reserved for use by this class only.
@@ -85,47 +84,44 @@ private:
     ImplClass * Impl() { return static_cast<ImplClass *>(this); }
 };
 
-// Instruct the compiler to instantiate the template only when explicitly told to do so.
-extern template class GenericConnectivityManagerImpl_Thread<ConnectivityManagerImpl>;
-
 template <class ImplClass>
-inline void GenericConnectivityManagerImpl_Thread<ImplClass>::_Init(void)
+inline void GenericConnectivityManagerImpl_Thread<ImplClass>::_Init()
 {
     mFlags = 0;
 }
 
 template <class ImplClass>
-inline bool GenericConnectivityManagerImpl_Thread<ImplClass>::_IsThreadEnabled(void)
+inline bool GenericConnectivityManagerImpl_Thread<ImplClass>::_IsThreadEnabled()
 {
     return ThreadStackMgrImpl().IsThreadEnabled();
 }
 
 template <class ImplClass>
-inline bool GenericConnectivityManagerImpl_Thread<ImplClass>::_IsThreadApplicationControlled(void)
+inline bool GenericConnectivityManagerImpl_Thread<ImplClass>::_IsThreadApplicationControlled()
 {
     return GetFlag(mFlags, kFlag_IsApplicationControlled);
 }
 
 template <class ImplClass>
-inline bool GenericConnectivityManagerImpl_Thread<ImplClass>::_IsThreadAttached(void)
+inline bool GenericConnectivityManagerImpl_Thread<ImplClass>::_IsThreadAttached()
 {
     return ThreadStackMgrImpl().IsThreadAttached();
 }
 
 template <class ImplClass>
-inline bool GenericConnectivityManagerImpl_Thread<ImplClass>::_IsThreadProvisioned(void)
+inline bool GenericConnectivityManagerImpl_Thread<ImplClass>::_IsThreadProvisioned()
 {
     return ThreadStackMgrImpl().IsThreadProvisioned();
 }
 
 template <class ImplClass>
-inline void GenericConnectivityManagerImpl_Thread<ImplClass>::_ErasePersistentInfo(void)
+inline void GenericConnectivityManagerImpl_Thread<ImplClass>::_ErasePersistentInfo()
 {
     ThreadStackMgrImpl().ErasePersistentInfo();
 }
 
 template <class ImplClass>
-inline ConnectivityManager::ThreadDeviceType GenericConnectivityManagerImpl_Thread<ImplClass>::_GetThreadDeviceType(void)
+inline ConnectivityManager::ThreadDeviceType GenericConnectivityManagerImpl_Thread<ImplClass>::_GetThreadDeviceType()
 {
     return ThreadStackMgrImpl().GetThreadDeviceType();
 }
@@ -152,7 +148,7 @@ inline CHIP_ERROR GenericConnectivityManagerImpl_Thread<ImplClass>::_SetThreadPo
 }
 
 template <class ImplClass>
-inline bool GenericConnectivityManagerImpl_Thread<ImplClass>::_HaveServiceConnectivityViaThread(void)
+inline bool GenericConnectivityManagerImpl_Thread<ImplClass>::_HaveServiceConnectivityViaThread()
 {
     return GetFlag(mFlags, kFlag_HaveServiceConnectivity);
 }
@@ -160,5 +156,3 @@ inline bool GenericConnectivityManagerImpl_Thread<ImplClass>::_HaveServiceConnec
 } // namespace Internal
 } // namespace DeviceLayer
 } // namespace chip
-
-#endif // GENERIC_CONNECTIVITY_MANAGER_IMPL_THREAD_H

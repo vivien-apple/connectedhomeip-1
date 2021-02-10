@@ -17,8 +17,7 @@
  *    limitations under the License.
  */
 
-#ifndef APP_CONFIG_H
-#define APP_CONFIG_H
+#pragma once
 
 // ---- Lock Example App Config ----
 
@@ -30,8 +29,8 @@
 #define BSP_LED_0 0
 #define BSP_LED_1 1
 
-#define APP_FUNCTION_BUTTON PB0
 #define APP_LOCK_BUTTON PB1
+#define APP_FUNCTION_BUTTON PB0
 #define APP_BUTTON_DEBOUNCE_PERIOD_MS 50
 
 #define APP_BUTTON_PRESSED 0
@@ -57,7 +56,9 @@
 extern "C" {
 #endif
 
-int efr32LogInit(void);
+void efr32LogInit(void);
+void efr32RandomInit(void);
+
 void efr32Log(const char * aFormat, ...);
 #define EFR32_LOG(...) efr32Log(__VA_ARGS__);
 void appError(int err);
@@ -65,4 +66,3 @@ void appError(int err);
 #ifdef __cplusplus
 }
 #endif
-#endif // APP_CONFIG_H

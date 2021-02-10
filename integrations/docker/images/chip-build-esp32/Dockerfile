@@ -3,12 +3,15 @@ FROM connectedhomeip/chip-build:${VERSION}
 
 # Setup the ESP-IDF
 RUN set -x \
-    && cd /var \
-    && git clone --progress -b release/v4.0 https://github.com/espressif/esp-idf.git \
+    && apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y python \
+    && mkdir -p /opt/espressif \
+    && cd /opt/espressif \
+    && git clone --progress -b release/v4.1 https://github.com/espressif/esp-idf.git \
     && cd esp-idf \
     && git submodule update --init --progress \
-    && IDF_TOOLS_PATH=/var/.espressif ./install.sh \
+    && IDF_TOOLS_PATH=/opt/espressif/tools ./install.sh \
     && : # last line
 
-ENV IDF_PATH=/var/esp-idf/
-ENV IDF_TOOLS_PATH=/var/.espressif
+ENV IDF_PATH=/opt/espressif/esp-idf/
+ENV IDF_TOOLS_PATH=/opt/espressif/tools

@@ -22,8 +22,7 @@
  *      generated at the CHIP System Layer.
  */
 
-#ifndef SYSTEMEVENT_H
-#define SYSTEMEVENT_H
+#pragma once
 
 // Include headers
 #include <system/SystemConfig.h>
@@ -74,9 +73,9 @@ enum
  *
  *  @return true if it falls within the enumerated range; otherwise, false.
  */
-static inline bool IsEventOfType(EventType aType)
+static inline bool IsEventOfType(EventType aEventType)
 {
-    return (aType >= kEvent_ReleaseObj && aType <= kEvent_ScheduleWork);
+    return (aEventType >= kEvent_ReleaseObj && aEventType <= kEvent_ScheduleWork);
 }
 
 #else
@@ -111,5 +110,3 @@ typedef CHIP_SYSTEM_CONFIG_EVENT_OBJECT_TYPE Event;
 
 } // namespace System
 } // namespace chip
-
-#endif // defined(SYSTEMEVENT_H)

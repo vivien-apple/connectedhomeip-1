@@ -22,8 +22,7 @@
  *      endpoint classes in the Inet layer, i.e. TCP, UDP, Raw and Tun.
  */
 
-#ifndef ENDPOINTBASIS_H
-#define ENDPOINTBASIS_H
+#pragma once
 
 #include <inet/InetConfig.h>
 
@@ -50,9 +49,6 @@ struct udp_pcb;
 #if INET_CONFIG_ENABLE_TCP_ENDPOINT
 struct tcp_pcb;
 #endif // INET_CONFIG_ENABLE_TCP_ENDPOINT
-#if INET_CONFIG_ENABLE_TUN_ENDPOINT
-struct netif;
-#endif // INET_CONFIG_ENABLE_TUN_ENDPOINT
 #endif // CHIP_SYSTEM_CONFIG_USE_LWIP
 
 namespace chip {
@@ -79,7 +75,7 @@ public:
 
 #if CHIP_SYSTEM_CONFIG_USE_SOCKETS
     /** Test whether endpoint is a POSIX socket */
-    bool IsSocketsEndPoint(void) const;
+    bool IsSocketsEndPoint() const;
 #endif
 
 #if CHIP_SYSTEM_CONFIG_USE_LWIP
@@ -88,7 +84,7 @@ public:
 #endif
 
     /** Test whether endpoint has a valid descriptor. */
-    bool IsOpenEndPoint(void) const;
+    bool IsOpenEndPoint() const;
 
 protected:
 #if CHIP_SYSTEM_CONFIG_USE_NETWORK_FRAMEWORK
@@ -116,9 +112,6 @@ protected:
 #if INET_CONFIG_ENABLE_TCP_ENDPOINT
         tcp_pcb * mTCP; /**< Transmission control protocol (TCP) control */
 #endif                  // INET_CONFIG_ENABLE_TCP_ENDPOINT
-#if INET_CONFIG_ENABLE_TUN_ENDPOINT
-        netif * mNetIf; /**< Tunnel interface control */
-#endif                  // INET_CONFIG_ENABLE_TUN_ENDPOINT
     };
 
     enum
@@ -136,7 +129,7 @@ protected:
     void DeferredFree(chip::System::Object::ReleaseDeferralErrorTactic aTactic);
 #endif // CHIP_SYSTEM_CONFIG_USE_LWIP
 
-    void InitEndPointBasis(InetLayer & aInetLayer, void * aAppState = NULL);
+    void InitEndPointBasis(InetLayer & aInetLayer, void * aAppState = nullptr);
 };
 
 #if CHIP_SYSTEM_CONFIG_USE_NETWORK_FRAMEWORK
@@ -147,7 +140,7 @@ inline bool EndPointBasis::IsNetworkFrameworkEndPoint(void) const
 #endif // CHIP_SYSTEM_CONFIG_USE_NETWORK_FRAMEWORK
 
 #if CHIP_SYSTEM_CONFIG_USE_SOCKETS
-inline bool EndPointBasis::IsSocketsEndPoint(void) const
+inline bool EndPointBasis::IsSocketsEndPoint() const
 {
     return mSocket >= 0;
 }
@@ -160,7 +153,7 @@ inline bool EndPointBasis::IsLWIPEndPoint(void) const
 }
 #endif // CHIP_SYSTEM_CONFIG_USE_LWIP
 
-inline bool EndPointBasis::IsOpenEndPoint(void) const
+inline bool EndPointBasis::IsOpenEndPoint() const
 {
     bool lResult = false;
 
@@ -195,5 +188,3 @@ inline void EndPointBasis::DeferredFree(chip::System::Object::ReleaseDeferralErr
 
 } // namespace Inet
 } // namespace chip
-
-#endif // !defined(ENDPOINTBASIS_H)

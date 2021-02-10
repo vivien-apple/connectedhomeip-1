@@ -1,82 +1,58 @@
 ## Build Documentation
 
-The CHIP build system uses GNU autotools to build various platform images on
-Linux or macOS.
+CHIP supports configuring the build with [GN](https://gn.googlesource.com/gn/),
+a fast and scalable meta-build system that generates inputs to
+[ninja](https://ninja-build.org/).
 
 Tested on:
 
--   macOS
--   Ubuntu 18.04
+-   macOS 10.15
+-   Debian 10
+-   Ubuntu 20.04 LTS
 
 Build system features:
 
--   Package management: 'make dist' and 'make distcheck'
--   Cross-platform handling: (Linux, Darwin, iOS, Android, embedded arm, etc.)
--   Multiple compiler support: clang, GCC
--   Integrates automated testing framework: 'make check'
--   Code style enforcement: 'make pretty' and 'make pretty-check' integration
-    with clang-format
+-   Very fast and small footprint
+-   Cross-platform handling: (Linux, Darwin, embedded arm, etc.)
+-   Multiple toolchains & cross toolchain dependencies
+-   Integrates automated testing framework: `ninja check`
+-   Introspection: `gn desc`
+-   Automatic formatting: `gn format`
 
-Assuming you have all the required tools installed, the system will build the
-code, build a distribution, tidy, format, run tests, and run code coverage on
-the entire tree. Tests are built into the make system.
+### Checking out the Code
 
-### Tool Prerequisites
+To check out the CHIP repostiory:
 
-To take advantage of all the current capabilities of the make system, you'll
-want:
+```
+git clone --recurse-submodules git@github.com:project-chip/connectedhomeip.git
+```
 
--   Bash 4.0 or greater
--   GNU make (versions prior to 4.1 may produce spurious warnings/errors)
--   automake, autoconf, libtool
--   C and C++ compilers
--   clang-format-9
--   gcov
--   pkg-config
+If you already have a checkout, run the following command to sync submodules:
 
-#### How to install tool prerequisites on Linux
+```
+git submodule update --init
+```
+
+### Prerequisites
+
+Before building, you'll need to install a few OS specific dependencies.
+
+#### How to install prerequisites on Linux
 
 On Debian-based Linux distributions such as Ubuntu, these dependencies can be
 satisfied with the following:
 
 ```
-sudo apt-get install make autoconf automake libtool pkg-config
-sudo apt-get install clang-format-9
-sudo apt-get install lcov
+sudo apt-get install git gcc g++ python pkg-config libssl-dev libdbus-1-dev libglib2.0-dev libavahi-client-dev ninja-build python3-venv python3-dev unzip
 ```
 
-#### How to install tool prerequisites on macOS
+#### How to install prerequisites on macOS
 
-On macOS, these dependencies can be installed and satisfied using
-[Brew](https://brew.sh/):
-
-```
-brew install make autoconf automake libtool pkg-config
-brew install llvm@9
-brew install lcov
-```
-
-### Library Prerequisites
-
-The CHIP build currently requires the OpenSSL. This should be installed and
-visible to `pkg-config`.
-
-#### How to install library prerequisites on Linux
-
-On Debian-based Linux distributions such as Ubuntu, these dependencies can be
-satisfied with the following:
+On macOS, first install Xcode from the Mac App Store. The remaining dependencies
+can be installed and satisfied using [Brew](https://brew.sh/):
 
 ```
-sudo apt-get install openssl
-```
-
-#### How to install library prerequisites on macOS
-
-On macOS, these dependencies can be satisfied using [Brew](https://brew.sh/):
-
-```
-brew install openssl
-
+brew install openssl pkg-config
 ```
 
 However, that does not expose the package to `pkg-config`. To fix that, one
@@ -93,208 +69,244 @@ OpenSSL installed by Brew.
 Note: If using MacPorts, `port install openssl` is sufficient to satisfy this
 dependency.
 
-### Autotools Build Preparation
+#### How to install prerequisites on Raspberry Pi 4
 
-Before running any other build command, the `./bootstrap` command must be run
-from the top-level.
+Using `rpi-imager`, install the Ubuntu _20.10_ LTS 64-bit _server_ OS for arm64
+architectures on a micro SD card. This release will have bluez 5.55 which is
+required for BLE functionality.
 
-```
-# Initial preparation
-./bootstrap
-```
+Boot the SD card, login with the default user account "ubuntu" and password
+"ubuntu", then proceed with "How to install prerequisites on Linux".
 
-### Build Standalone (Native Linux or macOS)
-
-This will build all sources, libraries, and tests for the given platform:
+Finally, install some Raspberry Pi specific dependencies:
 
 ```
-# From top of clean tree
-./bootstrap
-
-make -f Makefile-Standalone
+sudo apt-get install pi-bluetooth
 ```
 
-The helper Makefile-<platform> will automatically run configure the using a
-default set of parameters, and allow custom override parameters to be passed via
-environment variables. An example of this follows:
+You need to reboot your RPi after install `pi-bluetooth`.
+
+### Build Preparation
+
+Before running any other build command, the `scripts/activate.sh` environment
+setup script should be sourced at the top level. This script takes care of
+downloading GN, ninja, and setting up a Python environment with libraries used
+to build and test.
 
 ```
-TESTS=1 DEBUG=1 COVERAGE=1 make -f Makefile-Standalone
+source scripts/activate.sh
 ```
 
-At any time after this if a Makefile.am is updated, `./bootstrap -w make` must
-be run again for the changes to be picked up.
+If this script says the environment is out of date, it can be updated by
+running:
+
+```
+source scripts/bootstrap.sh
+```
+
+The `scripts/bootstrap.sh` script re-creates the environment from scratch, which
+is expensive, so avoid running it unless the environment is out of date.
+
+### Build for the Host OS (Linux or macOS)
+
+This will build all sources, libraries, and tests for the host platform:
+
+```
+source scripts/activate.sh
+
+gn gen out/host
+
+ninja -C out/host
+```
+
+This generates a configuration suitable for debugging. To configure an optimized
+build, specify `is_debug=false`:
+
+```
+gn gen out/host --args='is_debug=false'
+
+ninja -C out/host
+```
+
+The directory name `out/host` can be any directory, although it's conventional
+to build within the `out` directory. This example uses `host` to emphasize that
+we're building for the host system. Different build directories can be used for
+different configurations, or a single directory can be used and reconfigured as
+necessary via `gn args`.
+
+To run all tests, run:
+
+```
+ninja -C out/host check
+```
+
+To run only the tests in src/inet/tests, you can run:
+
+```
+ninja -C out/host src/inet/tests:tests_run
+```
+
+Note that the build system caches passing tests, so if you see
+
+```
+ninja: no work to do
+```
+
+that means that the tests passed in a previous build.
 
 ### Build Custom configuration
 
-```
-# From top of clean tree
-./bootstrap
-
-mkdir build/<CONFIG>
-cd build/<CONFIG>
-../../configure -C <CONFIG ARGUMENTS>
-```
-
-Where `<CONFIG>` is something that describes what configuration (as described by
-`<CONFIG ARGUMENTS>`) of the tree you're planning to build, or simply `out` if
-you're not feeling creative.
-
--   [x] **Build all source, libraries, and tests**
+The build is configured by setting build arguments. These are set by passing the
+`--args` option to `gn gen`, by running `gn args` on the output directory, or by
+hand editing `args.gn` in the output directory. To configure a new build or edit
+the arguments to existing build, run:
 
 ```
-make
+source scripts/activate.sh
+
+gn args out/custom
+
+ninja -C out/custom
 ```
 
--   [x] **Build distribution**
+Two key builtin build arguments are `target_os` and `target_cpu`, which control
+the OS & CPU of the build.
+
+To see help for all available build arguments:
 
 ```
-make dist
+gn gen out/custom
+gn args --list out/custom
 ```
 
--   [x] **Build and check distribution, running all functional and unit tests**
+### Build Examples
+
+Examples can be built in two ways, as separate projects that add CHIP in the
+third_party directory, or in the top level CHIP project.
+
+To build the `chip-shell` example as a separate project:
 
 ```
-make distcheck
+cd examples/shell
+gn gen out/debug
+ninja -C out/debug
 ```
 
--   [x] **Run tests**
+To build it at the top level, see below under "Unified Builds".
+
+### Unified Builds
+
+To build a unified configuration that approximates the set of continuous builds:
 
 ```
-make check
+source scripts/activate.sh
+
+gn gen out/unified --args='is_debug=true target_os="all"'
+
+ninja -C out/unified all
 ```
 
--   [x] **Verify coding style conformance**
+This can be used prior to change submission to configure, build, and test the
+gcc, clang, mbedtls, & examples configurations all together in one parallel
+build. Each configuration has a separate subdirectory in the output dir.
+
+This unified build can be used for day to day development, although it's more
+expensive to build everything for every edit. To save time, you can name the
+configuration to build:
 
 ```
-make pretty-check
+ninja -C out/unified host_gcc
+ninja -C out/unified check_host_gcc
 ```
 
--   [x] **Auto-enforce coding style**
+Replace `host_gcc` with the name of the configuration, which is found in the
+root `BUILD.gn`.
+
+You can also fine tune the configurations generated via arguments such as:
 
 ```
-make pretty
+gn gen out/unified --args='is_debug=true target_os="all" enable_host_clang_build=false'
 ```
 
--   [x] **Build documentation distribution from code headers**
+For a full list, see the root `BUILD.gn`.
 
-To build the documentation bundle using doxygen, run the following:
-
-```
-make docdist
-```
-
-The top of the browsable web documentation can be found in
-`docs/html/index.html`.
-
--   [x] **Build just one module in a subdirectory**
-
-Either enter the desired subdirectory directly and run `make` or pass the
-desired subdirectory to `make -C`.
+Note that in the unified build, targets have multiple instances and need to be
+disambiguated by adding a `(toolchain)` suffix. Use `gn ls out/debug` to list
+all of the target instances. For example:
 
 ```
-$ make -C src/system
-
-Making all in tests
-make[1]: Entering directory 'src/system/tests'
-make[1]: Nothing to be done for 'all'.
-make[1]: Leaving directory 'src/system/tests'
-make[1]: Entering directory 'src/system'
-  CXX      ../../src/system/libSystemLayer_a-SystemClock.o
-  CXX      ../../src/system/libSystemLayer_a-SystemError.o
-  CXX      ../../src/system/libSystemLayer_a-SystemLayer.o
-  CXX      ../../src/system/libSystemLayer_a-SystemMutex.o
-  CXX      ../../src/system/libSystemLayer_a-SystemObject.o
-  CXX      ../../src/system/libSystemLayer_a-SystemTimer.o
-  CXX      ../../src/system/libSystemLayer_a-SystemPacketBuffer.o
-  CXX      ../../src/system/libSystemLayer_a-SystemStats.o
-  CXX      ../../src/system/libSystemLayer_a-SystemFaultInjection.o
-  AR       libSystemLayer.a
-ar: `u' modifier ignored since `D' is the default (see `U')
-make[1]: Leaving directory 'src/system'
+gn desc out/unified '//src/controller(//build/toolchain/host:linux_x64_clang)'
 ```
 
--   [x] **Add new source folder**
-
-To add a new source folder, say under `src/<new>`, follow these steps:
-
-1. Create the `src/<new>` directory and add a new `Makefile.am` within it.
-2. Update `src/Makefile.am` and add a reference to the `<new>` folder under
-   `SUBDIRS`.
-3. Update `AC_CONFIG_FILES` in `configure.ac` to reference the `<new>/Makefile`
-   (not the `Makefile.am`).
-4. Rerun bootstrap and configure.
-5. Now build as needed.
-
--   [x] **Add new source files**
-
-To add new source files to the project, say under `src/<module>`, follow these
-steps:
-
-1. Add the new files to `src/<module>`
-2. Add references to the new files in `src/<module>/Makefile.am` under
-   target_SOURCES or target_HEADERS as appropriate.
-3. Run `./bootstrap -w make` at the top-level.
-4. Now build as needed.
-
--   [x] **Clean out entire source tree**
-
-This will clear out all build artifacts, including those created by
-`./bootstrap`.
+Note: Some builds are disabled by default as they need extra SDKs. For example,
+to add the EFR32 examples to the unified build, download the
+[SDK](https://github.com/SiliconLabs/sdk_support) and add the following build
+arguments:
 
 ```
-make distclean
+gn gen out/unified --args='target_os="all" enable_efr32_builds=true efr32_sdk_root="/path/to/sdk" efr32_board="BRD4161A"'
 ```
 
-If the source has been pulled using `git clone` the following command can also
-be used to clear out all build artifacts:
+### Getting Help
+
+GN has builtin help via
 
 ```
-# To clean all intermediate build files from the tree
-git clean -fdx
+gn help
 ```
 
-### Build iOS
-
-Install XCode and XQuarz.
-
--   Open src/darwin with XCode
--   Select `Product > Scheme > CHIP Tool App iOS`
--   Build and run in simulator.
-
-### Build Android
-
-Install Android Studio, Java, and NDK.
+Recommended topics:
 
 ```
-# Update these paths based on your environment and version of the tools (macOS examples):
-export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk-12.0.1.jdk/Contents/Home
-export ANDROID_HOME=~/Library/Android/sdk
-export ANDROID_NDK_HOME=~/Library/Android/sdk/ndk/21.0.6113669
+gn help execution
+gn help grammar
+gn help toolchain
+```
 
-make -f Makefile-Android
+Also see the
+[quick start guide](https://gn.googlesource.com/gn/+/master/docs/quick_start.md).
+
+### Introspection
+
+GN has various introspection tools to help examine the build configuration.
+
+To show all of the targets in an output directory:
+
+```
+gn ls out/host
+```
+
+To show all of the files that will be built:
+
+```
+gn outputs out/host '*'
+```
+
+To show the GN representation of a configured target:
+
+```
+gn desc out/host //src/inet --all
+```
+
+To dump the GN representation of the entire build as JSON:
+
+```
+gn desc out/host/ '*' --all --format=json
+```
+
+To show the dependency tree:
+
+```
+gn desc out/host //:all deps --tree --all
+```
+
+To find dependency paths:
+
+```
+gn path out/host //src/transport/tests:tests //src/system
 ```
 
 ## Maintaining CHIP
 
-If you want to maintain, enhance, extend, or otherwise modify CHIP, it is likely
-you will need to change its build system, based on GNU autotools, in some
-circumstances.
-
-After any change to the CHIP build system, including any _Makefile.am_ files or
-the _configure.ac_ file, you must run the `bootstrap` or `bootstrap-configure`
-(which runs both `bootstrap` and `configure` in one shot) script to update the
-build system.
-
-### Dependencies
-
-Due to its leverage of GNU autotools, if you want to modify or otherwise
-maintain the CHIP build system, the following additional packages are required
-and are invoked by `bootstrap`:
-
--   autoconf
--   automake
--   libtool
-
-Instructions for installing these tools is in the Tool Prerequisites section
-above.
+If you make any change to the GN build system, the next build will regenerate
+the ninja files automatically. No need to do anything.

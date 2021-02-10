@@ -27,26 +27,15 @@
 
 #include <support/logging/CHIPLogging.h>
 
+#ifdef LOG_LOCAL_LEVEL
+#undef LOG_LOCAL_LEVEL
+#endif
+#define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
+
 #include "esp_log.h"
 
 using namespace ::chip;
 using namespace ::chip::DeviceLayer::Internal;
-
-namespace {
-
-void GetModuleName(char * buf, uint8_t module)
-{
-    if (module == ::chip::Logging::kLogModule_DeviceLayer)
-    {
-        memcpy(buf, "DL", 3);
-    }
-    else
-    {
-        ::chip::Logging::GetModuleName(buf, module);
-    }
-}
-
-} // unnamed namespace
 
 namespace chip {
 namespace Logging {
@@ -57,7 +46,7 @@ void LogV(uint8_t module, uint8_t category, const char * msg, va_list v)
     {
         enum
         {
-            kMaxTagLen = 7 + ChipLoggingModuleNameLen
+            kMaxTagLen = 7 + chip::Logging::kMaxModuleNameLen
         };
         char tag[kMaxTagLen + 1];
         size_t tagLen;
@@ -65,7 +54,7 @@ void LogV(uint8_t module, uint8_t category, const char * msg, va_list v)
 
         strcpy(tag, "chip[");
         tagLen = strlen(tag);
-        ::GetModuleName(tag + tagLen, module);
+        GetModuleName(tag + tagLen, chip::Logging::kMaxModuleNameLen + 1, module);
         tagLen        = strlen(tag);
         tag[tagLen++] = ']';
         tag[tagLen]   = 0;
@@ -78,7 +67,6 @@ void LogV(uint8_t module, uint8_t category, const char * msg, va_list v)
             ESP_LOGE(tag, "%s", formattedMsg);
             break;
         case kLogCategory_Progress:
-        case kLogCategory_Retain:
         default:
             ESP_LOGI(tag, "%s", formattedMsg);
             break;

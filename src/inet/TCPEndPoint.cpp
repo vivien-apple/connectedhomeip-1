@@ -1,6 +1,6 @@
 /*
  *
- *    Copyright (c) 2020 Project CHIP Authors
+ *    Copyright (c) 2020-2021 Project CHIP Authors
  *    Copyright (c) 2013-2018 Nest Labs, Inc.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
@@ -38,6 +38,7 @@
 #include <inet/InetLayer.h>
 
 #include <support/CodeUtils.h>
+#include <support/SafeInt.h>
 #include <support/logging/CHIPLogging.h>
 #include <system/SystemFaultInjection.h>
 
@@ -61,8 +62,9 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <utility>
 
-// SOCK_CLOEXEC not defined on all platforms, e.g. iOS/MacOS:
+// SOCK_CLOEXEC not defined on all platforms, e.g. iOS/macOS:
 #ifdef SOCK_CLOEXEC
 #define SOCK_FLAGS SOCK_CLOEXEC
 #else
@@ -73,7 +75,7 @@
 // socket option level for Linux and BSD systems.
 #define TCP_SOCKOPT_LEVEL SOL_TCP
 #else
-// socket option level for MacOS & iOS systems.
+// socket option level for macOS & iOS systems.
 #define TCP_SOCKOPT_LEVEL IPPROTO_TCP
 #endif
 
@@ -81,7 +83,7 @@
 // socket option for Linux and BSD systems.
 #define TCP_IDLE_INTERVAL_OPT_NAME TCP_KEEPIDLE
 #else
-// socket option for MacOS & iOS systems.
+// socket option for macOS & iOS systems.
 #define TCP_IDLE_INTERVAL_OPT_NAME TCP_KEEPALIVE
 #endif
 
@@ -107,11 +109,9 @@ err_t start_tcp_timers(void)
 namespace chip {
 namespace Inet {
 
-using chip::System::PacketBuffer;
-
 chip::System::ObjectPool<TCPEndPoint, INET_CONFIG_NUM_TCP_ENDPOINTS> TCPEndPoint::sPool;
 
-INET_ERROR TCPEndPoint::Bind(IPAddressType addrType, IPAddress addr, uint16_t port, bool reuseAddr)
+INET_ERROR TCPEndPoint::Bind(IPAddressType addrType, const IPAddress & addr, uint16_t port, bool reuseAddr)
 {
     INET_ERROR res = INET_NO_ERROR;
 
@@ -222,7 +222,7 @@ INET_ERROR TCPEndPoint::Bind(IPAddressType addrType, IPAddress addr, uint16_t po
             sa.sin6_addr     = addr.ToIPv6();
             sa.sin6_scope_id = 0;
 
-            if (bind(mSocket, (const sockaddr *) &sa, (unsigned) sizeof(sa)) != 0)
+            if (bind(mSocket, reinterpret_cast<const sockaddr *>(&sa), static_cast<unsigned>(sizeof(sa))) != 0)
                 res = chip::System::MapErrorPOSIX(errno);
         }
 #if INET_CONFIG_ENABLE_IPV4
@@ -234,7 +234,7 @@ INET_ERROR TCPEndPoint::Bind(IPAddressType addrType, IPAddress addr, uint16_t po
             sa.sin_port   = htons(port);
             sa.sin_addr   = addr.ToIPv4();
 
-            if (bind(mSocket, (const sockaddr *) &sa, (unsigned) sizeof(sa)) != 0)
+            if (bind(mSocket, reinterpret_cast<const sockaddr *>(&sa), static_cast<unsigned>(sizeof(sa))) != 0)
                 res = chip::System::MapErrorPOSIX(errno);
         }
 #endif // INET_CONFIG_ENABLE_IPV4
@@ -294,7 +294,7 @@ INET_ERROR TCPEndPoint::Listen(uint16_t backlog)
     return res;
 }
 
-INET_ERROR TCPEndPoint::Connect(IPAddress addr, uint16_t port, InterfaceId intf)
+INET_ERROR TCPEndPoint::Connect(const IPAddress & addr, uint16_t port, InterfaceId intfId)
 {
     INET_ERROR res = INET_NO_ERROR;
 
@@ -313,7 +313,7 @@ INET_ERROR TCPEndPoint::Connect(IPAddress addr, uint16_t port, InterfaceId intf)
     // As a work-around, if the destination is an IPv6 link-local address, we bind the PCB
     // to the link local address associated with the source interface; however this is only
     // viable if the endpoint hasn't already been bound.
-    if (intf != INET_NULL_INTERFACEID)
+    if (intfId != INET_NULL_INTERFACEID)
     {
         IPAddress intfLLAddr;
         InetLayer & lInetLayer = Layer();
@@ -321,7 +321,7 @@ INET_ERROR TCPEndPoint::Connect(IPAddress addr, uint16_t port, InterfaceId intf)
         if (!addr.IsIPv6LinkLocal() || State == kState_Bound)
             return INET_ERROR_NOT_IMPLEMENTED;
 
-        res = lInetLayer.GetLinkLocalAddr(intf, &intfLLAddr);
+        res = lInetLayer.GetLinkLocalAddr(intfId, &intfLLAddr);
         if (res != INET_NO_ERROR)
             return res;
 
@@ -384,7 +384,7 @@ INET_ERROR TCPEndPoint::Connect(IPAddress addr, uint16_t port, InterfaceId intf)
     if (res != INET_NO_ERROR)
         return res;
 
-    if (intf == INET_NULL_INTERFACEID)
+    if (intfId == INET_NULL_INTERFACEID)
     {
         // The behavior when connecting to an IPv6 link-local address without specifying an outbound
         // interface is ambiguous. So prevent it in all cases.
@@ -404,7 +404,7 @@ INET_ERROR TCPEndPoint::Connect(IPAddress addr, uint16_t port, InterfaceId intf)
             struct ::ifreq ifr;
             memset(&ifr, 0, sizeof(ifr));
 
-            res = GetInterfaceName(intf, ifr.ifr_name, sizeof(ifr.ifr_name));
+            res = GetInterfaceName(intfId, ifr.ifr_name, sizeof(ifr.ifr_name));
             if (res != INET_NO_ERROR)
                 return res;
 
@@ -412,7 +412,7 @@ INET_ERROR TCPEndPoint::Connect(IPAddress addr, uint16_t port, InterfaceId intf)
             // If the permission is denied(EACCES) because CHIP is running in a context
             // that does not have privileged access, choose a source address on the
             // interface to bind the connetion to.
-            int r = setsockopt(mSocket, SOL_SOCKET, SO_BINDTODEVICE, (void *) &ifr, sizeof(ifr));
+            int r = setsockopt(mSocket, SOL_SOCKET, SO_BINDTODEVICE, &ifr, sizeof(ifr));
             if (r < 0 && errno != EACCES)
             {
                 return res = chip::System::MapErrorPOSIX(errno);
@@ -424,7 +424,7 @@ INET_ERROR TCPEndPoint::Connect(IPAddress addr, uint16_t port, InterfaceId intf)
                 // Attempting to initiate a connection via a specific interface is not allowed.
                 // The only way to do this is to bind the local to an address on the desired
                 // interface.
-                res = BindSrcAddrFromIntf(addrType, intf);
+                res = BindSrcAddrFromIntf(addrType, intfId);
                 if (res != INET_NO_ERROR)
                     return res;
             }
@@ -441,8 +441,8 @@ INET_ERROR TCPEndPoint::Connect(IPAddress addr, uint16_t port, InterfaceId intf)
     int flags = fcntl(mSocket, F_GETFL, 0);
     fcntl(mSocket, F_SETFL, flags | O_NONBLOCK);
 
-    int sockaddrsize             = 0;
-    const sockaddr * sockaddrptr = NULL;
+    socklen_t sockaddrsize       = 0;
+    const sockaddr * sockaddrptr = nullptr;
 
     union
     {
@@ -460,9 +460,9 @@ INET_ERROR TCPEndPoint::Connect(IPAddress addr, uint16_t port, InterfaceId intf)
         sa.in6.sin6_port     = htons(port);
         sa.in6.sin6_flowinfo = 0;
         sa.in6.sin6_addr     = addr.ToIPv6();
-        sa.in6.sin6_scope_id = intf;
+        sa.in6.sin6_scope_id = intfId;
         sockaddrsize         = sizeof(sockaddr_in6);
-        sockaddrptr          = (const sockaddr *) &sa.in6;
+        sockaddrptr          = reinterpret_cast<const sockaddr *>(&sa.in6);
     }
 #if INET_CONFIG_ENABLE_IPV4
     else if (addrType == kIPAddressType_IPv4)
@@ -471,7 +471,7 @@ INET_ERROR TCPEndPoint::Connect(IPAddress addr, uint16_t port, InterfaceId intf)
         sa.in.sin_port   = htons(port);
         sa.in.sin_addr   = addr.ToIPv4();
         sockaddrsize     = sizeof(sockaddr_in);
-        sockaddrptr      = (const sockaddr *) &sa.in;
+        sockaddrptr      = reinterpret_cast<const sockaddr *>(&sa.in);
     }
 #endif // INET_CONFIG_ENABLE_IPV4
     else
@@ -493,7 +493,7 @@ INET_ERROR TCPEndPoint::Connect(IPAddress addr, uint16_t port, InterfaceId intf)
     if (conRes == 0)
     {
         State = kState_Connected;
-        if (OnConnectComplete != NULL)
+        if (OnConnectComplete != nullptr)
             OnConnectComplete(this, INET_NO_ERROR);
     }
     else
@@ -522,7 +522,7 @@ void TCPEndPoint::SetConnectTimeout(const uint32_t connTimeoutMsecs)
     mConnectTimeoutMsecs = connTimeoutMsecs;
 }
 
-void TCPEndPoint::StartConnectTimerIfSet(void)
+void TCPEndPoint::StartConnectTimerIfSet()
 {
     if (mConnectTimeoutMsecs > 0)
     {
@@ -532,7 +532,7 @@ void TCPEndPoint::StartConnectTimerIfSet(void)
     }
 }
 
-void TCPEndPoint::StopConnectTimer(void)
+void TCPEndPoint::StopConnectTimer()
 {
     chip::System::Layer & lSystemLayer = SystemLayer();
 
@@ -543,7 +543,7 @@ void TCPEndPoint::TCPConnectTimeoutHandler(chip::System::Layer * aSystemLayer, v
 {
     TCPEndPoint * tcpEndPoint = reinterpret_cast<TCPEndPoint *>(aAppState);
 
-    VerifyOrDie((aSystemLayer != NULL) && (tcpEndPoint != NULL));
+    VerifyOrDie((aSystemLayer != nullptr) && (tcpEndPoint != nullptr));
 
     // Close Connection as we have timed out and Connect has not returned to
     // stop this timer.
@@ -689,28 +689,21 @@ INET_ERROR TCPEndPoint::GetLocalInfo(IPAddress * retAddr, uint16_t * retPort)
     return res;
 }
 
-INET_ERROR TCPEndPoint::Send(PacketBuffer * data, bool push)
+INET_ERROR TCPEndPoint::Send(System::PacketBufferHandle data, bool push)
 {
     INET_ERROR res = INET_NO_ERROR;
 
     if (State != kState_Connected && State != kState_ReceiveShutdown)
     {
-        PacketBuffer::Free(data);
         return INET_ERROR_INCORRECT_STATE;
     }
 
-    if (mSendQueue == NULL)
-        mSendQueue = data;
+    if (mSendQueue.IsNull())
+        mSendQueue = std::move(data);
     else
-        mSendQueue->AddToEnd(data);
+        mSendQueue->AddToEnd(std::move(data));
 
 #if CHIP_SYSTEM_CONFIG_USE_LWIP
-
-    if (mUnsentQueue == NULL)
-    {
-        mUnsentQueue  = data;
-        mUnsentOffset = 0;
-    }
 
 #if INET_CONFIG_OVERRIDE_SYSTEM_TCP_USER_TIMEOUT
     if (!mUserTimeoutTimerRunning)
@@ -763,7 +756,7 @@ void TCPEndPoint::EnableReceive()
  *
  */
 
-INET_ERROR TCPEndPoint::EnableNoDelay(void)
+INET_ERROR TCPEndPoint::EnableNoDelay()
 {
     INET_ERROR res = INET_NO_ERROR;
 
@@ -800,28 +793,6 @@ INET_ERROR TCPEndPoint::EnableNoDelay(void)
 
     return res;
 }
-
-/**
- *  TCPEndPoint::EnableKeepAlive
- *
- *  @brief
- *    Enable TCP keepalive probes on the associated TCP connection.
- *
- *  @param interval
- *    The interval (in seconds) between keepalive probes.  This value also controls
- *    the time between last data packet sent and the transmission of the first keepalive
- *    probe.
- *
- *  @param timeoutCount
- *    The maximum number of unacknowledged probes before the connection will be deemed
- *    to have failed.
- *
- *  @note
- *    This method can only be called when the endpoint is in one of the connected states.
- *
- *    This method can be called multiple times to adjust the keepalive interval or timeout
- *    count.
- */
 
 INET_ERROR TCPEndPoint::EnableKeepAlive(uint16_t interval, uint16_t timeoutCount)
 {
@@ -1045,30 +1016,28 @@ INET_ERROR TCPEndPoint::AckReceive(uint16_t len)
     return res;
 }
 
-INET_ERROR TCPEndPoint::PutBackReceivedData(PacketBuffer * data)
+INET_ERROR TCPEndPoint::PutBackReceivedData(System::PacketBufferHandle data)
 {
     if (!IsConnected())
         return INET_ERROR_INCORRECT_STATE;
 
-    mRcvQueue = data;
+    mRcvQueue = std::move(data);
 
     return INET_NO_ERROR;
 }
 
 uint32_t TCPEndPoint::PendingSendLength()
 {
-    if (mSendQueue != NULL)
+    if (!mSendQueue.IsNull())
         return mSendQueue->TotalLength();
-    else
-        return 0;
+    return 0;
 }
 
 uint32_t TCPEndPoint::PendingReceiveLength()
 {
-    if (mRcvQueue != NULL)
+    if (!mRcvQueue.IsNull())
         return mRcvQueue->TotalLength();
-    else
-        return 0;
+    return 0;
 }
 
 INET_ERROR TCPEndPoint::Shutdown()
@@ -1095,13 +1064,12 @@ INET_ERROR TCPEndPoint::Shutdown()
 INET_ERROR TCPEndPoint::Close()
 {
     // Clear the receive queue.
-    PacketBuffer::Free(mRcvQueue);
-    mRcvQueue = NULL;
+    mRcvQueue = nullptr;
 
     // Suppress closing callbacks, since the application explicitly called Close().
-    OnConnectionClosed = NULL;
-    OnPeerClose        = NULL;
-    OnConnectComplete  = NULL;
+    OnConnectionClosed = nullptr;
+    OnPeerClose        = nullptr;
+    OnConnectComplete  = nullptr;
 
     // Perform a graceful close.
     return DoClose(INET_NO_ERROR, true);
@@ -1110,9 +1078,9 @@ INET_ERROR TCPEndPoint::Close()
 void TCPEndPoint::Abort()
 {
     // Suppress closing callbacks, since the application explicitly called Abort().
-    OnConnectionClosed = NULL;
-    OnPeerClose        = NULL;
-    OnConnectComplete  = NULL;
+    OnConnectionClosed = nullptr;
+    OnPeerClose        = nullptr;
+    OnConnectComplete  = nullptr;
 
     DoClose(INET_ERROR_CONNECTION_ABORTED, true);
 }
@@ -1122,13 +1090,13 @@ void TCPEndPoint::Free()
     INET_ERROR err;
 
     // Ensure no callbacks to the app after this point.
-    OnAcceptError        = NULL;
-    OnConnectComplete    = NULL;
-    OnConnectionReceived = NULL;
-    OnConnectionClosed   = NULL;
-    OnPeerClose          = NULL;
-    OnDataReceived       = NULL;
-    OnDataSent           = NULL;
+    OnAcceptError        = nullptr;
+    OnConnectComplete    = nullptr;
+    OnConnectionReceived = nullptr;
+    OnConnectionClosed   = nullptr;
+    OnPeerClose          = nullptr;
+    OnDataReceived       = nullptr;
+    OnDataSent           = nullptr;
 
     // Ensure the end point is Closed or Closing.
     err = Close();
@@ -1150,7 +1118,7 @@ void TCPEndPoint::SetIdleTimeout(uint32_t timeoutMS)
 
     if (newIdleTimeout > UINT16_MAX)
         newIdleTimeout = UINT16_MAX;
-    mIdleTimeout = mRemainingIdleTime = newIdleTimeout;
+    mIdleTimeout = mRemainingIdleTime = static_cast<uint16_t>(newIdleTimeout);
 
     if (!isIdleTimerRunning && mIdleTimeout)
     {
@@ -1197,6 +1165,10 @@ void TCPEndPoint::Init(InetLayer * inetLayer)
 #endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS
 
 #endif // INET_CONFIG_OVERRIDE_SYSTEM_TCP_USER_TIMEOUT
+
+#if CHIP_SYSTEM_CONFIG_USE_LWIP
+    mUnackedLength = 0;
+#endif // CHIP_SYSTEM_CONFIG_USE_LWIP
 }
 
 INET_ERROR TCPEndPoint::DriveSending()
@@ -1217,44 +1189,60 @@ INET_ERROR TCPEndPoint::DriveSending()
         uint16_t sendWindowSize = tcp_sndbuf(mTCP);
 
         // If there's data to be sent and the send window is open...
-        bool canSend = (mUnsentQueue != NULL && sendWindowSize > 0);
+        bool canSend = (RemainingToSend() > 0 && sendWindowSize > 0);
         if (canSend)
         {
+            // Find first packet buffer with remaining data to send by skipping
+            // all sent but un-acked data.
+            TCPEndPoint::BufferOffset startOfUnsent = FindStartOfUnsent();
+
             // While there's data to be sent and a window to send it in...
             do
             {
-                uint16_t bufDataLen = mUnsentQueue->DataLength();
+                VerifyOrDie(!startOfUnsent.buffer.IsNull());
+
+                uint16_t bufDataLen = startOfUnsent.buffer->DataLength();
 
                 // Get a pointer to the start of unsent data within the first buffer on the unsent queue.
-                uint8_t * sendData = mUnsentQueue->Start() + mUnsentOffset;
+                const uint8_t * sendData = startOfUnsent.buffer->Start() + startOfUnsent.offset;
 
                 // Determine the amount of data to send from the current buffer.
-                uint16_t sendLen = bufDataLen - mUnsentOffset;
+                uint16_t sendLen = static_cast<uint16_t>(bufDataLen - startOfUnsent.offset);
                 if (sendLen > sendWindowSize)
                     sendLen = sendWindowSize;
 
-                // Adjust the unsent data offset by the length of data to be written. If the entire buffer
-                // has been sent advance to the next one.
-                mUnsentOffset += sendLen;
-                if (mUnsentOffset == bufDataLen)
-                {
-                    mUnsentQueue  = mUnsentQueue->Next();
-                    mUnsentOffset = 0;
-                }
-
-                // Adjust the remaining window size.
-                sendWindowSize -= sendLen;
-
-                // Determine if there's more data to be sent after this buffer.
-                canSend = (mUnsentQueue != NULL && sendWindowSize > 0);
-
                 // Call LwIP to queue the data to be sent, telling it if there's more data to come.
+                // Data is queued in-place as a reference within the source packet buffer. It is
+                // critical that the underlying packet buffer not be freed until the data
+                // is acknowledged, otherwise retransmissions could use an invalid
+                // backing. Using TCP_WRITE_FLAG_COPY would eliminate this requirement, but overall
+                // requires many more memory allocations which may be problematic when very
+                // memory-constrained or when using pool-based allocations.
                 lwipErr = tcp_write(mTCP, sendData, sendLen, (canSend) ? TCP_WRITE_FLAG_MORE : 0);
                 if (lwipErr != ERR_OK)
                 {
                     err = chip::System::MapErrorLwIP(lwipErr);
                     break;
                 }
+                // Start accounting for the data sent as yet-to-be-acked.
+                // This cast is safe, because mUnackedLength + sendLen <= bufDataLen, which fits in uint16_t.
+                mUnackedLength = static_cast<uint16_t>(mUnackedLength + sendLen);
+
+                // Adjust the unsent data offset by the length of data that was written.
+                // If the entire buffer has been sent advance to the next one.
+                // This cast is safe, because startOfUnsent.offset + sendLen <= bufDataLen, which fits in uint16_t.
+                startOfUnsent.offset = static_cast<uint16_t>(startOfUnsent.offset + sendLen);
+                if (startOfUnsent.offset == bufDataLen)
+                {
+                    startOfUnsent.buffer.Advance();
+                    startOfUnsent.offset = 0;
+                }
+
+                // Adjust the remaining window size.
+                sendWindowSize = static_cast<uint16_t>(sendWindowSize - sendLen);
+
+                // Determine if there's more data to be sent after this buffer.
+                canSend = (RemainingToSend() > 0 && sendWindowSize > 0);
             } while (canSend);
 
             // Call LwIP to send the queued data.
@@ -1272,7 +1260,7 @@ INET_ERROR TCPEndPoint::DriveSending()
         if (err == INET_NO_ERROR)
         {
             // If in the SendShutdown state and the unsent queue is now empty, shutdown the PCB for sending.
-            if (State == kState_SendShutdown && mUnsentQueue == NULL)
+            if (State == kState_SendShutdown && (RemainingToSend() == 0))
             {
                 lwipErr = tcp_shutdown(mTCP, 0, 1);
                 if (lwipErr != ERR_OK)
@@ -1304,18 +1292,27 @@ INET_ERROR TCPEndPoint::DriveSending()
         return err;
     });
 
-    while (mSendQueue != NULL)
+    while (!mSendQueue.IsNull())
     {
         uint16_t bufLen = mSendQueue->DataLength();
 
-        ssize_t lenSent = send(mSocket, mSendQueue->Start(), (size_t) bufLen, sendFlags);
+        ssize_t lenSentRaw = send(mSocket, mSendQueue->Start(), bufLen, sendFlags);
 
-        if (lenSent == -1)
+        if (lenSentRaw == -1)
         {
             if (errno != EAGAIN && errno != EWOULDBLOCK)
                 err = (errno == EPIPE) ? INET_ERROR_PEER_DISCONNECTED : chip::System::MapErrorPOSIX(errno);
             break;
         }
+
+        if (lenSentRaw < 0 || lenSentRaw > bufLen)
+        {
+            err = INET_ERROR_INCORRECT_STATE;
+            break;
+        }
+
+        // Cast is safe because bufLen is uint16_t.
+        uint16_t lenSent = static_cast<uint16_t>(lenSentRaw);
 
         // Mark the connection as being active.
         MarkActive();
@@ -1323,10 +1320,10 @@ INET_ERROR TCPEndPoint::DriveSending()
         if (lenSent < bufLen)
             mSendQueue->ConsumeHead(lenSent);
         else
-            mSendQueue = PacketBuffer::FreeHead(mSendQueue);
+            mSendQueue.FreeHead();
 
-        if (OnDataSent != NULL)
-            OnDataSent(this, (uint16_t) lenSent);
+        if (OnDataSent != nullptr)
+            OnDataSent(this, lenSent);
 
 #if INET_CONFIG_ENABLE_TCP_SEND_IDLE_CALLBACKS
         // TCP Send is not Idle; Set state and notify if needed
@@ -1368,7 +1365,7 @@ INET_ERROR TCPEndPoint::DriveSending()
     if (err == INET_NO_ERROR)
     {
         // If we're in the SendShutdown state and the send queue is now empty, shutdown writing on the socket.
-        if (State == kState_SendShutdown && mSendQueue == NULL)
+        if (State == kState_SendShutdown && mSendQueue.IsNull())
         {
             if (shutdown(mSocket, SHUT_WR) != 0)
                 err = chip::System::MapErrorPOSIX(errno);
@@ -1389,16 +1386,14 @@ void TCPEndPoint::DriveReceiving()
 {
     // If there's data in the receive queue and the app is ready to receive it then call the app's callback
     // with the entire receive queue.
-    if (mRcvQueue != NULL && ReceiveEnabled && OnDataReceived != NULL)
+    if (!mRcvQueue.IsNull() && ReceiveEnabled && OnDataReceived != nullptr)
     {
-        PacketBuffer * rcvQueue = mRcvQueue;
-        mRcvQueue               = NULL;
-        OnDataReceived(this, rcvQueue);
+        OnDataReceived(this, std::move(mRcvQueue));
     }
 
     // If the connection is closing, and the receive queue is now empty, call DoClose() to complete
     // the process of closing the connection.
-    if (State == kState_Closing && mRcvQueue == NULL)
+    if (State == kState_Closing && mRcvQueue.IsNull())
         DoClose(INET_NO_ERROR, false);
 }
 
@@ -1414,7 +1409,7 @@ void TCPEndPoint::HandleConnectComplete(INET_ERROR err)
         MarkActive();
 
         State = kState_Connected;
-        if (OnConnectComplete != NULL)
+        if (OnConnectComplete != nullptr)
             OnConnectComplete(this, INET_NO_ERROR);
     }
 
@@ -1436,7 +1431,7 @@ INET_ERROR TCPEndPoint::DoClose(INET_ERROR err, bool suppressCallback)
     // AND there is data waiting to be processed on either the send or receive queues
     // ... THEN enter the Closing state, allowing the queued data to drain,
     // ... OTHERWISE go straight to the Closed state.
-    if (IsConnected() && err == INET_NO_ERROR && (mSendQueue != NULL || mRcvQueue != NULL))
+    if (IsConnected() && err == INET_NO_ERROR && (!mSendQueue.IsNull() || !mRcvQueue.IsNull()))
         State = kState_Closing;
     else
         State = kState_Closed;
@@ -1526,7 +1521,7 @@ INET_ERROR TCPEndPoint::DoClose(INET_ERROR err, bool suppressCallback)
         // If entering the Closed state
         // OR if entering the Closing state, and there's no unsent data in the send queue
         // THEN close the socket.
-        if (State == kState_Closed || (State == kState_Closing && mSendQueue == NULL))
+        if (State == kState_Closed || (State == kState_Closing && mSendQueue.IsNull()))
         {
             chip::System::Layer & lSystemLayer = SystemLayer();
 
@@ -1563,22 +1558,23 @@ INET_ERROR TCPEndPoint::DoClose(INET_ERROR err, bool suppressCallback)
     if (State == kState_Closed)
     {
         // Clear clear the send and receive queues.
-        PacketBuffer::Free(mSendQueue);
-        mSendQueue = NULL;
-        PacketBuffer::Free(mRcvQueue);
-        mRcvQueue = NULL;
+        mSendQueue = nullptr;
+        mRcvQueue  = nullptr;
+#if CHIP_SYSTEM_CONFIG_USE_LWIP
+        mUnackedLength = 0;
+#endif // CHIP_SYSTEM_CONFIG_USE_LWIP
 
         // Call the appropriate app callback if allowed.
         if (!suppressCallback)
         {
             if (oldState == kState_Connecting)
             {
-                if (OnConnectComplete != NULL)
+                if (OnConnectComplete != nullptr)
                     OnConnectComplete(this, err);
             }
             else if ((oldState == kState_Connected || oldState == kState_SendShutdown || oldState == kState_ReceiveShutdown ||
                       oldState == kState_Closing) &&
-                     OnConnectionClosed != NULL)
+                     OnConnectionClosed != nullptr)
                 OnConnectionClosed(this, err);
         }
 
@@ -1608,7 +1604,7 @@ void TCPEndPoint::TCPUserTimeoutHandler(chip::System::Layer * aSystemLayer, void
 {
     TCPEndPoint * tcpEndPoint = reinterpret_cast<TCPEndPoint *>(aAppState);
 
-    VerifyOrDie((aSystemLayer != NULL) && (tcpEndPoint != NULL));
+    VerifyOrDie((aSystemLayer != nullptr) && (tcpEndPoint != nullptr));
 
     // Set the timer running flag to false
     tcpEndPoint->mUserTimeoutTimerRunning = false;
@@ -1626,7 +1622,7 @@ void TCPEndPoint::TCPUserTimeoutHandler(chip::System::Layer * aSystemLayer, void
         // send queue have been flushed then notify application
         // that all data has been acknowledged.
 
-        if (tcpEndPoint->mSendQueue == NULL)
+        if (tcpEndPoint->mSendQueue.IsNull())
         {
             tcpEndPoint->SetTCPSendIdleAndNotifyChange(true);
         }
@@ -1746,6 +1742,62 @@ void TCPEndPoint::RestartTCPUserTimeoutTimer()
 
 #if CHIP_SYSTEM_CONFIG_USE_LWIP
 
+uint16_t TCPEndPoint::RemainingToSend()
+{
+    if (mSendQueue.IsNull())
+    {
+        return 0;
+    }
+    else
+    {
+        // We can never have reported more unacked data than there is pending
+        // in the send queue! This would indicate a critical accounting bug.
+        VerifyOrDie(mUnackedLength <= mSendQueue->TotalLength());
+
+        return static_cast<uint16_t>(mSendQueue->TotalLength() - mUnackedLength);
+    }
+}
+
+TCPEndPoint::BufferOffset TCPEndPoint::FindStartOfUnsent()
+{
+    // Find first packet buffer with remaining data to send by skipping
+    // all sent but un-acked data. This is necessary because of the Consume()
+    // call in HandleDataSent(), which potentially releases backing memory for
+    // fully-sent packet buffers, causing an invalidation of all possible
+    // offsets one might have cached. The TCP acnowledgements may come back
+    // with a variety of sizes depending on prior activity, and size of the
+    // send window. The only way to ensure we get the correct offsets into
+    // unsent data while retaining the buffers that have un-acked data is to
+    // traverse all sent-but-unacked data in the chain to reach the beginning
+    // of ready-to-send data.
+    TCPEndPoint::BufferOffset startOfUnsent(mSendQueue.Retain());
+    uint16_t leftToSkip = mUnackedLength;
+
+    VerifyOrDie(leftToSkip < mSendQueue->TotalLength());
+
+    while (leftToSkip > 0)
+    {
+        VerifyOrDie(!startOfUnsent.buffer.IsNull());
+        uint16_t bufDataLen = startOfUnsent.buffer->DataLength();
+        if (leftToSkip >= bufDataLen)
+        {
+            // We have more to skip than current packet buffer size.
+            // Follow the chain to continue.
+            startOfUnsent.buffer.Advance();
+            leftToSkip = static_cast<uint16_t>(leftToSkip - bufDataLen);
+        }
+        else
+        {
+            // Done skipping all data, currentUnsentBuf is first packet buffer
+            // containing unsent data.
+            startOfUnsent.offset = leftToSkip;
+            leftToSkip           = 0;
+        }
+    }
+
+    return startOfUnsent;
+}
+
 INET_ERROR TCPEndPoint::GetPCB(IPAddressType addrType)
 {
     // IMMPORTANT: This method MUST be called with the LwIP stack LOCKED!
@@ -1837,8 +1889,24 @@ void TCPEndPoint::HandleDataSent(uint16_t lenSent)
 {
     if (IsConnected())
     {
+        // Ensure we do not have internal inconsistency in the lwIP, which
+        // could cause invalid pointer accesses.
+        if (lenSent > mUnackedLength)
+        {
+            ChipLogError(Inet, "Got more ACKed bytes (%d) than were pending (%d)", (int) lenSent, (int) mUnackedLength);
+            DoClose(INET_ERROR_UNEXPECTED_EVENT, false);
+            return;
+        }
+        else if (mSendQueue.IsNull())
+        {
+            ChipLogError(Inet, "Got ACK for %d bytes but data backing gone", (int) lenSent);
+            DoClose(INET_ERROR_UNEXPECTED_EVENT, false);
+            return;
+        }
+
         // Consume data off the head of the send queue equal to the amount of data being acknowledged.
-        mSendQueue = mSendQueue->Consume(lenSent);
+        mSendQueue.Consume(lenSent);
+        mUnackedLength = static_cast<uint16_t>(mUnackedLength - lenSent);
 
 #if INET_CONFIG_OVERRIDE_SYSTEM_TCP_USER_TIMEOUT
         // Only change the UserTimeout timer if lenSent > 0,
@@ -1846,7 +1914,7 @@ void TCPEndPoint::HandleDataSent(uint16_t lenSent)
         // across.
         if (lenSent > 0)
         {
-            if (mSendQueue == NULL)
+            if (RemainingToSend() == 0)
             {
                 // If the output queue has been flushed then stop the timer.
 
@@ -1874,17 +1942,17 @@ void TCPEndPoint::HandleDataSent(uint16_t lenSent)
         if (OnDataSent != NULL)
             OnDataSent(this, lenSent);
 
-        // If unsent data exists, attempt to sent it now...
-        if (mUnsentQueue != NULL)
+        // If unsent data exists, attempt to send it now...
+        if (RemainingToSend() > 0)
             DriveSending();
 
         // If in the closing state and the send queue is now empty, attempt to transition to closed.
-        if (State == kState_Closing && mSendQueue == NULL)
+        if ((State == kState_Closing) && (RemainingToSend() == 0))
             DoClose(INET_NO_ERROR, false);
     }
 }
 
-void TCPEndPoint::HandleDataReceived(PacketBuffer * buf)
+void TCPEndPoint::HandleDataReceived(System::PacketBufferHandle buf)
 {
     // Only receive new data while in the Connected or SendShutdown states.
     if (State == kState_Connected || State == kState_SendShutdown)
@@ -1894,13 +1962,15 @@ void TCPEndPoint::HandleDataReceived(PacketBuffer * buf)
 
         // If we received a data buffer, queue it on the receive queue.  If there's already data in
         // the queue, compact the data into the head buffer.
-        if (buf != NULL)
+        if (!buf.IsNull())
         {
-            if (mRcvQueue == NULL)
-                mRcvQueue = buf;
+            if (mRcvQueue.IsNull())
+            {
+                mRcvQueue = std::move(buf);
+            }
             else
             {
-                mRcvQueue->AddToEnd(buf);
+                mRcvQueue->AddToEnd(std::move(buf));
                 mRcvQueue->CompactHead();
             }
         }
@@ -1927,8 +1997,6 @@ void TCPEndPoint::HandleDataReceived(PacketBuffer * buf)
         // Drive the received data into the app.
         DriveReceiving();
     }
-    else
-        PacketBuffer::Free(buf);
 }
 
 void TCPEndPoint::HandleIncomingConnection(TCPEndPoint * conEP)
@@ -2149,7 +2217,7 @@ void TCPEndPoint::LwIPHandleError(void * arg, err_t lwipErr)
 
 #if CHIP_SYSTEM_CONFIG_USE_SOCKETS
 
-INET_ERROR TCPEndPoint::BindSrcAddrFromIntf(IPAddressType addrType, InterfaceId intf)
+INET_ERROR TCPEndPoint::BindSrcAddrFromIntf(IPAddressType addrType, InterfaceId intfId)
 {
     INET_ERROR err = INET_NO_ERROR;
 
@@ -2169,7 +2237,7 @@ INET_ERROR TCPEndPoint::BindSrcAddrFromIntf(IPAddressType addrType, InterfaceId 
         curAddr   = addrIter.GetAddress();
         curIntfId = addrIter.GetInterface();
 
-        if (curIntfId == intf)
+        if (curIntfId == intfId)
         {
             // Search for an IPv4 address on the TargetInterface
 
@@ -2235,7 +2303,7 @@ INET_ERROR TCPEndPoint::GetSocket(IPAddressType addrType)
         if (family == PF_INET6)
         {
             int one = 1;
-            setsockopt(mSocket, IPPROTO_IPV6, IPV6_V6ONLY, (void *) &one, sizeof(one));
+            setsockopt(mSocket, IPPROTO_IPV6, IPV6_V6ONLY, &one, sizeof(one));
         }
 #endif // defined(IPV6_V6ONLY)
 
@@ -2265,14 +2333,14 @@ SocketEvents TCPEndPoint::PrepareIO()
     // If initiating a new connection...
     // OR if connected and there is data to be sent...
     // THEN arrange for the kernel to alert us when the socket is ready to be written.
-    if (State == kState_Connecting || (IsConnected() && mSendQueue != NULL))
+    if (State == kState_Connecting || (IsConnected() && !mSendQueue.IsNull()))
         ioType.SetWrite();
 
     // If listening for incoming connections and the app is ready to receive a connection...
     // OR if in a state where receiving is allowed, and the app is ready to receive data...
     // THEN arrange for the kernel to alert us when the socket is ready to be read.
-    if ((State == kState_Listening && OnConnectionReceived != NULL) ||
-        ((State == kState_Connected || State == kState_SendShutdown) && ReceiveEnabled && OnDataReceived != NULL))
+    if ((State == kState_Listening && OnConnectionReceived != nullptr) ||
+        ((State == kState_Connected || State == kState_SendShutdown) && ReceiveEnabled && OnDataReceived != nullptr))
         ioType.SetRead();
 
     return ioType;
@@ -2287,7 +2355,7 @@ void TCPEndPoint::HandlePendingIO()
     // ready to be received on the socket, process the incoming connection.
     if (State == kState_Listening)
     {
-        if (OnConnectionReceived != NULL && mPendingIO.IsReadable())
+        if (OnConnectionReceived != nullptr && mPendingIO.IsReadable())
             HandleIncomingConnection();
     }
 
@@ -2313,12 +2381,12 @@ void TCPEndPoint::HandlePendingIO()
     {
         // If in a state where sending is allowed, and there is data to be sent, and the socket is ready for
         // writing, drive outbound data into the connection.
-        if (IsConnected() && mSendQueue != NULL && mPendingIO.IsWriteable())
+        if (IsConnected() && !mSendQueue.IsNull() && mPendingIO.IsWriteable())
             DriveSending();
 
         // If in a state were receiving is allowed, and the app is ready to receive data, and data is ready
         // on the socket, receive inbound data from the connection.
-        if ((State == kState_Connected || State == kState_SendShutdown) && ReceiveEnabled && OnDataReceived != NULL &&
+        if ((State == kState_Connected || State == kState_SendShutdown) && ReceiveEnabled && OnDataReceived != nullptr &&
             mPendingIO.IsReadable())
             ReceiveData();
     }
@@ -2330,19 +2398,18 @@ void TCPEndPoint::HandlePendingIO()
 
 void TCPEndPoint::ReceiveData()
 {
-    PacketBuffer * rcvBuf;
+    System::PacketBufferHandle rcvBuf;
     bool isNewBuf = true;
 
-    if (mRcvQueue == NULL)
-        rcvBuf = PacketBuffer::New(0);
+    if (mRcvQueue.IsNull())
+        rcvBuf = System::PacketBufferHandle::New(kMaxReceiveMessageSize, 0);
     else
     {
-        rcvBuf = mRcvQueue;
-        for (PacketBuffer * nextBuf = rcvBuf->Next(); nextBuf != NULL; rcvBuf = nextBuf, nextBuf = nextBuf->Next())
-            ;
-
+        rcvBuf = mRcvQueue->Last();
         if (rcvBuf->AvailableDataLength() == 0)
-            rcvBuf = PacketBuffer::New(0);
+        {
+            rcvBuf = System::PacketBufferHandle::New(kMaxReceiveMessageSize, 0);
+        }
         else
         {
             isNewBuf = false;
@@ -2350,7 +2417,7 @@ void TCPEndPoint::ReceiveData()
         }
     }
 
-    if (rcvBuf == NULL)
+    if (rcvBuf.IsNull())
     {
         DoClose(INET_ERROR_NO_MEMORY, false);
         return;
@@ -2380,7 +2447,7 @@ void TCPEndPoint::ReceiveData()
 #if INET_CONFIG_ENABLE_TCP_SEND_IDLE_CALLBACKS
         // Notify up if all outstanding data has been acknowledged
 
-        if (mSendQueue == NULL)
+        if (mSendQueue.IsNull())
         {
             SetTCPSendIdleAndNotifyChange(true);
         }
@@ -2397,12 +2464,6 @@ void TCPEndPoint::ReceiveData()
     if (rcvLen < 0)
     {
         int systemErrno = errno;
-
-        if (isNewBuf)
-        {
-            PacketBuffer::Free(rcvBuf);
-        }
-
         if (systemErrno == EAGAIN)
         {
             // Note: in this case, we opt to not retry the recv call,
@@ -2425,36 +2486,41 @@ void TCPEndPoint::ReceiveData()
         // If the peer closed their end of the connection...
         if (rcvLen == 0)
         {
-            if (isNewBuf)
-                PacketBuffer::Free(rcvBuf);
-
             // If in the Connected state and the app has provided an OnPeerClose callback,
             // enter the ReceiveShutdown state.  Providing an OnPeerClose callback allows
             // the app to decide whether to keep the send side of the connection open after
             // the peer has closed. If no OnPeerClose is provided, we assume that the app
             // wants to close both directions and automatically enter the Closing state.
-            if (State == kState_Connected && OnPeerClose != NULL)
+            if (State == kState_Connected && OnPeerClose != nullptr)
                 State = kState_ReceiveShutdown;
             else
                 State = kState_Closing;
 
             // Call the app's OnPeerClose.
-            if (OnPeerClose != NULL)
+            if (OnPeerClose != nullptr)
                 OnPeerClose(this);
         }
 
         // Otherwise, add the new data onto the receive queue.
-        else if (isNewBuf)
-        {
-            rcvBuf->SetDataLength(rcvBuf->DataLength() + (uint16_t) rcvLen);
-            if (mRcvQueue == NULL)
-                mRcvQueue = rcvBuf;
-            else
-                mRcvQueue->AddToEnd(rcvBuf);
-        }
-
         else
-            rcvBuf->SetDataLength(rcvBuf->DataLength() + (uint16_t) rcvLen, mRcvQueue);
+        {
+            VerifyOrDie(rcvLen > 0);
+            size_t newDataLength = rcvBuf->DataLength() + static_cast<size_t>(rcvLen);
+            VerifyOrDie(CanCastTo<uint16_t>(newDataLength));
+            if (isNewBuf)
+            {
+                rcvBuf->SetDataLength(static_cast<uint16_t>(newDataLength));
+                rcvBuf.RightSize();
+                if (mRcvQueue.IsNull())
+                    mRcvQueue = std::move(rcvBuf);
+                else
+                    mRcvQueue->AddToEnd(std::move(rcvBuf));
+            }
+            else
+            {
+                rcvBuf->SetDataLength(static_cast<uint16_t>(newDataLength), mRcvQueue);
+            }
+        }
     }
 
     // Drive any received data into the app.
@@ -2464,7 +2530,7 @@ void TCPEndPoint::ReceiveData()
 void TCPEndPoint::HandleIncomingConnection()
 {
     INET_ERROR err      = INET_NO_ERROR;
-    TCPEndPoint * conEP = NULL;
+    TCPEndPoint * conEP = nullptr;
     IPAddress peerAddr;
     uint16_t peerPort;
 
@@ -2483,7 +2549,7 @@ void TCPEndPoint::HandleIncomingConnection()
         err = chip::System::MapErrorPOSIX(errno);
 
     // If there's no callback available, fail with an error.
-    if (err == INET_NO_ERROR && OnConnectionReceived == NULL)
+    if (err == INET_NO_ERROR && OnConnectionReceived == nullptr)
         err = INET_ERROR_NO_CONNECTION_HANDLER;
 
     // Extract the peer's address information.
@@ -2535,13 +2601,13 @@ void TCPEndPoint::HandleIncomingConnection()
     {
         if (conSocket != -1)
             close(conSocket);
-        if (conEP != NULL)
+        if (conEP != nullptr)
         {
             if (conEP->State == kState_Connected)
                 conEP->Release();
             conEP->Release();
         }
-        if (OnAcceptError != NULL)
+        if (OnAcceptError != nullptr)
             OnAcceptError(this, err);
     }
 }
@@ -2553,18 +2619,25 @@ void TCPEndPoint::HandleIncomingConnection()
  */
 INET_ERROR TCPEndPoint::CheckConnectionProgress(bool & isProgressing)
 {
-    INET_ERROR err       = INET_NO_ERROR;
-    int currPendingBytes = 0;
+    INET_ERROR err          = INET_NO_ERROR;
+    int currPendingBytesRaw = 0;
+    uint32_t currPendingBytes; // Will be initialized once we know it's safe.
 
     // Fetch the bytes pending successful transmission in the TCP out queue.
 
-    if (ioctl(mSocket, TIOCOUTQ, &currPendingBytes) < 0)
+    if (ioctl(mSocket, TIOCOUTQ, &currPendingBytesRaw) < 0)
     {
         ExitNow(err = chip::System::MapErrorPOSIX(errno));
     }
 
-    if ((currPendingBytes != 0) &&
-        (mBytesWrittenSinceLastProbe + mLastTCPKernelSendQueueLen == static_cast<uint32_t>(currPendingBytes)))
+    if (!CanCastTo<uint32_t>(currPendingBytesRaw))
+    {
+        ExitNow(err = INET_ERROR_INCORRECT_STATE);
+    }
+
+    currPendingBytes = static_cast<uint32_t>(currPendingBytesRaw);
+
+    if ((currPendingBytes != 0) && (mBytesWrittenSinceLastProbe + mLastTCPKernelSendQueueLen == currPendingBytes))
     {
         // No progress has been made
 

@@ -23,17 +23,18 @@
  *          for use on FreeRTOS platforms.
  */
 
-#ifndef GENERIC_THREAD_STACK_MANAGER_IMPL_FREERTOS_H
-#define GENERIC_THREAD_STACK_MANAGER_IMPL_FREERTOS_H
+#pragma once
 
 #if defined(ESP_PLATFORM)
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
 #include "freertos/task.h"
+#include "timers.h"
 #else
 #include "FreeRTOS.h"
 #include "semphr.h"
 #include "task.h"
+#include "timers.h"
 #endif
 
 namespace chip {
@@ -77,6 +78,10 @@ private:
     inline ImplClass * Impl() { return static_cast<ImplClass *>(this); }
 
     static void ThreadTaskMain(void * arg);
+    static void OnJoinerTimer(TimerHandle_t xTimer);
+
+    portTickType mJoinerExpire;
+    bool mJoinerStartPending = false;
 };
 
 // Instruct the compiler to instantiate the template only when explicitly told to do so.
@@ -85,5 +90,3 @@ extern template class GenericThreadStackManagerImpl_FreeRTOS<ThreadStackManagerI
 } // namespace Internal
 } // namespace DeviceLayer
 } // namespace chip
-
-#endif // GENERIC_THREAD_STACK_MANAGER_IMPL_FREERTOS_H

@@ -20,19 +20,14 @@
  *      The implementation of the Setup Payload Helper. To be used by the chip command line tool.
  */
 
-#ifndef SetupPayloadHelper_h
-#define SetupPayloadHelper_h
+#pragma once
 
 #include <core/CHIPError.h>
 #include <string>
 
 #include <string>
 
-using namespace std;
-
 namespace chip {
-CHIP_ERROR generateQRCodeFromFilePath(string filePath, string & outCode);
-CHIP_ERROR generateManualCodeFromFilePath(string filePath, string & outCode);
+CHIP_ERROR generateQRCodeFromFilePath(std::string filePath, std::string & outCode);
+CHIP_ERROR generateManualCodeFromFilePath(std::string filePath, std::string & outCode);
 } // namespace chip
-
-#endif /* SetupPayloadHelper_h */

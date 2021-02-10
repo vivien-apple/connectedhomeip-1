@@ -33,8 +33,11 @@
  *
  */
 
-#ifndef BLECONFIG_H_
-#define BLECONFIG_H_
+#pragma once
+
+#if CHIP_HAVE_CONFIG_H
+#include <ble/BleBuildConfig.h>
+#endif
 
 #include <system/SystemConfig.h>
 
@@ -230,5 +233,3 @@
 // clang-format on
 
 #include <core/CHIPConfig.h>
-
-#endif /* BLECONFIG_H_ */

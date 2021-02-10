@@ -25,8 +25,7 @@
  *
  */
 
-#ifndef BLEENDPOINT_H_
-#define BLEENDPOINT_H_
+#pragma once
 
 #include <system/SystemMutex.h>
 
@@ -39,7 +38,7 @@
 namespace chip {
 namespace Ble {
 
-using ::chip::System::PacketBuffer;
+using ::chip::System::PacketBufferHandle;
 
 enum
 {
@@ -81,14 +80,14 @@ public:
     typedef void (*OnConnectCompleteFunct)(BLEEndPoint * endPoint, BLE_ERROR err);
     OnConnectCompleteFunct OnConnectComplete;
 
-    typedef void (*OnMessageReceivedFunct)(BLEEndPoint * endPoint, PacketBuffer * msg);
+    typedef void (*OnMessageReceivedFunct)(BLEEndPoint * endPoint, PacketBufferHandle msg);
     OnMessageReceivedFunct OnMessageReceived;
 
     typedef void (*OnConnectionClosedFunct)(BLEEndPoint * endPoint, BLE_ERROR err);
     OnConnectionClosedFunct OnConnectionClosed;
 
 #if CHIP_ENABLE_CHIPOBLE_TEST
-    typedef void (*OnCommandReceivedFunct)(BLEEndPoint * endPoint, PacketBuffer * msg);
+    typedef void (*OnCommandReceivedFunct)(BLEEndPoint * endPoint, PacketBufferHandle msg);
     OnCommandReceivedFunct OnCommandReceived;
     inline void SetOnCommandReceivedCB(OnCommandReceivedFunct cb) { OnCommandReceived = cb; };
     BtpEngineTest mBtpEngineTest;
@@ -96,15 +95,15 @@ public:
     inline void SetRxWindowSize(uint8_t size) { mReceiveWindowMaxSize = size; };
 #endif
 
-public:
     // Public functions:
-    BLE_ERROR Send(PacketBuffer * data);
-    BLE_ERROR Receive(PacketBuffer * data);
-    BLE_ERROR StartConnect(void);
+    BLE_ERROR Send(PacketBufferHandle data);
+    BLE_ERROR Receive(PacketBufferHandle data);
+    BLE_ERROR StartConnect();
 
-    bool IsUnsubscribePending(void) const;
-    void Close(void);
-    void Abort(void);
+    bool IsUnsubscribePending() const;
+    bool ConnectionObjectIs(BLE_CONNECTION_OBJECT connObj) { return connObj == mConnObj; }
+    void Close();
+    void Abort();
 
 private:
     // Private data members:
@@ -140,11 +139,11 @@ private:
     //
     // Re-used during connection setup to cache capabilities request and response payloads; payloads are freed when
     // connection is established.
-    PacketBuffer * mSendQueue;
+    PacketBufferHandle mSendQueue;
 
     // Pending stand-alone BTP acknolwedgement. Pre-empts regular send queue or fragmented message transmission in
     // progress.
-    PacketBuffer * mAckToSend;
+    PacketBufferHandle mAckToSend;
 
     BtpEngine mBtpEngine;
     BleRole mRole;
@@ -157,52 +156,51 @@ private:
     chip::System::Mutex mTxQueueMutex; // For MT-safe Tx queuing
 #endif
 
-private:
     // Private functions:
-    BLEEndPoint(void);  // not defined
-    ~BLEEndPoint(void); // not defined
+    BLEEndPoint()  = delete;
+    ~BLEEndPoint() = delete;
 
     BLE_ERROR Init(BleLayer * bleLayer, BLE_CONNECTION_OBJECT connObj, BleRole role, bool autoClose);
     bool IsConnected(uint8_t state) const;
     void DoClose(uint8_t flags, BLE_ERROR err);
 
     // Transmit path:
-    BLE_ERROR DriveSending(void);
-    BLE_ERROR DriveStandAloneAck(void);
-    bool PrepareNextFragment(PacketBuffer * data, bool & sentAck);
-    BLE_ERROR SendNextMessage(void);
-    BLE_ERROR ContinueMessageSend(void);
-    BLE_ERROR DoSendStandAloneAck(void);
-    BLE_ERROR SendCharacteristic(PacketBuffer * buf);
-    bool SendIndication(PacketBuffer * buf);
-    bool SendWrite(PacketBuffer * buf);
+    BLE_ERROR DriveSending();
+    BLE_ERROR DriveStandAloneAck();
+    bool PrepareNextFragment(PacketBufferHandle && data, bool & sentAck);
+    BLE_ERROR SendNextMessage();
+    BLE_ERROR ContinueMessageSend();
+    BLE_ERROR DoSendStandAloneAck();
+    BLE_ERROR SendCharacteristic(PacketBufferHandle && buf);
+    bool SendIndication(PacketBufferHandle && buf);
+    bool SendWrite(PacketBufferHandle && buf);
 
     // Receive path:
-    BLE_ERROR HandleConnectComplete(void);
-    BLE_ERROR HandleReceiveConnectionComplete(void);
-    void HandleSubscribeReceived(void);
-    void HandleSubscribeComplete(void);
-    void HandleUnsubscribeComplete(void);
-    BLE_ERROR HandleGattSendConfirmationReceived(void);
-    BLE_ERROR HandleHandshakeConfirmationReceived(void);
-    BLE_ERROR HandleFragmentConfirmationReceived(void);
-    BLE_ERROR HandleCapabilitiesRequestReceived(PacketBuffer * data);
-    BLE_ERROR HandleCapabilitiesResponseReceived(PacketBuffer * data);
+    BLE_ERROR HandleConnectComplete();
+    BLE_ERROR HandleReceiveConnectionComplete();
+    void HandleSubscribeReceived();
+    void HandleSubscribeComplete();
+    void HandleUnsubscribeComplete();
+    BLE_ERROR HandleGattSendConfirmationReceived();
+    BLE_ERROR HandleHandshakeConfirmationReceived();
+    BLE_ERROR HandleFragmentConfirmationReceived();
+    BLE_ERROR HandleCapabilitiesRequestReceived(PacketBufferHandle data);
+    BLE_ERROR HandleCapabilitiesResponseReceived(PacketBufferHandle data);
     SequenceNumber_t AdjustRemoteReceiveWindow(SequenceNumber_t lastReceivedAck, SequenceNumber_t maxRemoteWindowSize,
                                                SequenceNumber_t newestUnackedSentSeqNum);
 
     // Timer control functions:
-    BLE_ERROR StartConnectTimer(void);           // Start connect timer.
-    BLE_ERROR StartReceiveConnectionTimer(void); // Start receive connection timer.
-    BLE_ERROR StartAckReceivedTimer(void);       // Start ack-received timer if it's not already running.
-    BLE_ERROR RestartAckReceivedTimer(void);     // Restart ack-received timer.
-    BLE_ERROR StartSendAckTimer(void);           // Start send-ack timer if it's not already running.
-    BLE_ERROR StartUnsubscribeTimer(void);
-    void StopConnectTimer(void);           // Stop connect timer.
-    void StopReceiveConnectionTimer(void); // Stop receive connection timer.
-    void StopAckReceivedTimer(void);       // Stop ack-received timer.
-    void StopSendAckTimer(void);           // Stop send-ack timer.
-    void StopUnsubscribeTimer(void);       // Stop unsubscribe timer.
+    BLE_ERROR StartConnectTimer();           // Start connect timer.
+    BLE_ERROR StartReceiveConnectionTimer(); // Start receive connection timer.
+    BLE_ERROR StartAckReceivedTimer();       // Start ack-received timer if it's not already running.
+    BLE_ERROR RestartAckReceivedTimer();     // Restart ack-received timer.
+    BLE_ERROR StartSendAckTimer();           // Start send-ack timer if it's not already running.
+    BLE_ERROR StartUnsubscribeTimer();
+    void StopConnectTimer();           // Stop connect timer.
+    void StopReceiveConnectionTimer(); // Stop receive connection timer.
+    void StopAckReceivedTimer();       // Stop ack-received timer.
+    void StopSendAckTimer();           // Stop send-ack timer.
+    void StopUnsubscribeTimer();       // Stop unsubscribe timer.
 
     // Timer expired callbacks:
     static void HandleConnectTimeout(chip::System::Layer * systemLayer, void * appState, chip::System::Error err);
@@ -214,22 +212,20 @@ private:
     // Close functions:
     void DoCloseCallback(uint8_t state, uint8_t flags, BLE_ERROR err);
     void FinalizeClose(uint8_t state, uint8_t flags, BLE_ERROR err);
-    void ReleaseBleConnection(void);
-    void Free(void);
-    void FreeBtpEngine(void);
+    void ReleaseBleConnection();
+    void Free();
+    void FreeBtpEngine();
 
     // Mutex lock on Tx queue. Used only in BtpEngine test build for now.
 #if CHIP_ENABLE_CHIPOBLE_TEST
-    inline void QueueTxLock() { mTxQueueMutex.Lock(); };
-    inline void QueueTxUnlock() { mTxQueueMutex.Unlock(); };
+    inline void QueueTxLock() { mTxQueueMutex.Lock(); }
+    inline void QueueTxUnlock() { mTxQueueMutex.Unlock(); }
 #else
-    inline void QueueTxLock(){};
-    inline void QueueTxUnlock(){};
+    inline void QueueTxLock() {}
+    inline void QueueTxUnlock() {}
 #endif
-    void QueueTx(PacketBuffer * data, PacketType_t type);
+    void QueueTx(PacketBufferHandle && data, PacketType_t type);
 };
 
 } /* namespace Ble */
 } /* namespace chip */
-
-#endif /* BLEENDPOINT_H_ */

@@ -19,6 +19,7 @@
 
 #include <shell/shell.h>
 #include <support/CodeUtils.h>
+#include <support/UnitTestRegistration.h>
 
 #include <inttypes.h>
 #include <stdarg.h>
@@ -47,6 +48,9 @@ static const struct test_shell_vector test_vector_shell_tokenizer[] = {
     { .line = " leading space", .argv = (const char *[]){ "leading", "space" } },
     { .line = "trailing space ", .argv = (const char *[]){ "trailing", "space", "" } },
     { .line = "no_space", .argv = (const char *[]){ "no_space" } },
+    { .line = "escaped\\ space", .argv = (const char *[]){ "escaped space" } },
+    { .line = "escape\\\\", .argv = (const char *[]){ "escape\\" } },
+    { .line = "extended\\ escaped\\ space and\\ more", .argv = (const char *[]){ "extended escaped space", "and more" } },
     { .line = " ", .argv = (const char *[]){ "" } },
     { .line = "", .argv = (const char *[]){} },
 };
@@ -96,9 +100,11 @@ static const nlTest sTests[] = {
 
 int TestShell(void)
 {
-    nlTestSuite theSuite = { "CHIP Shell tests", &sTests[0], NULL, NULL };
+    nlTestSuite theSuite = { "CHIP Shell tests", &sTests[0], nullptr, nullptr };
 
     // Run test suit againt one context.
-    nlTestRunner(&theSuite, NULL);
+    nlTestRunner(&theSuite, nullptr);
     return nlTestRunnerStats(&theSuite);
 }
+
+CHIP_REGISTER_TEST_SUITE(TestShell)

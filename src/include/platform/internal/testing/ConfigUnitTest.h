@@ -17,8 +17,7 @@
  *    limitations under the License.
  */
 
-#ifndef CHIP_DEVICE_CONFIG_UNIT_TEST_H
-#define CHIP_DEVICE_CONFIG_UNIT_TEST_H
+#pragma once
 
 #include <core/CHIPCore.h>
 #include <support/CodeUtils.h>
@@ -28,7 +27,7 @@ namespace DeviceLayer {
 namespace Internal {
 
 template <class ConfigClass>
-void RunConfigUnitTest(void)
+void RunConfigUnitTest()
 {
     CHIP_ERROR err;
 
@@ -119,7 +118,7 @@ void RunConfigUnitTest(void)
         char buf[64];
         size_t strLen;
 
-        err = ConfigClass::WriteConfigValueStr(ConfigClass::kConfigKey_PairedAccountId, NULL);
+        err = ConfigClass::WriteConfigValueStr(ConfigClass::kConfigKey_PairedAccountId, nullptr);
         VerifyOrDie(err == CHIP_NO_ERROR);
 
         err = ConfigClass::ReadConfigValueStr(ConfigClass::kConfigKey_PairedAccountId, buf, sizeof(buf), strLen);
@@ -161,7 +160,7 @@ void RunConfigUnitTest(void)
         uint8_t buf[512];
         size_t dataLen;
 
-        err = ConfigClass::WriteConfigValueBin(ConfigClass::kConfigKey_MfrDeviceCert, NULL, 0);
+        err = ConfigClass::WriteConfigValueBin(ConfigClass::kConfigKey_MfrDeviceCert, nullptr, 0);
         VerifyOrDie(err == CHIP_NO_ERROR);
 
         err = ConfigClass::ReadConfigValueBin(ConfigClass::kConfigKey_MfrDeviceCert, buf, sizeof(buf), dataLen);
@@ -200,5 +199,3 @@ void RunConfigUnitTest(void)
 } // namespace Internal
 } // namespace DeviceLayer
 } // namespace chip
-
-#endif // CHIP_DEVICE_CONFIG_UNIT_TEST_H

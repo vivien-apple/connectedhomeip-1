@@ -31,9 +31,11 @@
 namespace chip {
 namespace Shell {
 
+#ifndef SHELL_STREAMER_APP_SPECIFIC
+
 static struct termios the_original_stdin_termios;
 
-static void streamer_restore_termios(void)
+static void streamer_restore_termios()
 {
     int in_fd = fileno(stdin);
     tcsetattr(in_fd, TCSAFLUSH, &the_original_stdin_termios);
@@ -51,20 +53,20 @@ int streamer_stdio_init(streamer_t * streamer)
         atexit(&streamer_restore_termios);
 
         ret = tcgetattr(in_fd, &termios);
-        termios.c_lflag &= ~ECHO;   // Disable echo mode
-        termios.c_lflag &= ~ICANON; // Disable canonical line editing mode
+        termios.c_lflag &= ~static_cast<tcflag_t>(ECHO);   // Disable echo mode
+        termios.c_lflag &= ~static_cast<tcflag_t>(ICANON); // Disable canonical line editing mode
         ret = tcsetattr(in_fd, TCSANOW, &termios);
     }
 
     return ret;
 }
 
-int streamer_stdio_read(streamer_t * streamer, char * buf, size_t len)
+ssize_t streamer_stdio_read(streamer_t * streamer, char * buf, size_t len)
 {
     return read(STDIN_FILENO, buf, len);
 }
 
-int streamer_stdio_write(streamer_t * streamer, const char * buf, size_t len)
+ssize_t streamer_stdio_write(streamer_t * streamer, const char * buf, size_t len)
 {
     return write(STDOUT_FILENO, buf, len);
 }
@@ -75,10 +77,12 @@ static streamer_t streamer_stdio = {
     .write_cb = streamer_stdio_write,
 };
 
-streamer_t * streamer_get(void)
+streamer_t * streamer_get()
 {
     return &streamer_stdio;
 }
+
+#endif //#ifndef SHELL_STREAMER_APP_SPECIFIC
 
 } // namespace Shell
 } // namespace chip

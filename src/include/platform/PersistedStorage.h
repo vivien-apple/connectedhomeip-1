@@ -24,8 +24,12 @@
  *   Platforms will be responsible for implementing the read/write details.
  */
 
-#ifndef PERSISTED_STORAGE_H
-#define PERSISTED_STORAGE_H
+#pragma once
+
+#include <climits>
+#include <cstddef>
+#include <cstdint>
+#include <type_traits>
 
 #include <core/CHIPConfig.h>
 #include <core/CHIPError.h>
@@ -35,7 +39,7 @@ namespace Platform {
 namespace PersistedStorage {
 
 // Persistent storage key type is const char * in core config, however
-// it is uint8_t/uint16_t on other platofmrs (EFR32 and nRF5 respectively)
+// it is uint8_t/uint16_t on other platforms (EFR32 and nRF5 respectively)
 typedef CHIP_CONFIG_PERSISTED_STORAGE_KEY_TYPE Key;
 
 namespace internal {
@@ -91,5 +95,3 @@ CHIP_ERROR Write(Key aKey, uint32_t aValue);
 } // namespace PersistedStorage
 } // namespace Platform
 } // namespace chip
-
-#endif // PERSISTED_STORAGE_H

@@ -23,8 +23,7 @@
  *
  */
 
-#ifndef DNSRESOLVER_H
-#define DNSRESOLVER_H
+#pragma once
 
 #include <inet/IPAddress.h>
 #include <inet/InetError.h>
@@ -149,7 +148,7 @@ private:
 
     DNSResolverState mState;
 
-    void HandleAsyncResolveComplete(void);
+    void HandleAsyncResolveComplete();
 
 #endif // INET_CONFIG_ENABLE_ASYNC_DNS_SOCKETS
 
@@ -157,7 +156,7 @@ private:
 
     INET_ERROR Resolve(const char * hostName, uint16_t hostNameLen, uint8_t options, uint8_t maxAddrs, IPAddress * addrArray,
                        OnResolveCompleteFunct onComplete, void * appState);
-    INET_ERROR Cancel(void);
+    INET_ERROR Cancel();
 
 #if CHIP_SYSTEM_CONFIG_USE_LWIP
     void HandleResolveComplete(void);
@@ -171,5 +170,3 @@ private:
 
 } // namespace Inet
 } // namespace chip
-
-#endif // !defined(DNSRESOLVER_H_)

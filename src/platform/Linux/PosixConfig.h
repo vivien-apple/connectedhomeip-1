@@ -21,8 +21,7 @@
  *          Linux platforms.
  */
 
-#ifndef POSIX_CONFIG_H
-#define POSIX_CONFIG_H
+#pragma once
 
 #include <functional>
 #include <inttypes.h>
@@ -62,7 +61,7 @@ public:
     static const Key kConfigKey_MfrDevicePrivateKey;
     static const Key kConfigKey_ProductRevision;
     static const Key kConfigKey_ManufacturingDate;
-    static const Key kConfigKey_PairingCode;
+    static const Key kConfigKey_SetupPinCode;
     static const Key kConfigKey_FabricId;
     static const Key kConfigKey_ServiceConfig;
     static const Key kConfigKey_PairedAccountId;
@@ -76,10 +75,11 @@ public:
     static const Key kConfigKey_OperationalDeviceCert;
     static const Key kConfigKey_OperationalDeviceICACerts;
     static const Key kConfigKey_OperationalDevicePrivateKey;
+    static const Key kConfigKey_SetupDiscriminator;
 
     static const char kGroupKeyNamePrefix[];
 
-    static CHIP_ERROR Init(void);
+    static CHIP_ERROR Init();
 
     // Config value accessors.
     static CHIP_ERROR ReadConfigValue(Key key, bool & val);
@@ -95,9 +95,9 @@ public:
     static CHIP_ERROR WriteConfigValueBin(Key key, const uint8_t * data, size_t dataLen);
     static CHIP_ERROR ClearConfigValue(Key key);
     static bool ConfigValueExists(Key key);
-    static CHIP_ERROR FactoryResetConfig(void);
+    static CHIP_ERROR FactoryResetConfig();
 
-    static void RunConfigUnitTest(void);
+    static void RunConfigUnitTest();
 
 protected:
     // NVS Namespace helper functions.
@@ -124,5 +124,3 @@ inline bool PosixConfig::Key::operator==(const Key & other) const
 } // namespace Internal
 } // namespace DeviceLayer
 } // namespace chip
-
-#endif // POSIX_CONFIG_H

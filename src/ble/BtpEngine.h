@@ -1,6 +1,6 @@
 /*
  *
- *    Copyright (c) 2020 Project CHIP Authors
+ *    Copyright (c) 2020-2021 Project CHIP Authors
  *    Copyright (c) 2014-2017 Nest Labs, Inc.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,8 +25,7 @@
  *
  */
 
-#ifndef BTP_ENGINE_H_
-#define BTP_ENGINE_H_
+#pragma once
 
 #ifndef __STDC_LIMIT_MACROS
 #define __STDC_LIMIT_MACROS
@@ -38,13 +37,25 @@
 #include <ble/BleConfig.h>
 
 #include <ble/BleError.h>
-#include <support/FlagUtils.hpp>
+#include <support/BitFlags.h>
 #include <system/SystemPacketBuffer.h>
 
 namespace chip {
 namespace Ble {
 
-using ::chip::System::PacketBuffer;
+constexpr size_t kTransferProtocolHeaderFlagsSize = 1; // Size in bytes of enocded BTP fragment header flag bits
+constexpr size_t kTransferProtocolSequenceNumSize = 1; // Size in bytes of encoded BTP sequence number
+constexpr size_t kTransferProtocolAckSize         = 1; // Size in bytes of encoded BTP fragment acknowledgement number
+constexpr size_t kTransferProtocolMsgLenSize      = 2; // Size in byte of encoded BTP total fragmented message length
+
+constexpr size_t kTransferProtocolMaxHeaderSize =
+    kTransferProtocolHeaderFlagsSize + kTransferProtocolAckSize + kTransferProtocolSequenceNumSize + kTransferProtocolMsgLenSize;
+constexpr size_t kTransferProtocolMidFragmentMaxHeaderSize =
+    kTransferProtocolHeaderFlagsSize + kTransferProtocolAckSize + kTransferProtocolSequenceNumSize;
+constexpr size_t kTransferProtocolStandaloneAckHeaderSize =
+    kTransferProtocolHeaderFlagsSize + kTransferProtocolAckSize + kTransferProtocolSequenceNumSize;
+
+using ::chip::System::PacketBufferHandle;
 
 typedef uint8_t SequenceNumber_t; // If type changed from uint8_t, adjust assumptions in BtpEngine::IsValidAck and
                                   // BLEEndPoint::AdjustReceiveWindow.
@@ -90,67 +101,64 @@ public:
     static const uint16_t sDefaultFragmentSize;
     static const uint16_t sMaxFragmentSize;
 
-public:
     // Public functions:
-    BtpEngine(void){};
-    ~BtpEngine(void){};
-
     BLE_ERROR Init(void * an_app_state, bool expect_first_ack);
 
-    inline void SetTxFragmentSize(uint8_t size) { mTxFragmentSize = size; };
-    inline void SetRxFragmentSize(uint8_t size) { mRxFragmentSize = size; };
+    inline void SetTxFragmentSize(uint16_t size) { mTxFragmentSize = size; }
+    inline void SetRxFragmentSize(uint16_t size) { mRxFragmentSize = size; }
 
-    uint16_t GetRxFragmentSize(void) { return mRxFragmentSize; };
-    uint16_t GetTxFragmentSize(void) { return mTxFragmentSize; };
+    uint16_t GetRxFragmentSize() { return mRxFragmentSize; }
+    uint16_t GetTxFragmentSize() { return mTxFragmentSize; }
 
-    SequenceNumber_t GetAndIncrementNextTxSeqNum(void);
-    SequenceNumber_t GetAndRecordRxAckSeqNum(void);
+    SequenceNumber_t GetAndIncrementNextTxSeqNum();
+    SequenceNumber_t GetAndRecordRxAckSeqNum();
 
-    inline SequenceNumber_t GetLastReceivedSequenceNumber(void) { return mRxNewestUnackedSeqNum; };
-    inline SequenceNumber_t GetNewestUnackedSentSequenceNumber(void) { return mTxNewestUnackedSeqNum; };
+    inline SequenceNumber_t GetLastReceivedSequenceNumber() { return mRxNewestUnackedSeqNum; }
+    inline SequenceNumber_t GetNewestUnackedSentSequenceNumber() { return mTxNewestUnackedSeqNum; }
 
-    inline bool ExpectingAck(void) const { return mExpectingAck; };
+    inline bool ExpectingAck() const { return mExpectingAck; }
 
-    inline State_t RxState(void) { return mRxState; }
-    inline State_t TxState(void) { return mTxState; }
+    inline State_t RxState() { return mRxState; }
+    inline State_t TxState() { return mTxState; }
 #if CHIP_ENABLE_CHIPOBLE_TEST
-    inline PacketType_t SetTxPacketType(PacketType_t type) { return (mTxPacketType = type); };
-    inline PacketType_t SetRxPacketType(PacketType_t type) { return (mRxPacketType = type); };
-    inline PacketType_t TxPacketType() { return mTxPacketType; };
-    inline PacketType_t RxPacketType() { return mRxPacketType; };
-    inline SequenceNumber_t SetTxPacketSeq(SequenceNumber_t seq) { return (mTxPacketSeq = seq); };
-    inline SequenceNumber_t SetRxPacketSeq(SequenceNumber_t seq) { return (mRxPacketSeq = seq); };
-    inline SequenceNumber_t TxPacketSeq() { return mTxPacketSeq; };
-    inline SequenceNumber_t RxPacketSeq() { return mRxPacketSeq; };
-    inline bool IsCommandPacket(PacketBuffer * p) { return GetFlag(*(p->Start()), kHeaderFlag_CommandMessage); }
-    inline void PushPacketTag(PacketBuffer * p, PacketType_t type)
+    inline PacketType_t SetTxPacketType(PacketType_t type) { return (mTxPacketType = type); }
+    inline PacketType_t SetRxPacketType(PacketType_t type) { return (mRxPacketType = type); }
+    inline PacketType_t TxPacketType() { return mTxPacketType; }
+    inline PacketType_t RxPacketType() { return mRxPacketType; }
+    inline SequenceNumber_t SetTxPacketSeq(SequenceNumber_t seq) { return (mTxPacketSeq = seq); }
+    inline SequenceNumber_t SetRxPacketSeq(SequenceNumber_t seq) { return (mRxPacketSeq = seq); }
+    inline SequenceNumber_t TxPacketSeq() { return mTxPacketSeq; }
+    inline SequenceNumber_t RxPacketSeq() { return mRxPacketSeq; }
+    inline bool IsCommandPacket(const PacketBufferHandle & p) { return GetFlag(*(p->Start()), kHeaderFlag_CommandMessage); }
+    inline void PushPacketTag(const PacketBufferHandle & p, PacketType_t type)
     {
         p->SetStart(p->Start() - sizeof(type));
         memcpy(p->Start(), &type, sizeof(type));
-    };
-    inline PacketType_t PopPacketTag(PacketBuffer * p)
+    }
+    inline PacketType_t PopPacketTag(const PacketBufferHandle & p)
     {
         PacketType_t type;
         memcpy(&type, p->Start(), sizeof(type));
         p->SetStart(p->Start() + sizeof(type));
         return type;
-    };
+    }
 #endif // CHIP_ENABLE_CHIPOBLE_TEST
 
-    bool HasUnackedData(void) const;
+    bool HasUnackedData() const;
 
-    BLE_ERROR HandleCharacteristicReceived(PacketBuffer * data, SequenceNumber_t & receivedAck, bool & didReceiveAck);
-    bool HandleCharacteristicSend(PacketBuffer * data, bool send_ack);
-    BLE_ERROR EncodeStandAloneAck(PacketBuffer * data);
+    BLE_ERROR HandleCharacteristicReceived(System::PacketBufferHandle data, SequenceNumber_t & receivedAck, bool & didReceiveAck);
+    bool HandleCharacteristicSend(System::PacketBufferHandle data, bool send_ack);
+    BLE_ERROR EncodeStandAloneAck(const PacketBufferHandle & data);
 
-    PacketBuffer * RxPacket(void);
-    PacketBuffer * TxPacket(void);
+    PacketBufferHandle TakeRxPacket();
+    PacketBufferHandle BorrowRxPacket() { return mRxBuf.Retain(); }
+    void ClearRxPacket() { (void) TakeRxPacket(); }
+    PacketBufferHandle TakeTxPacket();
+    PacketBufferHandle BorrowTxPacket() { return mTxBuf.Retain(); }
+    void ClearTxPacket() { (void) TakeTxPacket(); }
 
-    bool ClearRxPacket(void);
-    bool ClearTxPacket(void);
-
-    void LogState(void) const;
-    void LogStateDebug(void) const;
+    void LogState() const;
+    void LogStateDebug() const;
 
 private:
     // Private data members:
@@ -163,7 +171,7 @@ private:
     State_t mRxState;
     uint16_t mRxLength;
     void * mAppState;
-    PacketBuffer * mRxBuf;
+    System::PacketBufferHandle mRxBuf;
     SequenceNumber_t mRxNextSeqNum;
     SequenceNumber_t mRxNewestUnackedSeqNum;
     SequenceNumber_t mRxOldestUnackedSeqNum;
@@ -171,7 +179,7 @@ private:
 
     State_t mTxState;
     uint16_t mTxLength;
-    PacketBuffer * mTxBuf;
+    System::PacketBufferHandle mTxBuf;
     SequenceNumber_t mTxNextSeqNum;
     SequenceNumber_t mTxNewestUnackedSeqNum;
     SequenceNumber_t mTxOldestUnackedSeqNum;
@@ -183,7 +191,6 @@ private:
     uint16_t mTxCharCount;
     uint16_t mTxPacketCount;
 
-private:
     // Private functions:
     bool IsValidAck(SequenceNumber_t ack_num) const;
     BLE_ERROR HandleAckReceived(SequenceNumber_t ack_num);
@@ -191,5 +198,3 @@ private:
 
 } /* namespace Ble */
 } /* namespace chip */
-
-#endif /* BTP_ENGINE_H_ */

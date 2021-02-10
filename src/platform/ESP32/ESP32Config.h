@@ -23,8 +23,7 @@
  *          Utilities for interacting with the the ESP32 "NVS" key-value store.
  */
 
-#ifndef ESP32_CONFIG_H
-#define ESP32_CONFIG_H
+#pragma once
 
 #include <platform/internal/CHIPDeviceLayerInternal.h>
 
@@ -61,7 +60,7 @@ public:
     static const Key kConfigKey_MfrDevicePrivateKey;
     static const Key kConfigKey_ProductRevision;
     static const Key kConfigKey_ManufacturingDate;
-    static const Key kConfigKey_PairingCode;
+    static const Key kConfigKey_SetupPinCode;
     static const Key kConfigKey_FabricId;
     static const Key kConfigKey_ServiceConfig;
     static const Key kConfigKey_PairedAccountId;
@@ -75,6 +74,7 @@ public:
     static const Key kConfigKey_OperationalDeviceCert;
     static const Key kConfigKey_OperationalDeviceICACerts;
     static const Key kConfigKey_OperationalDevicePrivateKey;
+    static const Key kConfigKey_SetupDiscriminator;
 
     static const char kGroupKeyNamePrefix[];
 
@@ -116,5 +116,3 @@ inline bool ESP32Config::Key::operator==(const Key & other) const
 } // namespace Internal
 } // namespace DeviceLayer
 } // namespace chip
-
-#endif // ESP32_CONFIG_H

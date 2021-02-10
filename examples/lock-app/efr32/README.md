@@ -7,9 +7,11 @@ An example showing the use of CHIP on the Silicon Labs EFR32 MG12.
 -   [CHIP EFR32 Lock Example](#chip-efr32-lock-example)
     -   [Introduction](#introduction)
     -   [Building](#building)
-    -   [Initializing the EFR32 module](#initializing-the-efr32-module)
+        -   [Note](#note)
     -   [Flashing the Application](#flashing-the-application)
     -   [Viewing Logging Output](#viewing-logging-output)
+    -   [Running the Complete Example](#running-the-complete-example)
+        -   [Notes](#notes)
 
 <hr>
 
@@ -17,41 +19,36 @@ An example showing the use of CHIP on the Silicon Labs EFR32 MG12.
 
 ## Introduction
 
-The EFR32 lock example provides a baseline demonstration of a door lock device,
-built using CHIP and the Silicon Labs gecko SDK. The example is currently very
-basic and only supports responding to button presses to indicate the state of
-the lock and view logging from the device. It doesn't currently support any over
-the air connectivity via, BLE or OT.
+The EFR32 lock example provides a baseline demonstration of a door lock control
+device, built using CHIP and the Silicon Labs gecko SDK. It can be controlled by
+a Chip controller over Openthread network..
 
-Eventually, the lock example is intended to serve both as a means to explore the
+The EFR32 device can be commissioned over Bluetooth Low Energy where the device
+and the Chip controller will exchange security information with the Rendez-vous
+procedure. Thread Network credentials are then provided to the EFR32 device
+which will then join the network.
+
+The LCD on the Silabs WSTK shows a QR Code containing the needed commissioning
+information for the BLE connection and starting the Rendez-vous procedure.
+
+The lighting example is intended to serve both as a means to explore the
 workings of CHIP as well as a template for creating real products based on the
 Silicon Labs platform.
-
-A top-level Makefile orchestrates the entire build process, including building
-CHIP, FreeRTOS, and select files from the Silicon Labs SDK. The resultant image
-file can be flashed directly onto the Silicon Labs WSTK kit hardware.
 
 <a name="building"></a>
 
 ## Building
 
--   Download and install the
-    [Silicon Labs Simplicity Studio and SDK for Thread and Zigbee version v2.7](https://www.silabs.com/products/development-tools/software/simplicity-studio)
+-   Download the [sdk_support](https://github.com/SiliconLabs/sdk_support) from
+    GitHub and export the path with :
 
-Install SimplicityStudio or extract the SimplicityStudio archive to where you
-want to install Simplicity Studio and follow the instructions in README.txt
-found within the extracted archive to complete installation.
+            $ export EFR32_SDK_ROOT=<Path to cloned git repo>
 
-On OSX, be sure to rename `/Applications/Simplicity Studio.app/` to something
-without a "space". For example, rename it to
-`/Applications/Simplicity_Studio.app/`
-
-In Simplicity Studio from the Launcher perspective click on the "Update
-Software" button. The Package Manager window will Open. Ensure that the
-following SDKs are installed (as of January 2020).
-
--   Bluetooth 2.13.0.0
--   Flex 2.7.0.0
+-   Download the
+    [Simplicity Commander](https://www.silabs.com/mcu/programming-options)
+    command line tool, and ensure that `commander` is your shell search path.
+    (For Mac OS X, `commander` is located inside
+    `Commander.app/Contents/MacOS/`.)
 
 -   Download and install a suitable ARM gcc tool chain:
     [GNU Arm Embedded Toolchain 9-2019-q4-major](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm/downloads)
@@ -59,20 +56,10 @@ following SDKs are installed (as of January 2020).
 -   Install some additional tools(likely already present for CHIP developers):
 
            # Linux
-           $ sudo apt-get install git make automake libtool ccache libwebkitgtk-1.0-0
+           $ sudo apt-get install git libwebkitgtk-1.0-0 ninja-build
 
            # Mac OS X
-           $ brew install automake libtool ccache
-
--   To build for an MG21 part make the following changes to the
-    platform/CMSIS/Include/core_cm33.h file within the Silicon Labs SDK. Copy
-    the following lines to the top of the core_cm33.h file.
-
-```cpp
-#if defined(__GNUC__)
-#pragma GCC diagnostic ignored "-Wpedantic"
-#endif
-```
+           $ brew install ninja
 
 -   Supported hardware:
 
@@ -90,47 +77,40 @@ following SDKs are installed (as of January 2020).
 
 *   Build the example application:
 
-           $ export EFR32_SDK_ROOT=<path-to-silabs-sdk-v2.7>
-           $ make BOARD=BRD4161A
+          $ cd ~/connectedhomeip/examples/lock-app/efr32
+          $ git submodule update --init
+          $ source third_party/connectedhomeip/scripts/activate.sh
+          $ export EFR32_SDK_ROOT=<path-to-silabs-sdk-v2.7>
+          $ export EFR32_BOARD=BRD4161A
+          $ gn gen out/debug --args="efr32_sdk_root=\"${EFR32_SDK_ROOT}\" efr32_board=\"${EFR32_BOARD}\""
+          $ ninja -C out/debug
 
 -   To delete generated executable, libraries and object files use:
 
-           $ make BOARD=BRD4161A clean
+          $ cd ~/connectedhomeip/examples/lock-app/efr32
+          $ rm -rf out/
 
-<a name="initializing"></a>
+OR use the script
 
-## Initializing the EFR32 module
+          cd ~/connectedhomeip
+          $ export EFR32_SDK_ROOT=<path-to-silabs-sdk-v2.7>
+          $ export EFR32_BOARD=BRD4161A
+          ./scripts/examples/gn_efr32_example.sh examples/lock-app/efr32/ out/debug/efr32_lock_app
 
-The example application is designed to run on the Silicon Labs SDK development
-kit. Prior to installing the application, the device's flash memory should be
-erased.
-
--   Connect the host machine to the J-Link Interface MCU USB connector on the
-    EFR32 WSTK.
-
--   Use the Makefile to erase the flash:
-
-          $ make BOARD=BRD4161A erase
-
--   To erase a specific device using its serial number:
-
-          $ make BOARD=BRD4161A SERIALNO=440113717 erase
+-   To delete generated executable, libraries and object files use:
+    $ cd ~/connectedhomeip
+          $ rm -rf out/debug/efr32_lock_app
 
 <a name="flashing"></a>
 
 ## Flashing the Application
 
--   To rebuild the image and flash the example app:
+-   On the command line:
 
-          $ make BOARD=BRD4161A flash
+          $ cd ~/connectedhomeip/examples/lock-app/efr32
+          $ python3 out/debug/chip-efr32-lock-example.out.flash.py
 
--   To rebuild the image and flash a specific device using its serial number:
-
-          $ make BOARD=BRD4161A SERIALNO=440113717 flash
-
--   To flash an existing image without rebuilding:
-
-          $ make BOARD=BRD4161A flash-app
+-   Or with the Ozone debugger, just load the .out file.
 
 <a name="view-logging"></a>
 
@@ -144,7 +124,9 @@ embedded application without the need for a dedicated UART.
 Using the RTT facility requires downloading and installing the _SEGGER J-Link
 Software and Documentation Pack_
 ([web site](https://www.segger.com/downloads/jlink#J-LinkSoftwareAndDocumentationPack)).
-Alternatively the _SEGGER Ozone - J-Link Debugger_ can be used to view RTT logs.
+
+Alternatively, SEGGER Ozone J-Link debugger can be used to view RTT logs too
+after flashing the .out file.
 
 -   Download the J-Link installer by navigating to the appropriate URL and
     agreeing to the license agreement.
@@ -179,3 +161,115 @@ combination with JLinkRTTClient as follows:
 -   In a second terminal, run the JLinkRTTClient to view logs:
 
           $ JLinkRTTClient
+
+<a name="running-complete-example"></a>
+
+## Running the Complete Example
+
+-   It is assumed here that you already have an OpenThread border router
+    configured and running. If not, see the following guide
+    [OpenThread Border Router](https://openthread.io/guides/border-router) for
+    more information on how to setup a border router. Take note that the RCP
+    code is available directly through
+    [Simplicity Studio 5](https://www.silabs.com/products/development-tools/software/simplicity-studio/simplicity-studio-5)
+    under File->New->Project Wizard->Examples->Thread : ot-rcp
+
+-   User interface : **LCD** The LCD on Silabs WSTK shows a QR Code. This QR
+    Code is be scanned by the CHIP Tool app For the Rendez-vous procedure over
+    BLE
+
+        * On devices that do not have or support the LCD Display like the BRD4166A Thunderboard Sense 2,
+          a URL can be found in the RTT logs.
+
+          <info  > [SVR] Copy/paste the below URL in a browser to see the QR Code:
+          <info  > [SVR] https://dhrishi.github.io/connectedhomeip/qrcode.html?data=CH%3AI34NM%20-00%200C9SS0
+
+    **LED 0** shows the overall state of the device and its connectivity. The
+    following states are possible:
+
+        -   _Short Flash On (50 ms on/950 ms off)_ ; The device is in the
+            unprovisioned (unpaired) state and is waiting for a commissioning
+            application to connect.
+
+        -   _Rapid Even Flashing_ ; (100 ms on/100 ms off)_ &mdash; The device is in the
+            unprovisioned state and a commissioning application is connected through
+            Bluetooth LE.
+
+        -   _Short Flash Off_ ; (950ms on/50ms off)_ &mdash; The device is fully
+            provisioned, but does not yet have full Thread network or service
+            connectivity.
+
+        -   _Solid On_ ; The device is fully provisioned and has full Thread
+            network and service connectivity.
+
+    **LED 1** Simulates the Lock The following states are possible:
+
+        -   _Solid On_ ; Bolt is locked
+        -   _Blinking_ ; Bolt is moving to the desired state
+        -   _Off_ ; Bolt is unlocked
+
+    **Push Button 0** - Press and Release : If not commissioned, start thread
+    with default configurations (DEBUG)
+
+
+        -   Pressed and hold for 6 s: Initiates the factory reset of the device.
+            Releasing the button within the 6-second window cancels the factory reset
+            procedure. **LEDs** blink in unison when the factory reset procedure is
+            initiated.
+
+    **Push Button 1**
+        Toggles the bolt state On/Off
+
+-   Once the device is provisioned, it will join the Thread network is
+    established, look for the RTT log
+
+    ```
+        [DL] Device Role: CHILD
+        [DL] Partition Id:0x6A7491B7
+        [DL] \_OnPlatformEvent default: event->Type = 32778
+        [DL] OpenThread State Changed (Flags: 0x00000001)
+        [DL] Thread Unicast Addresses:
+        [DL]    2001:DB8::E1A2:87F1:7D5D:FECA/64 valid preferred
+        [DL]    FDDE:AD00:BEEF::FF:FE00:2402/64 valid preferred rloc
+        [DL]    FDDE:AD00:BEEF:0:383F:5E81:A05A:B168/64 valid preferred
+        [DL]    FE80::D8F2:592E:C109:CF00/64 valid preferred
+        [DL] LwIP Thread interface addresses updated
+        [DL] FE80::D8F2:592E:C109:CF00 IPv6 link-local address, preferred)
+        [DL] FDDE:AD00:BEEF:0:383F:5E81:A05A:B168 Thread mesh-local address, preferred)
+        [DL] 2001:DB8::E1A2:87F1:7D5D:FECA IPv6 global unicast address, preferred)
+    ```
+
+    Keep The global unicast address; It is to be used to reach the Device with
+    the chip-tool. The device will be promoted to Router shortly after [DL]
+    Device Role: ROUTER
+
+    (you can verify that the device is on the thread network with the command
+    `router table` using a serial terminal (screen / minicom etc.) on the board
+    running the lighting-app example. You can also get the address list with the
+    command ipaddr again in the serial terminal )
+
+-   Using chip-tool you can now control the lock status with on/off command such
+    as `chip-tool onoff on 1`
+
+    \*\* Currently, chip-tool for Mac or Linux do not yet have the Thread
+    provisioning feature
+    `chip-tool bypass <Global ipv6 address of the node> 11097`
+
+    You can provision the Chip device using Chip tool Android or iOS app or
+    through CLI commands on your OT BR
+
+### Notes
+
+-   Depending on your network settings your router might not provide native ipv6
+    addresses to your devices (Border router / PC). If this is the case, you
+    need to add a static ipv6 addresses on both device and then an ipv6 route to
+    the border router on your PC
+
+          # On Border Router :
+          $ sudo ip addr add dev <Network interface> 2002::2/64
+
+          # On PC (Linux) :
+          $ sudo ip addr add dev <Network interface> 2002::1/64
+
+          # Add Ipv6 route on PC (Linux)
+          $ sudo ip route add <Thread global ipv6 prefix>/64 via 2002::2

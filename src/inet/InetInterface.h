@@ -24,8 +24,9 @@
  *  of system interface addresses.
  */
 
-#ifndef INETINTERFACE_H
-#define INETINTERFACE_H
+#pragma once
+
+#include <inet/InetConfig.h>
 
 #include <inet/IPAddress.h>
 #include <inet/InetError.h>
@@ -35,10 +36,16 @@
 #include <lwip/netif.h>
 #endif // CHIP_SYSTEM_CONFIG_USE_LWIP
 
-#if CHIP_SYSTEM_CONFIG_USE_SOCKETS || CHIP_SYSTEM_CONFIG_USE_NETWORK_FRAMEWORK
+#if CHIP_SYSTEM_CONFIG_USE_BSD_IFADDRS
 struct if_nameindex;
 struct ifaddrs;
-#endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS || CHIP_SYSTEM_CONFIG_USE_NETWORK_FRAMEWORK
+#endif // CHIP_SYSTEM_CONFIG_USE_BSD_IFADDRS
+
+#if CHIP_SYSTEM_CONFIG_USE_ZEPHYR_NET_IF
+struct net_if;
+struct net_if_ipv4;
+struct net_if_ipv6;
+#endif // CHIP_SYSTEM_CONFIG_USE_ZEPHYR_NET_IF
 
 #include <stddef.h>
 #include <stdint.h>
@@ -68,9 +75,13 @@ class IPPrefix;
 typedef struct netif * InterfaceId;
 #endif // CHIP_SYSTEM_CONFIG_USE_LWIP
 
-#if CHIP_SYSTEM_CONFIG_USE_SOCKETS || CHIP_SYSTEM_CONFIG_USE_NETWORK_FRAMEWORK
+#if CHIP_SYSTEM_CONFIG_USE_BSD_IFADDRS
 typedef unsigned InterfaceId;
-#endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS || CHIP_SYSTEM_USE_NETWORK_FRAMEWORK
+#endif // CHIP_SYSTEM_CONFIG_USE_BSD_IFADDRS
+
+#if CHIP_SYSTEM_CONFIG_USE_ZEPHYR_NET_IF
+typedef int InterfaceId;
+#endif
 
 /**
  * @def     INET_NULL_INTERFACEID
@@ -88,9 +99,9 @@ typedef unsigned InterfaceId;
 #define INET_NULL_INTERFACEID NULL
 #endif // CHIP_SYSTEM_CONFIG_USE_LWIP
 
-#if CHIP_SYSTEM_CONFIG_USE_SOCKETS || CHIP_SYSTEM_CONFIG_USE_NETWORK_FRAMEWORK
+#if CHIP_SYSTEM_CONFIG_USE_BSD_IFADDRS || CHIP_SYSTEM_CONFIG_USE_ZEPHYR_NET_IF
 #define INET_NULL_INTERFACEID 0
-#endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS || CHIP_SYSTEM_USE_NETWORK_FRAMEWORK
+#endif // CHIP_SYSTEM_CONFIG_USE_BSD_IFADDRS || CHIP_SYSTEM_CONFIG_USE_ZEPHYR_NET_IF
 
 /**
  * @brief   Test \c ID for inequivalence with \c INET_NULL_INTERFACEID
@@ -129,31 +140,36 @@ extern uint8_t NetmaskToPrefixLength(const uint8_t * netmask, uint16_t netmaskLe
 class InterfaceIterator
 {
 public:
-    InterfaceIterator(void);
-    ~InterfaceIterator(void);
+    InterfaceIterator();
+    ~InterfaceIterator();
 
-    bool HasCurrent(void);
-    bool Next(void);
-    InterfaceId GetInterface(void);
-    InterfaceId GetInterfaceId(void);
+    bool HasCurrent();
+    bool Next();
+    InterfaceId GetInterface();
+    InterfaceId GetInterfaceId();
     INET_ERROR GetInterfaceName(char * nameBuf, size_t nameBufSize);
-    bool IsUp(void);
-    bool SupportsMulticast(void);
-    bool HasBroadcastAddress(void);
+    bool IsUp();
+    bool SupportsMulticast();
+    bool HasBroadcastAddress();
 
 protected:
 #if CHIP_SYSTEM_CONFIG_USE_LWIP
     struct netif * mCurNetif;
 #endif // CHIP_SYSTEM_CONFIG_USE_LWIP
 
-#if CHIP_SYSTEM_CONFIG_USE_SOCKETS || CHIP_SYSTEM_CONFIG_USE_NETWORK_FRAMEWORK
+#if CHIP_SYSTEM_CONFIG_USE_BSD_IFADDRS
     struct if_nameindex * mIntfArray;
     size_t mCurIntf;
     short mIntfFlags;
     bool mIntfFlagsCached;
 
-    short GetFlags(void);
-#endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS || CHIP_SYSTEM_CONFIG_USE_NETWORK_FRAMEWORK
+    short GetFlags();
+#endif // CHIP_SYSTEM_CONFIG_USE_BSD_IFADDRS
+
+#if CHIP_SYSTEM_CONFIG_USE_ZEPHYR_NET_IF
+    InterfaceId mCurrentId     = 1;
+    net_if * mCurrentInterface = nullptr;
+#endif // CHIP_SYSTEM_CONFIG_USE_ZEPHYR_NET_IF
 };
 
 /**
@@ -181,21 +197,21 @@ protected:
 class DLL_EXPORT InterfaceAddressIterator
 {
 public:
-    InterfaceAddressIterator(void);
-    ~InterfaceAddressIterator(void);
+    InterfaceAddressIterator();
+    ~InterfaceAddressIterator();
 
-    bool HasCurrent(void);
-    bool Next(void);
-    IPAddress GetAddress(void);
-    uint8_t GetPrefixLength(void);
-    uint8_t GetIPv6PrefixLength(void);
+    bool HasCurrent();
+    bool Next();
+    IPAddress GetAddress();
+    uint8_t GetPrefixLength();
+    uint8_t GetIPv6PrefixLength();
     void GetAddressWithPrefix(IPPrefix & addrWithPrefix);
-    InterfaceId GetInterface(void);
-    InterfaceId GetInterfaceId(void);
+    InterfaceId GetInterface();
+    InterfaceId GetInterfaceId();
     INET_ERROR GetInterfaceName(char * nameBuf, size_t nameBufSize);
-    bool IsUp(void);
-    bool SupportsMulticast(void);
-    bool HasBroadcastAddress(void);
+    bool IsUp();
+    bool SupportsMulticast();
+    bool HasBroadcastAddress();
 
 private:
 #if CHIP_SYSTEM_CONFIG_USE_LWIP
@@ -208,10 +224,16 @@ private:
     int mCurAddrIndex;
 #endif // CHIP_SYSTEM_CONFIG_USE_LWIP
 
-#if CHIP_SYSTEM_CONFIG_USE_SOCKETS || CHIP_SYSTEM_CONFIG_USE_NETWORK_FRAMEWORK
+#if CHIP_SYSTEM_CONFIG_USE_BSD_IFADDRS
     struct ifaddrs * mAddrsList;
     struct ifaddrs * mCurAddr;
-#endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS || CHIP_SYSTEM_CONFIG_USE_NETWORK_FRAMEWORK
+#endif // CHIP_SYSTEM_CONFIG_USE_BSD_IFADDRS
+
+#if CHIP_SYSTEM_CONFIG_USE_ZEPHYR_NET_IF
+    InterfaceIterator mIntfIter;
+    net_if_ipv6 * mIpv6 = nullptr;
+    int mCurAddrIndex   = -1;
+#endif // CHIP_SYSTEM_CONFIG_USE_ZEPHYR_NET_IF
 };
 
 #if CHIP_SYSTEM_CONFIG_USE_LWIP
@@ -242,10 +264,15 @@ inline InterfaceAddressIterator::~InterfaceAddressIterator(void) {}
 
 #endif // CHIP_SYSTEM_CONFIG_USE_LWIP
 
+#if CHIP_SYSTEM_CONFIG_USE_ZEPHYR_NET_IF
+inline InterfaceIterator::~InterfaceIterator()               = default;
+inline InterfaceAddressIterator::~InterfaceAddressIterator() = default;
+#endif // CHIP_SYSTEM_CONFIG_USE_ZEPHYR_NET_IF
+
 /**
  * @brief    Deprecated alias for \c GetInterfaceId(void)
  */
-inline InterfaceId InterfaceIterator::GetInterface(void)
+inline InterfaceId InterfaceIterator::GetInterface()
 {
     return GetInterfaceId();
 }
@@ -253,7 +280,7 @@ inline InterfaceId InterfaceIterator::GetInterface(void)
 /**
  * @brief    Deprecated alias for \c GetInterfaceId(void)
  */
-inline InterfaceId InterfaceAddressIterator::GetInterface(void)
+inline InterfaceId InterfaceAddressIterator::GetInterface()
 {
     return GetInterfaceId();
 }
@@ -261,12 +288,10 @@ inline InterfaceId InterfaceAddressIterator::GetInterface(void)
 /**
  * @brief    Deprecated alias for \c GetPrefixLength(void)
  */
-inline uint8_t InterfaceAddressIterator::GetIPv6PrefixLength(void)
+inline uint8_t InterfaceAddressIterator::GetIPv6PrefixLength()
 {
     return GetPrefixLength();
 }
 
 } // namespace Inet
 } // namespace chip
-
-#endif /* INETINTERFACE_H */

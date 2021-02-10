@@ -26,200 +26,323 @@
  *
  */
 
-#ifndef __CHIPDEVICECONTROLLER_H
-#define __CHIPDEVICECONTROLLER_H
+#pragma once
 
+#include <controller/CHIPDevice.h>
+#include <controller/CHIPPersistentStorageDelegate.h>
 #include <core/CHIPCore.h>
 #include <core/CHIPTLV.h>
+#include <messaging/ExchangeMgr.h>
 #include <support/DLLUtil.h>
+#include <support/SerializableIntegerSet.h>
+#include <transport/AdminPairingTable.h>
+#include <transport/RendezvousSession.h>
+#include <transport/RendezvousSessionDelegate.h>
 #include <transport/SecureSessionMgr.h>
-#include <transport/UDP.h>
+#include <transport/TransportMgr.h>
+#include <transport/raw/UDP.h>
 
 namespace chip {
-namespace DeviceController {
 
-class ChipDeviceController;
+namespace Controller {
 
-extern "C" {
-typedef void (*NewConnectionHandler)(ChipDeviceController * deviceController, Transport::PeerConnectionState * state,
-                                     void * appReqState);
-typedef void (*CompleteHandler)(ChipDeviceController * deviceController, void * appReqState);
-typedef void (*ErrorHandler)(ChipDeviceController * deviceController, void * appReqState, CHIP_ERROR err,
-                             const IPPacketInfo * pktInfo);
-typedef void (*MessageReceiveHandler)(ChipDeviceController * deviceController, void * appReqState, System::PacketBuffer * payload);
-};
+constexpr uint16_t kNumMaxActiveDevices = 64;
+constexpr uint16_t kNumMaxPairedDevices = 128;
 
-class ChipDeviceControllerCallback : public SecureSessionMgrCallback
+class DLL_EXPORT DevicePairingDelegate
 {
 public:
-    virtual void OnMessageReceived(const MessageHeader & header, Transport::PeerConnectionState * state,
-                                   System::PacketBuffer * msgBuf, SecureSessionMgr * mgr);
+    virtual ~DevicePairingDelegate() {}
 
-    virtual void OnNewConnection(Transport::PeerConnectionState * state, SecureSessionMgr * mgr);
+    /**
+     * @brief
+     *   Called when the pairing reaches a certain stage.
+     *
+     * @param status Current status of pairing
+     */
+    virtual void OnStatusUpdate(RendezvousSessionDelegate::Status status) {}
 
-    void SetController(ChipDeviceController * controller) { mController = controller; }
+    /**
+     * @brief
+     *   Called when the network credentials are needed for the remote device
+     *
+     * @param callback Callback delegate that provisions the network credentials
+     */
+    virtual void OnNetworkCredentialsRequested(RendezvousDeviceCredentialsDelegate * callback) = 0;
 
-private:
-    ChipDeviceController * mController;
+    /**
+     * @brief
+     *   Called when the operational credentials are needed for the remote device
+     *
+     * @param csr Certificate signing request from the device
+     * @param csr_length The length of CSR
+     * @param callback Callback delegate that provisions the operational credentials
+     */
+    virtual void OnOperationalCredentialsRequested(const char * csr, size_t csr_length,
+                                                   RendezvousDeviceCredentialsDelegate * callback) = 0;
+
+    /**
+     * @brief
+     *   Called when the pairing is complete (with success or error)
+     *
+     * @param error Error cause, if any
+     */
+    virtual void OnPairingComplete(CHIP_ERROR error) {}
+
+    /**
+     * @brief
+     *   Called when the pairing is deleted (with success or error)
+     *
+     * @param error Error cause, if any
+     */
+    virtual void OnPairingDeleted(CHIP_ERROR error) {}
 };
 
-class DLL_EXPORT ChipDeviceController
+/**
+ * @brief
+ *   Controller applications can use this class to communicate with already paired CHIP devices. The
+ *   application is required to provide access to the persistent storage, where the paired device information
+ *   is stored. This object of this class can be initialized with the data from the storage (List of devices,
+ *   and device pairing information for individual devices). Alternatively, this class can retrieve the
+ *   relevant information when the application tries to communicate with the device
+ */
+class DLL_EXPORT DeviceController : public SecureSessionMgrDelegate, public PersistentStorageResultDelegate
 {
-    friend class ChipDeviceControllerCallback;
-
 public:
-    ChipDeviceController();
+    DeviceController();
+    virtual ~DeviceController() {}
 
-    void * AppState;
-
-    CHIP_ERROR Init(NodeId localDeviceId);
-    CHIP_ERROR Shutdown();
-
-    // ----- Connection Management -----
     /**
-     * @brief
-     *   Connect to a CHIP device at a given address and an optional port
-     *
-     * @param[in] remoteDeviceId        The remote device Id.
-     * @param[in] deviceAddr            The IPAddress of the requested Device
-     * @param[in] appReqState           Application specific context to be passed back when a message is received or on error
-     * @param[in] onConnected           Callback for when the connection is established
-     * @param[in] onMessageReceived     Callback for when a message is received
-     * @param[in] onError               Callback for when an error occurs
-     * @param[in] devicePort            [Optional] The CHIP Device's port, defaults to CHIP_PORT
-     * @return CHIP_ERROR           The connection status
+     * Init function to be used when there exists a device layer that takes care of initializing
+     * System::Layer and InetLayer.
      */
-    CHIP_ERROR ConnectDevice(NodeId remoteDeviceId, IPAddress deviceAddr, void * appReqState, NewConnectionHandler onConnected,
-                             MessageReceiveHandler onMessageReceived, ErrorHandler onError, uint16_t devicePort = CHIP_PORT);
+    CHIP_ERROR Init(NodeId localDeviceId, PersistentStorageDelegate * storageDelegate = nullptr,
+                    System::Layer * systemLayer = nullptr, Inet::InetLayer * inetLayer = nullptr);
+
+    virtual CHIP_ERROR Shutdown();
 
     /**
      * @brief
-     *   The keypair for the secure channel. This is a utility function that will be used
-     *   until we have automatic key exchange in place. The function is useful only for
-     *   example applications for now. It will eventually be removed.
+     *   This function deserializes the provided deviceInfo object, and initializes and outputs the
+     *   corresponding Device object. The lifetime of the output object is tied to that of the DeviceController
+     *   object. The caller must not use the Device object If they free the DeviceController object, or
+     *   after they call ReleaseDevice() on the returned device object.
      *
-     * @param state  Peer connection for which to establish the key
-     * @param remote_public_key  A pointer to peer's public key
-     * @param public_key_length  Length of remote_public_key
-     * @param local_private_key  A pointer to local private key
-     * @param private_key_length Length of local_private_key
-     * @return CHIP_ERROR        The result of key derivation
+     * @param[in] deviceId   Node ID for the CHIP device
+     * @param[in] deviceInfo Serialized device info for the device
+     * @param[out] device    The output device object
+     *
+     * @return CHIP_ERROR CHIP_NO_ERROR on success, or corresponding error code.
      */
-    CHIP_ERROR ManualKeyExchange(Transport::PeerConnectionState * state, const unsigned char * remote_public_key,
-                                 const size_t public_key_length, const unsigned char * local_private_key,
-                                 const size_t private_key_length);
+    CHIP_ERROR GetDevice(NodeId deviceId, const SerializedDevice & deviceInfo, Device ** device);
 
     /**
      * @brief
-     *   Get the PeerAddress of a connected peer
+     *   This function is similar to the other GetDevice object, except it reads the serialized object from
+     *   the persistent storage.
      *
-     * @param[inout] peerAddress  The PeerAddress object which will be populated with the details of the connected peer
-     * @return CHIP_ERROR   An error if there's no active connection
+     * @param[in] deviceId   Node ID for the CHIP device
+     * @param[out] device    The output device object
+     *
+     * @return CHIP_ERROR CHIP_NO_ERROR on success, or corresponding error code.
      */
-    CHIP_ERROR PopulatePeerAddress(Transport::PeerAddress & peerAddress);
+    CHIP_ERROR GetDevice(NodeId deviceId, Device ** device);
 
-    /**
-     * @brief
-     *   Disconnect from a connected device
-     *
-     * @return CHIP_ERROR   If the device was disconnected successfully
-     */
-    CHIP_ERROR DisconnectDevice();
+    CHIP_ERROR SetUdpListenPort(uint16_t listenPort);
 
-    /**
-     * @brief
-     *   Check if there's an active connection
-     *
-     * @return bool   If there is an active connection
-     */
-    bool IsConnected();
-
-    /**
-     * @brief
-     *   Check if the connection is active and security context is established
-     *
-     * @return bool   If the connection is active and security context is established
-     */
-    bool IsSecurelyConnected();
-
-    // ----- Messaging -----
-    /**
-     * @brief
-     *   Send a message to a connected CHIP device
-     *
-     * @param[in] appReqState   Application specific context to be passed back when a message is received or on error
-     * @param[in] buffer        The Data Buffer to trasmit to the deviec
-     * @return CHIP_ERROR   The return status
-     */
-    CHIP_ERROR SendMessage(void * appReqState, System::PacketBuffer * buffer);
+    virtual void ReleaseDevice(Device * device);
 
     // ----- IO -----
     /**
      * @brief
-     *   Allow the CHIP Stack to process any pending events
-     *   This can be called in an event handler loop to tigger callbacks within the CHIP stack
-     *   Note - Some platforms might need to implement their own event handler
+     * Start the event loop task within the CHIP stack
+     * @return CHIP_ERROR   The return status
      */
-    void ServiceEvents();
+    CHIP_ERROR ServiceEvents();
 
     /**
      * @brief
-     *   Get pointers to the Layers ownerd by the controller
-     *
-     * @param systemLayer[out]   A pointer to the SystemLayer object
-     * @param inetLayer[out]     A pointer to the InetLayer object
-     * @return CHIP_ERROR   Indicates whether the layers were populated correctly
+     *   Allow the CHIP Stack to process any pending events
+     *   This can be called in an event handler loop to tigger callbacks within the CHIP stack
+     * @return CHIP_ERROR   The return status
      */
-    CHIP_ERROR GetLayers(Layer ** systemLayer, InetLayer ** inetLayer);
+    CHIP_ERROR ServiceEventSignal();
 
-private:
-    enum
+protected:
+    enum class State
     {
-        kState_NotInitialized = 0,
-        kState_Initialized    = 1
-    } mState;
-
-    enum ConnectionState
-    {
-        kConnectionState_NotConnected    = 0,
-        kConnectionState_Connected       = 1,
-        kConnectionState_SecureConnected = 2,
+        NotInitialized,
+        Initialized
     };
 
-    System::Layer * mSystemLayer;
-    Inet::InetLayer * mInetLayer;
+    State mState;
 
-    // TODO: CHIPDeviceController assumes a single device connection, where as
-    //       session manager handles multiple connections. Need to finalize design on this
-    //       as otherwise a single connection may end up processing data from other peers.
-    SecureSessionMgr * mSessionManager;
+    /* A list of device objects that can be used for communicating with corresponding
+       CHIP devices. The list does not contain all the paired devices, but only the ones
+       which the controller application is currently accessing.
+    */
+    Device mActiveDevices[kNumMaxActiveDevices];
 
-    ConnectionState mConState;
-    void * mAppReqState;
-
-    union
-    {
-        CompleteHandler General;
-        MessageReceiveHandler Response;
-    } mOnComplete;
-
-    ErrorHandler mOnError;
-    NewConnectionHandler mOnNewConnection;
-    System::PacketBuffer * mCurReqMsg;
-
-    ChipDeviceControllerCallback mCallback;
+    SerializableU64Set<kNumMaxPairedDevices> mPairedDevices;
+    bool mPairedDevicesInitialized;
 
     NodeId mLocalDeviceId;
-    IPAddress mDeviceAddr;
-    uint16_t mDevicePort;
-    Optional<NodeId> mRemoteDeviceId;
-    uint32_t mMessageNumber = 0;
+    DeviceTransportMgr * mTransportMgr;
+    SecureSessionMgr * mSessionManager;
+    Messaging::ExchangeManager * mExchangeManager;
+    PersistentStorageDelegate * mStorageDelegate;
+    Inet::InetLayer * mInetLayer;
 
-    void ClearRequestState();
-    void ClearOpState();
+    uint16_t mListenPort;
+    uint16_t GetInactiveDeviceIndex();
+    uint16_t FindDeviceIndex(SecureSessionHandle session);
+    uint16_t FindDeviceIndex(NodeId id);
+    void ReleaseDevice(uint16_t index);
+    CHIP_ERROR SetPairedDeviceList(const char * pairedDeviceSerializedSet);
+
+    Transport::AdminId mAdminId = 0;
+    Transport::AdminPairingTable mAdmins;
+
+private:
+    //////////// SecureSessionMgrDelegate Implementation ///////////////
+    void OnMessageReceived(const PacketHeader & header, const PayloadHeader & payloadHeader, SecureSessionHandle session,
+                           System::PacketBufferHandle msgBuf, SecureSessionMgr * mgr) override;
+
+    void OnNewConnection(SecureSessionHandle session, SecureSessionMgr * mgr) override;
+    void OnConnectionExpired(SecureSessionHandle session, SecureSessionMgr * mgr) override;
+
+    //////////// PersistentStorageResultDelegate Implementation ///////////////
+    void OnValue(const char * key, const char * value) override;
+    void OnStatus(const char * key, Operation op, CHIP_ERROR err) override;
+
+    void ReleaseAllDevices();
+
+    System::Layer * mSystemLayer;
 };
 
-} // namespace DeviceController
-} // namespace chip
+/**
+ * @brief
+ *   The commissioner applications doesn't advertise itself as an available device for rendezvous
+ *   process. This delegate class provides no-op functions for the advertisement delegate.
+ */
+class DeviceCommissionerRendezvousAdvertisementDelegate : public RendezvousAdvertisementDelegate
+{
+public:
+    /**
+     * @brief
+     *   Starts advertisement of the device for rendezvous availability.
+     */
+    CHIP_ERROR StartAdvertisement() const override { return CHIP_NO_ERROR; }
 
-#endif // __CHIPDEVICECONTROLLER_H
+    /**
+     * @brief
+     *   Stops advertisement of the device for rendezvous availability.
+     */
+    CHIP_ERROR StopAdvertisement() const override { return CHIP_NO_ERROR; }
+};
+
+/**
+ * @brief
+ *   The commissioner applications can use this class to pair new/unpaired CHIP devices. The application is
+ *   required to provide write access to the persistent storage, where the paired device information
+ *   will be stored.
+ */
+class DLL_EXPORT DeviceCommissioner : public DeviceController, public RendezvousSessionDelegate
+{
+public:
+    DeviceCommissioner();
+    ~DeviceCommissioner() {}
+
+    /**
+     * Init function to be used when there exists a device layer that takes care of initializing
+     * System::Layer and InetLayer.
+     */
+    CHIP_ERROR Init(NodeId localDeviceId, PersistentStorageDelegate * storageDelegate = nullptr,
+                    DevicePairingDelegate * pairingDelegate = nullptr, System::Layer * systemLayer = nullptr,
+                    Inet::InetLayer * inetLayer = nullptr);
+
+    void SetDevicePairingDelegate(DevicePairingDelegate * pairingDelegate) { mPairingDelegate = pairingDelegate; }
+
+    CHIP_ERROR Shutdown() override;
+
+    // ----- Connection Management -----
+    /**
+     * @brief
+     *   Pair a CHIP device with the provided Rendezvous connection parameters.
+     *   Use registered DevicePairingDelegate object to receive notifications on
+     *   pairing status updates.
+     *
+     *   Note: Pairing process requires that the caller has registered PersistentStorageDelegate
+     *         in the Init() call.
+     *
+     * @param[in] remoteDeviceId        The remote device Id.
+     * @param[in] params                The Rendezvous connection parameters
+     * @param[in] devicePort            [Optional] The CHIP Device's port, defaults to CHIP_PORT
+     * @param[in] interfaceId           [Optional] The local inet interface to use to communicate with the device.
+     *
+     * @return CHIP_ERROR               The connection status
+     */
+    CHIP_ERROR PairDevice(NodeId remoteDeviceId, RendezvousParameters & params, uint16_t devicePort = CHIP_PORT,
+                          Inet::InterfaceId interfaceId = INET_NULL_INTERFACEID);
+
+    [[deprecated("Available until Rendezvous is implemented")]] CHIP_ERROR
+    PairTestDeviceWithoutSecurity(NodeId remoteDeviceId, const Inet::IPAddress & deviceAddr, SerializedDevice & serialized,
+                                  uint16_t devicePort = CHIP_PORT, Inet::InterfaceId interfaceId = INET_NULL_INTERFACEID);
+
+    /**
+     * @brief
+     *   This function stops a pairing process that's in progress. It does not delete the pairing of a previously
+     *   paired device.
+     *
+     * @param[in] remoteDeviceId        The remote device Id.
+     *
+     * @return CHIP_ERROR               CHIP_NO_ERROR on success, or corresponding error
+     */
+    CHIP_ERROR StopPairing(NodeId remoteDeviceId);
+
+    /**
+     * @brief
+     *   Remove pairing for a paired device. If the device is currently being paired, it'll stop the pairing process.
+     *
+     * @param[in] remoteDeviceId        The remote device Id.
+     *
+     * @return CHIP_ERROR               CHIP_NO_ERROR on success, or corresponding error
+     */
+    CHIP_ERROR UnpairDevice(NodeId remoteDeviceId);
+
+    //////////// RendezvousSessionDelegate Implementation ///////////////
+    void OnRendezvousError(CHIP_ERROR err) override;
+    void OnRendezvousComplete() override;
+    void OnRendezvousStatusUpdate(RendezvousSessionDelegate::Status status, CHIP_ERROR err) override;
+
+    void RendezvousCleanup(CHIP_ERROR status);
+
+    void ReleaseDevice(Device * device) override;
+
+private:
+    DevicePairingDelegate * mPairingDelegate;
+    RendezvousSession * mRendezvousSession;
+
+    /* This field is an index in mActiveDevices list. The object at this index in the list
+       contains the device object that's tracking the state of the device that's being paired.
+       If no device is currently being paired, this value will be kNumMaxPairedDevices.  */
+    uint16_t mDeviceBeingPaired;
+
+    /* TODO: BLE rendezvous and IP rendezvous should share the same procedure, so this is just a
+       workaround-like flag and should be removed in the future.
+       When using IP rendezvous, we need to disable network provisioning. In the future, network
+       provisioning will no longer be a part of rendezvous procedure. */
+    bool mIsIPRendezvous;
+
+    /* This field is true when device pairing information changes, e.g. a new device is paired, or
+       the pairing for a device is removed. The DeviceCommissioner uses this to decide when to
+       persist the device list */
+    bool mPairedDevicesUpdated;
+
+    DeviceCommissionerRendezvousAdvertisementDelegate mRendezvousAdvDelegate;
+
+    void PersistDeviceList();
+};
+
+} // namespace Controller
+} // namespace chip

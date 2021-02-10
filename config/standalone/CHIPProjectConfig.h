@@ -38,12 +38,23 @@
 // Enable support functions for parsing command-line arguments
 #define CHIP_CONFIG_ENABLE_ARG_PARSER 1
 
+// Use a default pairing code if one hasn't been provisioned in flash.
+#define CHIP_DEVICE_CONFIG_USE_TEST_SETUP_PIN_CODE 12345678
+#define CHIP_DEVICE_CONFIG_USE_TEST_SETUP_DISCRIMINATOR 0xF00
+
 // Enable reading DRBG seed data from /dev/(u)random.
 // This is needed for test applications and the CHIP device manager to function
 // properly when CHIP_CONFIG_RNG_IMPLEMENTATION_CHIPDRBG is enabled.
 #define CHIP_CONFIG_DEV_RANDOM_DRBG_SEED 1
 
-#define CHIP_CONFIG_SECURITY_TEST_MODE 1
+// For convenience, Chip Security Test Mode can be enabled and the
+// requirement for authentication in various protocols can be disabled.
+//
+//    WARNING: These options make it possible to circumvent basic Chip security functionality,
+//    including message encryption. Because of this they MUST NEVER BE ENABLED IN PRODUCTION BUILDS.
+//
+#define CHIP_CONFIG_SECURITY_TEST_MODE 0
+#define CHIP_CONFIG_REQUIRE_AUTH 1
 
 // Increase session idle timeout in stand-alone builds for the convenience of developers.
 #define CHIP_CONFIG_DEFAULT_SECURITY_SESSION_IDLE_TIMEOUT 120000
@@ -59,5 +70,7 @@
 #define CHIP_CONFIG_ENABLE_FUNCT_ERROR_LOGGING 1
 
 #define CHIP_CONFIG_DATA_MANAGEMENT_CLIENT_EXPERIMENTAL 1
+
+#define CHIP_DEVICE_CONFIG_ENABLE_TEST_DEVICE_IDENTITY 1
 
 #endif /* CHIPPROJECTCONFIG_H */

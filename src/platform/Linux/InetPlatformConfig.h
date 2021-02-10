@@ -22,8 +22,7 @@
  *
  */
 
-#ifndef INET_PLATFORM_CONFIG_H
-#define INET_PLATFORM_CONFIG_H
+#pragma once
 
 // ==================== Platform Adaptations ====================
 
@@ -32,11 +31,12 @@
 // ========== Platform-specific Configuration Overrides =========
 
 #ifndef INET_CONFIG_NUM_TCP_ENDPOINTS
-#define INET_CONFIG_NUM_TCP_ENDPOINTS 4
+#define INET_CONFIG_NUM_TCP_ENDPOINTS 32
 #endif // INET_CONFIG_NUM_TCP_ENDPOINTS
 
 #ifndef INET_CONFIG_NUM_UDP_ENDPOINTS
-#define INET_CONFIG_NUM_UDP_ENDPOINTS 4
+#define INET_CONFIG_NUM_UDP_ENDPOINTS 32
 #endif // INET_CONFIG_NUM_UDP_ENDPOINTS
 
-#endif // INET_PLATFORM_CONFIG_H
+// On linux platform, we have sys/socket.h, so HAVE_SO_BINDTODEVICE should be set to 1
+#define HAVE_SO_BINDTODEVICE 1

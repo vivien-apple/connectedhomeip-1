@@ -21,8 +21,7 @@
  *      data enumerated from a byte stream
  */
 
-#ifndef _SETUP_PAYLOAD_H_
-#define _SETUP_PAYLOAD_H_
+#pragma once
 
 #include <map>
 #include <stdint.h>
@@ -30,8 +29,6 @@
 #include <vector>
 
 #include <core/CHIPError.h>
-
-using namespace std;
 
 namespace chip {
 
@@ -43,6 +40,7 @@ const int kCustomFlowRequiredFieldLengthInBits       = 1;
 const int kRendezvousInfoFieldLengthInBits           = 8;
 const int kPayloadDiscriminatorFieldLengthInBits     = 12;
 const int kManualSetupDiscriminatorFieldLengthInBits = 4;
+const int kManualSetupDiscriminatorFieldBitMask      = (1 << kManualSetupDiscriminatorFieldLengthInBits) - 1;
 const int kSetupPINCodeFieldLengthInBits             = 27;
 const int kPaddingFieldLengthInBits                  = 5;
 
@@ -55,6 +53,9 @@ const int kManualSetupProductIdCharLength = 5;
 
 const uint8_t kSerialNumberTag               = 128;
 const uint32_t kTag_QRCodeExensionDescriptor = 0x00;
+
+// The largest value of the 12-bit Payload discriminator
+const uint16_t kMaxDiscriminatorValue = 0xFFF;
 
 // clang-format off
 const int kTotalPayloadDataSizeInBits =
@@ -72,15 +73,16 @@ const int kTotalPayloadDataSizeInBytes = kTotalPayloadDataSizeInBits / 8;
 
 const char * const kQRCodePrefix = "CH:";
 
+/// The rendezvous type this device supports.
 enum class RendezvousInformationFlags : uint16_t
 {
-    kNone     = 0,      // Device does not support any method for rendezvous
-    kSoftAP   = 1 << 0, // Device supports hosting a SoftAP
-    kBLE      = 1 << 1, // Device supports BLE
-    kThread   = 1 << 2, // Device supports Thread
-    kEthernet = 1 << 3, // Device MAY be attached to a wired 802." connection"
+    kNone     = 0,      ///< Device does not support any method for rendezvous
+    kWiFi     = 1 << 0, ///< Device supports Wi-Fi
+    kBLE      = 1 << 1, ///< Device supports BLE
+    kThread   = 1 << 2, ///< Device supports Thread
+    kEthernet = 1 << 3, ///< Device MAY be attached to a wired 802.3 connection
 
-    kAllMask = kSoftAP | kBLE | kThread | kEthernet,
+    kAllMask = kWiFi | kBLE | kThread | kEthernet,
 };
 
 enum optionalQRCodeInfoType
@@ -94,24 +96,18 @@ enum optionalQRCodeInfoType
 };
 
 /**
- * @brief A struct to hold optional QR Code Info
- * @param tag The tag number of the optional info
- * @param type The type (String or Int) of the optional info
- * @param data  If type is optionalQRCodeInfoTypeString,
- *              the string value of the optional info,
- *              otherwise should not be set.
- * @param integer If type is optionalQRCodeInfoTypeInt,
- *              the integer value of the optional info,
- *              otherwise should not be set.
- **/
+ * A structure to hold optional QR Code info
+ */
 struct OptionalQRCodeInfo
 {
-    OptionalQRCodeInfo() { int32 = 0; };
+    OptionalQRCodeInfo() { int32 = 0; }
 
-    uint8_t tag;
-    enum optionalQRCodeInfoType type;
-    string data;
-    int32_t int32;
+    /*@{*/
+    uint8_t tag;                      /**< the tag number of the optional info */
+    enum optionalQRCodeInfoType type; /**< the type (String or Int) of the optional info */
+    std::string data;                 /**< the string value if type is optionalQRCodeInfoTypeString, otherwise should not be set */
+    int32_t int32;                    /**< the integer value if type is optionalQRCodeInfoTypeInt, otherwise should not be set */
+    /*@}*/
 };
 
 struct OptionalQRCodeInfoExtension : OptionalQRCodeInfo
@@ -122,7 +118,7 @@ struct OptionalQRCodeInfoExtension : OptionalQRCodeInfo
         int64  = 0;
         uint32 = 0;
         uint64 = 0;
-    };
+    }
 
     int64_t int64;
     uint64_t uint32;
@@ -152,7 +148,7 @@ public:
      * @param data String representation of data to add
      * @return Returns a CHIP_ERROR on error, CHIP_NO_ERROR otherwise
      **/
-    CHIP_ERROR addOptionalVendorData(uint8_t tag, string data);
+    CHIP_ERROR addOptionalVendorData(uint8_t tag, std::string data);
 
     /** @brief A function to add an optional vendor data
      * @param tag 7 bit [0-127] tag number
@@ -170,13 +166,13 @@ public:
      * @brief A function to retrieve the vector of OptionalQRCodeInfo infos
      * @return Returns a vector of optionalQRCodeInfos
      **/
-    vector<OptionalQRCodeInfo> getAllOptionalVendorData();
+    std::vector<OptionalQRCodeInfo> getAllOptionalVendorData();
 
     /** @brief A function to add a string serial number
      * @param serialNumber string serial number
      * @return Returns a CHIP_ERROR on error, CHIP_NO_ERROR otherwise
      **/
-    CHIP_ERROR addSerialNumber(string serialNumber);
+    CHIP_ERROR addSerialNumber(std::string serialNumber);
 
     /** @brief A function to add a uint32_t serial number
      * @param serialNumber uint32_t serial number
@@ -188,54 +184,55 @@ public:
      * @param outSerialNumber retrieved string serial number
      * @return Returns a CHIP_ERROR on error, CHIP_NO_ERROR otherwise
      **/
-    CHIP_ERROR getSerialNumber(string & outSerialNumber);
+    CHIP_ERROR getSerialNumber(std::string & outSerialNumber);
 
     /** @brief A function to remove the serial number from the payload
      * @return Returns a CHIP_ERROR_KEY_NOT_FOUND on error, CHIP_NO_ERROR otherwise
      **/
-    CHIP_ERROR removeSerialNumber(void);
+    CHIP_ERROR removeSerialNumber();
 
     // Test that the Setup Payload is within expected value ranges
     SetupPayload() :
         version(0), vendorID(0), productID(0), requiresCustomFlow(0), rendezvousInformation(RendezvousInformationFlags::kNone),
-        discriminator(0), setUpPINCode(0){};
+        discriminator(0), setUpPINCode(0)
+    {}
 
     bool isValidQRCodePayload();
     bool isValidManualCode();
     bool operator==(SetupPayload & input);
 
 private:
-    map<uint8_t, OptionalQRCodeInfo> optionalVendorData;
-    map<uint8_t, OptionalQRCodeInfoExtension> optionalExtensionData;
+    std::map<uint8_t, OptionalQRCodeInfo> optionalVendorData;
+    std::map<uint8_t, OptionalQRCodeInfoExtension> optionalExtensionData;
 
     /** @brief A function to add an optional QR Code info vendor object
      * @param info Optional QR code info object to add
      * @return Returns a CHIP_ERROR_INVALID_ARGUMENT on error, CHIP_NO_ERROR otherwise
      **/
-    CHIP_ERROR addOptionalVendorData(OptionalQRCodeInfo info);
+    CHIP_ERROR addOptionalVendorData(const OptionalQRCodeInfo & info);
 
     /** @brief A function to add an optional QR Code info CHIP object
      * @param info Optional QR code info object to add
      * @return Returns a CHIP_ERROR_INVALID_ARGUMENT on error, CHIP_NO_ERROR otherwise
      **/
-    CHIP_ERROR addOptionalExtensionData(OptionalQRCodeInfoExtension info);
+    CHIP_ERROR addOptionalExtensionData(const OptionalQRCodeInfoExtension & info);
 
     /**
      * @brief A function to retrieve the vector of CHIPQRCodeInfo infos
      * @return Returns a vector of CHIPQRCodeInfos
      **/
-    vector<OptionalQRCodeInfoExtension> getAllOptionalExtensionData();
+    std::vector<OptionalQRCodeInfoExtension> getAllOptionalExtensionData();
 
     /** @brief A function to retrieve an optional QR Code info vendor object
      * @param tag 7 bit [0-127] tag number
-     * @param outSerialNumber retrieved OptionalQRCodeInfo object
+     * @param info retrieved OptionalQRCodeInfo object
      * @return Returns a CHIP_ERROR_KEY_NOT_FOUND on error, CHIP_NO_ERROR otherwise
      **/
     CHIP_ERROR getOptionalVendorData(uint8_t tag, OptionalQRCodeInfo & info);
 
     /** @brief A function to retrieve an optional QR Code info extended object
      * @param tag 8 bit [128-255] tag number
-     * @param outSerialNumber retrieved OptionalQRCodeInfoExtension object
+     * @param info retrieved OptionalQRCodeInfoExtension object
      * @return Returns a CHIP_ERROR_KEY_NOT_FOUND on error, CHIP_NO_ERROR otherwise
      **/
     CHIP_ERROR getOptionalExtensionData(uint8_t tag, OptionalQRCodeInfoExtension & info);
@@ -247,6 +244,4 @@ private:
     optionalQRCodeInfoType getNumericTypeFor(uint8_t tag);
 };
 
-}; // namespace chip
-
-#endif /* _SETUP_PAYLOAD_H_ */
+} // namespace chip

@@ -24,19 +24,18 @@
  *
  */
 
-#include "TestSupport.h"
-
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 
 #include <support/TimeUtils.h>
+#include <support/UnitTestRegistration.h>
 #include <support/logging/CHIPLogging.h>
 
 using namespace chip;
 
-void Abort()
+static void Abort()
 {
     abort();
 }
@@ -800,7 +799,7 @@ OrdinalDateTestValue LeapYearOrdinalDates[] =
 };
 // clang-format on
 
-void TestOrdinalDateConversion(void)
+void TestOrdinalDateConversion()
 {
     for (uint16_t year = 0; year <= 10000; year++)
     {
@@ -823,7 +822,7 @@ void TestOrdinalDateConversion(void)
     }
 }
 
-void TestDaysSinceEpochConversion(void)
+void TestDaysSinceEpochConversion()
 {
     uint32_t daysSinceEpoch = 0;
 
@@ -869,10 +868,10 @@ void TestDaysSinceEpochConversion(void)
     }
 }
 
-void TestSecondsSinceEpochConversion(void)
+void TestSecondsSinceEpochConversion()
 {
     uint32_t daysSinceEpoch = 0;
-    uint32_t timeOfDay      = 0;
+    uint32_t timeOfDay      = 0; // in seconds
 
     for (uint16_t year = kEpochYear; year <= kMaxYearInSecondsSinceEpoch32; year++)
     {
@@ -885,9 +884,9 @@ void TestSecondsSinceEpochConversion(void)
                 {
                     uint32_t secondsSinceEpoch = daysSinceEpoch * kSecondsPerDay + timeOfDay;
 
-                    uint8_t hour   = timeOfDay / kSecondsPerHour;
-                    uint8_t minute = (timeOfDay - (hour * kSecondsPerHour)) / kSecondsPerMinute;
-                    uint8_t second = timeOfDay - (hour * kSecondsPerHour + minute * kSecondsPerMinute);
+                    uint8_t hour   = static_cast<uint8_t>(timeOfDay / kSecondsPerHour);
+                    uint8_t minute = static_cast<uint8_t>((timeOfDay - (hour * kSecondsPerHour)) / kSecondsPerMinute);
+                    uint8_t second = static_cast<uint8_t>(timeOfDay - (hour * kSecondsPerHour + minute * kSecondsPerMinute));
 
 #define VERIFY_TEST_AGAINST_GMTTIME 0
 #if VERIFY_TEST_AGAINST_GMTTIME
@@ -955,3 +954,5 @@ int TestTimeUtils(void)
 
     return (0);
 }
+
+CHIP_REGISTER_TEST_SUITE(TestTimeUtils);

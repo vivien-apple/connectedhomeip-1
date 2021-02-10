@@ -22,8 +22,7 @@
  *          for use on platforms that don't have BLE.
  */
 
-#ifndef GENERIC_CONNECTIVITY_MANAGER_IMPL_NO_BLE_H
-#define GENERIC_CONNECTIVITY_MANAGER_IMPL_NO_BLE_H
+#pragma once
 
 namespace chip {
 namespace DeviceLayer {
@@ -37,7 +36,7 @@ namespace Internal {
  * class, which also appears as the template's ImplClass parameter.
  *
  * The members of this class are all inlined methods that do nothing, and return static return
- * values.  This allows the compiler to optimize away dead code without the use of #ifdef's.
+ * values.  This allows the compiler to optimize away dead code without the use of \#ifdef's.
  * For example:
  *
  * ```
@@ -53,6 +52,7 @@ class GenericConnectivityManagerImpl_NoBLE
 public:
     // ===== Methods that implement the ConnectivityManager abstract interface.
 
+    Ble::BleLayer * _GetBleLayer(void);
     void _AddCHIPoBLEConnectionHandler(ConnectivityManager::BleConnectionReceivedFunct handler);
     void _RemoveCHIPoBLEConnectionHandler(void);
     ConnectivityManager::CHIPoBLEServiceMode _GetCHIPoBLEServiceMode(void);
@@ -70,6 +70,12 @@ public:
 private:
     ImplClass * Impl() { return static_cast<ImplClass *>(this); }
 };
+
+template <class ImplClass>
+inline Ble::BleLayer * GenericConnectivityManagerImpl_NoBLE<ImplClass>::_GetBleLayer(void)
+{
+    return nullptr;
+}
 
 template <class ImplClass>
 inline void GenericConnectivityManagerImpl_NoBLE<ImplClass>::_AddCHIPoBLEConnectionHandler(
@@ -151,5 +157,3 @@ GenericConnectivityManagerImpl_NoBLE<ImplClass>::_CHIPoBLEServiceModeToStr(Conne
 } // namespace Internal
 } // namespace DeviceLayer
 } // namespace chip
-
-#endif // GENERIC_CONNECTIVITY_MANAGER_IMPL_NO_BLE_H

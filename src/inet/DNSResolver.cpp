@@ -210,14 +210,14 @@ INET_ERROR DNSResolver::Resolve(const char * hostName, uint16_t hostNameLen, uin
 #if CHIP_SYSTEM_CONFIG_USE_SOCKETS
 
     struct addrinfo gaiHints;
-    struct addrinfo * gaiResults = NULL;
+    struct addrinfo * gaiResults = nullptr;
     int gaiReturnCode;
 
     // Configure the hints argument for getaddrinfo()
     InitAddrInfoHints(gaiHints);
 
     // Call getaddrinfo() to perform the name resolution.
-    gaiReturnCode = getaddrinfo(hostNameBuf, NULL, &gaiHints, &gaiResults);
+    gaiReturnCode = getaddrinfo(hostNameBuf, nullptr, &gaiHints, &gaiResults);
 
     // Process the return code and results list returned by getaddrinfo(). If the call
     // was successful this will copy the resultant addresses into the caller's array.
@@ -276,8 +276,8 @@ INET_ERROR DNSResolver::Cancel()
 
     InetLayer & inet = Layer();
 
-    OnComplete = NULL;
-    AppState   = NULL;
+    OnComplete = nullptr;
+    AppState   = nullptr;
     inet.mAsyncDNSResolver.Cancel(*this);
 
 #endif // INET_CONFIG_ENABLE_ASYNC_DNS_SOCKETS
@@ -416,7 +416,8 @@ INET_ERROR DNSResolver::ProcessGetAddrInfoResult(int returnCode, struct addrinfo
         // to be returned in the results.
         uint8_t numPrimaryAddrs   = CountAddresses(primaryFamily, results);
         uint8_t numSecondaryAddrs = (secondaryFamily != AF_UNSPEC) ? CountAddresses(secondaryFamily, results) : 0;
-        uint8_t numAddrs          = numPrimaryAddrs + numSecondaryAddrs;
+        // Make sure numAddrs can actually fit the sum.
+        uint16_t numAddrs = static_cast<uint16_t>(numPrimaryAddrs + numSecondaryAddrs);
 
         // If the total number of addresses to be returned exceeds the application
         // specified max, ensure that at least 1 address from the secondary family
@@ -426,7 +427,7 @@ INET_ERROR DNSResolver::ProcessGetAddrInfoResult(int returnCode, struct addrinfo
         // when attempting to communicate with the host.
         if (numAddrs > MaxAddrs && MaxAddrs > 1 && numPrimaryAddrs > 0 && numSecondaryAddrs > 0)
         {
-            numPrimaryAddrs = ::chip::min(numPrimaryAddrs, (uint8_t)(MaxAddrs - 1));
+            numPrimaryAddrs = ::chip::min(numPrimaryAddrs, static_cast<uint8_t>(MaxAddrs - 1));
         }
 
         // Copy the primary addresses into the beginning of the application's output array,
@@ -485,7 +486,7 @@ INET_ERROR DNSResolver::ProcessGetAddrInfoResult(int returnCode, struct addrinfo
     }
 
     // Free the results structure.
-    if (results != NULL)
+    if (results != nullptr)
         freeaddrinfo(results);
 
     return err;
@@ -493,7 +494,7 @@ INET_ERROR DNSResolver::ProcessGetAddrInfoResult(int returnCode, struct addrinfo
 
 void DNSResolver::CopyAddresses(int family, uint8_t count, const struct addrinfo * addrs)
 {
-    for (const struct addrinfo * addr = addrs; addr != NULL && NumAddrs < MaxAddrs && count > 0; addr = addr->ai_next)
+    for (const struct addrinfo * addr = addrs; addr != nullptr && NumAddrs < MaxAddrs && count > 0; addr = addr->ai_next)
     {
         if (family == AF_UNSPEC || addr->ai_addr->sa_family == family)
         {
@@ -507,7 +508,7 @@ uint8_t DNSResolver::CountAddresses(int family, const struct addrinfo * addrs)
 {
     uint8_t count = 0;
 
-    for (const struct addrinfo * addr = addrs; addr != NULL && count < UINT8_MAX; addr = addr->ai_next)
+    for (const struct addrinfo * addr = addrs; addr != nullptr && count < UINT8_MAX; addr = addr->ai_next)
     {
         if (family == AF_UNSPEC || addr->ai_addr->sa_family == family)
         {
@@ -520,7 +521,7 @@ uint8_t DNSResolver::CountAddresses(int family, const struct addrinfo * addrs)
 
 #if INET_CONFIG_ENABLE_ASYNC_DNS_SOCKETS
 
-void DNSResolver::HandleAsyncResolveComplete(void)
+void DNSResolver::HandleAsyncResolveComplete()
 {
     // Copy the resolved address to the application supplied buffer, but only if the request hasn't been canceled.
     if (OnComplete && mState != kState_Canceled)

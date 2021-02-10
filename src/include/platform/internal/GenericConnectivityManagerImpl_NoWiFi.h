@@ -22,8 +22,7 @@
  *          for use on platforms that don't have WiFi.
  */
 
-#ifndef GENERIC_CONNECTIVITY_MANAGER_IMPL_NO_WIFI_H
-#define GENERIC_CONNECTIVITY_MANAGER_IMPL_NO_WIFI_H
+#pragma once
 
 namespace chip {
 namespace DeviceLayer {
@@ -37,7 +36,7 @@ namespace Internal {
  * class, which also appears as the template's ImplClass parameter.
  *
  * The members of this class are all inlined methods that do nothing, and return static return
- * values.  This allows the compiler to optimize away dead code without the use of #ifdef's.
+ * values.  This allows the compiler to optimize away dead code without the use of \#ifdef's.
  * For example:
  *
  * ```
@@ -58,6 +57,8 @@ public:
     bool _IsWiFiStationEnabled(void);
     bool _IsWiFiStationApplicationControlled(void);
     bool _IsWiFiStationConnected(void);
+    bool _HaveIPv4InternetConnectivity(void);
+    bool _HaveIPv6InternetConnectivity(void);
     uint32_t _GetWiFiStationReconnectIntervalMS(void);
     CHIP_ERROR _SetWiFiStationReconnectIntervalMS(uint32_t val);
     bool _IsWiFiStationProvisioned(void);
@@ -77,6 +78,8 @@ public:
     void _OnWiFiStationProvisionChange();
     static const char * _WiFiStationModeToStr(ConnectivityManager::WiFiStationMode mode);
     static const char * _WiFiAPModeToStr(ConnectivityManager::WiFiAPMode mode);
+    static const char * _WiFiStationStateToStr(ConnectivityManager::WiFiStationState state);
+    static const char * _WiFiAPStateToStr(ConnectivityManager::WiFiAPState state);
 
 private:
     ImplClass * Impl() { return static_cast<ImplClass *>(this); }
@@ -102,6 +105,18 @@ inline bool GenericConnectivityManagerImpl_NoWiFi<ImplClass>::_IsWiFiStationEnab
 
 template <class ImplClass>
 inline bool GenericConnectivityManagerImpl_NoWiFi<ImplClass>::_IsWiFiStationConnected(void)
+{
+    return false;
+}
+
+template <class ImplClass>
+inline bool GenericConnectivityManagerImpl_NoWiFi<ImplClass>::_HaveIPv4InternetConnectivity(void)
+{
+    return false;
+}
+
+template <class ImplClass>
+inline bool GenericConnectivityManagerImpl_NoWiFi<ImplClass>::_HaveIPv6InternetConnectivity(void)
 {
     return false;
 }
@@ -207,8 +222,19 @@ inline const char * GenericConnectivityManagerImpl_NoWiFi<ImplClass>::_WiFiAPMod
     return NULL;
 }
 
+template <class ImplClass>
+inline const char *
+GenericConnectivityManagerImpl_NoWiFi<ImplClass>::_WiFiStationStateToStr(ConnectivityManager::WiFiStationState state)
+{
+    return NULL;
+}
+
+template <class ImplClass>
+inline const char * GenericConnectivityManagerImpl_NoWiFi<ImplClass>::_WiFiAPStateToStr(ConnectivityManager::WiFiAPState state)
+{
+    return NULL;
+}
+
 } // namespace Internal
 } // namespace DeviceLayer
 } // namespace chip
-
-#endif // GENERIC_CONNECTIVITY_MANAGER_IMPL_NO_WIFI_H

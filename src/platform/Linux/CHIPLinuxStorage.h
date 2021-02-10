@@ -31,8 +31,7 @@
  *
  */
 
-#ifndef CHIP_LINUX_STORAGE_H
-#define CHIP_LINUX_STORAGE_H
+#pragma once
 
 #include <mutex>
 #include <platform/Linux/CHIPLinuxStorageIni.h>
@@ -81,8 +80,8 @@ public:
     CHIP_ERROR WriteValueStr(const char * key, const char * val);
     CHIP_ERROR WriteValueBin(const char * key, const uint8_t * data, size_t dataLen);
     CHIP_ERROR ClearValue(const char * key);
-    CHIP_ERROR ClearAll(void);
-    CHIP_ERROR Commit(void);
+    CHIP_ERROR ClearAll();
+    CHIP_ERROR Commit();
     bool HasValue(const char * key);
 
 private:
@@ -94,5 +93,3 @@ private:
 } // namespace Internal
 } // namespace DeviceLayer
 } // namespace chip
-
-#endif /* CHIP_LINUX_STORAGE_H */

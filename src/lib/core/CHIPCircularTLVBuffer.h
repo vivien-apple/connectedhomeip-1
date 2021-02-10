@@ -1,6 +1,6 @@
 /*
  *
- *    Copyright (c) 2020 Project CHIP Authors
+ *    Copyright (c) 2020-2021 Project CHIP Authors
  *    Copyright (c) 2016-2017 Nest Labs, Inc.
  *    All rights reserved.
  *
@@ -27,8 +27,7 @@
  *      pre-existing elements.
  */
 
-#ifndef CHIP_CIRCULAR_TLV_BUFFER_H_
-#define CHIP_CIRCULAR_TLV_BUFFER_H_
+#pragma once
 
 #include <core/CHIPError.h>
 #include <core/CHIPTLV.h>
@@ -55,30 +54,27 @@ namespace TLV {
  *    buffer.
  *
  */
-class DLL_EXPORT CHIPCircularTLVBuffer
+class DLL_EXPORT CHIPCircularTLVBuffer : public chip::TLV::TLVBackingStore
 {
 public:
-    CHIPCircularTLVBuffer(uint8_t * inBuffer, size_t inBufferLength);
-    CHIPCircularTLVBuffer(uint8_t * inBuffer, size_t inBufferLength, uint8_t * inHead);
+    CHIPCircularTLVBuffer(uint8_t * inBuffer, uint32_t inBufferLength);
+    CHIPCircularTLVBuffer(uint8_t * inBuffer, uint32_t inBufferLength, uint8_t * inHead);
 
-    CHIP_ERROR GetNewBuffer(TLVWriter & ioWriter, uint8_t *& outBufStart, uint32_t & outBufLen);
-    CHIP_ERROR FinalizeBuffer(TLVWriter & ioWriter, uint8_t * inBufStart, uint32_t inBufLen);
-    CHIP_ERROR GetNextBuffer(TLVReader & ioReader, const uint8_t *& outBufStart, uint32_t & outBufLen);
+    inline uint8_t * QueueHead() const { return mQueueHead; }
+    inline uint8_t * QueueTail() const { return mQueue + ((static_cast<size_t>(mQueueHead - mQueue) + mQueueLength) % mQueueSize); }
+    inline uint32_t DataLength() const { return mQueueLength; }
+    inline uint32_t AvailableDataLength() const { return mQueueSize - mQueueLength; }
+    inline uint32_t GetQueueSize() const { return mQueueSize; }
+    inline uint8_t * GetQueue() const { return mQueue; }
 
-    inline uint8_t * QueueHead(void) const { return mQueueHead; };
-    inline uint8_t * QueueTail(void) const { return mQueue + (((mQueueHead - mQueue) + mQueueLength) % mQueueSize); };
-    inline size_t DataLength(void) const { return mQueueLength; };
-    inline size_t AvailableDataLength(void) const { return mQueueSize - mQueueLength; };
-    inline size_t GetQueueSize(void) const { return mQueueSize; };
-    inline uint8_t * GetQueue(void) const { return mQueue; };
+    CHIP_ERROR EvictHead();
 
-    CHIP_ERROR EvictHead(void);
-
-    static CHIP_ERROR GetNewBufferFunct(TLVWriter & ioWriter, uintptr_t & inBufHandle, uint8_t *& outBufStart,
-                                        uint32_t & outBufLen);
-    static CHIP_ERROR FinalizeBufferFunct(TLVWriter & ioWriter, uintptr_t inBufHandle, uint8_t * inBufStart, uint32_t inBufLen);
-    static CHIP_ERROR GetNextBufferFunct(TLVReader & ioReader, uintptr_t & inBufHandle, const uint8_t *& outBufStart,
-                                         uint32_t & outBufLen);
+    // chip::TLV::TLVBackingStore overrides:
+    CHIP_ERROR OnInit(TLVReader & reader, const uint8_t *& bufStart, uint32_t & bufLen) override;
+    CHIP_ERROR GetNextBuffer(TLVReader & ioReader, const uint8_t *& outBufStart, uint32_t & outBufLen) override;
+    CHIP_ERROR OnInit(TLVWriter & writer, uint8_t *& bufStart, uint32_t & bufLen) override;
+    CHIP_ERROR GetNewBuffer(TLVWriter & ioWriter, uint8_t *& outBufStart, uint32_t & outBufLen) override;
+    CHIP_ERROR FinalizeBuffer(TLVWriter & ioWriter, uint8_t * inBufStart, uint32_t inBufLen) override;
 
     /**
      *  @typedef CHIP_ERROR (*ProcessEvictedElementFunct)(CHIPCircularTLVBuffer &inBuffer, void * inAppData, TLVReader &inReader)
@@ -133,24 +129,49 @@ public:
 
 private:
     uint8_t * mQueue;
-    size_t mQueueSize;
+    uint32_t mQueueSize;
     uint8_t * mQueueHead;
-    size_t mQueueLength;
+    uint32_t mQueueLength;
 };
 
 class DLL_EXPORT CircularTLVReader : public TLVReader
 {
 public:
-    void Init(CHIPCircularTLVBuffer * buf);
+    /**
+     * @brief
+     *   Initializes a TLVReader object to read from a single CHIPCircularTLVBuffer
+     *
+     * Parsing begins at the start of the buffer (obtained by the
+     * buffer->Start() position) and continues until the end of the buffer
+     * Parsing may wraparound within the buffer (on any element).  At most
+     * buffer->GetQueueSize() bytes are read out.
+     *
+     * @param[in]    buf   A pointer to a fully initialized CHIPCircularTLVBuffer
+     *
+     */
+    void Init(CHIPCircularTLVBuffer & buf) { TLVReader::Init(buf, buf.DataLength()); }
 };
 
 class DLL_EXPORT CircularTLVWriter : public TLVWriter
 {
 public:
-    void Init(CHIPCircularTLVBuffer * buf);
+    /**
+     * @brief
+     *   Initializes a TLVWriter object to write from a single CHIPCircularTLVBuffer
+     *
+     * Writing begins at the last byte of the buffer.  The number of bytes
+     * to be written is not constrained by the underlying circular buffer:
+     * writing new elements to the buffer will kick out previous elements
+     * as long as an individual top-level TLV structure fits within the
+     * buffer.  For example, writing a 7-byte top-level boolean TLV into a
+     * 7 byte buffer will work indefinitely, but writing an 8-byte TLV
+     * structure will result in an error.
+     *
+     * @param[in]    buf   A pointer to a fully initialized CHIPCircularTLVBuffer
+     *
+     */
+    void Init(CHIPCircularTLVBuffer & buf) { TLVWriter::Init(buf, UINT32_MAX); }
 };
 
 } // namespace TLV
 } // namespace chip
-
-#endif // CHIP_CIRCULAR_TLV_BUFFER_H_

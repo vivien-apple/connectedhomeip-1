@@ -26,8 +26,7 @@
  *      control blocks, as the system is configured accordingly.
  */
 
-#ifndef UDPENDPOINT_H
-#define UDPENDPOINT_H
+#pragma once
 
 #include "inet/IPEndPointBasis.h"
 #include <inet/IPAddress.h>
@@ -53,28 +52,29 @@ class DLL_EXPORT UDPEndPoint : public IPEndPointBasis
     friend class InetLayer;
 
 public:
-    INET_ERROR Bind(IPAddressType addrType, IPAddress addr, uint16_t port, InterfaceId intfId = INET_NULL_INTERFACEID);
-    INET_ERROR BindInterface(IPAddressType addrType, InterfaceId intf);
-    InterfaceId GetBoundInterface(void);
-    uint16_t GetBoundPort(void);
-    INET_ERROR Listen(void);
-    INET_ERROR SendTo(IPAddress addr, uint16_t port, chip::System::PacketBuffer * msg, uint16_t sendFlags = 0);
-    INET_ERROR SendTo(IPAddress addr, uint16_t port, InterfaceId intfId, chip::System::PacketBuffer * msg, uint16_t sendFlags = 0);
-    INET_ERROR SendMsg(const IPPacketInfo * pktInfo, chip::System::PacketBuffer * msg, uint16_t sendFlags = 0);
-    void Close(void);
-    void Free(void);
+    INET_ERROR Bind(IPAddressType addrType, const IPAddress & addr, uint16_t port, InterfaceId intfId = INET_NULL_INTERFACEID);
+    INET_ERROR BindInterface(IPAddressType addrType, InterfaceId intfId);
+    InterfaceId GetBoundInterface();
+    uint16_t GetBoundPort();
+    INET_ERROR Listen();
+    INET_ERROR SendTo(const IPAddress & addr, uint16_t port, chip::System::PacketBufferHandle && msg, uint16_t sendFlags = 0);
+    INET_ERROR SendTo(const IPAddress & addr, uint16_t port, InterfaceId intfId, chip::System::PacketBufferHandle && msg,
+                      uint16_t sendFlags = 0);
+    INET_ERROR SendMsg(const IPPacketInfo * pktInfo, chip::System::PacketBufferHandle msg, uint16_t sendFlags = 0);
+    void Close();
+    void Free();
 
 private:
-    UDPEndPoint(void);                // not defined
-    UDPEndPoint(const UDPEndPoint &); // not defined
-    ~UDPEndPoint(void);               // not defined
+    UDPEndPoint()                    = delete;
+    UDPEndPoint(const UDPEndPoint &) = delete;
+    ~UDPEndPoint()                   = delete;
 
     static chip::System::ObjectPool<UDPEndPoint, INET_CONFIG_NUM_UDP_ENDPOINTS> sPool;
 
     void Init(InetLayer * inetLayer);
 
 #if CHIP_SYSTEM_CONFIG_USE_LWIP
-    void HandleDataReceived(chip::System::PacketBuffer * msg);
+    void HandleDataReceived(chip::System::PacketBufferHandle && msg);
     INET_ERROR GetPCB(IPAddressType addrType4);
 #if LWIP_VERSION_MAJOR > 1 || LWIP_VERSION_MINOR >= 5
     static void LwIPReceiveUDPMessage(void * arg, struct udp_pcb * pcb, struct pbuf * p, const ip_addr_t * addr, u16_t port);
@@ -87,12 +87,10 @@ private:
     uint16_t mBoundPort;
 
     INET_ERROR GetSocket(IPAddressType addrType);
-    SocketEvents PrepareIO(void);
-    void HandlePendingIO(void);
+    SocketEvents PrepareIO();
+    void HandlePendingIO();
 #endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS
 };
 
 } // namespace Inet
 } // namespace chip
-
-#endif // !defined(UDPENDPOINT_H)

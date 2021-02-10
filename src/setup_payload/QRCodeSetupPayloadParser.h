@@ -27,7 +27,7 @@
 #include <core/CHIPTLV.h>
 
 #include <string>
-using namespace std;
+#include <utility>
 
 namespace chip {
 
@@ -38,16 +38,16 @@ namespace chip {
 class QRCodeSetupPayloadParser
 {
 private:
-    string mBase41Representation;
+    std::string mBase41Representation;
 
 public:
-    QRCodeSetupPayloadParser(string base41Representation) : mBase41Representation(base41Representation){};
+    QRCodeSetupPayloadParser(std::string base41Representation) : mBase41Representation(std::move(base41Representation)) {}
     CHIP_ERROR populatePayload(SetupPayload & outPayload);
 
 private:
     CHIP_ERROR retrieveOptionalInfos(SetupPayload & outPayload, TLV::TLVReader & reader);
-    CHIP_ERROR populateTLV(SetupPayload & outPayload, const vector<uint8_t> & buf, int & index);
-    CHIP_ERROR parseTLVFields(chip::SetupPayload & outPayload, uint8_t * tlvDataStart, uint32_t tlvDataLengthInBytes);
+    CHIP_ERROR populateTLV(SetupPayload & outPayload, const std::vector<uint8_t> & buf, size_t & index);
+    CHIP_ERROR parseTLVFields(chip::SetupPayload & outPayload, uint8_t * tlvDataStart, size_t tlvDataLengthInBytes);
 };
 
-}; // namespace chip
+} // namespace chip

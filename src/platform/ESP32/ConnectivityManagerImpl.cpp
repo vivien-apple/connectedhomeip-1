@@ -19,10 +19,11 @@
 /* this file behaves like a config.h, comes first */
 #include <platform/internal/CHIPDeviceLayerInternal.h>
 
-#if CHIP_DEVICE_CONFIG_ENABLE_CHIPOBLE
-#include <platform/internal/GenericConnectivityManagerImpl_BLE.ipp>
-#endif
 #include <platform/ConnectivityManager.h>
+#if CHIP_DEVICE_CONFIG_ENABLE_CHIPOBLE
+#include <platform/internal/GenericConnectivityManagerImpl_BLE.cpp>
+#endif
+#include <platform/internal/GenericConnectivityManagerImpl_WiFi.cpp>
 
 #include <platform/ESP32/ESP32Utils.h>
 #include <platform/internal/BLEManager.h>
@@ -30,12 +31,15 @@
 #include <support/logging/CHIPLogging.h>
 
 #include "esp_event.h"
+#include "esp_netif.h"
 #include "esp_wifi.h"
 
 #include <lwip/dns.h>
 #include <lwip/ip_addr.h>
 #include <lwip/nd6.h>
 #include <lwip/netif.h>
+
+#include <type_traits>
 
 #if !CHIP_DEVICE_CONFIG_ENABLE_WIFI_STATION
 #error "WiFi Station support must be enabled when building for ESP32"
@@ -46,6 +50,8 @@
 #endif
 
 using namespace ::chip;
+using namespace ::chip::Inet;
+using namespace ::chip::System;
 using namespace ::chip::TLV;
 
 namespace chip {
@@ -58,7 +64,8 @@ ConnectivityManager::WiFiStationMode ConnectivityManagerImpl::_GetWiFiStationMod
     if (mWiFiStationMode != kWiFiStationMode_ApplicationControlled)
     {
         wifi_mode_t curWiFiMode;
-        mWiFiStationMode = (esp_wifi_get_mode(&curWiFiMode) == ESP_OK && curWiFiMode == WIFI_MODE_APSTA)
+        mWiFiStationMode =
+            (esp_wifi_get_mode(&curWiFiMode) == ESP_OK && (curWiFiMode == WIFI_MODE_APSTA || curWiFiMode == WIFI_MODE_STA))
             ? kWiFiStationMode_Enabled
             : kWiFiStationMode_Disabled;
     }
@@ -179,7 +186,8 @@ static uint16_t Map2400MHz(const uint8_t inChannel)
 
     if (inChannel >= 1 && inChannel <= 13)
     {
-        frequency = 2412 + ((inChannel - 1) * 5);
+        // Cast is OK because we definitely fit in 16 bits.
+        frequency = static_cast<uint16_t>(2412 + ((inChannel - 1) * 5));
     }
     else if (inChannel == 14)
     {
@@ -366,8 +374,10 @@ CHIP_ERROR ConnectivityManagerImpl::_GetAndLogWifiStatsCounters(void)
     }
     SuccessOrExit(err);
 
-    freq  = MapFrequency(WIFI_BAND_2_4GHZ, primaryChannel);
-    bssid = (wifiConfig.sta.bssid[4] << 8) | wifiConfig.sta.bssid[5];
+    freq = MapFrequency(WIFI_BAND_2_4GHZ, primaryChannel);
+    static_assert(std::is_same<std::remove_reference<decltype(wifiConfig.sta.bssid[5])>::type, uint8_t>::value,
+                  "Our bits are going to start overlapping");
+    bssid = static_cast<uint16_t>((wifiConfig.sta.bssid[4] << 8) | wifiConfig.sta.bssid[5]);
     ChipLogProgress(DeviceLayer,
                     "Wifi-Telemetry\n"
                     "BSSID: %x\n"
@@ -375,35 +385,6 @@ CHIP_ERROR ConnectivityManagerImpl::_GetAndLogWifiStatsCounters(void)
                     bssid, freq);
 exit:
     return CHIP_NO_ERROR;
-}
-
-CHIP_ERROR ConnectivityManagerImpl::_SetServiceTunnelMode(ServiceTunnelMode val)
-{
-    CHIP_ERROR err = CHIP_NO_ERROR;
-
-    VerifyOrExit(val != kServiceTunnelMode_NotSupported, err = CHIP_ERROR_INVALID_ARGUMENT);
-
-    mServiceTunnelMode = val;
-
-    SystemLayer.ScheduleWork(DriveServiceTunnelState, NULL);
-
-exit:
-    return err;
-}
-
-bool ConnectivityManagerImpl::_IsServiceTunnelConnected(void)
-{
-    return false;
-}
-
-bool ConnectivityManagerImpl::_IsServiceTunnelRestricted(void)
-{
-    return false;
-}
-
-bool ConnectivityManagerImpl::_HaveServiceConnectivityViaTunnel(void)
-{
-    return IsServiceTunnelConnected() && !IsServiceTunnelRestricted();
 }
 
 // ==================== ConnectivityManager Platform Internal Methods ====================
@@ -418,14 +399,11 @@ CHIP_ERROR ConnectivityManagerImpl::_Init()
     mWiFiStationState               = kWiFiStationState_NotConnected;
     mWiFiAPMode                     = kWiFiAPMode_Disabled;
     mWiFiAPState                    = kWiFiAPState_NotActive;
-    mServiceTunnelMode              = kServiceTunnelMode_Enabled;
     mWiFiStationReconnectIntervalMS = CHIP_DEVICE_CONFIG_WIFI_STATION_RECONNECT_INTERVAL;
     mWiFiAPIdleTimeoutMS            = CHIP_DEVICE_CONFIG_WIFI_AP_IDLE_TIMEOUT;
     mFlags                          = 0;
 
     // TODO Initialize the Chip Addressing and Routing Module.
-
-    // TODO Initialize the service tunnel agent.
 
     // Ensure that ESP station mode is enabled.
     err = Internal::ESP32Utils::EnableStationMode();
@@ -485,94 +463,74 @@ void ConnectivityManagerImpl::_OnPlatformEvent(const ChipDeviceEvent * event)
     // Handle ESP system events...
     if (event->Type == DeviceEventType::kESPSystemEvent)
     {
-        switch (event->Platform.ESPSystemEvent.event_id)
+        if (event->Platform.ESPSystemEvent.Base == WIFI_EVENT)
         {
-        case SYSTEM_EVENT_STA_START:
-            ChipLogProgress(DeviceLayer, "SYSTEM_EVENT_STA_START");
-            DriveStationState();
-            break;
-        case SYSTEM_EVENT_STA_CONNECTED:
-            ChipLogProgress(DeviceLayer, "SYSTEM_EVENT_STA_CONNECTED");
-            if (mWiFiStationState == kWiFiStationState_Connecting)
+            switch (event->Platform.ESPSystemEvent.Id)
             {
-                ChangeWiFiStationState(kWiFiStationState_Connecting_Succeeded);
+            case WIFI_EVENT_STA_START:
+                ChipLogProgress(DeviceLayer, "WIFI_EVENT_STA_START");
+                DriveStationState();
+                break;
+            case WIFI_EVENT_STA_CONNECTED:
+                ChipLogProgress(DeviceLayer, "WIFI_EVENT_STA_CONNECTED");
+                if (mWiFiStationState == kWiFiStationState_Connecting)
+                {
+                    ChangeWiFiStationState(kWiFiStationState_Connecting_Succeeded);
+                }
+                DriveStationState();
+                break;
+            case WIFI_EVENT_STA_DISCONNECTED:
+                ChipLogProgress(DeviceLayer, "WIFI_EVENT_STA_DISCONNECTED");
+                if (mWiFiStationState == kWiFiStationState_Connecting)
+                {
+                    ChangeWiFiStationState(kWiFiStationState_Connecting_Failed);
+                }
+                DriveStationState();
+                break;
+            case WIFI_EVENT_STA_STOP:
+                ChipLogProgress(DeviceLayer, "WIFI_EVENT_STA_STOP");
+                DriveStationState();
+                break;
+            case WIFI_EVENT_AP_START:
+                ChipLogProgress(DeviceLayer, "WIFI_EVENT_AP_START");
+                ChangeWiFiAPState(kWiFiAPState_Active);
+                DriveAPState();
+                break;
+            case WIFI_EVENT_AP_STOP:
+                ChipLogProgress(DeviceLayer, "WIFI_EVENT_AP_STOP");
+                ChangeWiFiAPState(kWiFiAPState_NotActive);
+                DriveAPState();
+                break;
+            case WIFI_EVENT_AP_STACONNECTED:
+                ChipLogProgress(DeviceLayer, "WIFI_EVENT_AP_STACONNECTED");
+                MaintainOnDemandWiFiAP();
+                break;
+            default:
+                break;
             }
-            DriveStationState();
-            break;
-        case SYSTEM_EVENT_STA_DISCONNECTED:
-            ChipLogProgress(DeviceLayer, "SYSTEM_EVENT_STA_DISCONNECTED");
-            if (mWiFiStationState == kWiFiStationState_Connecting)
+        }
+
+        if (event->Platform.ESPSystemEvent.Base == IP_EVENT)
+        {
+            switch (event->Platform.ESPSystemEvent.Id)
             {
-                ChangeWiFiStationState(kWiFiStationState_Connecting_Failed);
+            case IP_EVENT_STA_GOT_IP:
+                ChipLogProgress(DeviceLayer, "IP_EVENT_STA_GOT_IP");
+                OnStationIPv4AddressAvailable(event->Platform.ESPSystemEvent.Data.IpGotIp);
+                break;
+            case IP_EVENT_STA_LOST_IP:
+                ChipLogProgress(DeviceLayer, "IP_EVENT_STA_LOST_IP");
+                OnStationIPv4AddressLost();
+                break;
+            case IP_EVENT_GOT_IP6:
+                ChipLogProgress(DeviceLayer, "IP_EVENT_GOT_IP6");
+                OnIPv6AddressAvailable(event->Platform.ESPSystemEvent.Data.IpGotIp6);
+                break;
+            default:
+                break;
             }
-            DriveStationState();
-            break;
-        case SYSTEM_EVENT_STA_STOP:
-            ChipLogProgress(DeviceLayer, "SYSTEM_EVENT_STA_STOP");
-            DriveStationState();
-            break;
-        case SYSTEM_EVENT_STA_GOT_IP:
-            ChipLogProgress(DeviceLayer, "SYSTEM_EVENT_STA_GOT_IP");
-            OnStationIPv4AddressAvailable(event->Platform.ESPSystemEvent.event_info.got_ip);
-            break;
-        case SYSTEM_EVENT_STA_LOST_IP:
-            ChipLogProgress(DeviceLayer, "SYSTEM_EVENT_STA_LOST_IP");
-            OnStationIPv4AddressLost();
-            break;
-        case SYSTEM_EVENT_GOT_IP6:
-            ChipLogProgress(DeviceLayer, "SYSTEM_EVENT_GOT_IP6");
-            OnIPv6AddressAvailable(event->Platform.ESPSystemEvent.event_info.got_ip6);
-            break;
-        case SYSTEM_EVENT_AP_START:
-            ChipLogProgress(DeviceLayer, "SYSTEM_EVENT_AP_START");
-            ChangeWiFiAPState(kWiFiAPState_Active);
-            DriveAPState();
-            break;
-        case SYSTEM_EVENT_AP_STOP:
-            ChipLogProgress(DeviceLayer, "SYSTEM_EVENT_AP_STOP");
-            ChangeWiFiAPState(kWiFiAPState_NotActive);
-            DriveAPState();
-            break;
-        case SYSTEM_EVENT_AP_STACONNECTED:
-            ChipLogProgress(DeviceLayer, "SYSTEM_EVENT_AP_STACONNECTED");
-            MaintainOnDemandWiFiAP();
-            break;
-        default:
-            break;
         }
     }
-
-    // Handle fabric membership changes.
-    else if (event->Type == DeviceEventType::kFabricMembershipChange)
-    {
-        DriveServiceTunnelState();
-    }
-
-    // Handle service provisioning changes.
-    else if (event->Type == DeviceEventType::kServiceProvisioningChange)
-    {
-        DriveServiceTunnelState();
-    }
-
-#if !CHIP_DEVICE_CONFIG_DISABLE_ACCOUNT_PAIRING
-
-    // Handle account pairing changes.
-    else if (event->Type == DeviceEventType::kAccountPairingChange)
-    {
-        // When account pairing successfully completes, if the tunnel to the
-        // service is subject to routing restrictions (imposed because at the time
-        // the tunnel was established the device was not paired to an account)
-        // then force the tunnel to close.  This will result in the tunnel being
-        // re-established, which should lift the service-side restrictions.
-        if (event->AccountPairingChange.IsPairedToAccount && GetFlag(mFlags, kFlag_ServiceTunnelStarted))
-        {
-            ChipLogProgress(DeviceLayer, "Restarting service tunnel to lift routing restrictions");
-            ClearFlag(mFlags, kFlag_ServiceTunnelStarted);
-            DriveServiceTunnelState();
-        }
-    }
-
-#endif // !CHIP_DEVICE_CONFIG_DISABLE_ACCOUNT_PAIRING
 }
 
 void ConnectivityManagerImpl::_OnWiFiScanDone()
@@ -716,10 +674,10 @@ void ConnectivityManagerImpl::OnStationConnected()
     CHIP_ERROR err;
 
     // Assign an IPv6 link local address to the station interface.
-    err = tcpip_adapter_create_ip6_linklocal(TCPIP_ADAPTER_IF_STA);
+    err = esp_netif_create_ip6_linklocal(esp_netif_get_handle_from_ifkey("WIFI_STA_DEF"));
     if (err != ESP_OK)
     {
-        ChipLogError(DeviceLayer, "tcpip_adapter_create_ip6_linklocal(TCPIP_ADAPTER_IF_STA) failed: %s", chip::ErrorStr(err));
+        ChipLogError(DeviceLayer, "esp_netif_create_ip6_linklocal() failed for WIFI_STA_DEF interface: %s", chip::ErrorStr(err));
     }
 
     // TODO Invoke WARM to perform actions that occur when the WiFi station interface comes up.
@@ -756,7 +714,7 @@ void ConnectivityManagerImpl::ChangeWiFiStationState(WiFiStationState newState)
     }
 }
 
-void ConnectivityManagerImpl::DriveStationState(chip::System::Layer * aLayer, void * aAppState, chip::System::Error aError)
+void ConnectivityManagerImpl::DriveStationState(::chip::System::Layer * aLayer, void * aAppState, ::chip::System::Error aError)
 {
     sInstance.DriveStationState();
 }
@@ -881,13 +839,13 @@ void ConnectivityManagerImpl::DriveAPState()
 
     // If AP is active, but the interface doesn't have an IPv6 link-local
     // address, assign one now.
-    if (mWiFiAPState == kWiFiAPState_Active && Internal::ESP32Utils::IsInterfaceUp(TCPIP_ADAPTER_IF_AP) &&
-        !Internal::ESP32Utils::HasIPv6LinkLocalAddress(TCPIP_ADAPTER_IF_AP))
+    if (mWiFiAPState == kWiFiAPState_Active && Internal::ESP32Utils::IsInterfaceUp("WIFI_AP_DEF") &&
+        !Internal::ESP32Utils::HasIPv6LinkLocalAddress("WIFI_AP_DEF"))
     {
-        err = tcpip_adapter_create_ip6_linklocal(TCPIP_ADAPTER_IF_AP);
+        err = esp_netif_create_ip6_linklocal(esp_netif_get_handle_from_ifkey("WIFI_AP_DEF"));
         if (err != ESP_OK)
         {
-            ChipLogError(DeviceLayer, "tcpip_adapter_create_ip6_linklocal(TCPIP_ADAPTER_IF_AP) failed: %s", chip::ErrorStr(err));
+            ChipLogError(DeviceLayer, "esp_netif_create_ip6_linklocal() failed for WIFI_AP_DEF interface: %s", chip::ErrorStr(err));
         }
         SuccessOrExit(err);
     }
@@ -907,10 +865,10 @@ CHIP_ERROR ConnectivityManagerImpl::ConfigureWiFiAP()
 
     memset(&wifiConfig, 0, sizeof(wifiConfig));
 
-    // TODO Pull this from the configuration manager
-    const uint16_t discriminator = 0x0F00;
+    uint16_t discriminator;
+    SuccessOrExit(err = ConfigurationMgr().GetSetupDiscriminator(discriminator));
 
-    snprintf((char *) wifiConfig.ap.ssid, sizeof(wifiConfig.ap.ssid), "%s%03" PRIX16, CHIP_DEVICE_CONFIG_WIFI_AP_SSID_PREFIX,
+    snprintf((char *) wifiConfig.ap.ssid, sizeof(wifiConfig.ap.ssid), "%s%04u", CHIP_DEVICE_CONFIG_WIFI_AP_SSID_PREFIX,
              discriminator);
     wifiConfig.ap.channel         = CHIP_DEVICE_CONFIG_WIFI_AP_CHANNEL;
     wifiConfig.ap.authmode        = WIFI_AUTH_OPEN;
@@ -937,7 +895,7 @@ void ConnectivityManagerImpl::ChangeWiFiAPState(WiFiAPState newState)
     }
 }
 
-void ConnectivityManagerImpl::DriveAPState(chip::System::Layer * aLayer, void * aAppState, chip::System::Error aError)
+void ConnectivityManagerImpl::DriveAPState(::chip::System::Layer * aLayer, void * aAppState, ::chip::System::Error aError)
 {
     sInstance.DriveAPState();
 }
@@ -948,6 +906,7 @@ void ConnectivityManagerImpl::UpdateInternetConnectivityState(void)
     bool haveIPv6Conn = false;
     bool hadIPv4Conn  = GetFlag(mFlags, kFlag_HaveIPv4InternetConnectivity);
     bool hadIPv6Conn  = GetFlag(mFlags, kFlag_HaveIPv6InternetConnectivity);
+    IPAddress addr;
 
     // If the WiFi station is currently in the connected state...
     if (mWiFiStationState == kWiFiStationState_Connected)
@@ -968,6 +927,15 @@ void ConnectivityManagerImpl::UpdateInternetConnectivityState(void)
                 if (!ip4_addr_isany_val(*netif_ip4_addr(netif)) && !ip4_addr_isany_val(*netif_ip4_gw(netif)))
                 {
                     haveIPv4Conn = true;
+
+                    esp_netif_ip_info_t ipInfo;
+                    if (esp_netif_get_ip_info(esp_netif_get_handle_from_ifkey("WIFI_STA_DEF"), &ipInfo) == ESP_OK)
+                    {
+                        char addrStr[INET_ADDRSTRLEN];
+                        // ToDo: change the code to using IPv6 address
+                        esp_ip4addr_ntoa(&ipInfo.ip, addrStr, sizeof(addrStr));
+                        IPAddress::FromString(addrStr, addr);
+                    }
                 }
 
                 // Search among the IPv6 addresses assigned to the interface for a Global Unicast
@@ -1002,6 +970,7 @@ void ConnectivityManagerImpl::UpdateInternetConnectivityState(void)
         event.Type                            = DeviceEventType::kInternetConnectivityChange;
         event.InternetConnectivityChange.IPv4 = GetConnectivityChange(hadIPv4Conn, haveIPv4Conn);
         event.InternetConnectivityChange.IPv6 = GetConnectivityChange(hadIPv6Conn, haveIPv6Conn);
+        addr.ToString(event.InternetConnectivityChange.address, sizeof(event.InternetConnectivityChange.address));
         PlatformMgr().PostEvent(&event);
 
         if (haveIPv4Conn != hadIPv4Conn)
@@ -1013,21 +982,16 @@ void ConnectivityManagerImpl::UpdateInternetConnectivityState(void)
         {
             ChipLogProgress(DeviceLayer, "%s Internet connectivity %s", "IPv6", (haveIPv6Conn) ? "ESTABLISHED" : "LOST");
         }
-
-        DriveServiceTunnelState();
     }
 }
 
-void ConnectivityManagerImpl::OnStationIPv4AddressAvailable(const system_event_sta_got_ip_t & got_ip)
+void ConnectivityManagerImpl::OnStationIPv4AddressAvailable(const ip_event_got_ip_t & got_ip)
 {
 #if CHIP_PROGRESS_LOGGING
     {
-        char ipAddrStr[INET_ADDRSTRLEN], netMaskStr[INET_ADDRSTRLEN], gatewayStr[INET_ADDRSTRLEN];
-        IPAddress::FromIPv4(got_ip.ip_info.ip).ToString(ipAddrStr, sizeof(ipAddrStr));
-        IPAddress::FromIPv4(got_ip.ip_info.netmask).ToString(netMaskStr, sizeof(netMaskStr));
-        IPAddress::FromIPv4(got_ip.ip_info.gw).ToString(gatewayStr, sizeof(gatewayStr));
-        ChipLogProgress(DeviceLayer, "IPv4 address %s on WiFi station interface: %s/%s gateway %s",
-                        (got_ip.ip_changed) ? "changed" : "ready", ipAddrStr, netMaskStr, gatewayStr);
+        ChipLogProgress(DeviceLayer, "IPv4 address %s on WiFi station interface: " IPSTR "/" IPSTR " gateway " IPSTR,
+                        (got_ip.ip_changed) ? "changed" : "ready", IP2STR(&got_ip.ip_info.ip), IP2STR(&got_ip.ip_info.netmask),
+                        IP2STR(&got_ip.ip_info.gw));
     }
 #endif // CHIP_PROGRESS_LOGGING
 
@@ -1045,146 +1009,18 @@ void ConnectivityManagerImpl::OnStationIPv4AddressLost(void)
     UpdateInternetConnectivityState();
 }
 
-void ConnectivityManagerImpl::OnIPv6AddressAvailable(const system_event_got_ip6_t & got_ip)
+void ConnectivityManagerImpl::OnIPv6AddressAvailable(const ip_event_got_ip6_t & got_ip)
 {
 #if CHIP_PROGRESS_LOGGING
     {
-        IPAddress ipAddr = IPAddress::FromIPv6(got_ip.ip6_info.ip);
-        char ipAddrStr[INET6_ADDRSTRLEN];
-        ipAddr.ToString(ipAddrStr, sizeof(ipAddrStr));
-        ChipLogProgress(DeviceLayer, "IPv6 addr available. Ready on %s interface: %s",
-                        Internal::ESP32Utils::InterfaceIdToName(got_ip.if_index), ipAddrStr);
+        ChipLogProgress(DeviceLayer, "IPv6 addr available. Ready on %s interface: " IPV6STR, esp_netif_get_ifkey(got_ip.esp_netif),
+                        IPV62STR(got_ip.ip6_info.ip));
     }
 #endif // CHIP_PROGRESS_LOGGING
 
     RefreshMessageLayer();
 
     UpdateInternetConnectivityState();
-}
-
-void ConnectivityManagerImpl::DriveServiceTunnelState(void)
-{
-    bool startServiceTunnel;
-
-    // Determine if the tunnel to the service should be started.
-    startServiceTunnel = (mServiceTunnelMode == kServiceTunnelMode_Enabled && GetFlag(mFlags, kFlag_HaveIPv4InternetConnectivity));
-
-    // If the tunnel should be started but isn't, or vice versa, ...
-    if (startServiceTunnel != GetFlag(mFlags, kFlag_ServiceTunnelStarted))
-    {
-        // Update the tunnel started state.
-        SetFlag(mFlags, kFlag_ServiceTunnelStarted, startServiceTunnel);
-
-        // Start or stop the tunnel as necessary.
-        if (startServiceTunnel)
-        {
-            ChipLogProgress(DeviceLayer, "Starting service tunnel");
-
-            ChipLogError(DeviceLayer, "Service tunnel unsupported");
-            ClearFlag(mFlags, kFlag_ServiceTunnelStarted);
-        }
-
-        else
-        {
-            ChipLogProgress(DeviceLayer, "Stopping service tunnel");
-        }
-    }
-}
-
-void ConnectivityManagerImpl::DriveServiceTunnelState(chip::System::Layer * aLayer, void * aAppState, chip::System::Error aError)
-{
-    sInstance.DriveServiceTunnelState();
-}
-
-const char * ConnectivityManagerImpl::_WiFiStationModeToStr(WiFiStationMode mode)
-{
-    switch (mode)
-    {
-    case kWiFiStationMode_NotSupported:
-        return "NotSupported";
-    case kWiFiStationMode_ApplicationControlled:
-        return "AppControlled";
-    case kWiFiStationMode_Enabled:
-        return "Enabled";
-    case kWiFiStationMode_Disabled:
-        return "Disabled";
-    default:
-        return "(unknown)";
-    }
-}
-
-const char * ConnectivityManagerImpl::_WiFiAPModeToStr(WiFiAPMode mode)
-{
-    switch (mode)
-    {
-    case kWiFiAPMode_NotSupported:
-        return "NotSupported";
-    case kWiFiAPMode_ApplicationControlled:
-        return "AppControlled";
-    case kWiFiAPMode_Disabled:
-        return "Disabled";
-    case kWiFiAPMode_Enabled:
-        return "Enabled";
-    case kWiFiAPMode_OnDemand:
-        return "OnDemand";
-    case kWiFiAPMode_OnDemand_NoStationProvision:
-        return "OnDemand_NoStationProvision";
-    default:
-        return "(unknown)";
-    }
-}
-
-const char * ConnectivityManagerImpl::_ServiceTunnelModeToStr(ServiceTunnelMode mode)
-{
-    switch (mode)
-    {
-    case kServiceTunnelMode_NotSupported:
-        return "NotSupported";
-    case kServiceTunnelMode_Disabled:
-        return "Disabled";
-    case kServiceTunnelMode_Enabled:
-        return "Enabled";
-    default:
-        return "(unknown)";
-    }
-}
-
-const char * ConnectivityManagerImpl::WiFiStationStateToStr(WiFiStationState state)
-{
-    switch (state)
-    {
-    case kWiFiStationState_NotConnected:
-        return "NotConnected";
-    case kWiFiStationState_Connecting:
-        return "Connecting";
-    case kWiFiStationState_Connecting_Succeeded:
-        return "Connecting_Succeeded";
-    case kWiFiStationState_Connecting_Failed:
-        return "Connecting_Failed";
-    case kWiFiStationState_Connected:
-        return "Connected";
-    case kWiFiStationState_Disconnecting:
-        return "Disconnecting";
-    default:
-        return "(unknown)";
-    }
-}
-
-const char * ConnectivityManagerImpl::WiFiAPStateToStr(WiFiAPState state)
-{
-    switch (state)
-    {
-    case kWiFiAPState_NotActive:
-        return "NotActive";
-    case kWiFiAPState_Activating:
-        return "Activating";
-    case kWiFiAPState_Active:
-        return "Active";
-    case kWiFiAPState_Deactivating:
-        return "Deactivating";
-    default:
-        return "(unknown)";
-    }
 }
 
 void ConnectivityManagerImpl::RefreshMessageLayer(void) {}

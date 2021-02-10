@@ -21,8 +21,7 @@
  *          Definitions for chip BLE service advertisement data.
  */
 
-#ifndef CHIP_BLE_SERVICE_DATA_H
-#define CHIP_BLE_SERVICE_DATA_H
+#pragma once
 
 #include <core/CHIPEncoding.h>
 
@@ -46,11 +45,7 @@ enum chipBLEServiceDataType
  */
 struct ChipBLEDeviceIdentificationInfo
 {
-    enum
-    {
-        kMajorVersion = 0,
-        kMinorVersion = 1,
-    };
+    constexpr static uint16_t kDiscriminatorMask = 0xfff;
 
     enum
     {
@@ -58,38 +53,34 @@ struct ChipBLEDeviceIdentificationInfo
         kPairingStatus_Paired   = 1,
     };
 
-    uint8_t BlockLen;
-    uint8_t BlockType;
-    uint8_t MajorVersion;
-    uint8_t MinorVersion;
+    uint8_t PairingStatus;
+    uint8_t DeviceDiscriminator[2];
     uint8_t DeviceVendorId[2];
     uint8_t DeviceProductId[2];
-    uint8_t DeviceId[8];
-    uint8_t PairingStatus;
 
-    void Init()
-    {
-        memset(this, 0, sizeof(*this));
-        BlockLen     = sizeof(*this) - sizeof(BlockLen); // size of all fields EXCEPT BlockLen
-        BlockType    = kchipBLEServiceDataType_DeviceIdentificationInfo;
-        MajorVersion = kMajorVersion;
-        MinorVersion = kMinorVersion;
-    }
+    void Init() { memset(this, 0, sizeof(*this)); }
 
-    uint16_t GetVendorId(void) { return chip::Encoding::LittleEndian::Get16(DeviceVendorId); }
+    uint16_t GetVendorId() const { return chip::Encoding::LittleEndian::Get16(DeviceVendorId); }
 
     void SetVendorId(uint16_t vendorId) { chip::Encoding::LittleEndian::Put16(DeviceVendorId, vendorId); }
 
-    uint16_t GetProductId(void) { return chip::Encoding::LittleEndian::Get16(DeviceProductId); }
+    uint16_t GetProductId() const { return chip::Encoding::LittleEndian::Get16(DeviceProductId); }
 
     void SetProductId(uint16_t productId) { chip::Encoding::LittleEndian::Put16(DeviceProductId, productId); }
 
-    uint64_t GetDeviceId(void) { return chip::Encoding::LittleEndian::Get64(DeviceId); }
+    uint16_t GetDeviceDiscriminator() const
+    {
+        return chip::Encoding::LittleEndian::Get16(DeviceDiscriminator) & kDiscriminatorMask;
+    }
 
-    void SetDeviceId(uint64_t deviceId) { chip::Encoding::LittleEndian::Put64(DeviceId, deviceId); }
+    void SetDeviceDiscriminator(uint16_t deviceDiscriminator)
+    {
+        // Discriminator is 12-bit long, so don't overwrite bits 12th through 15th
+        deviceDiscriminator &= kDiscriminatorMask;
+        deviceDiscriminator |= static_cast<uint16_t>(DeviceDiscriminator[1] << 8u & ~kDiscriminatorMask);
+        chip::Encoding::LittleEndian::Put16(DeviceDiscriminator, deviceDiscriminator);
+    }
 } __attribute__((packed));
 
 } /* namespace Ble */
 } /* namespace chip */
-
-#endif // CHIP_BLE_SERVICE_DATA_H

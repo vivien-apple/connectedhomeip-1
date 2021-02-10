@@ -42,14 +42,14 @@ namespace Shell {
 
 Shell Shell::theShellRoot;
 
-int shell_line_read(char * buffer, size_t max)
+intptr_t shell_line_read(char * buffer, size_t max)
 {
-    int read     = 0;
+    ssize_t read = 0;
     bool done    = false;
     char * inptr = buffer;
 
     // Read in characters until we get a new line or we hit our max size.
-    while (((inptr - buffer) < (int) max) && !done)
+    while (((inptr - buffer) < static_cast<int>(max)) && !done)
     {
         if (read == 0)
         {
@@ -80,7 +80,7 @@ int shell_line_read(char * buffer, size_t max)
                 }
                 break;
             default:
-                if (isprint((int) *inptr))
+                if (isprint(static_cast<int>(*inptr)) || *inptr == '\t')
                 {
                     streamer_printf(streamer_get(), "%c", *inptr);
                 }
@@ -96,7 +96,7 @@ int shell_line_read(char * buffer, size_t max)
         }
     }
 
-    return (inptr - buffer);
+    return inptr - buffer;
 }
 
 void Shell::ForEachCommand(shell_command_iterator_t * on_command, void * arg)
@@ -147,11 +147,26 @@ int Shell::ExecCommand(int argc, char * argv[])
     return retval;
 }
 
+static bool IsSeparator(char aChar)
+{
+    return (aChar == ' ') || (aChar == '\t') || (aChar == '\r') || (aChar == '\n');
+}
+
+static bool IsEscape(char aChar)
+{
+    return (aChar == '\\');
+}
+
+static bool IsEscapable(char aChar)
+{
+    return IsSeparator(aChar) || IsEscape(aChar);
+}
+
 int Shell::TokenizeLine(char * buffer, char ** tokens, int max_tokens)
 {
-    int len    = strlen(buffer);
+    size_t len = strlen(buffer);
     int cursor = 0;
-    int i      = 0;
+    size_t i   = 0;
 
     // Strip leading spaces
     while (buffer[i] && buffer[i] == ' ')
@@ -166,17 +181,22 @@ int Shell::TokenizeLine(char * buffer, char ** tokens, int max_tokens)
 
     for (; i < len && cursor < max_tokens; i++)
     {
-        if (buffer[i] == ' ')
+        if (IsEscape(buffer[i]) && IsEscapable(buffer[i + 1]))
+        {
+            // include the null terminator: strlen(cmd) = strlen(cmd + 1) + 1
+            memmove(&buffer[i], &buffer[i + 1], strlen(&buffer[i]));
+        }
+        else if (IsSeparator(buffer[i]))
         {
             buffer[i] = 0;
-            if (buffer[i + 1] != ' ')
+            if (!IsSeparator(buffer[i + 1]))
             {
                 tokens[cursor++] = &buffer[i + 1];
             }
         }
     }
 
-    tokens[cursor] = 0;
+    tokens[cursor] = nullptr;
 
 exit:
     return cursor;
@@ -189,12 +209,9 @@ void Shell::TaskLoop(void * arg)
     char * argv[CHIP_SHELL_MAX_TOKENS];
     char line[CHIP_SHELL_MAX_LINE_SIZE];
 
-    // Initialize the default streamer that was linked.
-    streamer_init(streamer_get());
-
     theShellRoot.RegisterDefaultCommands();
 
-    while (1)
+    while (true)
     {
         streamer_printf(streamer_get(), CHIP_SHELL_PROMPT);
 

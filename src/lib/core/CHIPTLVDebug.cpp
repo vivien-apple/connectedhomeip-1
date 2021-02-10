@@ -60,7 +60,7 @@ static void DumpHandler(DumpWriter aWriter, const char * aIndent, const TLVReade
     const TLVType type     = aReader.GetType();
     const uint64_t tag     = aReader.GetTag();
     const uint32_t len     = aReader.GetLength();
-    const uint8_t * strbuf = NULL;
+    const uint8_t * strbuf = nullptr;
     CHIP_ERROR err         = CHIP_NO_ERROR;
     TLVReader temp;
     TLVTagControl tagControl;
@@ -82,7 +82,7 @@ static void DumpHandler(DumpWriter aWriter, const char * aIndent, const TLVReade
     }
     else if (IsContextTag(tag))
     {
-        aWriter("tag[%s]: 0x%x, ", DecodeTagControl(tagControl), (uint32_t) ContextTag(tag));
+        aWriter("tag[%s]: 0x%x, ", DecodeTagControl(tagControl), TagNumFromTag(tag));
     }
     else if (IsSpecialTag(tag))
     {
@@ -185,40 +185,40 @@ const char * DecodeTagControl(const TLVTagControl aTagControl)
     switch (aTagControl)
     {
 
-    case kTLVTagControl_Anonymous:
+    case TLVTagControl::Anonymous:
         retval = "Anonymous";
         break;
 
-    case kTLVTagControl_ContextSpecific:
+    case TLVTagControl::ContextSpecific:
         retval = "Context Specific";
         break;
 
-    case kTLVTagControl_CommonProfile_2Bytes:
+    case TLVTagControl::CommonProfile_2Bytes:
         retval = "Common Profile (2 Bytes)";
         break;
 
-    case kTLVTagControl_CommonProfile_4Bytes:
+    case TLVTagControl::CommonProfile_4Bytes:
         retval = "Common Profile (4 Bytes)";
         break;
 
-    case kTLVTagControl_ImplicitProfile_2Bytes:
+    case TLVTagControl::ImplicitProfile_2Bytes:
         retval = "Implicit Profile (2 Bytes)";
         break;
 
-    case kTLVTagControl_ImplicitProfile_4Bytes:
+    case TLVTagControl::ImplicitProfile_4Bytes:
         retval = "Implicit Profile (4 Bytes)";
         break;
 
-    case kTLVTagControl_FullyQualified_6Bytes:
+    case TLVTagControl::FullyQualified_6Bytes:
         retval = "Fully Qualified (6 Bytes)";
         break;
 
-    case kTLVTagControl_FullyQualified_8Bytes:
+    case TLVTagControl::FullyQualified_8Bytes:
         retval = "Fully Qualified (8 Bytes)";
         break;
 
     default:
-        retval = NULL;
+        retval = nullptr;
         break;
     }
 
@@ -282,12 +282,12 @@ const char * DecodeType(const TLVType aType)
         retval = "Array";
         break;
 
-    case kTLVType_Path:
+    case kTLVType_List:
         retval = "Path";
         break;
 
     default:
-        retval = NULL;
+        retval = nullptr;
         break;
     }
 
@@ -336,11 +336,11 @@ CHIP_ERROR DumpHandler(const TLVReader & aReader, size_t aDepth, void * aContext
     CHIP_ERROR retval          = CHIP_NO_ERROR;
     DumpContext * context;
 
-    VerifyOrExit(aContext != NULL, retval = CHIP_ERROR_INVALID_ARGUMENT);
+    VerifyOrExit(aContext != nullptr, retval = CHIP_ERROR_INVALID_ARGUMENT);
 
     context = static_cast<DumpContext *>(aContext);
 
-    VerifyOrExit(context->mWriter != NULL, retval = CHIP_ERROR_INVALID_ARGUMENT);
+    VerifyOrExit(context->mWriter != nullptr, retval = CHIP_ERROR_INVALID_ARGUMENT);
 
     DumpHandler(context->mWriter, indent, aReader, aDepth);
 
@@ -362,7 +362,7 @@ exit:
  */
 CHIP_ERROR Dump(const TLVReader & aReader, DumpWriter aWriter)
 {
-    void * context          = NULL;
+    void * context          = nullptr;
     DumpContext dumpContext = { aWriter, context };
     CHIP_ERROR retval;
 

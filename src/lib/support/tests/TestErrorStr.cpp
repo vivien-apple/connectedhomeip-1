@@ -15,15 +15,14 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-
-#include "TestSupport.h"
-
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <core/CHIPCore.h>
 
 #include <support/ErrorStr.h>
+#include <support/UnitTestRegistration.h>
 
 using namespace chip;
 
@@ -53,11 +52,11 @@ static bool trueFormat(char * buf, uint16_t bufSize, int32_t err)
     return true; // means I handled it
 }
 
-static bool testRegisterDeregisterErrorFormatter(void)
+static bool testRegisterDeregisterErrorFormatter()
 {
-    static ErrorFormatter falseFormatter  = { falseFormat, NULL };
-    static ErrorFormatter falseFormatter2 = { falseFormat2, NULL };
-    static ErrorFormatter trueFormatter   = { trueFormat, NULL };
+    static ErrorFormatter falseFormatter  = { falseFormat, nullptr };
+    static ErrorFormatter falseFormatter2 = { falseFormat2, nullptr };
+    static ErrorFormatter trueFormatter   = { trueFormat, nullptr };
 
     // assume success
     bool ret = true;
@@ -143,19 +142,19 @@ static bool testFormatErr()
     ret &= CHECK_EQ_STR(buf, "subsys Error 1 (0x00000001): desc");
 
     // skip desc
-    FormatError(buf, kBufSize, subsys, 1, NULL);
+    FormatError(buf, kBufSize, subsys, 1, nullptr);
     ret &= CHECK_EQ_STR(buf, "subsys Error 1 (0x00000001)");
 
     // skip subsys
-    FormatError(buf, kBufSize, NULL, 1, desc);
+    FormatError(buf, kBufSize, nullptr, 1, desc);
     ret &= CHECK_EQ_STR(buf, "Error 1 (0x00000001): desc");
 
     // skip both
-    FormatError(buf, kBufSize, NULL, 1, NULL);
+    FormatError(buf, kBufSize, nullptr, 1, nullptr);
     ret &= CHECK_EQ_STR(buf, "Error 1 (0x00000001)");
 
     // negative
-    FormatError(buf, kBufSize, NULL, -1, NULL);
+    FormatError(buf, kBufSize, nullptr, -1, nullptr);
     ret &= CHECK_EQ_STR(buf, "Error -1 (0xFFFFFFFF)");
 #endif
 
@@ -174,3 +173,5 @@ int TestErrorStr(void)
 
     return EXIT_SUCCESS;
 }
+
+CHIP_REGISTER_TEST_SUITE(TestErrorStr);

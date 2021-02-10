@@ -21,8 +21,7 @@
  *      Header file for the fault-injection utilities for Inet.
  */
 
-#ifndef INET_FAULT_INJECTION_H_
-#define INET_FAULT_INJECTION_H_
+#pragma once
 
 #include <inet/InetConfig.h>
 
@@ -49,11 +48,11 @@ typedef enum
 {
     kFault_DNSResolverNew,  /**< Fail the allocation of a DNSResolver object */
     kFault_Send,            /**< Fail sending a message over TCP or UDP */
-    kFault_SendNonCritical, /**< Fail sending a UDP message returning an error considered non-critical by WRMP */
+    kFault_SendNonCritical, /**< Fail sending a UDP message returning an error considered non-critical by RMP */
     kFault_NumItems,
 } InetFaultInjectionID;
 
-DLL_EXPORT nl::FaultInjection::Manager & GetManager(void);
+DLL_EXPORT nl::FaultInjection::Manager & GetManager();
 
 } // namespace FaultInjection
 } // namespace Inet
@@ -73,5 +72,3 @@ DLL_EXPORT nl::FaultInjection::Manager & GetManager(void);
 #define INET_FAULT_INJECT(aFaultID, aStatement)
 
 #endif // INET_CONFIG_TEST
-
-#endif // INET_FAULT_INJECTION_H_

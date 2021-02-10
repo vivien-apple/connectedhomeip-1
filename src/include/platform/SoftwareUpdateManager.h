@@ -21,8 +21,7 @@
  *          Defines the public interface for the Device Layer SoftwareUpdateManager object.
  */
 
-#ifndef SOFTWARE_UPDATE_MANAGER_H
-#define SOFTWARE_UPDATE_MANAGER_H
+#pragma once
 
 #if CHIP_DEVICE_CONFIG_ENABLE_SOFTWARE_UPDATE_MANAGER
 
@@ -291,18 +290,18 @@ public:
     typedef void (*EventCallback)(void * apAppState, EventType aEvent, const InEventParam & aInParam, OutEventParam & aOutParam);
     typedef void (*RetryPolicyCallback)(void * aAppState, RetryParam & aRetryParam, uint32_t & aOutIntervalMsec);
 
-    CHIP_ERROR Abort(void);
-    CHIP_ERROR CheckNow(void);
+    CHIP_ERROR Abort();
+    CHIP_ERROR CheckNow();
     CHIP_ERROR ImageInstallComplete(CHIP_ERROR aError);
     CHIP_ERROR PrepareImageStorageComplete(CHIP_ERROR aError);
-    CHIP_ERROR SetEventCallback(void * const aAppState, const EventCallback aEventCallback);
+    CHIP_ERROR SetEventCallback(void * aAppState, EventCallback aEventCallback);
     CHIP_ERROR SetQueryIntervalWindow(uint32_t aMinWaitTimeMs, uint32_t aMaxWaitTimeMs);
 
-    bool IsInProgress(void);
+    bool IsInProgress();
 
-    void SetRetryPolicyCallback(const RetryPolicyCallback aRetryPolicyCallback);
+    void SetRetryPolicyCallback(RetryPolicyCallback aRetryPolicyCallback);
 
-    State GetState(void);
+    State GetState();
 
     static void DefaultEventHandler(void * apAppState, EventType aEvent, const InEventParam & aInParam, OutEventParam & aOutParam);
 
@@ -313,7 +312,7 @@ private:
     template <class>
     friend class Internal::GenericPlatformManagerImpl;
 
-    CHIP_ERROR Init(void);
+    CHIP_ERROR Init();
 
 protected:
     // Construction/destruction limited to subclasses.
@@ -332,7 +331,7 @@ protected:
  * chip application should use this to access features of the SoftwareUpdateManager object
  * that are common to all platforms.
  */
-extern SoftwareUpdateManager & SoftwareUpdateMgr(void);
+extern SoftwareUpdateManager & SoftwareUpdateMgr();
 
 /**
  * Returns the platform-specific implementation of the SoftwareUpdateManager singleton object.
@@ -340,7 +339,7 @@ extern SoftwareUpdateManager & SoftwareUpdateMgr(void);
  * chip applications can use this to gain access to features of the SoftwareUpdateManager
  * that are specific to the selected platform.
  */
-extern SoftwareUpdateManagerImpl & SoftwareUpdateMgrImpl(void);
+extern SoftwareUpdateManagerImpl & SoftwareUpdateMgrImpl();
 
 } // namespace DeviceLayer
 } // namespace chip
@@ -362,7 +361,7 @@ using namespace chip::TLV;
 
 union SoftwareUpdateManager::InEventParam
 {
-    void Clear(void) { memset(this, 0, sizeof(*this)); }
+    void Clear() { memset(this, 0, sizeof(*this)); }
 
     SoftwareUpdateManager * Source;
     struct
@@ -414,7 +413,7 @@ union SoftwareUpdateManager::InEventParam
 
 union SoftwareUpdateManager::OutEventParam
 {
-    void Clear(void) { memset(this, 0, sizeof(*this)); }
+    void Clear() { memset(this, 0, sizeof(*this)); }
 
     bool DefaultHandlerCalled;
     struct
@@ -450,12 +449,12 @@ union SoftwareUpdateManager::OutEventParam
     } ComputeImageIntegrity;
 };
 
-inline CHIP_ERROR SoftwareUpdateManager::Init(void)
+inline CHIP_ERROR SoftwareUpdateManager::Init()
 {
     return static_cast<ImplClass *>(this)->_Init();
 }
 
-inline CHIP_ERROR SoftwareUpdateManager::CheckNow(void)
+inline CHIP_ERROR SoftwareUpdateManager::CheckNow()
 {
     return static_cast<ImplClass *>(this)->_CheckNow();
 }
@@ -470,17 +469,17 @@ inline CHIP_ERROR SoftwareUpdateManager::PrepareImageStorageComplete(CHIP_ERROR 
     return static_cast<ImplClass *>(this)->_PrepareImageStorageComplete(aError);
 }
 
-inline SoftwareUpdateManager::State SoftwareUpdateManager::GetState(void)
+inline SoftwareUpdateManager::State SoftwareUpdateManager::GetState()
 {
     return static_cast<ImplClass *>(this)->_GetState();
 }
 
-inline CHIP_ERROR SoftwareUpdateManager::Abort(void)
+inline CHIP_ERROR SoftwareUpdateManager::Abort()
 {
     return static_cast<ImplClass *>(this)->_Abort();
 }
 
-inline bool SoftwareUpdateManager::IsInProgress(void)
+inline bool SoftwareUpdateManager::IsInProgress()
 {
     return static_cast<ImplClass *>(this)->_IsInProgress();
 }
@@ -510,4 +509,3 @@ inline void SoftwareUpdateManager::DefaultEventHandler(void * apAppState, EventT
 } // namespace chip
 
 #endif // CHIP_DEVICE_CONFIG_ENABLE_SOFTWARE_UPDATE_MANAGER
-#endif // SOFTWARE_UPDATE_MANAGER_H

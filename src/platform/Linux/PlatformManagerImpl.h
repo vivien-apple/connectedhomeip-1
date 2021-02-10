@@ -21,10 +21,14 @@
  *          Provides an implementation of the PlatformManager object.
  */
 
-#ifndef PLATFORM_MANAGER_IMPL_H
-#define PLATFORM_MANAGER_IMPL_H
+#pragma once
 
+#include <memory>
 #include <platform/internal/GenericPlatformManagerImpl_POSIX.h>
+
+#if CHIP_WITH_GIO
+#include <gio/gio.h>
+#endif
 
 namespace chip {
 namespace DeviceLayer {
@@ -40,25 +44,37 @@ class PlatformManagerImpl final : public PlatformManager, public Internal::Gener
 
     // Allow the generic implementation base class to call helper methods on
     // this class.
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
     friend Internal::GenericPlatformManagerImpl_POSIX<PlatformManagerImpl>;
+#endif
 
 public:
     // ===== Platform-specific members that may be accessed directly by the application.
-
-    /* none so far */
+#if CHIP_WITH_GIO
+    GDBusConnection * GetGDBusConnection();
+#endif
 
 private:
     // ===== Methods that implement the PlatformManager abstract interface.
 
-    CHIP_ERROR _InitChipStack(void);
+    CHIP_ERROR _InitChipStack();
 
     // ===== Members for internal use by the following friends.
 
-    friend PlatformManager & PlatformMgr(void);
-    friend PlatformManagerImpl & PlatformMgrImpl(void);
+    friend PlatformManager & PlatformMgr();
+    friend PlatformManagerImpl & PlatformMgrImpl();
     friend class Internal::BLEManagerImpl;
 
     static PlatformManagerImpl sInstance;
+
+#if CHIP_WITH_GIO
+    struct GDBusConnectionDeleter
+    {
+        void operator()(GDBusConnection * conn) { g_object_unref(conn); }
+    };
+    using UniqueGDBusConnection = std::unique_ptr<GDBusConnection, GDBusConnectionDeleter>;
+    UniqueGDBusConnection mpGDBusConnection;
+#endif
 };
 
 /**
@@ -67,7 +83,7 @@ private:
  * chip applications should use this to access features of the PlatformManager object
  * that are common to all platforms.
  */
-inline PlatformManager & PlatformMgr(void)
+inline PlatformManager & PlatformMgr()
 {
     return PlatformManagerImpl::sInstance;
 }
@@ -78,12 +94,10 @@ inline PlatformManager & PlatformMgr(void)
  * chip applications can use this to gain access to features of the PlatformManager
  * that are specific to the ESP32 platform.
  */
-inline PlatformManagerImpl & PlatformMgrImpl(void)
+inline PlatformManagerImpl & PlatformMgrImpl()
 {
     return PlatformManagerImpl::sInstance;
 }
 
 } // namespace DeviceLayer
 } // namespace chip
-
-#endif // PLATFORM_MANAGER_IMPL_H

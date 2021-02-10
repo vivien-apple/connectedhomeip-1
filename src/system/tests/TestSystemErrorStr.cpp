@@ -32,8 +32,6 @@
 #define __STDC_LIMIT_MACROS
 #endif
 
-#include "TestSystemLayer.h"
-
 #include <inttypes.h>
 #include <stdint.h>
 #include <string.h>
@@ -41,7 +39,7 @@
 #include <inet/InetError.h>
 #include <support/CodeUtils.h>
 #include <support/ErrorStr.h>
-#include <support/TestUtils.h>
+#include <support/UnitTestRegistration.h>
 
 #include <nlunit-test.h>
 
@@ -63,8 +61,6 @@ static int32_t sContext[] =
 };
 // clang-format on
 
-static const size_t kTestElements = sizeof(sContext) / sizeof(sContext[0]);
-
 static void CheckSystemErrorStr(nlTestSuite * inSuite, void * inContext)
 {
     // Register the layer error formatter
@@ -72,20 +68,19 @@ static void CheckSystemErrorStr(nlTestSuite * inSuite, void * inContext)
     System::RegisterLayerErrorFormatter();
 
     // For each defined error...
-    for (size_t i = 0; i < kTestElements; i++)
+    for (int err : sContext)
     {
-        int32_t err         = sContext[i];
         const char * errStr = ErrorStr(err);
         char expectedText[9];
 
         // Assert that the error string contains the error number in hex.
         snprintf(expectedText, sizeof(expectedText), "%08" PRIX32, err);
-        NL_TEST_ASSERT(inSuite, (strstr(errStr, expectedText) != NULL));
+        NL_TEST_ASSERT(inSuite, (strstr(errStr, expectedText) != nullptr));
 
 #if !CHIP_CONFIG_SHORT_ERROR_STR
         // Assert that the error string contains a description, which is signaled
         // by a presence of a colon proceeding the description.
-        NL_TEST_ASSERT(inSuite, (strchr(errStr, ':') != NULL));
+        NL_TEST_ASSERT(inSuite, (strchr(errStr, ':') != nullptr));
 #endif // !CHIP_CONFIG_SHORT_ERROR_STR
     }
 }
@@ -110,8 +105,8 @@ int TestSystemErrorStr(void)
 	{
         "System-Error-Strings",
         &sTests[0],
-        NULL,
-        NULL
+        nullptr,
+        nullptr
     };
     // clang-format on
 
@@ -121,7 +116,4 @@ int TestSystemErrorStr(void)
     return (nlTestRunnerStats(&theSuite));
 }
 
-static void __attribute__((constructor)) TestSystemErrorStrCtor(void)
-{
-    VerifyOrDie(RegisterUnitTests(&TestSystemErrorStr) == CHIP_NO_ERROR);
-}
+CHIP_REGISTER_TEST_SUITE(TestSystemErrorStr)

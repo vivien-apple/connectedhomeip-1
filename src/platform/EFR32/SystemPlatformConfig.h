@@ -23,8 +23,7 @@
  *
  */
 
-#ifndef SYSTEM_PLATFORM_CONFIG_H
-#define SYSTEM_PLATFORM_CONFIG_H
+#pragma once
 
 #include <stdint.h>
 
@@ -50,12 +49,10 @@ struct ChipDeviceEvent;
 #define CHIP_SYSTEM_CONFIG_ERROR_MAX 7000999
 #define _CHIP_SYSTEM_CONFIG_ERROR(e) (CHIP_SYSTEM_CONFIG_ERROR_MIN + (e))
 #define CHIP_SYSTEM_LWIP_ERROR_MIN 3000000
-#define CHIP_SYSTEM_LWIP_ERROR_MAX 3000999
+#define CHIP_SYSTEM_LWIP_ERROR_MAX 3000128
 
 // ========== Platform-specific Configuration Overrides =========
 
 #ifndef CHIP_SYSTEM_CONFIG_NUM_TIMERS
 #define CHIP_SYSTEM_CONFIG_NUM_TIMERS 16
 #endif // CHIP_SYSTEM_CONFIG_NUM_TIMERS
-
-#endif // SYSTEM_PLATFORM_CONFIG_H

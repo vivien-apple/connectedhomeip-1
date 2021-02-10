@@ -37,26 +37,9 @@ static int32_t sFault_FuzzExchangeHeader_Arguments[1];
 static class nl::FaultInjection::Manager sChipFaultInMgr;
 static const nl::FaultInjection::Name sManagerName  = "chip";
 static const nl::FaultInjection::Name sFaultNames[] = {
-    "AllocExchangeContext",
-    "DropIncomingUDPMsg",
-    "DropOutgoingUDPMsg",
-    "AllocBinding",
-    "SendAlarm",
-    "HandleAlarm",
-    "FuzzExchangeHeaderTx",
-    "BDXBadBlockCounter",
-    "BDXAllocTransfer",
-#if CHIP_CONFIG_ENABLE_SERVICE_DIRECTORY
-    "SMConnectRequestNew",
-    "SMLookup",
-    "SMCacheReplaceEntryError",
-#endif // CHIP_CONFIG_ENABLE_SERVICE_DIRECTORY
-    "CASEKeyConfirm",
-    "SecMgrBusy",
-#if CHIP_CONFIG_ENABLE_TUNNELING
-    "TunnelQueueFull",
-    "TunnelPacketDropByPolicy",
-#endif // CHIP_CONFIG_ENABLE_TUNNELING
+    "AllocExchangeContext", "DropIncomingUDPMsg",   "DropOutgoingUDPMsg", "AllocBinding", "SendAlarm",
+    "HandleAlarm",          "FuzzExchangeHeaderTx", "RMPDoubleTx",        "RMPSendError", "BDXBadBlockCounter",
+    "BDXAllocTransfer",     "CASEKeyConfirm",       "SecMgrBusy",
 #if CONFIG_NETWORK_LAYER_BLE
     "CHIPOBLESend",
 #endif // CONFIG_NETWORK_LAYER_BLE
@@ -65,7 +48,7 @@ static const nl::FaultInjection::Name sFaultNames[] = {
 /**
  * Get the singleton FaultInjection::Manager for Inet faults
  */
-nl::FaultInjection::Manager & GetManager(void)
+nl::FaultInjection::Manager & GetManager()
 {
     if (0 == sChipFaultInMgr.GetNumFaults())
     {
@@ -101,8 +84,8 @@ DLL_EXPORT void FuzzExchangeHeader(uint8_t * p, int32_t arg)
     size_t offsetIndex                                         = 0;
     size_t valueIndex                                          = 0;
     size_t numOffsets                                          = sizeof(offsets) / sizeof(offsets[0]);
-    offsetIndex                                                = arg % (numOffsets);
-    valueIndex                                                 = (arg / numOffsets) % CHIP_FAULT_INJECTION_NUM_FUZZ_VALUES;
+    offsetIndex                                                = static_cast<uint32_t>(arg) % (numOffsets);
+    valueIndex = (static_cast<uint32_t>(arg) / numOffsets) % CHIP_FAULT_INJECTION_NUM_FUZZ_VALUES;
     p[offsetIndex] ^= values[valueIndex];
 }
 

@@ -24,8 +24,7 @@
  *
  */
 
-#ifndef CHIP_VENDOR_IDENTIFIERS_HPP
-#define CHIP_VENDOR_IDENTIFIERS_HPP
+#pragma once
 
 namespace chip {
 
@@ -36,9 +35,8 @@ namespace chip {
 enum ChipVendorId
 {
     kChipVendor_Common       = 0x0000,
+    kChipVendor_NestLabs     = 0x235A,
     kChipVendor_NotSpecified = 0xFFFF
 };
 
-}; // namespace chip
-
-#endif // CHIP_VENDOR_IDENTIFIERS_HPP
+} // namespace chip

@@ -46,7 +46,7 @@ using namespace chip::ArgParser;
 
 std::map<std::string, std::string> sPersistentStore;
 
-FILE * sPersistentStoreFile = NULL;
+FILE * sPersistentStoreFile = nullptr;
 
 namespace chip {
 namespace Platform {
@@ -67,22 +67,22 @@ static CHIP_ERROR GetCounterValueFromFile(const char * aKey, uint32_t & aValue)
 
     rewind(sPersistentStoreFile);
 
-    while (fgets(key, sizeof(key), sPersistentStoreFile) != NULL)
+    while (fgets(key, sizeof(key), sPersistentStoreFile) != nullptr)
     {
         RemoveEndOfLineSymbol(key);
 
         if (strcmp(key, aKey) == 0)
         {
-            if (fgets(value, sizeof(value), sPersistentStoreFile) == NULL)
+            if (fgets(value, sizeof(value), sPersistentStoreFile) == nullptr)
             {
-                err = CHIP_ERROR_PERSISTED_STORAGE_FAIL;
+                err = CHIP_ERROR_PERSISTED_STORAGE_FAILED;
             }
             else
             {
                 RemoveEndOfLineSymbol(value);
 
                 if (!ParseInt(value, aValue, 0))
-                    err = CHIP_ERROR_PERSISTED_STORAGE_FAIL;
+                    err = CHIP_ERROR_PERSISTED_STORAGE_FAILED;
             }
 
             ExitNow();
@@ -107,7 +107,7 @@ static CHIP_ERROR SaveCounterValueToFile(const char * aKey, uint32_t aValue)
     rewind(sPersistentStoreFile);
 
     // Find the stored counter value location in the file.
-    while (fgets(key, sizeof(key), sPersistentStoreFile) != NULL)
+    while (fgets(key, sizeof(key), sPersistentStoreFile) != nullptr)
     {
         RemoveEndOfLineSymbol(key);
 
@@ -115,7 +115,7 @@ static CHIP_ERROR SaveCounterValueToFile(const char * aKey, uint32_t aValue)
         if (strcmp(key, aKey) == 0)
         {
             res = fputs(value, sPersistentStoreFile);
-            VerifyOrExit(res != EOF, err = CHIP_ERROR_PERSISTED_STORAGE_FAIL);
+            VerifyOrExit(res != EOF, err = CHIP_ERROR_PERSISTED_STORAGE_FAILED);
 
             ExitNow();
         }
@@ -124,13 +124,13 @@ static CHIP_ERROR SaveCounterValueToFile(const char * aKey, uint32_t aValue)
     // If value not found in the file then write the counter key and
     // the counter value to the end of the file.
     res = fputs(aKey, sPersistentStoreFile);
-    VerifyOrExit(res != EOF, err = CHIP_ERROR_PERSISTED_STORAGE_FAIL);
+    VerifyOrExit(res != EOF, err = CHIP_ERROR_PERSISTED_STORAGE_FAILED);
 
     res = fputs("\n", sPersistentStoreFile);
-    VerifyOrExit(res != EOF, err = CHIP_ERROR_PERSISTED_STORAGE_FAIL);
+    VerifyOrExit(res != EOF, err = CHIP_ERROR_PERSISTED_STORAGE_FAILED);
 
     res = fputs(value, sPersistentStoreFile);
-    VerifyOrExit(res != EOF, err = CHIP_ERROR_PERSISTED_STORAGE_FAIL);
+    VerifyOrExit(res != EOF, err = CHIP_ERROR_PERSISTED_STORAGE_FAILED);
 
 exit:
     fflush(sPersistentStoreFile);
@@ -142,7 +142,7 @@ CHIP_ERROR Read(const char * aKey, uint32_t & aValue)
     CHIP_ERROR err = CHIP_NO_ERROR;
     std::map<std::string, std::string>::iterator it;
 
-    VerifyOrExit(aKey != NULL, err = CHIP_ERROR_INVALID_ARGUMENT);
+    VerifyOrExit(aKey != nullptr, err = CHIP_ERROR_INVALID_ARGUMENT);
     VerifyOrExit(strlen(aKey) <= CHIP_CONFIG_PERSISTED_STORAGE_MAX_KEY_LENGTH, err = CHIP_ERROR_INVALID_STRING_LENGTH);
 
     if (sPersistentStoreFile)
@@ -154,8 +154,9 @@ CHIP_ERROR Read(const char * aKey, uint32_t & aValue)
         it = sPersistentStore.find(aKey);
         VerifyOrExit(it != sPersistentStore.end(), err = CHIP_ERROR_PERSISTED_STORAGE_VALUE_NOT_FOUND);
 
-        size_t aValueLength = Base64Decode(it->second.c_str(), strlen(it->second.c_str()), (uint8_t *) &aValue);
-        VerifyOrExit(aValueLength == sizeof(uint32_t), err = CHIP_ERROR_PERSISTED_STORAGE_FAIL);
+        size_t aValueLength =
+            Base64Decode(it->second.c_str(), static_cast<uint16_t>(it->second.length()), reinterpret_cast<uint8_t *>(&aValue));
+        VerifyOrExit(aValueLength == sizeof(uint32_t), err = CHIP_ERROR_PERSISTED_STORAGE_FAILED);
     }
 
 exit:
@@ -166,7 +167,7 @@ CHIP_ERROR Write(const char * aKey, uint32_t aValue)
 {
     CHIP_ERROR err = CHIP_NO_ERROR;
 
-    VerifyOrExit(aKey != NULL, err = CHIP_ERROR_INVALID_ARGUMENT);
+    VerifyOrExit(aKey != nullptr, err = CHIP_ERROR_INVALID_ARGUMENT);
     VerifyOrExit(strlen(aKey) <= CHIP_CONFIG_PERSISTED_STORAGE_MAX_KEY_LENGTH, err = CHIP_ERROR_INVALID_STRING_LENGTH);
 
     if (sPersistentStoreFile)
@@ -178,7 +179,7 @@ CHIP_ERROR Write(const char * aKey, uint32_t aValue)
         char encodedValue[BASE64_ENCODED_LEN(sizeof(uint32_t)) + 1];
 
         memset(encodedValue, 0, sizeof(encodedValue));
-        Base64Encode((uint8_t *) &aValue, sizeof(aValue), encodedValue);
+        Base64Encode(reinterpret_cast<uint8_t *>(&aValue), sizeof(aValue), encodedValue);
 
         sPersistentStore[aKey] = encodedValue;
     }

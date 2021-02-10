@@ -29,14 +29,16 @@
 #include <lwip/netif.h>
 
 #if CHIP_DEVICE_CONFIG_ENABLE_CHIPOBLE
-#include <platform/internal/GenericConnectivityManagerImpl_BLE.ipp>
+#include <platform/internal/GenericConnectivityManagerImpl_BLE.cpp>
 #endif
 
 #if CHIP_DEVICE_CONFIG_ENABLE_THREAD
-#include <DeviceLayer/internal/GenericConnectivityManagerImpl_Thread.ipp>
+#include <platform/internal/GenericConnectivityManagerImpl_Thread.cpp>
 #endif
 
 using namespace ::chip;
+using namespace ::chip::Inet;
+using namespace ::chip::System;
 using namespace ::chip::TLV;
 using namespace ::chip::DeviceLayer::Internal;
 

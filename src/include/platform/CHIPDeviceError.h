@@ -16,15 +16,14 @@
  *    limitations under the License.
  */
 
-#ifndef CHIP_DEVICE_ERROR_H
-#define CHIP_DEVICE_ERROR_H
+#pragma once
 
 #define CHIP_DEVICE_ERROR_MIN 11000000
 #define CHIP_DEVICE_ERROR_MAX 11000999
 #define _CHIP_DEVICE_ERROR(e) (CHIP_DEVICE_ERROR_MIN + (e))
 
 /**
- *  @def CHIP_DEVICE_ERROR_CONFIG_VALUE_NOT_FOUND
+ *  @def CHIP_DEVICE_ERROR_CONFIG_NOT_FOUND
  *
  *  @brief
  *    The requested configuration value was not found.
@@ -58,5 +57,3 @@
  *
  */
 #define CHIP_DEVICE_ERROR_SOFTWARE_UPDATE_IGNORED _CHIP_DEVICE_ERROR(4)
-
-#endif // CHIP_DEVICE_ERROR_H

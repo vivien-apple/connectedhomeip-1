@@ -29,8 +29,7 @@
  *      C-language programs.
  */
 
-#ifndef SYSTEMERROR_H
-#define SYSTEMERROR_H
+#pragma once
 
 // Include headers
 #include <system/SystemConfig.h>
@@ -69,8 +68,6 @@
 #ifdef CHIP_SYSTEM_CONFIG_ERROR_MAX
 #define CHIP_SYSTEM_ERROR_MAX CHIP_SYSTEM_CONFIG_ERROR_MAX
 #endif // CHIP_SYSTEM_CONFIG_ERROR_MAX
-
-#ifdef _CHIP_SYSTEM_CONFIG_ERROR
 
 /**
  *  @def _CHIP_SYSTEM_ERROR(e)
@@ -160,8 +157,6 @@
 // If you add new CHIP System Layer errors, please update the translation of error
 // codes to strings in SystemError.cpp, and add them to unittest in test-apps/TestErrorStr.cpp
 
-#endif // _CHIP_SYSTEM_CONFIG_ERROR
-
 /**
  *  @}
  */
@@ -178,14 +173,15 @@ namespace System {
  */
 typedef CHIP_SYSTEM_CONFIG_ERROR_TYPE Error;
 
-extern void RegisterLayerErrorFormatter(void);
+extern void RegisterLayerErrorFormatter();
 extern bool FormatLayerError(char * buf, uint16_t bufSize, int32_t err);
 
 extern Error MapErrorPOSIX(int code);
 extern const char * DescribeErrorPOSIX(Error code);
 extern bool IsErrorPOSIX(Error code);
-extern void RegisterPOSIXErrorFormatter(void);
+extern void RegisterPOSIXErrorFormatter();
 extern bool FormatPOSIXError(char * buf, uint16_t bufSize, int32_t err);
+extern Error MapErrorZephyr(int code);
 
 #if CHIP_SYSTEM_CONFIG_USE_LWIP
 
@@ -201,4 +197,3 @@ extern bool FormatLwIPError(char * buf, uint16_t bufSize, int32_t err);
 } // namespace chip
 
 #endif // !defined(__cplusplus)
-#endif // defined(SYSTEMERROR_H)

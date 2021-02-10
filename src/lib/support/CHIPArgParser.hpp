@@ -23,8 +23,7 @@
  *
  */
 
-#ifndef CHIPARGPARSER_H_
-#define CHIPARGPARSER_H_
+#pragma once
 
 #include <core/CHIPCore.h>
 
@@ -88,6 +87,7 @@ class OptionSetBase : public OptionSet
 {
 public:
     OptionSetBase();
+    virtual ~OptionSetBase() {}
     virtual bool HandleOption(const char * progName, OptionSet * optSet, int id, const char * name, const char * arg) = 0;
 
 private:
@@ -152,12 +152,10 @@ public:
     void PrintLongUsage(OptionSet * optSets[], FILE * s);
     void PrintVersion(FILE * s);
 
-    virtual bool HandleOption(const char * progName, OptionSet * optSet, int id, const char * name, const char * arg);
+    bool HandleOption(const char * progName, OptionSet * optSet, int id, const char * name, const char * arg) override;
 };
 
 } // namespace ArgParser
 } // namespace chip
 
 #endif // CHIP_CONFIG_ENABLE_ARG_PARSER
-
-#endif // CHIPARGPARSER_H_

@@ -1,6 +1,6 @@
 /*
  *
- *    Copyright (c) 2020 Project CHIP Authors
+ *    Copyright (c) 2020-2021 Project CHIP Authors
  *    Copyright (c) 2016-2017 Nest Labs, Inc.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
@@ -36,6 +36,7 @@
 
 // Include local headers
 #include <support/CodeUtils.h>
+#include <support/SafeInt.h>
 #include <support/logging/CHIPLogging.h>
 #include <system/SystemFaultInjection.h>
 #include <system/SystemMutex.h>
@@ -43,14 +44,20 @@
 
 #include <stdint.h>
 
+#include <limits.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
+#include <utility>
 
 #if CHIP_SYSTEM_CONFIG_USE_LWIP
 #include <lwip/mem.h>
 #include <lwip/pbuf.h>
-#endif // CHIP_SYSTEM_CONFIG_USE_LWIP
+#else // !CHIP_SYSTEM_CONFIG_USE_LWIP
+#if CHIP_SYSTEM_CONFIG_PACKETBUFFER_MAXALLOC == 0
+#include <support/CHIPMem.h>
+#endif
+#endif // !CHIP_SYSTEM_CONFIG_USE_LWIP
 
 namespace chip {
 namespace System {
@@ -98,27 +105,6 @@ static Mutex sBufferPoolMutex;
 
 #endif // !CHIP_SYSTEM_CONFIG_USE_LWIP
 
-/**
- * Get pointer to start of data in buffer.
- *
- *  @return pointer to the start of data.
- */
-uint8_t * PacketBuffer::Start() const
-{
-    return static_cast<uint8_t *>(this->payload);
-}
-
-/**
- *  Set the start data in buffer, adjusting length and total length accordingly.
- *
- *  @note The data within the buffer is not moved, only accounting information is changed.  The function is commonly used to either
- *  strip or prepend protocol headers in a zero-copy way.
- *
- *  @note This call should not be used on any buffer that is not the head of a buffer chain, as it only alters the current buffer.
- *
- *  @param[in] aNewStart - A pointer to where the new payload should start.  newStart will be adjusted internally to fall within
- *      the boundaries of the first buffer in the PacketBuffer chain.
- */
 void PacketBuffer::SetStart(uint8_t * aNewStart)
 {
     uint8_t * const kStart = reinterpret_cast<uint8_t *>(this) + CHIP_SYSTEM_PACKETBUFFER_HEADER_SIZE;
@@ -138,29 +124,6 @@ void PacketBuffer::SetStart(uint8_t * aNewStart)
     this->payload = aNewStart;
 }
 
-/**
- * Get length, in bytes, of data in packet buffer.
- *
- *  @return length, in bytes (current payload length).
- */
-uint16_t PacketBuffer::DataLength() const
-{
-    return this->len;
-}
-
-/**
- * Set length, in bytes, of data in buffer, adjusting total length accordingly.
- *
- *  The function sets the length, in bytes, of the data in the buffer, adjusting the total length appropriately.  When the buffer
- *  is not the head of the buffer chain (common case: the caller adds data to the last buffer in the PacketBuffer chain prior to
- *  calling higher layers), the aChainHead __must__ be passed in to properly adjust the total lengths of each buffer ahead of the
- *  current buffer.
- *
- *  @param[in] aNewLen - new length, in bytes, of this buffer.
- *
- *  @param[in,out] aChainHead - the head of the buffer chain the current buffer belongs to.  May be NULL if the current buffer is
- *      the head of the buffer chain.
- */
 void PacketBuffer::SetDataLength(uint16_t aNewLen, PacketBuffer * aChainHead)
 {
     const uint16_t kMaxDataLen = this->MaxDataLength();
@@ -171,30 +134,15 @@ void PacketBuffer::SetDataLength(uint16_t aNewLen, PacketBuffer * aChainHead)
     ptrdiff_t lDelta = static_cast<ptrdiff_t>(aNewLen) - static_cast<ptrdiff_t>(this->len);
 
     this->len     = aNewLen;
-    this->tot_len = (uint16_t)(this->tot_len + lDelta);
+    this->tot_len = static_cast<uint16_t>(this->tot_len + lDelta);
 
-    while (aChainHead != NULL && aChainHead != this)
+    while (aChainHead != nullptr && aChainHead != this)
     {
         aChainHead->tot_len = static_cast<uint16_t>(aChainHead->tot_len + lDelta);
         aChainHead          = static_cast<PacketBuffer *>(aChainHead->next);
     }
 }
 
-/**
- * Get total length of packet data in the buffer chain.
- *
- * @return total length, in octets.
- */
-uint16_t PacketBuffer::TotalLength() const
-{
-    return this->tot_len;
-}
-
-/**
- * Get the maximum amount, in bytes, of data that will fit in the buffer given the current start position and buffer size.
- *
- * @return number of bytes that fits in the buffer given the current start position.
- */
 uint16_t PacketBuffer::MaxDataLength() const
 {
     const uint8_t * const kStart = reinterpret_cast<const uint8_t *>(this) + CHIP_SYSTEM_PACKETBUFFER_HEADER_SIZE;
@@ -202,38 +150,24 @@ uint16_t PacketBuffer::MaxDataLength() const
     return static_cast<uint16_t>(this->AllocSize() - kDelta);
 }
 
-/**
- * Get the number of bytes of data that can be added to the current buffer given the current start position and data length.
- *
- * @return the length, in bytes, of data that will fit in the current buffer given the current start position and data length.
- */
 uint16_t PacketBuffer::AvailableDataLength() const
 {
-    return this->MaxDataLength() - this->len;
+    return static_cast<uint16_t>(this->MaxDataLength() - this->DataLength());
 }
 
-/**
- * Get the number of bytes within the current buffer between the start of the buffer and the current data start position.
- *
- * @return the amount, in bytes, of space between the start of the buffer and the current data start position.
- */
 uint16_t PacketBuffer::ReservedSize() const
 {
-    const ptrdiff_t kDelta = static_cast<uint8_t *>(this->payload) - reinterpret_cast<const uint8_t *>(this);
+    // Cast to size_t is safe because this->payload always points to "after"
+    // this.
+    const size_t kDelta = static_cast<size_t>(static_cast<uint8_t *>(this->payload) - reinterpret_cast<const uint8_t *>(this));
     return static_cast<uint16_t>(kDelta - CHIP_SYSTEM_PACKETBUFFER_HEADER_SIZE);
 }
 
-/**
- *
- * Add the given packet buffer to the end of the buffer chain, adjusting the total length of each buffer in the chain accordingly.
- *
- *  @note The current packet buffer must be the head of the buffer chain for the lengths to be adjusted properly. The caller MUST
- *  NOT reference the given packet buffer afterwards.
- *
- * @param[in] aPacket - the packet buffer to be added to the end of the current chain.
- */
-void PacketBuffer::AddToEnd(PacketBuffer * aPacket)
+void PacketBuffer::AddToEnd(PacketBufferHandle && aPacketHandle)
 {
+    // Ownership of aPacketHandle's buffer is transferred to the end of the chain.
+    PacketBuffer * aPacket = std::move(aPacketHandle).UnsafeRelease();
+
 #if CHIP_SYSTEM_CONFIG_USE_LWIP
     pbuf_cat(this, aPacket);
 #else  // !CHIP_SYSTEM_CONFIG_USE_LWIP
@@ -241,8 +175,8 @@ void PacketBuffer::AddToEnd(PacketBuffer * aPacket)
 
     while (true)
     {
-        lCursor->tot_len += aPacket->tot_len;
-        if (lCursor->next == NULL)
+        lCursor->tot_len = static_cast<uint16_t>(lCursor->tot_len + aPacket->tot_len);
+        if (lCursor->next == nullptr)
         {
             lCursor->next = aPacket;
             break;
@@ -253,30 +187,6 @@ void PacketBuffer::AddToEnd(PacketBuffer * aPacket)
 #endif // !CHIP_SYSTEM_CONFIG_USE_LWIP
 }
 
-/**
- *  Detach the current buffer from its chain and return a pointer to the remaining buffers.  The current buffer must be the head of
- *  the chain.
- *
- *  @return the tail of the current buffer chain or NULL if the current buffer is the only buffer in the chain.
- */
-PacketBuffer * PacketBuffer::DetachTail()
-{
-    PacketBuffer & lReturn = *static_cast<PacketBuffer *>(this->next);
-
-    this->next    = NULL;
-    this->tot_len = this->len;
-
-    return &lReturn;
-}
-
-/**
- * Move data from subsequent buffers in the chain into the current buffer until it is full.
- *
- *  Only the current buffer is compacted: the data within the current buffer is moved to the front of the buffer, eliminating any
- *  reserved space.  The remaining available space is filled with data moved from subsequent buffers in the chain, until the
- *  current buffer is full.  If a subsequent buffer in the chain is moved into the current buffer in its entirety, it is removed
- *  from the chain and freed.  The method takes no parameters, returns no results and cannot fail.
- */
 void PacketBuffer::CompactHead()
 {
     uint8_t * const kStart = reinterpret_cast<uint8_t *>(this) + CHIP_SYSTEM_PACKETBUFFER_HEADER_SIZE;
@@ -289,7 +199,7 @@ void PacketBuffer::CompactHead()
 
     uint16_t lAvailLength = this->AvailableDataLength();
 
-    while (lAvailLength > 0 && this->next != NULL)
+    while (lAvailLength > 0 && this->next != nullptr)
     {
         PacketBuffer & lNextPacket = *static_cast<PacketBuffer *>(this->next);
         VerifyOrDieWithMsg(lNextPacket.ref == 1, chipSystemLayer, "next buffer %p is not exclusive to this chain", &lNextPacket);
@@ -300,57 +210,49 @@ void PacketBuffer::CompactHead()
 
         memcpy(static_cast<uint8_t *>(this->payload) + this->len, lNextPacket.payload, lMoveLength);
 
-        lNextPacket.payload = (uint8_t *) lNextPacket.payload + lMoveLength;
-        this->len += lMoveLength;
-        lAvailLength -= lMoveLength;
-        lNextPacket.len -= lMoveLength;
-        lNextPacket.tot_len -= lMoveLength;
+        lNextPacket.payload = static_cast<uint8_t *>(lNextPacket.payload) + lMoveLength;
+        this->len           = static_cast<uint16_t>(this->len + lMoveLength);
+        lAvailLength        = static_cast<uint16_t>(lAvailLength - lMoveLength);
+        lNextPacket.len     = static_cast<uint16_t>(lNextPacket.len - lMoveLength);
+        lNextPacket.tot_len = static_cast<uint16_t>(lNextPacket.tot_len - lMoveLength);
 
         if (lNextPacket.len == 0)
             this->next = this->FreeHead(&lNextPacket);
     }
 }
 
-/**
- * Adjust the current buffer to indicate the amount of data consumed.
- *
- *  Advance the data start position in the current buffer by the specified amount, in bytes, up to the length of data in the
- *  buffer. Decrease the length and total length by the amount consumed.
- *
- *  @param[in] aConsumeLen - number of bytes to consume from the current buffer.
- */
 void PacketBuffer::ConsumeHead(uint16_t aConsumeLength)
 {
     if (aConsumeLength > this->len)
         aConsumeLength = this->len;
     this->payload = static_cast<uint8_t *>(this->payload) + aConsumeLength;
-    this->len -= aConsumeLength;
-    this->tot_len -= aConsumeLength;
+    this->len     = static_cast<uint16_t>(this->len - aConsumeLength);
+    this->tot_len = static_cast<uint16_t>(this->tot_len - aConsumeLength);
 }
 
 /**
  * Consume data in a chain of buffers.
  *
- *  Consume data in a chain of buffers starting with the current buffer and proceeding through the remaining buffers in the chain.
- *  Each buffer that is completely consumed is freed and the function returns the first buffer (if any) containing the remaining
- *  data. The current buffer must be the head of the buffer chain.
+ *  Consume data in a chain of buffers starting with the current buffer and proceeding through the remaining buffers in the
+ * chain. Each buffer that is completely consumed is freed and the function returns the first buffer (if any) containing the
+ * remaining data. The current buffer must be the head of the buffer chain.
  *
  *  @param[in] aConsumeLength - number of bytes to consume from the current chain.
  *
- *  @return the first buffer from the current chain that contains any remaining data.  If no data remains, a NULL is returned.
+ *  @return the first buffer from the current chain that contains any remaining data.  If no data remains, nullptr is returned.
  */
 PacketBuffer * PacketBuffer::Consume(uint16_t aConsumeLength)
 {
     PacketBuffer * lPacket = this;
 
-    while (lPacket != NULL && aConsumeLength > 0)
+    while (lPacket != nullptr && aConsumeLength > 0)
     {
         const uint16_t kLength = lPacket->DataLength();
 
         if (aConsumeLength >= kLength)
         {
-            lPacket = PacketBuffer::FreeHead(lPacket);
-            aConsumeLength -= kLength;
+            lPacket        = PacketBuffer::FreeHead(lPacket);
+            aConsumeLength = static_cast<uint16_t>(aConsumeLength - kLength);
         }
         else
         {
@@ -362,16 +264,6 @@ PacketBuffer * PacketBuffer::Consume(uint16_t aConsumeLength)
     return lPacket;
 }
 
-/**
- * Ensure the buffer has at least the specified amount of reserved space.
- *
- *  Ensure the buffer has at least the specified amount of reserved space moving the data in the buffer forward to make room if
- *  necessary.
- *
- *  @param[in] aReservedSize - number of bytes desired for the headers.
- *
- *  @return \c true if the requested reserved size is available, \c false if there's not enough room in the buffer.
- */
 bool PacketBuffer::EnsureReservedSize(uint16_t aReservedSize)
 {
     const uint16_t kCurrentReservedSize = this->ReservedSize();
@@ -381,45 +273,33 @@ bool PacketBuffer::EnsureReservedSize(uint16_t aReservedSize)
     if ((aReservedSize + this->len) > this->AllocSize())
         return false;
 
-    const uint16_t kMoveLength = aReservedSize - kCurrentReservedSize;
+    // Cast is safe because aReservedSize > kCurrentReservedSize.
+    const uint16_t kMoveLength = static_cast<uint16_t>(aReservedSize - kCurrentReservedSize);
     memmove(static_cast<uint8_t *>(this->payload) + kMoveLength, this->payload, this->len);
     payload = static_cast<uint8_t *>(this->payload) + kMoveLength;
 
     return true;
 }
 
-/**
- * Align the buffer payload on the specified bytes boundary.
- *
- *  Moving the payload in the buffer forward if necessary.
- *
- *  @param[in] aAlignBytes - specifies number of bytes alignment for the payload start pointer.
- *
- *  @return \c true if alignment is successful, \c false if there's not enough room in the buffer.
- */
 bool PacketBuffer::AlignPayload(uint16_t aAlignBytes)
 {
     if (aAlignBytes == 0)
         return false;
 
-    const uint16_t kPayloadOffset = reinterpret_cast<uintptr_t>(this->payload) % aAlignBytes;
+    const uint16_t kPayloadOffset = static_cast<uint16_t>(reinterpret_cast<uintptr_t>(this->payload) % aAlignBytes);
 
     if (kPayloadOffset == 0)
         return true;
 
-    const uint16_t kPayloadShift = aAlignBytes - kPayloadOffset;
+    // Cast is safe because by construction kPayloadOffset < aAlignBytes.
+    const uint16_t kPayloadShift = static_cast<uint16_t>(aAlignBytes - kPayloadOffset);
 
-    return (this->EnsureReservedSize(this->ReservedSize() + kPayloadShift));
-}
+    if (!CanCastTo<uint16_t>(this->ReservedSize() + kPayloadShift))
+    {
+        return false;
+    }
 
-/**
- * Get pointer to next buffer in chain.
- *
- *  @return a pointer to the next buffer in the chain.  \c NULL is returned when there is no buffers in the chain.
- */
-PacketBuffer * PacketBuffer::Next() const
-{
-    return static_cast<PacketBuffer *>(this->next);
+    return (this->EnsureReservedSize(static_cast<uint16_t>(this->ReservedSize() + kPayloadShift)));
 }
 
 /**
@@ -436,33 +316,32 @@ void PacketBuffer::AddRef()
 #endif // !CHIP_SYSTEM_CONFIG_USE_LWIP
 }
 
-/**
- * Allocates a PacketBuffer object with at least \c aReservedSize bytes reserved in the payload for headers, and at least
- *  \c aAllocSize bytes of space for additional data after the initial cursor pointer.
- *
- *  @param[in]  aReservedSize   Number of octets to reserve behind the cursor.
- *  @param[in]  aAvailableSize  Number of octets to allocate after the cursor.
- *
- *  @return     On success, a pointer to the PacketBuffer in the allocated block. On fail, \c NULL.
- */
-PacketBuffer * PacketBuffer::NewWithAvailableSize(uint16_t aReservedSize, size_t aAvailableSize)
+PacketBufferHandle PacketBufferHandle::New(size_t aAvailableSize, uint16_t aReservedSize)
 {
-    const size_t lReservedSize = static_cast<size_t>(aReservedSize);
-    const size_t lAllocSize    = lReservedSize + aAvailableSize;
-    const size_t lBlockSize    = CHIP_SYSTEM_PACKETBUFFER_HEADER_SIZE + lAllocSize;
+    // Adding three 16-bit-int sized numbers together will never overflow
+    // assuming int is at least 32 bits.
+    static_assert(INT_MAX >= INT32_MAX, "int is not big enough");
+    static_assert(CHIP_SYSTEM_PACKETBUFFER_HEADER_SIZE < UINT16_MAX, "Check for overflow more carefully");
+    static_assert(SIZE_MAX >= INT_MAX, "Our additions might not fit in size_t");
+    static_assert(CHIP_SYSTEM_CONFIG_PACKETBUFFER_CAPACITY_MAX <= UINT16_MAX, "PacketBuffer may have size not fitting uint16_t");
+
+    // When `aAvailableSize` fits in uint16_t (as tested below) and size_t is at least 32 bits (as asserted above),
+    // these additions will not overflow.
+    const size_t lAllocSize = aReservedSize + aAvailableSize;
+    const size_t lBlockSize = CHIP_SYSTEM_PACKETBUFFER_HEADER_SIZE + lAllocSize;
     PacketBuffer * lPacket;
 
-    CHIP_SYSTEM_FAULT_INJECT(FaultInjection::kFault_PacketBufferNew, return NULL);
+    CHIP_SYSTEM_FAULT_INJECT(FaultInjection::kFault_PacketBufferNew, return PacketBufferHandle());
 
-    if (lAllocSize > CHIP_SYSTEM_CONFIG_PACKETBUFFER_CAPACITY_MAX)
+    if (aAvailableSize > UINT16_MAX || lAllocSize > CHIP_SYSTEM_CONFIG_PACKETBUFFER_CAPACITY_MAX || lBlockSize > UINT16_MAX)
     {
         ChipLogError(chipSystemLayer, "PacketBuffer: allocation too large.");
-        return NULL;
+        return PacketBufferHandle();
     }
 
 #if CHIP_SYSTEM_CONFIG_USE_LWIP
 
-    lPacket = static_cast<PacketBuffer *>(pbuf_alloc(PBUF_RAW, lBlockSize, PBUF_POOL));
+    lPacket = static_cast<PacketBuffer *>(pbuf_alloc(PBUF_RAW, static_cast<uint16_t>(lBlockSize), PBUF_POOL));
 
     SYSTEM_STATS_UPDATE_LWIP_PBUF_COUNTS();
 
@@ -473,10 +352,10 @@ PacketBuffer * PacketBuffer::NewWithAvailableSize(uint16_t aReservedSize, size_t
 
     LOCK_BUF_POOL();
 
-    lPacket = sFreeList;
-    if (lPacket != NULL)
+    lPacket = PacketBuffer::sFreeList;
+    if (lPacket != nullptr)
     {
-        sFreeList = static_cast<PacketBuffer *>(lPacket->next);
+        PacketBuffer::sFreeList = static_cast<PacketBuffer *>(lPacket->next);
         SYSTEM_STATS_INCREMENT(chip::System::Stats::kSystemLayer_NumPacketBufs);
     }
 
@@ -484,81 +363,46 @@ PacketBuffer * PacketBuffer::NewWithAvailableSize(uint16_t aReservedSize, size_t
 
 #else // !CHIP_SYSTEM_CONFIG_PACKETBUFFER_MAXALLOC
 
-    lPacket = reinterpret_cast<PacketBuffer *>(malloc(lBlockSize));
+    lPacket = reinterpret_cast<PacketBuffer *>(chip::Platform::MemoryAlloc(lBlockSize));
     SYSTEM_STATS_INCREMENT(chip::System::Stats::kSystemLayer_NumPacketBufs);
 
 #endif // !CHIP_SYSTEM_CONFIG_PACKETBUFFER_MAXALLOC
 #endif // !CHIP_SYSTEM_CONFIG_USE_LWIP
 
-    if (lPacket == NULL)
+    if (lPacket == nullptr)
     {
         ChipLogError(chipSystemLayer, "PacketBuffer: pool EMPTY.");
-        return NULL;
+        return PacketBufferHandle();
     }
 
-    lPacket->payload = reinterpret_cast<uint8_t *>(lPacket) + CHIP_SYSTEM_PACKETBUFFER_HEADER_SIZE + lReservedSize;
+    lPacket->payload = reinterpret_cast<uint8_t *>(lPacket) + CHIP_SYSTEM_PACKETBUFFER_HEADER_SIZE + aReservedSize;
     lPacket->len = lPacket->tot_len = 0;
-    lPacket->next                   = NULL;
+    lPacket->next                   = nullptr;
     lPacket->ref                    = 1;
 #if CHIP_SYSTEM_CONFIG_PACKETBUFFER_MAXALLOC == 0
-    lPacket->alloc_size = lAllocSize;
+    lPacket->alloc_size = static_cast<uint16_t>(lAllocSize);
 #endif // CHIP_SYSTEM_CONFIG_PACKETBUFFER_MAXALLOC == 0
 
-    return lPacket;
+    return PacketBufferHandle(lPacket);
 }
 
-/**
- * Allocates a PacketBuffer with default reserved size (#CHIP_SYSTEM_CONFIG_HEADER_RESERVE_SIZE) in the payload for headers,
- * and at least \c aAllocSize bytes of space for additional data after the initial cursor pointer.
- *
- * This usage is most appropriate when allocating a PacketBuffer for an application-layer message.
- *
- *  @param[in]  aAvailableSize  Number of octets to allocate after the cursor.
- *
- *  @return     On success, a pointer to the PacketBuffer in the allocated block. On fail, \c NULL. *
- */
-PacketBuffer * PacketBuffer::NewWithAvailableSize(size_t aAvailableSize)
+PacketBufferHandle PacketBufferHandle::NewWithData(const void * aData, size_t aDataSize, uint16_t aAdditionalSize,
+                                                   uint16_t aReservedSize)
 {
-    return PacketBuffer::NewWithAvailableSize(CHIP_SYSTEM_CONFIG_HEADER_RESERVE_SIZE, aAvailableSize);
-}
-
-/**
- * Allocates a single PacketBuffer of maximum total size with a specific header reserve size.
- *
- *  The parameter passed in is the size reserved prior to the payload to accomodate packet headers from different stack layers,
- *  __not__ the overall size of the buffer to allocate. The size of the buffer #CHIP_SYSTEM_CONFIG_PACKETBUFFER_CAPACITY_MAX
- *  and not, specified in the call.
- *
- * - `PacketBuffer::New(0)` : when called in this fashion, the buffer will be returned without any header reserved, consequently
- *      the entire payload is usable by the caller. This pattern is particularly useful at the lower layers of networking stacks,
- *      in cases where the user knows the payload will be copied out into the final message with appropriate header reserves or in
- *      creating PacketBuffer that are appended to a chain of PacketBuffer via `PacketBuffer::AddToEnd()`.
- *
- *  @param[in] aReservedSize  amount of header space to reserve.
- *
- *  @return On success, a pointer to the PacketBuffer, on failure \c NULL.
- */
-PacketBuffer * PacketBuffer::New(uint16_t aReservedSize)
-{
-    const size_t lReservedSize = static_cast<size_t>(aReservedSize);
-
-    const size_t lAvailableSize = lReservedSize < CHIP_SYSTEM_CONFIG_PACKETBUFFER_CAPACITY_MAX
-        ? CHIP_SYSTEM_CONFIG_PACKETBUFFER_CAPACITY_MAX - lReservedSize
-        : 0;
-
-    return PacketBuffer::NewWithAvailableSize(aReservedSize, lAvailableSize);
-}
-
-/**
- * Allocates a single PacketBuffer of default max size (#CHIP_SYSTEM_CONFIG_PACKETBUFFER_CAPACITY_MAX) with default reserved size
- * (#CHIP_SYSTEM_CONFIG_HEADER_RESERVE_SIZE) in the payload.
- *
- * The reserved size (#CHIP_SYSTEM_CONFIG_HEADER_RESERVE_SIZE) is large enough to hold transport layer headers as well as headers
- * required by \c chipMessageLayer and \c chipExchangeLayer.
- */
-PacketBuffer * PacketBuffer::New(void)
-{
-    return PacketBuffer::New(CHIP_SYSTEM_CONFIG_HEADER_RESERVE_SIZE);
+    if (aDataSize > UINT16_MAX)
+    {
+        ChipLogError(chipSystemLayer, "PacketBuffer: allocation too large.");
+        return PacketBufferHandle();
+    }
+    // Since `aDataSize` fits in uint16_t, the sum `aDataSize + aAdditionalSize` will not overflow.
+    // `New()` will only return a non-null buffer if the total allocation size does not overflow.
+    PacketBufferHandle buffer = New(aDataSize + aAdditionalSize, aReservedSize);
+    if (buffer.mBuffer != nullptr)
+    {
+        memcpy(buffer.mBuffer->payload, aData, aDataSize);
+        buffer.mBuffer->len = buffer.mBuffer->tot_len = static_cast<uint16_t>(aDataSize);
+    }
+    return buffer;
 }
 
 /**
@@ -574,7 +418,7 @@ void PacketBuffer::Free(PacketBuffer * aPacket)
 {
 #if CHIP_SYSTEM_CONFIG_USE_LWIP
 
-    if (aPacket != NULL)
+    if (aPacket != nullptr)
     {
         pbuf_free(aPacket);
 
@@ -585,7 +429,7 @@ void PacketBuffer::Free(PacketBuffer * aPacket)
 
     LOCK_BUF_POOL();
 
-    while (aPacket != NULL)
+    while (aPacket != nullptr)
     {
         PacketBuffer * lNextPacket = static_cast<PacketBuffer *>(aPacket->next);
 
@@ -600,13 +444,13 @@ void PacketBuffer::Free(PacketBuffer * aPacket)
             aPacket->next = sFreeList;
             sFreeList     = aPacket;
 #else  // !CHIP_SYSTEM_CONFIG_PACKETBUFFER_MAXALLOC
-            free(aPacket);
+            chip::Platform::MemoryFree(aPacket);
 #endif // !CHIP_SYSTEM_CONFIG_PACKETBUFFER_MAXALLOC
             aPacket       = lNextPacket;
         }
         else
         {
-            aPacket = NULL;
+            aPacket = nullptr;
         }
     }
 
@@ -620,7 +464,7 @@ void PacketBuffer::Free(PacketBuffer * aPacket)
  *
  * This method is called by Free(), before the buffer is released to the free buffer pool.
  */
-void PacketBuffer::Clear(void)
+void PacketBuffer::Clear()
 {
     tot_len = 0;
     len     = 0;
@@ -637,44 +481,21 @@ void PacketBuffer::Clear(void)
  *
  *  @param[in] aPacket - buffer chain.
  *
- *  @return packet buffer chain consisting of the tail of the input buffer (may be \c NULL).
+ *  @return packet buffer chain consisting of the tail of the input buffer (may be \c nullptr).
  */
 PacketBuffer * PacketBuffer::FreeHead(PacketBuffer * aPacket)
 {
     PacketBuffer * lNextPacket = static_cast<PacketBuffer *>(aPacket->next);
-    aPacket->next              = NULL;
+    aPacket->next              = nullptr;
     PacketBuffer::Free(aPacket);
     return lNextPacket;
-}
-
-/**
- * Copy the given buffer to a right-sized buffer if applicable.
- * This function is a no-op for sockets.
- *
- *  @param[in] aPacket - buffer or buffer chain.
- *
- *  @return new packet buffer or the original buffer
- */
-PacketBuffer * PacketBuffer::RightSize(PacketBuffer * aPacket)
-{
-    PacketBuffer * lNewPacket = aPacket;
-#if CHIP_SYSTEM_CONFIG_USE_LWIP && LWIP_PBUF_FROM_CUSTOM_POOLS
-    lNewPacket = static_cast<PacketBuffer *>(pbuf_rightsize((struct pbuf *) aPacket, -1));
-    if (lNewPacket != aPacket)
-    {
-        SYSTEM_STATS_UPDATE_LWIP_PBUF_COUNTS();
-
-        ChipLogProgress(chipSystemLayer, "PacketBuffer: RightSize Copied");
-    }
-#endif
-    return lNewPacket;
 }
 
 #if !CHIP_SYSTEM_CONFIG_USE_LWIP && CHIP_SYSTEM_CONFIG_PACKETBUFFER_MAXALLOC
 
 PacketBuffer * PacketBuffer::BuildFreeList()
 {
-    PacketBuffer * lHead = NULL;
+    PacketBuffer * lHead = nullptr;
 
     for (int i = 0; i < CHIP_SYSTEM_CONFIG_PACKETBUFFER_MAXALLOC; i++)
     {
@@ -690,6 +511,115 @@ PacketBuffer * PacketBuffer::BuildFreeList()
 }
 
 #endif //  !CHIP_SYSTEM_CONFIG_USE_LWIP && CHIP_SYSTEM_CONFIG_PACKETBUFFER_MAXALLOC
+
+PacketBufferHandle PacketBufferHandle::PopHead()
+{
+    PacketBuffer * head = mBuffer;
+
+    // This takes ownership from the `next` link.
+    mBuffer = static_cast<PacketBuffer *>(mBuffer->next);
+
+    head->next    = nullptr;
+    head->tot_len = head->len;
+
+    // The returned handle takes ownership from this.
+    return PacketBufferHandle(head);
+}
+
+PacketBufferHandle PacketBufferHandle::CloneData()
+{
+    if (!mBuffer->Next().IsNull())
+    {
+        // We do not clone an entire chain.
+        return PacketBufferHandle();
+    }
+    return NewWithData(mBuffer->Start(), mBuffer->DataLength());
+}
+
+#if CHIP_SYSTEM_CONFIG_USE_LWIP && LWIP_PBUF_FROM_CUSTOM_POOLS
+
+void PacketBufferHandle::RightSizeForLwIPCustomPools()
+{
+    PacketBuffer * lNewPacket = static_cast<PacketBuffer *>(pbuf_rightsize((struct pbuf *) mBuffer, -1));
+    if (lNewPacket != mBuffer)
+    {
+        mBuffer = lNewPacket;
+        SYSTEM_STATS_UPDATE_LWIP_PBUF_COUNTS();
+        ChipLogProgress(chipSystemLayer, "PacketBuffer: RightSize Copied");
+    }
+}
+
+#elif CHIP_SYSTEM_CONFIG_PACKETBUFFER_MAXALLOC == 0
+
+// Number of unused bytes below which \c RightSizeForMemoryAlloc() won't bother reallocating.
+constexpr uint16_t kRightSizingThreshold = 16;
+
+void PacketBufferHandle::RightSizeForMemoryAlloc()
+{
+    // Require a single buffer with no other references.
+    if ((mBuffer == nullptr) || (mBuffer->next != nullptr) || (mBuffer->ref != 1))
+    {
+        return;
+    }
+
+    // Reallocate only if enough space will be saved.
+    uint8_t * const start = reinterpret_cast<uint8_t *>(mBuffer) + CHIP_SYSTEM_PACKETBUFFER_HEADER_SIZE;
+    uint8_t * const payload = reinterpret_cast<uint8_t *>(mBuffer->payload);
+    const size_t usedSize = static_cast<uint16_t>(payload - start + mBuffer->len);
+    if (usedSize + kRightSizingThreshold > mBuffer->alloc_size)
+    {
+        return;
+    }
+
+    const uint16_t blockSize = usedSize + CHIP_SYSTEM_PACKETBUFFER_HEADER_SIZE;
+    PacketBuffer * newBuffer = reinterpret_cast<PacketBuffer *>(chip::Platform::MemoryAlloc(blockSize));
+    if (newBuffer == nullptr)
+    {
+        ChipLogError(chipSystemLayer, "PacketBuffer: pool EMPTY.");
+        return;
+    }
+
+    uint8_t * const newStart = reinterpret_cast<uint8_t *>(newBuffer) + CHIP_SYSTEM_PACKETBUFFER_HEADER_SIZE;
+    newBuffer->next = nullptr;
+    newBuffer->payload = newStart + (payload - start);
+    newBuffer->tot_len = mBuffer->tot_len;
+    newBuffer->len = mBuffer->len;
+    newBuffer->ref = 1;
+    newBuffer->alloc_size = static_cast<uint16_t>(usedSize);
+    memcpy(reinterpret_cast<uint8_t *>(newBuffer) + CHIP_SYSTEM_PACKETBUFFER_HEADER_SIZE, start, usedSize);
+
+    chip::Platform::MemoryFree(mBuffer);
+    mBuffer = newBuffer;
+}
+
+#endif
+
+PacketBufferWriter::PacketBufferWriter(size_t aAvailableSize, uint16_t aReservedSize) :
+    Encoding::LittleEndian::BufferWriter(nullptr, 0)
+{
+    mPacket = PacketBufferHandle::New(aAvailableSize, aReservedSize);
+    if (!mPacket.IsNull())
+    {
+        *static_cast<Encoding::LittleEndian::BufferWriter *>(this) =
+            Encoding::LittleEndian::BufferWriter(mPacket->Start(), aAvailableSize);
+    }
+}
+
+PacketBufferHandle PacketBufferWriter::Finalize()
+{
+    if (!mPacket.IsNull() && Fit())
+    {
+        // Since mPacket was successfully allocated to hold the maximum length,
+        // we know that the actual length fits in a uint16_t.
+        mPacket->SetDataLength(static_cast<uint16_t>(Needed()));
+    }
+    else
+    {
+        mPacket = nullptr;
+    }
+    *static_cast<Encoding::LittleEndian::BufferWriter *>(this) = Encoding::LittleEndian::BufferWriter(nullptr, 0);
+    return std::move(mPacket);
+}
 
 } // namespace System
 } // namespace chip

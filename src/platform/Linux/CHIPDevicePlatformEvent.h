@@ -21,16 +21,9 @@
  *          Device Layer on Linux platforms.
  */
 
-#ifndef CHIP_DEVICE_PLATFORM_EVENT_H
-#define CHIP_DEVICE_PLATFORM_EVENT_H
+#pragma once
 
 #include <platform/CHIPDeviceEvent.h>
-
-namespace chip {
-namespace System {
-class PacketBuffer;
-}
-} // namespace chip
 
 namespace chip {
 namespace DeviceLayer {
@@ -51,8 +44,16 @@ enum PublicPlatformSpecificEventTypes
 enum InternalPlatformSpecificEventTypes
 {
     kPlatformLinuxEvent = kRange_InternalPlatformSpecific,
-    kPlatformLinuxBleC1WriteEvent,
-    kPlatformLinuxBleOutOfBuffersEvent,
+    kPlatformLinuxBLECentralConnected,
+    kPlatformLinuxBLEWriteComplete,
+    kPlatformLinuxBLESubscribeOpComplete,
+    kPlatformLinuxBLEIndicationReceived,
+    kPlatformLinuxBLEC1WriteEvent,
+    kPlatformLinuxBLEOutOfBuffersEvent,
+    kPlatformLinuxBLEPeripheralRegisterAppComplete,
+    kPlatformLinuxBLEPeripheralAdvConfiguredComplete,
+    kPlatformLinuxBLEPeripheralAdvStartComplete,
+    kPlatformLinuxBLEPeripheralAdvStopComplete
 };
 
 } // namespace DeviceEventType
@@ -60,19 +61,50 @@ enum InternalPlatformSpecificEventTypes
 /**
  * Represents platform-specific event information for Linux platforms.
  */
-struct ChipDevicePlatformEvent final
+struct ChipDevicePlatformEvent
 {
     union
     {
         struct
         {
-            uint16_t ConnId;
-            ::chip::System::PacketBuffer * Data;
-        } BleC1WriteEvent;
+            BLE_CONNECTION_OBJECT mConnection;
+        } BLECentralConnected;
+        struct
+        {
+            BLE_CONNECTION_OBJECT mConnection;
+        } BLEWriteComplete;
+        struct
+        {
+            BLE_CONNECTION_OBJECT mConnection;
+            bool mIsSubscribed;
+        } BLESubscribeOpComplete;
+        struct
+        {
+            BLE_CONNECTION_OBJECT mConnection;
+            chip::System::PacketBuffer * mData;
+        } BLEIndicationReceived;
+        struct
+        {
+            bool mIsSuccess;
+            void * mpAppstate;
+        } BLEPeripheralRegisterAppComplete;
+        struct
+        {
+            bool mIsSuccess;
+            void * mpAppstate;
+        } BLEPeripheralAdvConfiguredComplete;
+        struct
+        {
+            bool mIsSuccess;
+            void * mpAppstate;
+        } BLEPeripheralAdvStartComplete;
+        struct
+        {
+            bool mIsSuccess;
+            void * mpAppstate;
+        } BLEPeripheralAdvStopComplete;
     };
 };
 
 } // namespace DeviceLayer
 } // namespace chip
-
-#endif // CHIP_DEVICE_PLATFORM_EVENT_H

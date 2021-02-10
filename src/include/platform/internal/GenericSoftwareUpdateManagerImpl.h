@@ -1,6 +1,6 @@
 /*
  *
- *    Copyright (c) 2020 Project CHIP Authors
+ *    Copyright (c) 2020-2021 Project CHIP Authors
  *    Copyright (c) 2019 Google LLC.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,12 +22,13 @@
  *          for use on various platforms.
  */
 
-#ifndef GENERIC_SOFTWARE_UPDATE_MANAGER_IMPL_H
-#define GENERIC_SOFTWARE_UPDATE_MANAGER_IMPL_H
+#pragma once
 
 // #if CHIP_DEVICE_CONFIG_ENABLE_SOFTWARE_UPDATE_MANAGER
 
 #include <platform/SoftwareUpdateManager.h>
+
+#include <system/SystemPacketBuffer.h>
 
 namespace chip {
 namespace DeviceLayer {
@@ -50,56 +51,55 @@ class GenericSoftwareUpdateManagerImpl
 protected:
     // ===== Methods that implement the SoftwareUpdateManager abstract interface.
 
-    bool _IsInProgress(void);
-    SoftwareUpdateManager::State _GetState(void);
+    bool _IsInProgress();
+    SoftwareUpdateManager::State _GetState();
 
-    void _SetRetryPolicyCallback(const SoftwareUpdateManager::RetryPolicyCallback aRetryPolicyCallback);
+    void _SetRetryPolicyCallback(SoftwareUpdateManager::RetryPolicyCallback aRetryPolicyCallback);
 
     static void _DefaultEventHandler(void * apAppState, SoftwareUpdateManager::EventType aEvent,
                                      const SoftwareUpdateManager::InEventParam & aInParam,
                                      SoftwareUpdateManager::OutEventParam & aOutParam);
 
-    CHIP_ERROR _Abort(void);
-    CHIP_ERROR _CheckNow(void);
+    CHIP_ERROR _Abort();
+    CHIP_ERROR _CheckNow();
     CHIP_ERROR _PrepareImageStorageComplete(CHIP_ERROR aError);
     CHIP_ERROR _ImageInstallComplete(CHIP_ERROR aError);
     CHIP_ERROR _SetQueryIntervalWindow(uint32_t aMinWaitTimeMs, uint32_t aMaxWaitTimeMs);
-    CHIP_ERROR _SetEventCallback(void * const aAppState, const SoftwareUpdateManager::EventCallback aEventCallback);
+    CHIP_ERROR _SetEventCallback(void * aAppState, SoftwareUpdateManager::EventCallback aEventCallback);
 
     // ===== Members for use by the implementation subclass.
 
     void DoInit();
-    void DownloadComplete(void);
+    void DownloadComplete();
     void SoftwareUpdateFinished(CHIP_ERROR aError);
 
-    CHIP_ERROR InstallImage(void);
+    CHIP_ERROR InstallImage();
     CHIP_ERROR StoreImageBlock(uint32_t aLength, uint8_t * aData);
 
 private:
     // ===== Private members reserved for use by this class only.
 
-    void Cleanup(void);
-    void CheckImageState(void);
-    void CheckImageIntegrity(void);
+    void Cleanup();
+    void CheckImageState();
+    void CheckImageIntegrity();
     void DriveState(SoftwareUpdateManager::State aNextState);
     void GetEventState(int32_t & aEventState);
-    void HandleImageQueryResponse(PacketBuffer * aPayload);
-    void SendQuery(void);
-    void StartImageInstall(void);
-    void PrepareImageStorage(void);
+    void HandleImageQueryResponse(chip::System::PacketBuffer * aPayload);
+    void SendQuery();
+    void StartImageInstall();
+    void PrepareImageStorage();
 
-    CHIP_ERROR PrepareQuery(void);
+    CHIP_ERROR PrepareQuery();
 
-    uint32_t GetNextWaitTimeInterval(void);
-    uint32_t ComputeNextScheduledWaitTimeInterval(void);
+    uint32_t GetNextWaitTimeInterval();
+    uint32_t ComputeNextScheduledWaitTimeInterval();
 
     static void PrepareBinding(intptr_t arg);
     static void StartDownload(intptr_t arg);
     static void HandleHoldOffTimerExpired(::chip::System::Layer * aLayer, void * aAppState, ::chip::System::Error aError);
-    static void DefaultRetryPolicyCallback(void * const aAppState, SoftwareUpdateManager::RetryParam & aRetryParam,
+    static void DefaultRetryPolicyCallback(void * aAppState, SoftwareUpdateManager::RetryParam & aRetryParam,
                                            uint32_t & aOutIntervalMsec);
 
-private:
     SoftwareUpdateManager::State mState;
 
     void * mAppState;
@@ -109,7 +109,7 @@ private:
     SoftwareUpdateManager::EventCallback mEventHandlerCallback;
     SoftwareUpdateManager::RetryPolicyCallback mRetryPolicyCallback;
 
-    PacketBuffer * mImageQueryPacketBuffer;
+    chip::System::PacketBuffer * mImageQueryPacketBuffer;
 
     bool mScheduledCheckEnabled;
     bool mShouldRetry;
@@ -135,4 +135,3 @@ extern template class Internal::GenericSoftwareUpdateManagerImpl<SoftwareUpdateM
 } // namespace chip
 
 // #endif // CHIP_DEVICE_CONFIG_ENABLE_SOFTWARE_UPDATE_MANAGER
-#endif // GENERIC_SOFTWARE_UPDATE_MANAGER_IMPL_H

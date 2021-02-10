@@ -23,9 +23,9 @@
  *
  */
 
-#ifndef CHIPKEYS_H_
-#define CHIPKEYS_H_
+#pragma once
 
+#include <limits.h>
 #include <stdint.h>
 
 namespace chip {
@@ -216,7 +216,11 @@ public:
      *  @return      session key ID.
      *
      */
-    static uint16_t MakeSessionKeyId(uint16_t sessionKeyNumber) { return kType_Session | (sessionKeyNumber & kMask_KeyNumber); }
+    static uint16_t MakeSessionKeyId(uint16_t sessionKeyNumber)
+    {
+        static_assert(kType_Session <= UINT16_MAX, "We'll overflow");
+        return static_cast<uint16_t>(kType_Session | (sessionKeyNumber & kMask_KeyNumber));
+    }
 
     /**
      *  Construct general key ID given general key number.
@@ -225,7 +229,11 @@ public:
      *  @return      general key ID.
      *
      */
-    static uint16_t MakeGeneralKeyId(uint16_t generalKeyNumber) { return kType_General | (generalKeyNumber & kMask_KeyNumber); }
+    static uint16_t MakeGeneralKeyId(uint16_t generalKeyNumber)
+    {
+        static_assert(kType_General <= UINT16_MAX, "We'll overflow");
+        return static_cast<uint16_t>(kType_General | (generalKeyNumber & kMask_KeyNumber));
+    }
 
     /**
      *  Get application group root key ID that was used to derive specified application key.
@@ -288,7 +296,10 @@ public:
      *  @return      root key ID.
      *
      */
-    static uint32_t MakeRootKeyId(uint8_t rootKeyNumber) { return kType_AppRootKey | (rootKeyNumber << kShift_RootKeyNumber); }
+    static uint32_t MakeRootKeyId(uint8_t rootKeyNumber)
+    {
+        return static_cast<uint32_t>(kType_AppRootKey | (rootKeyNumber << kShift_RootKeyNumber));
+    }
 
     /**
      *  Construct application group root key ID given epoch key number.
@@ -297,7 +308,10 @@ public:
      *  @return      epoch key ID.
      *
      */
-    static uint32_t MakeEpochKeyId(uint8_t epochKeyNumber) { return kType_AppEpochKey | (epochKeyNumber << kShift_EpochKeyNumber); }
+    static uint32_t MakeEpochKeyId(uint8_t epochKeyNumber)
+    {
+        return static_cast<uint32_t>(kType_AppEpochKey | (epochKeyNumber << kShift_EpochKeyNumber));
+    }
 
     /**
      *  Construct application group master key ID given application group local number.
@@ -308,7 +322,7 @@ public:
      */
     static uint32_t MakeAppGroupMasterKeyId(uint8_t appGroupLocalNumber)
     {
-        return kType_AppGroupMasterKey | (appGroupLocalNumber << kShift_GroupLocalNumber);
+        return static_cast<uint32_t>(kType_AppGroupMasterKey | (appGroupLocalNumber << kShift_GroupLocalNumber));
     }
 
     /**
@@ -349,5 +363,3 @@ public:
 };
 
 } // namespace chip
-
-#endif /* CHIPKEYS_H_ */

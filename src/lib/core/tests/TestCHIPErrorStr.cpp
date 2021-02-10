@@ -32,14 +32,13 @@
 #define __STDC_LIMIT_MACROS
 #endif
 
-#include "TestCore.h"
-
 #include <inttypes.h>
 #include <stdint.h>
 #include <string.h>
 
 #include <core/CHIPError.h>
 #include <support/ErrorStr.h>
+#include <support/UnitTestRegistration.h>
 
 #include <nlunit-test.h>
 
@@ -135,7 +134,7 @@ static int32_t sContext[] =
     CHIP_ERROR_CERT_NOT_FOUND,
     CHIP_ERROR_INVALID_CASE_PARAMETER,
     CHIP_ERROR_UNSUPPORTED_CASE_CONFIGURATION,
-    CHIP_ERROR_CERT_LOAD_FAIL,
+    CHIP_ERROR_CERT_LOAD_FAILED,
     CHIP_ERROR_CERT_NOT_TRUSTED,
     CHIP_ERROR_INVALID_ACCESS_TOKEN,
     CHIP_ERROR_WRONG_CERT_SUBJECT,
@@ -164,9 +163,6 @@ static int32_t sContext[] =
     CHIP_ERROR_NO_COMMON_PASE_CONFIGURATIONS,
     CHIP_ERROR_UNSOLICITED_MSG_NO_ORIGINATOR,
     CHIP_ERROR_INVALID_FABRIC_ID,
-    CHIP_ERROR_UNSUPPORTED_TUNNEL_VERSION,
-    CHIP_ERROR_TUNNEL_NEXTHOP_TABLE_FULL,
-    CHIP_ERROR_TUNNEL_SERVICE_QUEUE_FULL,
     CHIP_ERROR_DRBG_ENTROPY_SOURCE_FAILED,
     CHIP_ERROR_TLV_TAG_NOT_FOUND,
     CHIP_ERROR_INVALID_TOKENPAIRINGBUNDLE,
@@ -185,12 +181,10 @@ static int32_t sContext[] =
     CHIP_ERROR_INTERNAL_KEY_ERROR_FROM_PEER,
     CHIP_ERROR_INVALID_KEY_ID,
     CHIP_ERROR_INVALID_TIME,
-    CHIP_ERROR_TUNNEL_PEER_ENTRY_NOT_FOUND,
     CHIP_ERROR_LOCKING_FAILURE,
     CHIP_ERROR_UNSUPPORTED_PASSCODE_CONFIG,
     CHIP_ERROR_PASSCODE_AUTHENTICATION_FAILED,
     CHIP_ERROR_PASSCODE_FINGERPRINT_FAILED,
-    CHIP_ERROR_TUNNEL_FORCE_ABORT,
     CHIP_ERROR_SERIALIZATION_ELEMENT_NULL,
     CHIP_ERROR_WRONG_CERT_SIGNATURE_ALGORITHM,
     CHIP_ERROR_WRONG_CHIP_SIGNATURE_ALGORITHM,
@@ -208,16 +202,14 @@ static int32_t sContext[] =
     CHIP_ERROR_UNAUTHORIZED_KEY_EXPORT_RESPONSE,
     CHIP_ERROR_EXPORTED_KEY_AUTHENTICATION_FAILED,
     CHIP_ERROR_TOO_MANY_SHARED_SESSION_END_NODES,
-    CHIP_ERROR_MALFORMED_DATA_ELEMENT,
+    CHIP_ERROR_IM_MALFORMED_ATTRIBUTE_DATA_ELEMENT,
     CHIP_ERROR_WRONG_CERT_TYPE,
     CHIP_ERROR_DEFAULT_EVENT_HANDLER_NOT_CALLED,
-    CHIP_ERROR_PERSISTED_STORAGE_FAIL,
+    CHIP_ERROR_PERSISTED_STORAGE_FAILED,
     CHIP_ERROR_PERSISTED_STORAGE_VALUE_NOT_FOUND,
     CHIP_ERROR_PROFILE_STRING_CONTEXT_ALREADY_REGISTERED,
     CHIP_ERROR_PROFILE_STRING_CONTEXT_NOT_REGISTERED,
     CHIP_ERROR_INCOMPATIBLE_SCHEMA_VERSION,
-    CHIP_ERROR_TUNNEL_ROUTING_RESTRICTED,
-    CHIP_ERROR_TUNNEL_RESET_RECONNECT_ALREADY_ARMED,
     CHIP_ERROR_MISMATCH_UPDATE_REQUIRED_VERSION,
     CHIP_ERROR_ACCESS_DENIED,
     CHIP_ERROR_UNKNOWN_RESOURCE_ID,
@@ -225,11 +217,16 @@ static int32_t sContext[] =
     CHIP_ERROR_UNSUPPORTED_THREAD_NETWORK_CREATE,
     CHIP_ERROR_INCONSISTENT_CONDITIONALITY,
     CHIP_ERROR_LOCAL_DATA_INCONSISTENT,
-    CHIP_EVENT_ID_FOUND
+    CHIP_EVENT_ID_FOUND,
+    CHIP_ERROR_IM_MALFORMED_ATTRIBUTE_PATH,
+    CHIP_ERROR_IM_MALFORMED_EVENT_PATH,
+    CHIP_ERROR_IM_MALFORMED_COMMAND_PATH,
+    CHIP_ERROR_IM_MALFORMED_ATTRIBUTE_STATUS_ELEMENT,
+    CHIP_ERROR_IM_MALFORMED_COMMAND_DATA_ELEMENT,
+    CHIP_ERROR_IM_MALFORMED_EVENT_DATA_ELEMENT,
+    CHIP_ERROR_IM_MALFORMED_STATUS_CODE,
 };
 // clang-format on
-
-static const size_t kTestElements = sizeof(sContext) / sizeof(sContext[0]);
 
 static void CheckCoreErrorStr(nlTestSuite * inSuite, void * inContext)
 {
@@ -238,20 +235,19 @@ static void CheckCoreErrorStr(nlTestSuite * inSuite, void * inContext)
     RegisterCHIPLayerErrorFormatter();
 
     // For each defined error...
-    for (size_t i = 0; i < kTestElements; i++)
+    for (int err : sContext)
     {
-        int32_t err         = sContext[i];
         const char * errStr = ErrorStr(err);
         char expectedText[9];
 
         // Assert that the error string contains the error number in hex.
         snprintf(expectedText, sizeof(expectedText), "%08" PRIX32, err);
-        NL_TEST_ASSERT(inSuite, (strstr(errStr, expectedText) != NULL));
+        NL_TEST_ASSERT(inSuite, (strstr(errStr, expectedText) != nullptr));
 
 #if !CHIP_CONFIG_SHORT_ERROR_STR
         // Assert that the error string contains a description, which is signaled
         // by a presence of a colon proceeding the description.
-        NL_TEST_ASSERT(inSuite, (strchr(errStr, ':') != NULL));
+        NL_TEST_ASSERT(inSuite, (strchr(errStr, ':') != nullptr));
 #endif // !CHIP_CONFIG_SHORT_ERROR_STR
     }
 }
@@ -276,8 +272,8 @@ int TestCHIPErrorStr(void)
 	{
         "Core-Error-Strings",
         &sTests[0],
-        NULL,
-        NULL
+        nullptr,
+        nullptr
     };
     // clang-format on
 
@@ -286,3 +282,5 @@ int TestCHIPErrorStr(void)
 
     return nlTestRunnerStats(&theSuite);
 }
+
+CHIP_REGISTER_TEST_SUITE(TestCHIPErrorStr)

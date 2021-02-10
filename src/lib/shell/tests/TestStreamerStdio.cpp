@@ -19,6 +19,7 @@
 
 #include <shell/shell.h>
 #include <support/CodeUtils.h>
+#include <support/UnitTestRegistration.h>
 
 #include <inttypes.h>
 #include <stdarg.h>
@@ -54,7 +55,7 @@ static void TestStreamer_Output(nlTestSuite * inSuite, void * inContext)
     const struct test_streamer_vector * test_params;
 
     const char * output;
-    int num_chars;
+    ssize_t num_chars;
 
     for (int vectorIndex = 0; vectorIndex < numOfTestVectors; vectorIndex++)
     {
@@ -62,7 +63,8 @@ static void TestStreamer_Output(nlTestSuite * inSuite, void * inContext)
         output      = test_params->output;
 
         num_chars = streamer_write(streamer_get(), output, strlen(output));
-        NL_TEST_ASSERT(inSuite, num_chars == (int) strlen(output));
+        // Let's assume that all our output lengths fit in ssize_t.
+        NL_TEST_ASSERT(inSuite, num_chars == static_cast<ssize_t>(strlen(output)));
         numOfTestsRan++;
     }
     NL_TEST_ASSERT(inSuite, numOfTestsRan > 0);
@@ -80,9 +82,11 @@ static const nlTest sTests[] = {
 
 int TestStreamerStdio(void)
 {
-    nlTestSuite theSuite = { "CHIP Streamer tests", &sTests[0], NULL, NULL };
+    nlTestSuite theSuite = { "CHIP Streamer tests", &sTests[0], nullptr, nullptr };
 
     // Run test suit againt one context.
-    nlTestRunner(&theSuite, NULL);
+    nlTestRunner(&theSuite, nullptr);
     return nlTestRunnerStats(&theSuite);
 }
+
+CHIP_REGISTER_TEST_SUITE(TestStreamerStdio)

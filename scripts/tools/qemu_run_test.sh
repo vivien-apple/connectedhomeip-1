@@ -21,18 +21,23 @@
 #
 
 set -e
+set -x
 
 die() {
     echo "${me:?}: *** ERROR: " "${*}"
     exit 1
 }
 
-BUILD_DIR="${abs_top_builddir:?}"
-SRC_DIR="${abs_top_srcdir:?}"
+SRC_DIR="$(dirname "$0")/../.."
+BUILD_DIR="$1"
+shift
+QEMU_TEST_TARGET="$1"
+shift
+EXTRA_COMPILE_ARGUMENTS="$*" # generally -lFooHelperLibrary
 
 # shellcheck source=/dev/null
 source "$BUILD_DIR"/env.sh
-bash "$BUILD_DIR"/esp32_elf_builder.sh "$QEMU_TEST_TARGET"
+bash "$BUILD_DIR"/esp32_elf_builder.sh "$BUILD_DIR/lib/$QEMU_TEST_TARGET" "$EXTRA_COMPILE_ARGUMENTS"
 
 flash_image_file=$(mktemp)
 log_file=$(mktemp)

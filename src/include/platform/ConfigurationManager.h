@@ -22,8 +22,9 @@
  *          Defines the public interface for the Device Layer ConfigurationManager object.
  */
 
-#ifndef CONFIGURATION_MANAGER_H
-#define CONFIGURATION_MANAGER_H
+#pragma once
+
+#include <cstdint>
 
 #include <platform/PersistedStorage.h>
 
@@ -55,7 +56,7 @@ public:
 
     enum
     {
-        kMaxPairingCodeLength      = 15,
+        kMaxPairingCodeLength      = 16,
         kMaxSerialNumberLength     = 32,
         kMaxFirmwareRevisionLength = 32,
     };
@@ -78,7 +79,8 @@ public:
     CHIP_ERROR GetManufacturerDeviceCertificate(uint8_t * buf, size_t bufSize, size_t & certLen);
     CHIP_ERROR GetManufacturerDeviceIntermediateCACerts(uint8_t * buf, size_t bufSize, size_t & certsLen);
     CHIP_ERROR GetManufacturerDevicePrivateKey(uint8_t * buf, size_t bufSize, size_t & keyLen);
-    CHIP_ERROR GetPairingCode(char * buf, size_t bufSize, size_t & pairingCodeLen);
+    CHIP_ERROR GetSetupPinCode(uint32_t & setupPinCode);
+    CHIP_ERROR GetSetupDiscriminator(uint16_t & setupDiscriminator);
     CHIP_ERROR GetServiceId(uint64_t & serviceId);
     CHIP_ERROR GetFabricId(uint64_t & fabricId);
     CHIP_ERROR GetServiceConfig(uint8_t * buf, size_t bufSize, size_t & serviceConfigLen);
@@ -100,7 +102,8 @@ public:
     CHIP_ERROR StoreManufacturerDeviceCertificate(const uint8_t * cert, size_t certLen);
     CHIP_ERROR StoreManufacturerDeviceIntermediateCACerts(const uint8_t * certs, size_t certsLen);
     CHIP_ERROR StoreManufacturerDevicePrivateKey(const uint8_t * key, size_t keyLen);
-    CHIP_ERROR StorePairingCode(const char * pairingCode, size_t pairingCodeLen);
+    CHIP_ERROR StoreSetupPinCode(uint32_t setupPinCode);
+    CHIP_ERROR StoreSetupDiscriminator(uint16_t setupDiscriminator);
     CHIP_ERROR StoreServiceProvisioningData(uint64_t serviceId, const uint8_t * serviceConfig, size_t serviceConfigLen,
                                             const char * accountId, size_t accountIdLen);
     CHIP_ERROR ClearServiceProvisioningData();
@@ -113,7 +116,7 @@ public:
 
     CHIP_ERROR GetBLEDeviceIdentificationInfo(Ble::ChipBLEDeviceIdentificationInfo & deviceIdInfo);
 
-#if defined(DEBUG)
+#if !defined(NDEBUG)
     CHIP_ERROR RunUnitTests();
 #endif
 
@@ -129,6 +132,8 @@ public:
 
     CHIP_ERROR ComputeProvisioningHash(uint8_t * hashBuf, size_t hashBufSize);
 
+    void LogDeviceConfig();
+
 private:
     // ===== Members for internal use by the following friends.
 
@@ -138,8 +143,8 @@ private:
     template <class>
     friend class ::chip::DeviceLayer::Internal::GenericPlatformManagerImpl_POSIX;
     // Parentheses used to fix clang parsing issue with these declarations
-    friend CHIP_ERROR ::chip::Platform::PersistedStorage::Read(::chip::Platform::PersistedStorage::Key key, uint32_t & value);
-    friend CHIP_ERROR ::chip::Platform::PersistedStorage::Write(::chip::Platform::PersistedStorage::Key key, uint32_t value);
+    friend CHIP_ERROR(::chip::Platform::PersistedStorage::Read)(::chip::Platform::PersistedStorage::Key key, uint32_t & value);
+    friend CHIP_ERROR(::chip::Platform::PersistedStorage::Write)(::chip::Platform::PersistedStorage::Key key, uint32_t value);
 
     using ImplClass = ::chip::DeviceLayer::ConfigurationManagerImpl;
 
@@ -172,7 +177,7 @@ protected:
  * chip application should use this to access features of the ConfigurationManager object
  * that are common to all platforms.
  */
-extern ConfigurationManager & ConfigurationMgr(void);
+extern ConfigurationManager & ConfigurationMgr();
 
 /**
  * Returns the platform-specific implementation of the ConfigurationManager singleton object.
@@ -180,7 +185,7 @@ extern ConfigurationManager & ConfigurationMgr(void);
  * chip applications can use this to gain access to features of the ConfigurationManager
  * that are specific to the selected platform.
  */
-extern ConfigurationManagerImpl & ConfigurationMgrImpl(void);
+extern ConfigurationManagerImpl & ConfigurationMgrImpl();
 
 } // namespace DeviceLayer
 } // namespace chip
@@ -190,10 +195,10 @@ extern ConfigurationManagerImpl & ConfigurationMgrImpl(void);
  */
 #ifdef EXTERNAL_CONFIGURATIONMANAGERIMPL_HEADER
 #include EXTERNAL_CONFIGURATIONMANAGERIMPL_HEADER
-#else
+#elif defined(CHIP_DEVICE_LAYER_TARGET)
 #define CONFIGURATIONMANAGERIMPL_HEADER <platform/CHIP_DEVICE_LAYER_TARGET/ConfigurationManagerImpl.h>
 #include CONFIGURATIONMANAGERIMPL_HEADER
-#endif
+#endif // defined(CHIP_DEVICE_LAYER_TARGET)
 
 namespace chip {
 namespace DeviceLayer {
@@ -293,9 +298,14 @@ inline CHIP_ERROR ConfigurationManager::GetManufacturerDevicePrivateKey(uint8_t 
     return static_cast<ImplClass *>(this)->_GetManufacturerDevicePrivateKey(buf, bufSize, keyLen);
 }
 
-inline CHIP_ERROR ConfigurationManager::GetPairingCode(char * buf, size_t bufSize, size_t & pairingCodeLen)
+inline CHIP_ERROR ConfigurationManager::GetSetupPinCode(uint32_t & setupPinCode)
 {
-    return static_cast<ImplClass *>(this)->_GetPairingCode(buf, bufSize, pairingCodeLen);
+    return static_cast<ImplClass *>(this)->_GetSetupPinCode(setupPinCode);
+}
+
+inline CHIP_ERROR ConfigurationManager::GetSetupDiscriminator(uint16_t & setupDiscriminator)
+{
+    return static_cast<ImplClass *>(this)->_GetSetupDiscriminator(setupDiscriminator);
 }
 
 inline CHIP_ERROR ConfigurationManager::GetServiceId(uint64_t & serviceId)
@@ -392,9 +402,14 @@ inline CHIP_ERROR ConfigurationManager::StoreManufacturerDevicePrivateKey(const 
     return static_cast<ImplClass *>(this)->_StoreManufacturerDevicePrivateKey(key, keyLen);
 }
 
-inline CHIP_ERROR ConfigurationManager::StorePairingCode(const char * pairingCode, size_t pairingCodeLen)
+inline CHIP_ERROR ConfigurationManager::StoreSetupPinCode(uint32_t setupPinCode)
 {
-    return static_cast<ImplClass *>(this)->_StorePairingCode(pairingCode, pairingCodeLen);
+    return static_cast<ImplClass *>(this)->_StoreSetupPinCode(setupPinCode);
+}
+
+inline CHIP_ERROR ConfigurationManager::StoreSetupDiscriminator(uint16_t setupDiscriminator)
+{
+    return static_cast<ImplClass *>(this)->_StoreSetupDiscriminator(setupDiscriminator);
 }
 
 inline CHIP_ERROR ConfigurationManager::StoreServiceProvisioningData(uint64_t serviceId, const uint8_t * serviceConfig,
@@ -470,7 +485,7 @@ inline void ConfigurationManager::InitiateFactoryReset()
     static_cast<ImplClass *>(this)->_InitiateFactoryReset();
 }
 
-#if defined(DEBUG)
+#if !defined(NDEBUG)
 inline CHIP_ERROR ConfigurationManager::RunUnitTests()
 {
     return static_cast<ImplClass *>(this)->_RunUnitTests();
@@ -526,7 +541,10 @@ inline void ConfigurationManager::UseManufacturerCredentialsAsOperational(bool v
 
 #endif // CHIP_DEVICE_CONFIG_ENABLE_JUST_IN_TIME_PROVISIONING
 
+inline void ConfigurationManager::LogDeviceConfig()
+{
+    static_cast<ImplClass *>(this)->_LogDeviceConfig();
+}
+
 } // namespace DeviceLayer
 } // namespace chip
-
-#endif // CONFIGURATION_MANAGER_H

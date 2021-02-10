@@ -22,8 +22,7 @@
  *          for use on FreeRTOS platforms.
  */
 
-#ifndef GENERIC_PLATFORM_MANAGER_IMPL_FREERTOS_H
-#define GENERIC_PLATFORM_MANAGER_IMPL_FREERTOS_H
+#pragma once
 
 #include <platform/internal/GenericPlatformManagerImpl.h>
 
@@ -72,6 +71,7 @@ protected:
     void _RunEventLoop(void);
     CHIP_ERROR _StartEventLoopTask(void);
     CHIP_ERROR _StartChipTimer(uint32_t durationMS);
+    CHIP_ERROR _Shutdown(void);
 
     // ===== Methods available to the implementation subclass.
 
@@ -91,5 +91,3 @@ extern template class GenericPlatformManagerImpl_FreeRTOS<PlatformManagerImpl>;
 } // namespace Internal
 } // namespace DeviceLayer
 } // namespace chip
-
-#endif // GENERIC_PLATFORM_MANAGER_IMPL_FREERTOS_H

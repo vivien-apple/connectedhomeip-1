@@ -1,6 +1,6 @@
 /*
  *
- *    Copyright (c) 2020 Project CHIP Authors
+ *    Copyright (c) 2020-2021 Project CHIP Authors
  *    Copyright (c) 2016-2017 Nest Labs, Inc.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,15 +27,15 @@
 #define __STDC_LIMIT_MACROS
 #endif
 
-#include "TestSystemLayer.h"
-
 #include <errno.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <utility>
+#include <vector>
 
 #include <support/CodeUtils.h>
-#include <support/TestUtils.h>
+#include <support/UnitTestRegistration.h>
 #include <system/SystemPacketBuffer.h>
 
 #if CHIP_SYSTEM_CONFIG_USE_LWIP
@@ -54,148 +54,355 @@
 #endif // CHIP_SYSTEM_CONFIG_USE_LWIP
 
 using ::chip::System::PacketBuffer;
+using ::chip::System::PacketBufferHandle;
+using ::chip::System::PacketBufferWriter;
 
 #if !CHIP_SYSTEM_CONFIG_USE_LWIP
 using ::chip::System::pbuf;
 #endif
-
-// Test input vector format.
-
-struct TestContext
-{
-    uint16_t init_len;
-    uint16_t reserved_size;
-    uint8_t * start_buffer;
-    uint8_t * end_buffer;
-    uint8_t * payload_ptr;
-    struct pbuf * buf;
-};
-
-// Test input data.
-
-// clang-format off
-static struct TestContext sContext[] =
-{
-      { 0,      0,                               NULL, NULL, NULL, NULL },
-      { 0,      10,                              NULL, NULL, NULL, NULL },
-      { 0,      128,                             NULL, NULL, NULL, NULL },
-      { 0,      1536,                            NULL, NULL, NULL, NULL },
-      { 0,      CHIP_SYSTEM_PACKETBUFFER_SIZE,   NULL, NULL, NULL, NULL }
-};
-// clang-format on
-
-static const uint16_t sLengths[] = { 0, 1, 10, 128, CHIP_SYSTEM_PACKETBUFFER_SIZE, UINT16_MAX };
-
-// Number of test context examples.
-static const size_t kTestElements = sizeof(sContext) / sizeof(struct TestContext);
-static const size_t kTestLengths  = sizeof(sLengths) / sizeof(uint16_t);
 
 // Utility functions.
 
 #define TO_LWIP_PBUF(x) (reinterpret_cast<struct pbuf *>(reinterpret_cast<void *>(x)))
 #define OF_LWIP_PBUF(x) (reinterpret_cast<PacketBuffer *>(reinterpret_cast<void *>(x)))
 
-/**
- *  Free allocated test buffer memory.
+/*
+ * An instance of this class created for the test suite.
+ * It is a friend class of `PacketBuffer` and `PacketBufferHandle` because some tests
+ * use or check private methods or properties.
  */
-static void BufferFree(struct TestContext * theContext)
+class PacketBufferTest
 {
-    if (theContext->buf != NULL)
+public:
+    struct TestContext
     {
-        PacketBuffer::Free(OF_LWIP_PBUF(theContext->buf));
-        theContext->buf = NULL;
+        const uint16_t * const reserved_sizes;
+        size_t reserved_size_count;
+        const uint16_t * const lengths;
+        size_t length_count;
+        PacketBufferTest * test;
+    };
+
+    static int TestSetup(void * inContext);
+    static int TestTeardown(void * inContext);
+    static int TestInitialize(void * inContext);
+    static int TestTerminate(void * inContext);
+
+    static void CheckNew(nlTestSuite * inSuite, void * inContext);
+    static void CheckStart(nlTestSuite * inSuite, void * inContext);
+    static void CheckSetStart(nlTestSuite * inSuite, void * inContext);
+    static void CheckDataLength(nlTestSuite * inSuite, void * inContext);
+    static void CheckSetDataLength(nlTestSuite * inSuite, void * inContext);
+    static void CheckTotalLength(nlTestSuite * inSuite, void * inContext);
+    static void CheckMaxDataLength(nlTestSuite * inSuite, void * inContext);
+    static void CheckAvailableDataLength(nlTestSuite * inSuite, void * inContext);
+    static void CheckReservedSize(nlTestSuite * inSuite, void * inContext);
+    static void CheckHasChainedBuffer(nlTestSuite * inSuite, void * inContext);
+    static void CheckAddToEnd(nlTestSuite * inSuite, void * inContext);
+    static void CheckPopHead(nlTestSuite * inSuite, void * inContext);
+    static void CheckCompactHead(nlTestSuite * inSuite, void * inContext);
+    static void CheckConsumeHead(nlTestSuite * inSuite, void * inContext);
+    static void CheckConsume(nlTestSuite * inSuite, void * inContext);
+    static void CheckEnsureReservedSize(nlTestSuite * inSuite, void * inContext);
+    static void CheckAlignPayload(nlTestSuite * inSuite, void * inContext);
+    static void CheckNext(nlTestSuite * inSuite, void * inContext);
+    static void CheckLast(nlTestSuite * inSuite, void * inContext);
+    static void CheckAddRef(nlTestSuite * inSuite, void * inContext);
+    static void CheckFree(nlTestSuite * inSuite, void * inContext);
+    static void CheckFreeHead(nlTestSuite * inSuite, void * inContext);
+    static void CheckHandleConstruct(nlTestSuite * inSuite, void * inContext);
+    static void CheckHandleMove(nlTestSuite * inSuite, void * inContext);
+    static void CheckHandleRelease(nlTestSuite * inSuite, void * inContext);
+    static void CheckHandleFree(nlTestSuite * inSuite, void * inContext);
+    static void CheckHandleRetain(nlTestSuite * inSuite, void * inContext);
+    static void CheckHandleAdopt(nlTestSuite * inSuite, void * inContext);
+    static void CheckHandleHold(nlTestSuite * inSuite, void * inContext);
+    static void CheckHandleAdvance(nlTestSuite * inSuite, void * inContext);
+    static void CheckHandleRightSize(nlTestSuite * inSuite, void * inContext);
+    static void CheckPacketBufferWriter(nlTestSuite * inSuite, void * inContext);
+    static void CheckBuildFreeList(nlTestSuite * inSuite, void * inContext);
+
+    static void PrintHandle(const char * tag, const PacketBuffer * buffer)
+    {
+        printf("%s %p ref=%u len=%-4u next=%p\n", tag, buffer, buffer ? buffer->ref : 0, buffer ? buffer->len : 0,
+               buffer ? buffer->next : 0);
+    }
+    static void PrintHandle(const char * tag, const PacketBufferHandle & handle) { PrintHandle(tag, handle.mBuffer); }
+
+private:
+    struct BufferConfiguration
+    {
+        BufferConfiguration(uint16_t aReservedSize = 0) :
+            init_len(0), reserved_size(aReservedSize), start_buffer(nullptr), end_buffer(nullptr), payload_ptr(nullptr),
+            handle(nullptr)
+        {}
+
+        uint16_t init_len;
+        uint16_t reserved_size;
+        uint8_t * start_buffer;
+        uint8_t * end_buffer;
+        uint8_t * payload_ptr;
+        PacketBufferHandle handle;
+    };
+
+    static void PrintHandle(const char * tag, const BufferConfiguration & config) { PrintHandle(tag, config.handle); }
+    static void PrintConfig(const char * tag, const BufferConfiguration & config)
+    {
+        printf("%s pay=%-4zu len=%-4u res=%-4u:", tag, config.payload_ptr - config.start_buffer, config.init_len,
+               config.reserved_size);
+        PrintHandle("", config.handle);
+    }
+
+    PacketBufferTest(TestContext * context);
+    ~PacketBufferTest();
+
+    int InitializeTest(TestContext * context);
+    int TerminateTest(TestContext * context);
+
+    /*
+     * Buffers allocated through PrepareTestBuffer with kRecordHandle set will be recorded in `handles` so that their
+     * reference counts can be verified by ResetHandles(). Initially they have two refs: the recorded one and the returned one.
+     */
+    static constexpr int kRecordHandle     = 0x01;
+    static constexpr int kAllowHandleReuse = 0x02;
+    void PrepareTestBuffer(BufferConfiguration * config, int flags = 0);
+
+    /*
+     * Checks and clears the recorded handles. Returns true if it detects no leaks or double frees.
+     * Called from `TerminateTest()`, but tests may choose to call it more often to verify reference counts.
+     */
+    bool ResetHandles();
+
+    TestContext * mContext;
+    std::vector<BufferConfiguration> configurations;
+    std::vector<PacketBufferHandle> handles;
+};
+
+const uint16_t sTestReservedSizes[] = { 0, 10, 128, 1536, CHIP_SYSTEM_PACKETBUFFER_SIZE };
+const uint16_t sTestLengths[]       = { 0, 1, 10, 128, CHIP_SYSTEM_PACKETBUFFER_SIZE, UINT16_MAX };
+
+PacketBufferTest::TestContext sContext = {
+    sTestReservedSizes,
+    sizeof(sTestReservedSizes) / sizeof(uint16_t),
+    sTestLengths,
+    sizeof(sTestLengths) / sizeof(uint16_t),
+};
+
+PacketBufferTest::PacketBufferTest(TestContext * context) : mContext(context)
+{
+    // Set up the buffer configuration vector for this suite.
+    configurations.resize(0);
+    for (size_t i = 0; i < mContext->reserved_size_count; ++i)
+    {
+        configurations.emplace_back<BufferConfiguration>(mContext->reserved_sizes[i]);
     }
 }
 
-/**
- *  Allocate memory for a test buffer and configure according to test context.
- */
-static void BufferAlloc(struct TestContext * theContext)
+int PacketBufferTest::TestSetup(void * inContext)
 {
-    const size_t lInitialSize = CHIP_SYSTEM_PACKETBUFFER_HEADER_SIZE + theContext->reserved_size;
-    const size_t lAllocSize   = CHIP_SYSTEM_PACKETBUFFER_SIZE;
-
-#if CHIP_SYSTEM_CONFIG_USE_LWIP
-    u8_t lType, lFlags;
-#if LWIP_PBUF_FROM_CUSTOM_POOLS
-    u16_t lPool;
-#endif // LWIP_PBUF_FROM_CUSTOM_POOLS
-#endif // CHIP_SYSTEM_CONFIG_USE_LWIP
-
-    if (theContext->buf == NULL)
+    TestContext * const theContext = reinterpret_cast<TestContext *>(inContext);
+    theContext->test               = new PacketBufferTest(theContext);
+    if (theContext->test == nullptr)
     {
-        theContext->buf = TO_LWIP_PBUF(PacketBuffer::New(0));
+        return FAILURE;
     }
+    return SUCCESS;
+}
 
-    if (theContext->buf == NULL)
+int PacketBufferTest::TestTeardown(void * inContext)
+{
+    return SUCCESS;
+}
+
+int PacketBufferTest::TestInitialize(void * inContext)
+{
+    TestContext * const theContext = reinterpret_cast<TestContext *>(inContext);
+    if (theContext->test == nullptr)
     {
-        fprintf(stderr, "Failed to allocate %zuB memory: %s\n", lAllocSize, strerror(errno));
+        return FAILURE;
+    }
+    return theContext->test->InitializeTest(theContext);
+}
+
+int PacketBufferTest::InitializeTest(TestContext * context)
+{
+    if (context != mContext)
+    {
+        return FAILURE;
+    }
+    return SUCCESS;
+}
+
+int PacketBufferTest::TestTerminate(void * inContext)
+{
+    TestContext * const theContext = reinterpret_cast<TestContext *>(inContext);
+    if (theContext->test == nullptr)
+    {
+        return FAILURE;
+    }
+    return theContext->test->TerminateTest(theContext);
+}
+
+int PacketBufferTest::TerminateTest(TestContext * context)
+{
+    const bool context_ok = (context == mContext);
+    // Clear the configurations' bufffer handles.
+    for (size_t i = 0; i < configurations.size(); ++i)
+    {
+        configurations[i].handle = nullptr;
+    }
+    const bool handles_ok = ResetHandles();
+    return (context_ok && handles_ok) ? SUCCESS : FAILURE;
+}
+
+/**
+ *  Allocate memory for a test buffer and configure according to test buffer configuration.
+ */
+void PacketBufferTest::PrepareTestBuffer(BufferConfiguration * config, int flags)
+{
+    if (config->handle.IsNull())
+    {
+        config->handle = PacketBufferHandle::New(chip::System::kMaxPacketBufferSizeWithoutReserve, 0);
+        if (config->handle.IsNull())
+        {
+            printf("NewPacketBuffer: Failed to allocate packet buffer (%zu retained): %s\n", handles.size(), strerror(errno));
+            exit(EXIT_FAILURE);
+        }
+        if (flags & kRecordHandle)
+        {
+            handles.push_back(config->handle.Retain());
+        }
+    }
+    else if ((flags & kAllowHandleReuse) == 0)
+    {
+        printf("Dirty test configuration\n");
         exit(EXIT_FAILURE);
     }
 
-#if CHIP_SYSTEM_CONFIG_USE_LWIP
-    lType  = PBUF_TYPE(theContext->buf);
-    lFlags = theContext->buf->flags;
-#if LWIP_PBUF_FROM_CUSTOM_POOLS
-    lPool = theContext->buf->pool;
-#endif // LWIP_PBUF_FROM_CUSTOM_POOLS
-    memset(theContext->buf, 0, lAllocSize);
-    PBUF_TYPE(theContext->buf) = lType;
-    theContext->buf->flags     = lFlags;
-#if LWIP_PBUF_FROM_CUSTOM_POOLS
-    theContext->buf->pool = lPool;
-#endif // LWIP_PBUF_FROM_CUSTOM_POOLS
-#else  // !CHIP_SYSTEM_CONFIG_USE_LWIP
-    memset(theContext->buf, 0, lAllocSize);
-#if CHIP_SYSTEM_CONFIG_PACKETBUFFER_MAXALLOC == 0
-    theContext->buf->alloc_size = lAllocSize;
-#endif // CHIP_SYSTEM_CONFIG_PACKETBUFFER_MAXALLOC == 0
-#endif // CHIP_SYSTEM_CONFIG_USE_LWIP
+    const size_t lInitialSize = CHIP_SYSTEM_PACKETBUFFER_HEADER_SIZE + config->reserved_size;
+    const size_t lAllocSize   = CHIP_SYSTEM_PACKETBUFFER_SIZE;
 
-    theContext->start_buffer = reinterpret_cast<uint8_t *>(theContext->buf);
-    theContext->end_buffer   = reinterpret_cast<uint8_t *>(theContext->buf) + lAllocSize;
+    uint8_t * const raw = reinterpret_cast<uint8_t *>(config->handle.Get());
+    memset(raw + CHIP_SYSTEM_PACKETBUFFER_HEADER_SIZE, 0, lAllocSize - CHIP_SYSTEM_PACKETBUFFER_HEADER_SIZE);
+
+    config->start_buffer = raw;
+    config->end_buffer   = raw + lAllocSize;
 
     if (lInitialSize > lAllocSize)
     {
-        theContext->payload_ptr = theContext->end_buffer;
+        config->payload_ptr = config->end_buffer;
     }
     else
     {
-        theContext->payload_ptr = theContext->start_buffer + lInitialSize;
+        config->payload_ptr = config->start_buffer + lInitialSize;
     }
+
+    if (config->handle->HasChainedBuffer())
+    {
+        // This should not happen.
+        PacketBuffer::Free(config->handle->ChainedBuffer());
+        config->handle->next = nullptr;
+    }
+    config->handle->payload = config->payload_ptr;
+    config->handle->len     = config->init_len;
+    config->handle->tot_len = config->init_len;
 }
+
+bool PacketBufferTest::ResetHandles()
+{
+    // Check against leaks or double-frees in tests: every handle obtained through
+    // PacketBufferTest::NewPacketBuffer should have a reference count of 1.
+    bool handles_ok = true;
+    for (size_t i = 0; i < handles.size(); ++i)
+    {
+        const PacketBufferHandle & handle = handles[i];
+        if (handle.Get() == nullptr)
+        {
+            printf("TestTerminate: handle %zu null\n", i);
+            handles_ok = false;
+        }
+        else if (handle->ref != 1)
+        {
+            printf("TestTerminate: handle %zu buffer=%p ref=%u\n", i, handle.Get(), handle->ref);
+            handles_ok = false;
+            while (handle->ref > 1)
+            {
+                PacketBuffer::Free(handle.Get());
+            }
+        }
+    }
+    handles.resize(0);
+    return handles_ok;
+}
+
+// Test functions invoked from the suite.
 
 /**
- *  Setup buffer layout as it is used by PacketBuffer class.
+ *  Test PacketBufferHandle::New() function.
+ *
+ *  Description: For every buffer-configuration from inContext, create a buffer's instance
+ *               using the New() method. Then, verify that when the size of the reserved space
+ *               passed to New() is greater than #CHIP_SYSTEM_CONFIG_PACKETBUFFER_CAPACITY_MAX,
+ *               the method returns nullptr. Otherwise, check for correctness of initializing
+ *               the new buffer's internal state.
  */
-static PacketBuffer * PrepareTestBuffer(struct TestContext * theContext)
+void PacketBufferTest::CheckNew(nlTestSuite * inSuite, void * inContext)
 {
-    BufferAlloc(theContext);
+    TestContext * const theContext = static_cast<TestContext *>(inContext);
+    PacketBufferTest * const test  = theContext->test;
+    NL_TEST_ASSERT(inSuite, test->mContext == theContext);
 
-    theContext->buf->next    = NULL;
-    theContext->buf->payload = theContext->payload_ptr;
-    theContext->buf->ref     = 1;
-    theContext->buf->len     = theContext->init_len;
-    theContext->buf->tot_len = theContext->init_len;
+    for (const auto & config : test->configurations)
+    {
+        const PacketBufferHandle buffer = PacketBufferHandle::New(0, config.reserved_size);
 
-    return reinterpret_cast<PacketBuffer *>(theContext->buf);
+        if (config.reserved_size > CHIP_SYSTEM_CONFIG_PACKETBUFFER_CAPACITY_MAX)
+        {
+            NL_TEST_ASSERT(inSuite, buffer.IsNull());
+            continue;
+        }
+
+        NL_TEST_ASSERT(inSuite, config.reserved_size <= buffer->AllocSize());
+        NL_TEST_ASSERT(inSuite, !buffer.IsNull());
+
+        if (!buffer.IsNull())
+        {
+            const pbuf * const pb = TO_LWIP_PBUF(buffer.Get());
+
+            NL_TEST_ASSERT(inSuite, pb->len == 0);
+            NL_TEST_ASSERT(inSuite, pb->tot_len == 0);
+            NL_TEST_ASSERT(inSuite, pb->next == nullptr);
+            NL_TEST_ASSERT(inSuite, pb->ref == 1);
+        }
+    }
+
+    // Use the rest of the buffer space
+    std::vector<PacketBufferHandle> allocate_all_the_things;
+    for (;;)
+    {
+        PacketBufferHandle buffer = PacketBufferHandle::New(0, 0);
+        if (buffer.IsNull())
+        {
+            break;
+        }
+        // Hold on to the buffer, to use up all the buffer space.
+        allocate_all_the_things.push_back(std::move(buffer));
+    }
 }
-// Test functions invoked from the suite.
 
 /**
  *  Test PacketBuffer::Start() function.
  */
-static void CheckStart(nlTestSuite * inSuite, void * inContext)
+void PacketBufferTest::CheckStart(nlTestSuite * inSuite, void * inContext)
 {
-    struct TestContext * theContext = (struct TestContext *) (inContext);
+    struct TestContext * const theContext = static_cast<struct TestContext *>(inContext);
+    PacketBufferTest * const test         = theContext->test;
+    NL_TEST_ASSERT(inSuite, test->mContext == theContext);
 
-    for (size_t ith = 0; ith < kTestElements; ith++)
+    for (auto & config : test->configurations)
     {
-        PacketBuffer * buffer = PrepareTestBuffer(theContext);
-
-        NL_TEST_ASSERT(inSuite, buffer->Start() == theContext->payload_ptr);
-
-        theContext++;
+        test->PrepareTestBuffer(&config, kRecordHandle);
+        NL_TEST_ASSERT(inSuite, config.handle->Start() == config.payload_ptr);
     }
 }
 
@@ -210,15 +417,18 @@ static void CheckStart(nlTestSuite * inSuite, void * inContext)
  *               adjusted according to the offset value passed into the
  *               SetStart() method.
  */
-static void CheckSetStart(nlTestSuite * inSuite, void * inContext)
+void PacketBufferTest::CheckSetStart(nlTestSuite * inSuite, void * inContext)
 {
-    struct TestContext * theContext          = (struct TestContext *) (inContext);
-    static const ptrdiff_t sSizePacketBuffer = CHIP_SYSTEM_PACKETBUFFER_SIZE;
+    struct TestContext * const theContext = static_cast<struct TestContext *>(inContext);
+    PacketBufferTest * const test         = theContext->test;
+    NL_TEST_ASSERT(inSuite, test->mContext == theContext);
 
-    for (size_t ith = 0; ith < kTestElements; ith++)
+    static constexpr ptrdiff_t sSizePacketBuffer = CHIP_SYSTEM_PACKETBUFFER_SIZE;
+
+    for (auto & config : test->configurations)
     {
         // clang-format off
-        static const ptrdiff_t start_offset[] =
+        static constexpr ptrdiff_t start_offset[] =
         {
             -sSizePacketBuffer,
             -128,
@@ -230,58 +440,57 @@ static void CheckSetStart(nlTestSuite * inSuite, void * inContext)
         };
         // clang-format on
 
-        for (size_t s = 0; s < sizeof(start_offset) / sizeof(start_offset[0]); s++)
+        for (ptrdiff_t offset : start_offset)
         {
-            PacketBuffer * buffer  = PrepareTestBuffer(theContext);
-            uint8_t * test_start   = theContext->payload_ptr + start_offset[s];
-            uint8_t * verify_start = test_start;
+            test->PrepareTestBuffer(&config, kRecordHandle | kAllowHandleReuse);
+            uint8_t * const test_start = config.payload_ptr + offset;
+            uint8_t * verify_start     = test_start;
 
-            buffer->SetStart(test_start);
+            config.handle->SetStart(test_start);
 
-            if (verify_start < theContext->start_buffer + CHIP_SYSTEM_PACKETBUFFER_HEADER_SIZE)
+            if (verify_start < config.start_buffer + CHIP_SYSTEM_PACKETBUFFER_HEADER_SIZE)
             {
                 // Set start before valid payload beginning.
-                verify_start = theContext->start_buffer + CHIP_SYSTEM_PACKETBUFFER_HEADER_SIZE;
+                verify_start = config.start_buffer + CHIP_SYSTEM_PACKETBUFFER_HEADER_SIZE;
             }
 
-            if (verify_start > theContext->end_buffer)
+            if (verify_start > config.end_buffer)
             {
                 // Set start after valid payload beginning.
-                verify_start = theContext->end_buffer;
+                verify_start = config.end_buffer;
             }
 
-            NL_TEST_ASSERT(inSuite, theContext->buf->payload == verify_start);
+            NL_TEST_ASSERT(inSuite, config.handle->payload == verify_start);
 
-            if ((verify_start - theContext->payload_ptr) > theContext->init_len)
+            if ((verify_start - config.payload_ptr) > config.init_len)
             {
-                // Set start to the beginning of payload, right after buffer's header.
-                NL_TEST_ASSERT(inSuite, theContext->buf->len == 0);
+                // Set start to the beginning of payload, right after handle's header.
+                NL_TEST_ASSERT(inSuite, config.handle->len == 0);
             }
             else
             {
-                // Set start to somewhere between the end of the buffer's
+                // Set start to somewhere between the end of the handle's
                 // header and the end of payload.
-                NL_TEST_ASSERT(inSuite, theContext->buf->len == (theContext->init_len - (verify_start - theContext->payload_ptr)));
+                NL_TEST_ASSERT(inSuite, config.handle->len == (config.init_len - (verify_start - config.payload_ptr)));
             }
         }
-        theContext++;
     }
 }
 
 /**
  *  Test PacketBuffer::DataLength() function.
  */
-static void CheckDataLength(nlTestSuite * inSuite, void * inContext)
+void PacketBufferTest::CheckDataLength(nlTestSuite * inSuite, void * inContext)
 {
-    struct TestContext * theContext = (struct TestContext *) (inContext);
+    struct TestContext * const theContext = static_cast<struct TestContext *>(inContext);
+    PacketBufferTest * const test         = theContext->test;
+    NL_TEST_ASSERT(inSuite, test->mContext == theContext);
 
-    for (size_t ith = 0; ith < kTestElements; ith++)
+    for (auto & config : test->configurations)
     {
-        PacketBuffer * buffer = PrepareTestBuffer(theContext);
+        test->PrepareTestBuffer(&config, kRecordHandle);
 
-        NL_TEST_ASSERT(inSuite, buffer->DataLength() == theContext->buf->len);
-
-        theContext++;
+        NL_TEST_ASSERT(inSuite, config.handle->DataLength() == config.handle->len);
     }
 }
 
@@ -298,157 +507,180 @@ static void CheckDataLength(nlTestSuite * inSuite, void * inContext)
  *               other one being passed as the head of the chain. After calling
  *               the method verify that data lenghts were correctly adjusted.
  */
-static void CheckSetDataLength(nlTestSuite * inSuite, void * inContext)
+void PacketBufferTest::CheckSetDataLength(nlTestSuite * inSuite, void * inContext)
 {
-    struct TestContext * theFirstContext = static_cast<struct TestContext *>(inContext);
+    struct TestContext * const theContext = static_cast<struct TestContext *>(inContext);
+    PacketBufferTest * const test         = theContext->test;
+    NL_TEST_ASSERT(inSuite, test->mContext == theContext);
 
-    for (size_t ith = 0; ith < kTestElements; ith++)
+    for (auto & config_1 : test->configurations)
     {
-        struct TestContext * theSecondContext = static_cast<struct TestContext *>(inContext);
-
-        for (size_t jth = 0; jth < kTestElements; jth++)
+        for (auto & config_2 : test->configurations)
         {
-            for (size_t n = 0; n < kTestLengths; n++)
+            for (size_t i = 0; i < theContext->length_count; ++i)
             {
-                PacketBuffer * buffer_1 = PrepareTestBuffer(theFirstContext);
-                PacketBuffer * buffer_2 = PrepareTestBuffer(theSecondContext);
+                const uint16_t length = theContext->lengths[i];
+                test->PrepareTestBuffer(&config_1, kRecordHandle | kAllowHandleReuse);
+                test->PrepareTestBuffer(&config_2, kRecordHandle | kAllowHandleReuse);
 
-                if (theFirstContext == theSecondContext)
+                if (&config_1 == &config_2)
                 {
                     // headOfChain (the second arg) is NULL
-                    buffer_2->SetDataLength(sLengths[n], NULL);
+                    config_2.handle->SetDataLength(length, nullptr);
 
-                    if (sLengths[n] > (theSecondContext->end_buffer - theSecondContext->payload_ptr))
+                    if (length > (config_2.end_buffer - config_2.payload_ptr))
                     {
-                        NL_TEST_ASSERT(
-                            inSuite, theSecondContext->buf->len == (theSecondContext->end_buffer - theSecondContext->payload_ptr));
-                        NL_TEST_ASSERT(inSuite,
-                                       theSecondContext->buf->tot_len ==
-                                           (theSecondContext->end_buffer - theSecondContext->payload_ptr));
-                        NL_TEST_ASSERT(inSuite, theSecondContext->buf->next == NULL);
+                        NL_TEST_ASSERT(inSuite, config_2.handle->len == (config_2.end_buffer - config_2.payload_ptr));
+                        NL_TEST_ASSERT(inSuite, config_2.handle->tot_len == (config_2.end_buffer - config_2.payload_ptr));
+                        NL_TEST_ASSERT(inSuite, config_2.handle->next == nullptr);
                     }
                     else
                     {
-                        NL_TEST_ASSERT(inSuite, theSecondContext->buf->len == sLengths[n]);
-                        NL_TEST_ASSERT(inSuite, theSecondContext->buf->tot_len == sLengths[n]);
-                        NL_TEST_ASSERT(inSuite, theSecondContext->buf->next == NULL);
+                        NL_TEST_ASSERT(inSuite, config_2.handle->len == length);
+                        NL_TEST_ASSERT(inSuite, config_2.handle->tot_len == length);
+                        NL_TEST_ASSERT(inSuite, config_2.handle->next == nullptr);
                     }
                 }
                 else
                 {
-                    // headOfChain (the second arg) is buffer_1
-                    buffer_2->SetDataLength(sLengths[n], buffer_1);
+                    // headOfChain (the second arg) is config_1.handle
+                    config_2.handle->SetDataLength(length, config_1.handle);
 
-                    if (sLengths[n] > (theSecondContext->end_buffer - theSecondContext->payload_ptr))
+                    if (length > (config_2.end_buffer - config_2.payload_ptr))
                     {
-                        NL_TEST_ASSERT(
-                            inSuite, theSecondContext->buf->len == (theSecondContext->end_buffer - theSecondContext->payload_ptr));
-                        NL_TEST_ASSERT(inSuite,
-                                       theSecondContext->buf->tot_len ==
-                                           (theSecondContext->end_buffer - theSecondContext->payload_ptr));
-                        NL_TEST_ASSERT(inSuite, theSecondContext->buf->next == NULL);
+                        NL_TEST_ASSERT(inSuite, config_2.handle->len == (config_2.end_buffer - config_2.payload_ptr));
+                        NL_TEST_ASSERT(inSuite, config_2.handle->tot_len == (config_2.end_buffer - config_2.payload_ptr));
+                        NL_TEST_ASSERT(inSuite, config_2.handle->next == nullptr);
 
                         NL_TEST_ASSERT(inSuite,
-                                       theFirstContext->buf->tot_len ==
-                                           (theFirstContext->init_len +
-                                            static_cast<int32_t>(theSecondContext->end_buffer - theSecondContext->payload_ptr) -
-                                            static_cast<int32_t>(theSecondContext->init_len)));
+                                       config_1.handle->tot_len ==
+                                           (config_1.init_len + static_cast<int32_t>(config_2.end_buffer - config_2.payload_ptr) -
+                                            static_cast<int32_t>(config_2.init_len)));
                     }
                     else
                     {
-                        NL_TEST_ASSERT(inSuite, theSecondContext->buf->len == sLengths[n]);
-                        NL_TEST_ASSERT(inSuite, theSecondContext->buf->tot_len == sLengths[n]);
-                        NL_TEST_ASSERT(inSuite, theSecondContext->buf->next == NULL);
+                        NL_TEST_ASSERT(inSuite, config_2.handle->len == length);
+                        NL_TEST_ASSERT(inSuite, config_2.handle->tot_len == length);
+                        NL_TEST_ASSERT(inSuite, config_2.handle->next == nullptr);
 
-                        NL_TEST_ASSERT(inSuite,
-                                       theFirstContext->buf->tot_len ==
-                                           (theFirstContext->init_len + static_cast<int32_t>(sLengths[n]) -
-                                            static_cast<int32_t>(theSecondContext->init_len)));
+                        NL_TEST_ASSERT(
+                            inSuite,
+                            config_1.handle->tot_len ==
+                                (config_1.init_len + static_cast<int32_t>(length) - static_cast<int32_t>(config_2.init_len)));
                     }
                 }
             }
-
-            theSecondContext++;
         }
-
-        theFirstContext++;
     }
 }
 
 /**
  *  Test PacketBuffer::TotalLength() function.
  */
-static void CheckTotalLength(nlTestSuite * inSuite, void * inContext)
+void PacketBufferTest::CheckTotalLength(nlTestSuite * inSuite, void * inContext)
 {
-    struct TestContext * theContext = (struct TestContext *) (inContext);
+    struct TestContext * const theContext = static_cast<struct TestContext *>(inContext);
+    PacketBufferTest * const test         = theContext->test;
+    NL_TEST_ASSERT(inSuite, test->mContext == theContext);
 
-    for (size_t ith = 0; ith < kTestElements; ith++)
+    for (auto & config : test->configurations)
     {
-        PacketBuffer * buffer = PrepareTestBuffer(theContext);
-
-        NL_TEST_ASSERT(inSuite, buffer->TotalLength() == theContext->init_len);
-
-        theContext++;
+        test->PrepareTestBuffer(&config, kRecordHandle);
+        NL_TEST_ASSERT(inSuite, config.handle->TotalLength() == config.init_len);
     }
 }
 
 /**
  *  Test PacketBuffer::MaxDataLength() function.
  */
-static void CheckMaxDataLength(nlTestSuite * inSuite, void * inContext)
+void PacketBufferTest::CheckMaxDataLength(nlTestSuite * inSuite, void * inContext)
 {
-    struct TestContext * theContext = (struct TestContext *) (inContext);
+    struct TestContext * const theContext = static_cast<struct TestContext *>(inContext);
+    PacketBufferTest * const test         = theContext->test;
+    NL_TEST_ASSERT(inSuite, test->mContext == theContext);
 
-    for (size_t ith = 0; ith < kTestElements; ith++)
+    for (auto & config : test->configurations)
     {
-        PacketBuffer * buffer = PrepareTestBuffer(theContext);
+        test->PrepareTestBuffer(&config, kRecordHandle);
 
-        NL_TEST_ASSERT(inSuite, buffer->MaxDataLength() == (theContext->end_buffer - theContext->payload_ptr));
-
-        theContext++;
+        NL_TEST_ASSERT(inSuite, config.handle->MaxDataLength() == (config.end_buffer - config.payload_ptr));
     }
 }
 
 /**
  *  Test PacketBuffer::AvailableDataLength() function.
  */
-static void CheckAvailableDataLength(nlTestSuite * inSuite, void * inContext)
+void PacketBufferTest::CheckAvailableDataLength(nlTestSuite * inSuite, void * inContext)
 {
-    struct TestContext * theContext = (struct TestContext *) (inContext);
+    struct TestContext * const theContext = static_cast<struct TestContext *>(inContext);
+    PacketBufferTest * const test         = theContext->test;
+    NL_TEST_ASSERT(inSuite, test->mContext == theContext);
 
-    for (size_t ith = 0; ith < kTestElements; ith++)
+    for (auto & config : test->configurations)
     {
-        PacketBuffer * buffer = PrepareTestBuffer(theContext);
+        test->PrepareTestBuffer(&config, kRecordHandle);
 
-        NL_TEST_ASSERT(
-            inSuite, buffer->AvailableDataLength() == ((theContext->end_buffer - theContext->payload_ptr) - theContext->init_len));
-
-        theContext++;
+        NL_TEST_ASSERT(inSuite,
+                       config.handle->AvailableDataLength() == ((config.end_buffer - config.payload_ptr) - config.init_len));
     }
 }
 
 /**
  *  Test PacketBuffer::ReservedSize() function.
  */
-static void CheckReservedSize(nlTestSuite * inSuite, void * inContext)
+void PacketBufferTest::CheckReservedSize(nlTestSuite * inSuite, void * inContext)
 {
-    struct TestContext * theContext = (struct TestContext *) (inContext);
+    struct TestContext * const theContext = static_cast<struct TestContext *>(inContext);
+    PacketBufferTest * const test         = theContext->test;
+    NL_TEST_ASSERT(inSuite, test->mContext == theContext);
 
-    for (size_t ith = 0; ith < kTestElements; ith++)
+    for (auto & config : test->configurations)
     {
-        PacketBuffer & lBuffer  = *PrepareTestBuffer(theContext);
-        const size_t kAllocSize = lBuffer.AllocSize();
+        test->PrepareTestBuffer(&config, kRecordHandle);
+        const size_t kAllocSize = config.handle->AllocSize();
 
-        if (theContext->reserved_size > kAllocSize)
+        if (config.reserved_size > kAllocSize)
         {
-            NL_TEST_ASSERT(inSuite, lBuffer.ReservedSize() == kAllocSize);
+            NL_TEST_ASSERT(inSuite, config.handle->ReservedSize() == kAllocSize);
         }
         else
         {
-            NL_TEST_ASSERT(inSuite, lBuffer.ReservedSize() == theContext->reserved_size);
+            NL_TEST_ASSERT(inSuite, config.handle->ReservedSize() == config.reserved_size);
         }
+    }
+}
 
-        theContext++;
+/**
+ *  Test PacketBuffer::HasChainedBuffer() function.
+ */
+void PacketBufferTest::CheckHasChainedBuffer(nlTestSuite * inSuite, void * inContext)
+{
+    struct TestContext * const theContext = static_cast<struct TestContext *>(inContext);
+    PacketBufferTest * const test         = theContext->test;
+    NL_TEST_ASSERT(inSuite, test->mContext == theContext);
+
+    for (auto & config_1 : test->configurations)
+    {
+        for (auto & config_2 : test->configurations)
+        {
+            if (&config_1 == &config_2)
+            {
+                continue;
+            }
+
+            test->PrepareTestBuffer(&config_1);
+            test->PrepareTestBuffer(&config_2);
+
+            NL_TEST_ASSERT(inSuite, config_1.handle->HasChainedBuffer() == false);
+            NL_TEST_ASSERT(inSuite, config_2.handle->HasChainedBuffer() == false);
+
+            config_1.handle->AddToEnd(config_2.handle.Retain());
+            NL_TEST_ASSERT(inSuite, config_1.handle->HasChainedBuffer() == true);
+            NL_TEST_ASSERT(inSuite, config_2.handle->HasChainedBuffer() == false);
+
+            config_1.handle = nullptr;
+            config_2.handle = nullptr;
+        }
     }
 }
 
@@ -463,106 +695,113 @@ static void CheckReservedSize(nlTestSuite * inSuite, void * inContext)
  *               This test function tests linking any combination of three
  *               buffer-configurations passed within inContext.
  */
-static void CheckAddToEnd(nlTestSuite * inSuite, void * inContext)
+void PacketBufferTest::CheckAddToEnd(nlTestSuite * inSuite, void * inContext)
 {
-    struct TestContext * theFirstContext = static_cast<struct TestContext *>(inContext);
+    struct TestContext * const theContext = static_cast<struct TestContext *>(inContext);
+    PacketBufferTest * const test         = theContext->test;
+    NL_TEST_ASSERT(inSuite, test->mContext == theContext);
 
-    for (size_t ith = 0; ith < kTestElements; ith++)
+    for (auto & config_1 : test->configurations)
     {
-        struct TestContext * theSecondContext = static_cast<struct TestContext *>(inContext);
-
-        for (size_t jth = 0; jth < kTestElements; jth++)
+        for (auto & config_2 : test->configurations)
         {
-            struct TestContext * theThirdContext = static_cast<struct TestContext *>(inContext);
-
-            for (size_t kth = 0; kth < kTestElements; kth++)
+            for (auto & config_3 : test->configurations)
             {
-                PacketBuffer * buffer_1 = NULL;
-                PacketBuffer * buffer_2 = NULL;
-                PacketBuffer * buffer_3 = NULL;
-
-                if (theFirstContext == theSecondContext || theFirstContext == theThirdContext ||
-                    theSecondContext == theThirdContext)
+                if (&config_1 == &config_2 || &config_1 == &config_3 || &config_2 == &config_3)
                 {
-                    theThirdContext++;
                     continue;
                 }
 
-                buffer_1 = PrepareTestBuffer(theFirstContext);
-                buffer_2 = PrepareTestBuffer(theSecondContext);
-                buffer_3 = PrepareTestBuffer(theThirdContext);
+                test->PrepareTestBuffer(&config_1);
+                test->PrepareTestBuffer(&config_2);
+                test->PrepareTestBuffer(&config_3);
+                NL_TEST_ASSERT(inSuite, config_1.handle->ref == 1);
+                NL_TEST_ASSERT(inSuite, config_2.handle->ref == 1);
+                NL_TEST_ASSERT(inSuite, config_3.handle->ref == 1);
 
-                buffer_1->AddToEnd(buffer_2);
+                config_1.handle->AddToEnd(config_2.handle.Retain());
+                NL_TEST_ASSERT(inSuite, config_1.handle->ref == 1); // config_1.handle
+                NL_TEST_ASSERT(inSuite, config_2.handle->ref == 2); // config_2.handle and config_1.handle->next
+                NL_TEST_ASSERT(inSuite, config_3.handle->ref == 1); // config_3.handle
 
-                NL_TEST_ASSERT(inSuite, theFirstContext->buf->tot_len == (theFirstContext->init_len + theSecondContext->init_len));
-                NL_TEST_ASSERT(inSuite, theFirstContext->buf->next == theSecondContext->buf);
-                NL_TEST_ASSERT(inSuite, theSecondContext->buf->next == NULL);
+                NL_TEST_ASSERT(inSuite, config_1.handle->tot_len == (config_1.init_len + config_2.init_len));
+                NL_TEST_ASSERT(inSuite, config_1.handle->next == config_2.handle.Get());
+                NL_TEST_ASSERT(inSuite, config_2.handle->next == nullptr);
+                NL_TEST_ASSERT(inSuite, config_3.handle->next == nullptr);
 
-                NL_TEST_ASSERT(inSuite, theThirdContext->buf->next == NULL);
+                config_1.handle->AddToEnd(config_3.handle.Retain());
+                NL_TEST_ASSERT(inSuite, config_1.handle->ref == 1); // config_1.handle
+                NL_TEST_ASSERT(inSuite, config_2.handle->ref == 2); // config_2.handle and config_1.handle->next
+                NL_TEST_ASSERT(inSuite, config_3.handle->ref == 2); // config_3.handle and config_2.handle->next
 
-                buffer_1->AddToEnd(buffer_3);
+                NL_TEST_ASSERT(inSuite, config_1.handle->tot_len == (config_1.init_len + config_2.init_len + config_3.init_len));
+                NL_TEST_ASSERT(inSuite, config_1.handle->next == config_2.handle.Get());
+                NL_TEST_ASSERT(inSuite, config_2.handle->next == config_3.handle.Get());
+                NL_TEST_ASSERT(inSuite, config_3.handle->next == nullptr);
 
-                NL_TEST_ASSERT(inSuite,
-                               theFirstContext->buf->tot_len ==
-                                   (theFirstContext->init_len + theSecondContext->init_len + theThirdContext->init_len));
-                NL_TEST_ASSERT(inSuite, theFirstContext->buf->next == theSecondContext->buf);
-                NL_TEST_ASSERT(inSuite, theSecondContext->buf->next == theThirdContext->buf);
-                NL_TEST_ASSERT(inSuite, theThirdContext->buf->next == NULL);
-
-                theThirdContext++;
+                config_1.handle = nullptr;
+                config_2.handle = nullptr;
+                config_3.handle = nullptr;
             }
-
-            theSecondContext++;
         }
-
-        theFirstContext++;
     }
 }
 
 /**
- *  Test PacketBuffer::DetachTail() function.
+ *  Test PacketBuffer::PopHead() function.
  *
  *  Description: Take two initial configurations of PacketBuffer from
  *               inContext and create two PacketBuffer instances based on those
  *               configurations. Next, link those buffers together, with the first
- *               buffer instance pointing to the second one. Then, call DetachTail()
+ *               buffer instance pointing to the second one. Then, call PopHead()
  *               on the first buffer to unlink the second buffer. After the call,
  *               verify correct internal state of the first buffer.
  */
-static void CheckDetachTail(nlTestSuite * inSuite, void * inContext)
+void PacketBufferTest::CheckPopHead(nlTestSuite * inSuite, void * inContext)
 {
-    struct TestContext * theFirstContext = static_cast<struct TestContext *>(inContext);
+    struct TestContext * const theContext = static_cast<struct TestContext *>(inContext);
+    PacketBufferTest * const test         = theContext->test;
+    NL_TEST_ASSERT(inSuite, test->mContext == theContext);
 
-    for (size_t ith = 0; ith < kTestElements; ith++)
+    // Single buffer test.
+    for (auto & config_1 : test->configurations)
     {
-        struct TestContext * theSecondContext = static_cast<struct TestContext *>(inContext);
+        test->PrepareTestBuffer(&config_1, kRecordHandle | kAllowHandleReuse);
+        NL_TEST_ASSERT(inSuite, config_1.handle->ref == 2);
 
-        for (size_t jth = 0; jth < kTestElements; jth++)
+        const PacketBuffer * const buffer_1 = config_1.handle.mBuffer;
+
+        const PacketBufferHandle popped = config_1.handle.PopHead();
+
+        NL_TEST_ASSERT(inSuite, config_1.handle.IsNull());
+        NL_TEST_ASSERT(inSuite, popped.mBuffer == buffer_1);
+        NL_TEST_ASSERT(inSuite, popped->next == nullptr);
+        NL_TEST_ASSERT(inSuite, popped->tot_len == config_1.init_len);
+        NL_TEST_ASSERT(inSuite, popped->ref == 2);
+    }
+    test->ResetHandles();
+
+    // Chained buffers test.
+    for (auto & config_1 : test->configurations)
+    {
+        for (auto & config_2 : test->configurations)
         {
-            PacketBuffer * buffer_1 = PrepareTestBuffer(theFirstContext);
-            PacketBuffer * buffer_2 = PrepareTestBuffer(theSecondContext);
-            PacketBuffer * returned = NULL;
-
-            if (theFirstContext != theSecondContext)
+            if (&config_1 == &config_2)
             {
-                theFirstContext->buf->next = theSecondContext->buf;
-                theFirstContext->buf->tot_len += theSecondContext->init_len;
+                continue;
             }
 
-            returned = buffer_1->DetachTail();
+            test->PrepareTestBuffer(&config_1, kRecordHandle | kAllowHandleReuse);
+            test->PrepareTestBuffer(&config_2, kRecordHandle | kAllowHandleReuse);
 
-            NL_TEST_ASSERT(inSuite, theFirstContext->buf->next == NULL);
-            NL_TEST_ASSERT(inSuite, theFirstContext->buf->tot_len == theFirstContext->init_len);
+            config_1.handle->AddToEnd(config_2.handle.Retain());
 
-            if (theFirstContext != theSecondContext)
-            {
-                NL_TEST_ASSERT(inSuite, returned == buffer_2);
-            }
+            const PacketBufferHandle popped = config_1.handle.PopHead();
 
-            theSecondContext++;
+            NL_TEST_ASSERT(inSuite, config_1.handle == config_2.handle);
+            NL_TEST_ASSERT(inSuite, config_1.handle->next == nullptr);
+            NL_TEST_ASSERT(inSuite, config_1.handle->tot_len == config_1.init_len);
         }
-
-        theFirstContext++;
     }
 }
 
@@ -577,77 +816,111 @@ static void CheckDetachTail(nlTestSuite * inSuite, void * inContext)
  *               the chain. After calling the method, verify correctly adjusted
  *               state of the first buffer.
  */
-static void CheckCompactHead(nlTestSuite * inSuite, void * inContext)
+void PacketBufferTest::CheckCompactHead(nlTestSuite * inSuite, void * inContext)
 {
-    struct TestContext * theFirstContext = static_cast<struct TestContext *>(inContext);
+    struct TestContext * const theContext = static_cast<struct TestContext *>(inContext);
+    PacketBufferTest * const test         = theContext->test;
+    NL_TEST_ASSERT(inSuite, test->mContext == theContext);
 
-    for (size_t ith = 0; ith < kTestElements; ith++)
+    // Single buffer test.
+    for (auto & config : test->configurations)
     {
-        struct TestContext * theSecondContext = static_cast<struct TestContext *>(inContext);
-
-        for (size_t jth = 0; jth < kTestElements; jth++)
+        for (size_t i = 0; i < theContext->length_count; ++i)
         {
-            // start with various initial length for the first buffer
-            for (size_t k = 0; k < kTestLengths; k++)
+            const uint16_t length = theContext->lengths[i];
+
+            test->PrepareTestBuffer(&config, kRecordHandle | kAllowHandleReuse);
+            config.handle->SetDataLength(length, config.handle);
+            const uint16_t data_length = config.handle->DataLength();
+
+            config.handle->CompactHead();
+
+            NL_TEST_ASSERT(inSuite, config.handle->payload == (config.start_buffer + CHIP_SYSTEM_PACKETBUFFER_HEADER_SIZE));
+            NL_TEST_ASSERT(inSuite, config.handle->tot_len == data_length);
+        }
+
+        config.handle = nullptr;
+    }
+    NL_TEST_ASSERT(inSuite, test->ResetHandles());
+
+    // Chained buffers test.
+    for (auto & config_1 : test->configurations)
+    {
+        for (auto & config_2 : test->configurations)
+        {
+            if (&config_1 == &config_2)
             {
+                continue;
+            }
+
+            // start with various initial length for the first buffer
+            for (size_t i = 0; i < theContext->length_count; ++i)
+            {
+                const uint16_t length_1 = theContext->lengths[i];
+
                 // start with various initial length for the second buffer
-                for (size_t l = 0; l < kTestLengths; l++)
+                for (size_t j = 0; j < theContext->length_count; ++j)
                 {
-                    PacketBuffer * buffer_1 = PrepareTestBuffer(theFirstContext);
-                    PacketBuffer * buffer_2 = PrepareTestBuffer(theSecondContext);
-                    uint16_t len1           = 0;
-                    uint16_t len2           = 0;
+                    const uint16_t length_2 = theContext->lengths[j];
 
-                    buffer_1->SetDataLength(sLengths[k], buffer_1);
-                    len1 = buffer_1->DataLength();
+                    test->PrepareTestBuffer(&config_1, kRecordHandle | kAllowHandleReuse);
+                    NL_TEST_ASSERT(inSuite, config_1.handle->ref == 2);
 
-                    if (theFirstContext != theSecondContext)
-                    {
-                        theFirstContext->buf->next = theSecondContext->buf;
+                    // CompactHead requires that there be no other references to the chained buffer,
+                    // so we manage it manually.
+                    test->PrepareTestBuffer(&config_2);
+                    NL_TEST_ASSERT(inSuite, config_2.handle->ref == 1);
+                    PacketBuffer * buffer_2 = std::move(config_2.handle).UnsafeRelease();
+                    NL_TEST_ASSERT(inSuite, config_2.handle.IsNull());
 
-                        // Add various lengths to the second buffer
-                        buffer_2->SetDataLength(sLengths[l], buffer_1);
-                        len2 = buffer_2->DataLength();
-                    }
+                    config_1.handle->SetDataLength(length_1, config_1.handle);
+                    const uint16_t data_length_1 = config_1.handle->DataLength();
 
-                    buffer_1->CompactHead();
+                    // This chain will cause buffer_2 to be freed.
+                    config_1.handle->next = buffer_2;
+
+                    // Add various lengths to the second buffer
+                    buffer_2->SetDataLength(length_2, config_1.handle);
+                    const uint16_t data_length_2 = buffer_2->DataLength();
+
+                    config_1.handle->CompactHead();
 
                     NL_TEST_ASSERT(inSuite,
-                                   theFirstContext->buf->payload ==
-                                       (theFirstContext->start_buffer + CHIP_SYSTEM_PACKETBUFFER_HEADER_SIZE));
+                                   config_1.handle->payload == (config_1.start_buffer + CHIP_SYSTEM_PACKETBUFFER_HEADER_SIZE));
 
-                    /* verify length of the first buffer */
-                    if (theFirstContext == theSecondContext)
+                    if (config_1.handle->tot_len > config_1.handle->MaxDataLength())
                     {
-                        NL_TEST_ASSERT(inSuite, theFirstContext->buf->tot_len == len1);
-                    }
-                    else if (theFirstContext->buf->tot_len > buffer_1->MaxDataLength())
-                    {
-                        NL_TEST_ASSERT(inSuite, theFirstContext->buf->len == buffer_1->MaxDataLength());
-                        NL_TEST_ASSERT(inSuite,
-                                       theSecondContext->buf->len == theFirstContext->buf->tot_len - buffer_1->MaxDataLength());
+                        NL_TEST_ASSERT(inSuite, config_1.handle->len == config_1.handle->MaxDataLength());
+                        NL_TEST_ASSERT(inSuite, buffer_2->len == config_1.handle->tot_len - config_1.handle->MaxDataLength());
+                        NL_TEST_ASSERT(inSuite, config_1.handle->next == buffer_2);
+                        NL_TEST_ASSERT(inSuite, config_1.handle->ref == 2);
+                        NL_TEST_ASSERT(inSuite, buffer_2->ref == 1);
                     }
                     else
                     {
-                        NL_TEST_ASSERT(inSuite, theFirstContext->buf->len == theFirstContext->buf->tot_len);
-                        if (len1 >= buffer_1->MaxDataLength() && len2 == 0)
+                        NL_TEST_ASSERT(inSuite, config_1.handle->len == config_1.handle->tot_len);
+                        if (data_length_1 >= config_1.handle->MaxDataLength() && data_length_2 == 0)
                         {
                             /* make sure the second buffer is not freed */
-                            NL_TEST_ASSERT(inSuite, theFirstContext->buf->next == theSecondContext->buf);
+                            NL_TEST_ASSERT(inSuite, config_1.handle->next == buffer_2);
+                            NL_TEST_ASSERT(inSuite, buffer_2->ref == 1);
                         }
                         else
                         {
                             /* make sure the second buffer is freed */
-                            NL_TEST_ASSERT(inSuite, theFirstContext->buf->next == NULL);
-                            theSecondContext->buf = NULL;
+                            NL_TEST_ASSERT(inSuite, config_1.handle->next == nullptr);
+                            buffer_2 = nullptr;
                         }
                     }
+
+                    NL_TEST_ASSERT(inSuite, config_1.handle->ref == 2);
+                    config_1.handle = nullptr;
+
+                    // Verify and release handles.
+                    NL_TEST_ASSERT(inSuite, test->ResetHandles());
                 }
             }
-            theSecondContext++;
         }
-
-        theFirstContext++;
     }
 }
 
@@ -661,38 +934,34 @@ static void CheckCompactHead(nlTestSuite * inSuite, void * inContext)
  *               the internal state of the buffer has been correctly
  *               adjusted according to the value passed into the method.
  */
-static void CheckConsumeHead(nlTestSuite * inSuite, void * inContext)
+void PacketBufferTest::CheckConsumeHead(nlTestSuite * inSuite, void * inContext)
 {
-    struct TestContext * theContext = (struct TestContext *) (inContext);
+    struct TestContext * const theContext = static_cast<struct TestContext *>(inContext);
+    PacketBufferTest * const test         = theContext->test;
+    NL_TEST_ASSERT(inSuite, test->mContext == theContext);
 
-    for (size_t ith = 0; ith < kTestElements; ith++)
+    for (auto & config : test->configurations)
     {
-        for (size_t n = 0; n < kTestLengths; n++)
+        for (size_t i = 0; i < theContext->length_count; ++i)
         {
-            PacketBuffer * buffer = PrepareTestBuffer(theContext);
+            const uint16_t length = theContext->lengths[i];
+            test->PrepareTestBuffer(&config, kRecordHandle | kAllowHandleReuse);
 
-            buffer->ConsumeHead(sLengths[n]);
+            config.handle->ConsumeHead(length);
 
-            if (sLengths[n] > theContext->init_len)
+            if (length > config.init_len)
             {
-                NL_TEST_ASSERT(inSuite, theContext->buf->payload == (theContext->payload_ptr + theContext->init_len));
-                NL_TEST_ASSERT(inSuite, theContext->buf->len == 0);
-                NL_TEST_ASSERT(inSuite, theContext->buf->tot_len == 0);
+                NL_TEST_ASSERT(inSuite, config.handle->payload == (config.payload_ptr + config.init_len));
+                NL_TEST_ASSERT(inSuite, config.handle->len == 0);
+                NL_TEST_ASSERT(inSuite, config.handle->tot_len == 0);
             }
             else
             {
-                NL_TEST_ASSERT(inSuite, theContext->buf->payload == (theContext->payload_ptr + sLengths[n]));
-                NL_TEST_ASSERT(inSuite, theContext->buf->len == (theContext->buf->len - sLengths[n]));
-                NL_TEST_ASSERT(inSuite, theContext->buf->tot_len == (theContext->buf->tot_len - sLengths[n]));
-            }
-
-            if (theContext->buf->ref == 0)
-            {
-                theContext->buf = NULL;
+                NL_TEST_ASSERT(inSuite, config.handle->payload == (config.payload_ptr + length));
+                NL_TEST_ASSERT(inSuite, config.handle->len == (config.handle->len - length));
+                NL_TEST_ASSERT(inSuite, config.handle->tot_len == (config.handle->tot_len - length));
             }
         }
-
-        theContext++;
     }
 }
 
@@ -708,80 +977,92 @@ static void CheckConsumeHead(nlTestSuite * inSuite, void * inContext)
  *               method, verify correctly adjusted the state of the first
  *               buffer and appropriate return pointer from the method's call.
  */
-static void CheckConsume(nlTestSuite * inSuite, void * inContext)
+void PacketBufferTest::CheckConsume(nlTestSuite * inSuite, void * inContext)
 {
-    struct TestContext * theFirstContext = static_cast<struct TestContext *>(inContext);
+    struct TestContext * const theContext = static_cast<struct TestContext *>(inContext);
+    PacketBufferTest * const test         = theContext->test;
+    NL_TEST_ASSERT(inSuite, test->mContext == theContext);
 
-    for (size_t ith = 0; ith < kTestElements; ith++)
+    for (auto & config_1 : test->configurations)
     {
-        struct TestContext * theSecondContext = static_cast<struct TestContext *>(inContext);
-
-        for (size_t jth = 0; jth < kTestElements; jth++)
+        for (auto & config_2 : test->configurations)
         {
-            // consume various amounts of memory
-            for (size_t c = 0; c < kTestLengths; c++)
+            if (&config_1 == &config_2)
             {
+                continue;
+            }
+
+            // consume various amounts of memory
+            for (size_t i = 0; i < theContext->length_count; ++i)
+            {
+                const uint16_t consumeLength = theContext->lengths[i];
                 // start with various initial length for the first buffer
-                for (size_t k = 0; k < kTestLengths; k++)
+                for (size_t j = 0; j < theContext->length_count; ++j)
                 {
+                    const uint16_t len_1 = theContext->lengths[j];
                     // start with various initial length for the second buffer
-                    for (size_t l = 0; l < kTestLengths; l++)
+                    for (size_t k = 0; k < theContext->length_count; ++k)
                     {
-                        PacketBuffer * buffer_1;
-                        PacketBuffer * buffer_2;
-                        PacketBuffer * returned;
-                        uint16_t buf_1_len = 0;
-                        uint16_t buf_2_len = 0;
+                        const uint16_t len_2 = theContext->lengths[k];
 
-                        if (theFirstContext == theSecondContext)
-                        {
-                            continue;
-                        }
+                        test->PrepareTestBuffer(&config_1);
+                        test->PrepareTestBuffer(&config_2);
+                        NL_TEST_ASSERT(inSuite, config_1.handle->ref == 1);
+                        NL_TEST_ASSERT(inSuite, config_2.handle->ref == 1);
 
-                        buffer_1 = PrepareTestBuffer(theFirstContext);
-                        buffer_2 = PrepareTestBuffer(theSecondContext);
-
-                        theFirstContext->buf->next = theSecondContext->buf;
+                        config_1.handle->AddToEnd(config_2.handle.Retain());
 
                         // Add various lengths to buffers
-                        buffer_1->SetDataLength(sLengths[k], buffer_1);
-                        buffer_2->SetDataLength(sLengths[l], buffer_1);
+                        config_1.handle->SetDataLength(len_1, config_1.handle);
+                        config_2.handle->SetDataLength(len_2, config_1.handle);
 
-                        buf_1_len = theFirstContext->buf->len;
-                        buf_2_len = theSecondContext->buf->len;
+                        const uint16_t buf_1_len = config_1.handle->len;
+                        const uint16_t buf_2_len = config_2.handle->len;
 
-                        returned = buffer_1->Consume(sLengths[c]);
+                        PacketBufferHandle original_handle_1 = config_1.handle.Retain();
+                        NL_TEST_ASSERT(inSuite, config_1.handle->ref == 2); // config_1.handle and original_handle_1
+                        NL_TEST_ASSERT(inSuite, config_2.handle->ref == 2); // config_2.handle and config_1.handle->next
 
-                        if (sLengths[c] == 0)
+                        config_1.handle.Consume(consumeLength);
+
+                        if (consumeLength == 0)
                         {
-                            NL_TEST_ASSERT(inSuite, returned == buffer_1);
-                            continue;
+                            NL_TEST_ASSERT(inSuite, config_1.handle == original_handle_1);
+                            NL_TEST_ASSERT(inSuite, config_1.handle->len == buf_1_len);
+                            NL_TEST_ASSERT(inSuite, config_2.handle->len == buf_2_len);
+                            NL_TEST_ASSERT(inSuite, config_1.handle->ref == 2); // config_1.handle and original_handle_1
+                            NL_TEST_ASSERT(inSuite, config_2.handle->ref == 2); // config_2.handle and config_1.handle->next
+                        }
+                        else if (consumeLength < buf_1_len)
+                        {
+                            NL_TEST_ASSERT(inSuite, config_1.handle == original_handle_1);
+                            NL_TEST_ASSERT(inSuite, config_1.handle->len == buf_1_len - consumeLength);
+                            NL_TEST_ASSERT(inSuite, config_2.handle->len == buf_2_len);
+                            NL_TEST_ASSERT(inSuite, config_1.handle->ref == 2); // config_1.handle and original_handle_1
+                            NL_TEST_ASSERT(inSuite, config_2.handle->ref == 2); // config_2.handle and config_1.handle->next
+                        }
+                        else if ((consumeLength < buf_1_len + buf_2_len ||
+                                  (consumeLength == buf_1_len + buf_2_len && buf_2_len == 0)))
+                        {
+                            NL_TEST_ASSERT(inSuite, config_1.handle == config_2.handle);
+                            NL_TEST_ASSERT(inSuite, config_2.handle->len == buf_1_len + buf_2_len - consumeLength);
+                            NL_TEST_ASSERT(inSuite, original_handle_1->ref == 1); // original_handle_1
+                            NL_TEST_ASSERT(inSuite, config_2.handle->ref == 2);   // config_1.handle and config_2.handle
+                        }
+                        else
+                        {
+                            NL_TEST_ASSERT(inSuite, config_1.handle.IsNull());
+                            NL_TEST_ASSERT(inSuite, original_handle_1->ref == 1); // original_handle_1
+                            NL_TEST_ASSERT(inSuite, config_2.handle->ref == 1);   // config_2.handle
                         }
 
-                        if (sLengths[c] < buf_1_len)
-                        {
-                            NL_TEST_ASSERT(inSuite, returned == buffer_1);
-                        }
-                        else if ((sLengths[c] >= buf_1_len) &&
-                                 (sLengths[c] < buf_1_len + buf_2_len || (sLengths[c] == buf_1_len + buf_2_len && buf_2_len == 0)))
-                        {
-                            NL_TEST_ASSERT(inSuite, returned == buffer_2);
-                            theFirstContext->buf = NULL;
-                        }
-                        else if (sLengths[c] >= (buf_1_len + buf_2_len))
-                        {
-                            NL_TEST_ASSERT(inSuite, returned == NULL);
-                            theFirstContext->buf  = NULL;
-                            theSecondContext->buf = NULL;
-                        }
+                        original_handle_1 = nullptr;
+                        config_1.handle   = nullptr;
+                        config_2.handle   = nullptr;
                     }
                 }
             }
-
-            theSecondContext++;
         }
-
-        theFirstContext++;
     }
 }
 
@@ -794,40 +1075,42 @@ static void CheckConsume(nlTestSuite * inSuite, void * inContext)
  *               Then, verify that EnsureReservedSize() method correctly
  *               retrieves the amount of the reserved space.
  */
-static void CheckEnsureReservedSize(nlTestSuite * inSuite, void * inContext)
+void PacketBufferTest::CheckEnsureReservedSize(nlTestSuite * inSuite, void * inContext)
 {
-    struct TestContext * theContext = (struct TestContext *) (inContext);
+    struct TestContext * const theContext = static_cast<struct TestContext *>(inContext);
+    PacketBufferTest * const test         = theContext->test;
+    NL_TEST_ASSERT(inSuite, test->mContext == theContext);
 
-    for (size_t ith = 0; ith < kTestElements; ith++)
+    for (auto & config : test->configurations)
     {
-        for (size_t n = 0; n < kTestLengths; n++)
+        for (size_t i = 0; i < theContext->length_count; ++i)
         {
-            PacketBuffer & lBuffer  = *PrepareTestBuffer(theContext);
-            const size_t kAllocSize = lBuffer.AllocSize();
-            uint16_t reserved_size  = theContext->reserved_size;
+            const uint16_t length = theContext->lengths[i];
 
-            if (CHIP_SYSTEM_PACKETBUFFER_HEADER_SIZE + theContext->reserved_size > kAllocSize)
+            test->PrepareTestBuffer(&config, kRecordHandle | kAllowHandleReuse);
+            const uint16_t kAllocSize = config.handle->AllocSize();
+            uint16_t reserved_size    = config.reserved_size;
+
+            if (CHIP_SYSTEM_PACKETBUFFER_HEADER_SIZE + config.reserved_size > kAllocSize)
             {
-                reserved_size = kAllocSize - CHIP_SYSTEM_PACKETBUFFER_HEADER_SIZE;
+                reserved_size = static_cast<uint16_t>(kAllocSize - CHIP_SYSTEM_PACKETBUFFER_HEADER_SIZE);
             }
 
-            if (sLengths[n] <= reserved_size)
+            if (length <= reserved_size)
             {
-                NL_TEST_ASSERT(inSuite, lBuffer.EnsureReservedSize(sLengths[n]) == true);
+                NL_TEST_ASSERT(inSuite, config.handle->EnsureReservedSize(length) == true);
                 continue;
             }
 
-            if ((sLengths[n] + theContext->init_len) > (kAllocSize - CHIP_SYSTEM_PACKETBUFFER_HEADER_SIZE))
+            if ((length + config.init_len) > (kAllocSize - CHIP_SYSTEM_PACKETBUFFER_HEADER_SIZE))
             {
-                NL_TEST_ASSERT(inSuite, lBuffer.EnsureReservedSize(sLengths[n]) == false);
+                NL_TEST_ASSERT(inSuite, config.handle->EnsureReservedSize(length) == false);
                 continue;
             }
 
-            NL_TEST_ASSERT(inSuite, lBuffer.EnsureReservedSize(sLengths[n]) == true);
-            NL_TEST_ASSERT(inSuite, theContext->buf->payload == (theContext->payload_ptr + sLengths[n] - reserved_size));
+            NL_TEST_ASSERT(inSuite, config.handle->EnsureReservedSize(length) == true);
+            NL_TEST_ASSERT(inSuite, config.handle->payload == (config.payload_ptr + length - reserved_size));
         }
-
-        theContext++;
     }
 }
 
@@ -840,153 +1123,150 @@ static void CheckEnsureReservedSize(nlTestSuite * inSuite, void * inContext)
  *               required payload shift. Then, verify that AlignPayload()
  *               method correctly aligns the payload start pointer.
  */
-static void CheckAlignPayload(nlTestSuite * inSuite, void * inContext)
+void PacketBufferTest::CheckAlignPayload(nlTestSuite * inSuite, void * inContext)
 {
-    struct TestContext * theContext = (struct TestContext *) (inContext);
+    struct TestContext * const theContext = static_cast<struct TestContext *>(inContext);
+    PacketBufferTest * const test         = theContext->test;
+    NL_TEST_ASSERT(inSuite, test->mContext == theContext);
 
-    for (size_t ith = 0; ith < kTestElements; ith++)
+    for (auto & config : test->configurations)
     {
-        for (size_t n = 0; n < kTestLengths - 1; n++)
+        for (size_t n = 0; n < theContext->length_count; ++n)
         {
-            PacketBuffer & lBuffer  = *PrepareTestBuffer(theContext);
-            const size_t kAllocSize = lBuffer.AllocSize();
+            test->PrepareTestBuffer(&config, kRecordHandle | kAllowHandleReuse);
+            const uint16_t kAllocSize = config.handle->AllocSize();
 
-            if (sLengths[n] == 0)
+            if (theContext->lengths[n] == 0)
             {
-                NL_TEST_ASSERT(inSuite, lBuffer.AlignPayload(sLengths[n]) == false);
+                NL_TEST_ASSERT(inSuite, config.handle->AlignPayload(theContext->lengths[n]) == false);
                 continue;
             }
 
-            uint16_t reserved_size = theContext->reserved_size;
-            if (theContext->reserved_size > kAllocSize)
+            uint16_t reserved_size = config.reserved_size;
+            if (config.reserved_size > kAllocSize)
             {
                 reserved_size = kAllocSize;
             }
 
-            uint16_t payload_offset = (unsigned long) lBuffer.Start() % sLengths[n];
-            uint16_t payload_shift  = 0;
+            const uint16_t payload_offset =
+                static_cast<uint16_t>(reinterpret_cast<uintptr_t>(config.handle->Start()) % theContext->lengths[n]);
+            uint16_t payload_shift = 0;
             if (payload_offset > 0)
-                payload_shift = sLengths[n] - payload_offset;
+                payload_shift = static_cast<uint16_t>(theContext->lengths[n] - payload_offset);
 
             if (payload_shift <= kAllocSize - reserved_size)
             {
-                NL_TEST_ASSERT(inSuite, lBuffer.AlignPayload(sLengths[n]) == true);
-                NL_TEST_ASSERT(inSuite, ((unsigned long) lBuffer.Start() % sLengths[n]) == 0);
+                NL_TEST_ASSERT(inSuite, config.handle->AlignPayload(theContext->lengths[n]) == true);
+                NL_TEST_ASSERT(inSuite, ((unsigned long) config.handle->Start() % theContext->lengths[n]) == 0);
             }
             else
             {
-                NL_TEST_ASSERT(inSuite, lBuffer.AlignPayload(sLengths[n]) == false);
+                NL_TEST_ASSERT(inSuite, config.handle->AlignPayload(theContext->lengths[n]) == false);
             }
         }
-
-        theContext++;
     }
 }
 
 /**
  *  Test PacketBuffer::Next() function.
  */
-static void CheckNext(nlTestSuite * inSuite, void * inContext)
+void PacketBufferTest::CheckNext(nlTestSuite * inSuite, void * inContext)
 {
-    struct TestContext * theFirstContext = static_cast<struct TestContext *>(inContext);
+    struct TestContext * const theContext = static_cast<struct TestContext *>(inContext);
+    PacketBufferTest * const test         = theContext->test;
+    NL_TEST_ASSERT(inSuite, test->mContext == theContext);
 
-    for (size_t ith = 0; ith < kTestElements; ith++)
+    for (auto & config_1 : test->configurations)
     {
-        struct TestContext * theSecondContext = static_cast<struct TestContext *>(inContext);
-
-        for (size_t jth = 0; jth < kTestElements; jth++)
+        for (auto & config_2 : test->configurations)
         {
-            PacketBuffer * buffer_1 = PrepareTestBuffer(theFirstContext);
-            PacketBuffer * buffer_2 = PrepareTestBuffer(theSecondContext);
+            test->PrepareTestBuffer(&config_1, kRecordHandle | kAllowHandleReuse);
+            test->PrepareTestBuffer(&config_2, kRecordHandle | kAllowHandleReuse);
 
-            if (theFirstContext != theSecondContext)
+            if (&config_1 != &config_2)
             {
-                theFirstContext->buf->next = theSecondContext->buf;
+                NL_TEST_ASSERT(inSuite, config_1.handle->Next().IsNull());
 
-                NL_TEST_ASSERT(inSuite, buffer_1->Next() == buffer_2);
+                config_1.handle->AddToEnd(config_2.handle.Retain());
+
+                NL_TEST_ASSERT(inSuite, config_1.handle->Next() == config_2.handle);
+                NL_TEST_ASSERT(inSuite, config_1.handle->ChainedBuffer() == config_2.handle.Get());
             }
             else
             {
-                NL_TEST_ASSERT(inSuite, buffer_1->Next() == NULL);
+                NL_TEST_ASSERT(inSuite, !config_1.handle->HasChainedBuffer());
             }
 
-            NL_TEST_ASSERT(inSuite, buffer_2->Next() == NULL);
-            theSecondContext++;
+            NL_TEST_ASSERT(inSuite, !config_2.handle->HasChainedBuffer());
         }
+    }
+}
 
-        theFirstContext++;
+/**
+ *  Test PacketBuffer::Last() function.
+ */
+void PacketBufferTest::CheckLast(nlTestSuite * inSuite, void * inContext)
+{
+    struct TestContext * const theContext = static_cast<struct TestContext *>(inContext);
+    PacketBufferTest * const test         = theContext->test;
+    NL_TEST_ASSERT(inSuite, test->mContext == theContext);
+
+    for (auto & config_1 : test->configurations)
+    {
+        for (auto & config_2 : test->configurations)
+        {
+            for (auto & config_3 : test->configurations)
+            {
+                if (&config_1 == &config_2 || &config_1 == &config_3 || &config_2 == &config_3)
+                {
+                    continue;
+                }
+
+                test->PrepareTestBuffer(&config_1);
+                test->PrepareTestBuffer(&config_2);
+                test->PrepareTestBuffer(&config_3);
+
+                NL_TEST_ASSERT(inSuite, config_1.handle->Last() == config_1.handle);
+                NL_TEST_ASSERT(inSuite, config_2.handle->Last() == config_2.handle);
+                NL_TEST_ASSERT(inSuite, config_3.handle->Last() == config_3.handle);
+
+                config_1.handle->AddToEnd(config_2.handle.Retain());
+
+                NL_TEST_ASSERT(inSuite, config_1.handle->Last() == config_2.handle);
+                NL_TEST_ASSERT(inSuite, config_2.handle->Last() == config_2.handle);
+                NL_TEST_ASSERT(inSuite, config_3.handle->Last() == config_3.handle);
+
+                config_1.handle->AddToEnd(config_3.handle.Retain());
+
+                NL_TEST_ASSERT(inSuite, config_1.handle->Last() == config_3.handle);
+                NL_TEST_ASSERT(inSuite, config_2.handle->Last() == config_3.handle);
+                NL_TEST_ASSERT(inSuite, config_3.handle->Last() == config_3.handle);
+
+                config_1.handle = nullptr;
+                config_2.handle = nullptr;
+                config_3.handle = nullptr;
+            }
+        }
     }
 }
 
 /**
  *  Test PacketBuffer::AddRef() function.
  */
-static void CheckAddRef(nlTestSuite * inSuite, void * inContext)
+void PacketBufferTest::CheckAddRef(nlTestSuite * inSuite, void * inContext)
 {
-    struct TestContext * theContext = (struct TestContext *) (inContext);
+    struct TestContext * const theContext = static_cast<struct TestContext *>(inContext);
+    PacketBufferTest * const test         = theContext->test;
+    NL_TEST_ASSERT(inSuite, test->mContext == theContext);
 
-    for (size_t ith = 0; ith < kTestElements; ith++)
+    for (auto & config : test->configurations)
     {
-        PacketBuffer * buffer = PrepareTestBuffer(theContext);
-        buffer->AddRef();
-
-        NL_TEST_ASSERT(inSuite, theContext->buf->ref == 2);
-
-        theContext++;
+        test->PrepareTestBuffer(&config, kRecordHandle);
+        const auto refs = config.handle->ref;
+        config.handle->AddRef();
+        NL_TEST_ASSERT(inSuite, config.handle->ref == refs + 1);
+        config.handle->ref = refs; // Don't leak buffers.
     }
-}
-
-/**
- *  Test PacketBuffer::NewWithAvailableSize() and PacketBuffer::Free() functions.
- *
- *  Description: For every buffer-configuration from inContext, create a
- *               buffer's instance using NewWithAvailableSize() method. Then, verify that
- *               when the size of the reserved space passed to NewWithAvailableSize() is
- *               greater than #CHIP_SYSTEM_CONFIG_PACKETBUFFER_CAPACITY_MAX, the method
- *               returns NULL. Otherwise, check for correctness of initializing
- *               the new buffer's internal state. Finally, free the buffer.
- */
-static void CheckNewWithAvailableSizeAndFree(nlTestSuite * inSuite, void * inContext)
-{
-    struct TestContext * theContext = (struct TestContext *) (inContext);
-    PacketBuffer * buffer;
-
-    for (size_t ith = 0; ith < kTestElements; ith++)
-    {
-        struct pbuf * pb = NULL;
-
-        buffer = PacketBuffer::NewWithAvailableSize(theContext->reserved_size, 0);
-
-        if (theContext->reserved_size > CHIP_SYSTEM_CONFIG_PACKETBUFFER_CAPACITY_MAX)
-        {
-            NL_TEST_ASSERT(inSuite, buffer == NULL);
-            theContext++;
-            continue;
-        }
-
-        NL_TEST_ASSERT(inSuite, theContext->reserved_size <= buffer->AllocSize());
-        NL_TEST_ASSERT(inSuite, buffer != NULL);
-
-        if (buffer != NULL)
-        {
-            pb = TO_LWIP_PBUF(buffer);
-
-            NL_TEST_ASSERT(inSuite, pb->len == 0);
-            NL_TEST_ASSERT(inSuite, pb->tot_len == 0);
-            NL_TEST_ASSERT(inSuite, pb->next == NULL);
-            NL_TEST_ASSERT(inSuite, pb->ref == 1);
-        }
-
-        PacketBuffer::Free(buffer);
-
-        theContext++;
-    }
-
-    // Use the rest of the buffer space
-    do
-    {
-        buffer = PacketBuffer::NewWithAvailableSize(0, 0);
-    } while (buffer != NULL);
 }
 
 /**
@@ -1000,71 +1280,90 @@ static void CheckNewWithAvailableSizeAndFree(nlTestSuite * inSuite, void * inCon
  *               the chain and verify correctly adjusted states of the two
  *               buffers.
  */
-static void CheckFree(nlTestSuite * inSuite, void * inContext)
+void PacketBufferTest::CheckFree(nlTestSuite * inSuite, void * inContext)
 {
-    struct TestContext * theFirstContext = static_cast<struct TestContext *>(inContext);
+    struct TestContext * const theContext = static_cast<struct TestContext *>(inContext);
+    PacketBufferTest * const test         = theContext->test;
+    NL_TEST_ASSERT(inSuite, test->mContext == theContext);
 
-    for (size_t ith = 0; ith < kTestElements; ith++)
+    const decltype(PacketBuffer::ref) init_ref_count[] = { 1, 2, 3 };
+    constexpr size_t kRefs                             = sizeof(init_ref_count) / sizeof(init_ref_count[0]);
+
+    for (auto & config_1 : test->configurations)
     {
-        struct TestContext * theSecondContext = static_cast<struct TestContext *>(inContext);
-
-        for (size_t jth = 0; jth < kTestElements; jth++)
+        for (auto & config_2 : test->configurations)
         {
-            const uint16_t init_ref_count[] = { 1, 2, 3 };
-            const int refs                  = sizeof(init_ref_count) / sizeof(uint16_t);
+            if (&config_1 == &config_2)
+            {
+                continue;
+            }
 
             // start with various buffer ref counts
-            for (size_t r = 0; r < refs; r++)
+            for (size_t r = 0; r < kRefs; r++)
             {
-                PacketBuffer * buffer_1;
+                config_1.handle = PacketBufferHandle::New(chip::System::kMaxPacketBufferSizeWithoutReserve, 0);
+                config_2.handle = PacketBufferHandle::New(chip::System::kMaxPacketBufferSizeWithoutReserve, 0);
+                NL_TEST_ASSERT(inSuite, !config_1.handle.IsNull());
+                NL_TEST_ASSERT(inSuite, !config_2.handle.IsNull());
 
-                if (theFirstContext == theSecondContext)
+                test->PrepareTestBuffer(&config_1, kAllowHandleReuse);
+                test->PrepareTestBuffer(&config_2, kAllowHandleReuse);
+                NL_TEST_ASSERT(inSuite, config_1.handle->ref == 1);
+                NL_TEST_ASSERT(inSuite, config_2.handle->ref == 1);
+
+                // Chain buffers.
+                config_1.handle->next = config_2.handle.Get();
+
+                // Add various buffer ref counts.
+                const auto initial_refs_1 = config_1.handle->ref = init_ref_count[r];
+                const auto initial_refs_2 = config_2.handle->ref = init_ref_count[(r + 1) % kRefs];
+
+                // Free head.
+                PacketBuffer::Free(config_1.handle.mBuffer);
+                if (initial_refs_1 == 1)
                 {
-                    continue;
+                    config_1.handle.mBuffer = nullptr;
                 }
 
-                buffer_1 = PrepareTestBuffer(theFirstContext);
-                (void) PrepareTestBuffer(theSecondContext);
-
-                theFirstContext->buf->next = theSecondContext->buf;
-
-                // Add various buffer ref counts
-                theFirstContext->buf->ref  = init_ref_count[r];
-                theSecondContext->buf->ref = init_ref_count[(r + 1) % refs];
-
-                PacketBuffer::Free(buffer_1);
-
-                NL_TEST_ASSERT(inSuite, theFirstContext->buf->ref == (init_ref_count[r] - 1));
-
-                if (init_ref_count[r] == 1)
+                // Verification.
+                if (initial_refs_1 > 1)
                 {
-                    NL_TEST_ASSERT(inSuite, theSecondContext->buf->ref == (init_ref_count[(r + 1) % refs] - 1));
+                    // Verify that head ref count is decremented.
+                    NL_TEST_ASSERT(inSuite, config_1.handle->ref == initial_refs_1 - 1);
+                    // Verify that chain is maintained.
+                    NL_TEST_ASSERT(inSuite, config_1.handle->next == config_2.handle.Get());
+                    // Verify that chained buffer ref count has not changed.
+                    NL_TEST_ASSERT(inSuite, config_2.handle->ref == initial_refs_2);
                 }
                 else
                 {
-                    NL_TEST_ASSERT(inSuite, theSecondContext->buf->ref == (init_ref_count[(r + 1) % refs]));
+                    if (initial_refs_2 > 1)
+                    {
+                        // Verify that chained buffer ref count is decremented.
+                        NL_TEST_ASSERT(inSuite, config_2.handle->ref == initial_refs_2 - 1);
+                    }
+                    else
+                    {
+                        // Since the test used fake ref counts, config_2.handle now points
+                        // to a freed buffer; clear the handle's internal pointer.
+                        config_2.handle.mBuffer = nullptr;
+                    }
                 }
 
-                if (init_ref_count[r] > 1)
+                // Clean up.
+                if (!config_1.handle.IsNull())
                 {
-                    NL_TEST_ASSERT(inSuite, theFirstContext->buf->next == theSecondContext->buf);
+                    config_1.handle->next = nullptr;
+                    config_1.handle->ref  = 1;
+                    config_1.handle       = nullptr;
                 }
-
-                if (theFirstContext->buf->ref == 0)
+                if (!config_2.handle.IsNull())
                 {
-                    theFirstContext->buf = NULL;
-                }
-
-                if (theSecondContext->buf->ref == 0)
-                {
-                    theSecondContext->buf = NULL;
+                    config_2.handle->ref = 1;
+                    config_2.handle      = nullptr;
                 }
             }
-
-            theSecondContext++;
         }
-
-        theFirstContext++;
     }
 }
 
@@ -1077,130 +1376,412 @@ static void CheckFree(nlTestSuite * inSuite, void * inContext)
  *               FreeHead() on the first buffer in the chain and verify that
  *               the method returned pointer to the second buffer.
  */
-static void CheckFreeHead(nlTestSuite * inSuite, void * inContext)
+void PacketBufferTest::CheckFreeHead(nlTestSuite * inSuite, void * inContext)
 {
-    struct TestContext * theFirstContext = static_cast<struct TestContext *>(inContext);
+    struct TestContext * const theContext = static_cast<struct TestContext *>(inContext);
+    PacketBufferTest * const test         = theContext->test;
+    NL_TEST_ASSERT(inSuite, test->mContext == theContext);
 
-    for (size_t ith = 0; ith < kTestElements; ith++)
+    for (auto & config_1 : test->configurations)
     {
-        struct TestContext * theSecondContext = static_cast<struct TestContext *>(inContext);
-
-        for (size_t jth = 0; jth < kTestElements; jth++)
+        for (auto & config_2 : test->configurations)
         {
-            PacketBuffer * buffer_1;
-            PacketBuffer * buffer_2;
-            PacketBuffer * returned = NULL;
-
-            if (theFirstContext == theSecondContext)
+            if (&config_1 == &config_2)
             {
                 continue;
             }
 
-            buffer_1 = PrepareTestBuffer(theFirstContext);
-            buffer_2 = PrepareTestBuffer(theSecondContext);
+            // Test PacketBuffer::FreeHead
 
-            theFirstContext->buf->next = theSecondContext->buf;
+            test->PrepareTestBuffer(&config_1, kAllowHandleReuse);
+            test->PrepareTestBuffer(&config_2, kAllowHandleReuse);
+            NL_TEST_ASSERT(inSuite, config_1.handle->ref == 1);
+            NL_TEST_ASSERT(inSuite, config_2.handle->ref == 1);
 
-            returned = PacketBuffer::FreeHead(buffer_1);
+            PacketBufferHandle handle_1 = config_1.handle.Retain();
+            config_1.handle->AddToEnd(config_2.handle.Retain());
+            NL_TEST_ASSERT(inSuite, config_1.handle->ref == 2);
+            NL_TEST_ASSERT(inSuite, config_2.handle->ref == 2); // config_2.handle and config_1.handle->next
 
-            NL_TEST_ASSERT(inSuite, returned == buffer_2);
+            PacketBuffer * const returned = PacketBuffer::FreeHead(std::move(config_1.handle).UnsafeRelease());
 
-            theFirstContext->buf = NULL;
-            theSecondContext++;
+            NL_TEST_ASSERT(inSuite, handle_1->ref == 1);
+            NL_TEST_ASSERT(inSuite, config_2.handle->ref == 2); // config_2.handle and returned
+            NL_TEST_ASSERT(inSuite, returned == config_2.handle.Get());
+
+            config_1.handle = nullptr;
+            NL_TEST_ASSERT(inSuite, config_2.handle->ref == 2);
+            config_2.handle = nullptr;
+            NL_TEST_ASSERT(inSuite, returned->ref == 1);
+            PacketBuffer::Free(returned);
+
+            // Test PacketBufferHandle::FreeHead
+
+            test->PrepareTestBuffer(&config_1, kAllowHandleReuse);
+            test->PrepareTestBuffer(&config_2, kAllowHandleReuse);
+            NL_TEST_ASSERT(inSuite, config_1.handle->ref == 1);
+            NL_TEST_ASSERT(inSuite, config_2.handle->ref == 1);
+
+            handle_1 = config_1.handle.Retain();
+            config_1.handle->AddToEnd(config_2.handle.Retain());
+            NL_TEST_ASSERT(inSuite, config_1.handle->ref == 2);
+            NL_TEST_ASSERT(inSuite, config_2.handle->ref == 2); // config_2.handle and config_1.handle->next
+
+            PacketBuffer * const buffer_1 = config_1.handle.Get();
+
+            config_1.handle.FreeHead();
+
+            NL_TEST_ASSERT(inSuite, buffer_1->ref == 1);
+            NL_TEST_ASSERT(inSuite, config_1.handle == config_2.handle);
+            NL_TEST_ASSERT(inSuite, config_2.handle->ref == 2); // config_2.handle and config_1.handle
+
+            config_1.handle = nullptr;
+            config_2.handle = nullptr;
         }
-
-        theFirstContext++;
     }
 }
 
-/**
- *  Test PacketBuffer::BuildFreeList() function.
- */
-static void CheckBuildFreeList(nlTestSuite * inSuite, void * inContext)
+void PacketBufferTest::CheckHandleConstruct(nlTestSuite * inSuite, void * inContext)
 {
-    // BuildFreeList() is a private method called automatically.
-    (void) inSuite;
-    (void) inContext;
+    struct TestContext * const theContext = static_cast<struct TestContext *>(inContext);
+    PacketBufferTest * const test         = theContext->test;
+    NL_TEST_ASSERT(inSuite, test->mContext == theContext);
+
+    PacketBufferHandle handle_1;
+    NL_TEST_ASSERT(inSuite, handle_1.IsNull());
+
+    PacketBufferHandle handle_2(nullptr);
+    NL_TEST_ASSERT(inSuite, handle_2.IsNull());
+
+    PacketBufferHandle handle_3(PacketBufferHandle::New(chip::System::kMaxPacketBufferSize));
+    NL_TEST_ASSERT(inSuite, !handle_3.IsNull());
+
+    // Private constructor.
+    PacketBuffer * const buffer_3 = std::move(handle_3).UnsafeRelease();
+    PacketBufferHandle handle_4(buffer_3);
+    NL_TEST_ASSERT(inSuite, handle_4.Get() == buffer_3);
+}
+
+void PacketBufferTest::CheckHandleMove(nlTestSuite * inSuite, void * inContext)
+{
+    struct TestContext * const theContext = static_cast<struct TestContext *>(inContext);
+    PacketBufferTest * const test         = theContext->test;
+    NL_TEST_ASSERT(inSuite, test->mContext == theContext);
+
+    for (auto & config_1 : test->configurations)
+    {
+        for (auto & config_2 : test->configurations)
+        {
+            if (&config_1 == &config_2)
+            {
+                continue;
+            }
+
+            test->PrepareTestBuffer(&config_1, kRecordHandle);
+            test->PrepareTestBuffer(&config_2, kRecordHandle);
+
+            const PacketBuffer * const buffer_1 = config_1.handle.Get();
+            const PacketBuffer * const buffer_2 = config_2.handle.Get();
+            NL_TEST_ASSERT(inSuite, buffer_1 != buffer_2);
+            NL_TEST_ASSERT(inSuite, buffer_1->ref == 2); // test.handles and config_1.handle
+            NL_TEST_ASSERT(inSuite, buffer_2->ref == 2); // test.handles and config_2.handle
+
+            config_1.handle = std::move(config_2.handle);
+            NL_TEST_ASSERT(inSuite, config_1.handle.Get() == buffer_2);
+            NL_TEST_ASSERT(inSuite, config_2.handle.Get() == nullptr);
+            NL_TEST_ASSERT(inSuite, buffer_1->ref == 1); // test.handles
+            NL_TEST_ASSERT(inSuite, buffer_2->ref == 2); // test.handles and config_1.handle
+
+            config_1.handle = nullptr;
+        }
+        // Verify and release handles.
+        NL_TEST_ASSERT(inSuite, test->ResetHandles());
+    }
+}
+
+void PacketBufferTest::CheckHandleRelease(nlTestSuite * inSuite, void * inContext)
+{
+    struct TestContext * const theContext = static_cast<struct TestContext *>(inContext);
+    PacketBufferTest * const test         = theContext->test;
+    NL_TEST_ASSERT(inSuite, test->mContext == theContext);
+
+    for (auto & config_1 : test->configurations)
+    {
+        test->PrepareTestBuffer(&config_1);
+
+        PacketBuffer * const buffer_1 = config_1.handle.Get();
+        PacketBuffer * const taken_1  = std::move(config_1.handle).UnsafeRelease();
+
+        NL_TEST_ASSERT(inSuite, buffer_1 == taken_1);
+        NL_TEST_ASSERT(inSuite, config_1.handle.IsNull());
+        NL_TEST_ASSERT(inSuite, buffer_1->ref == 1);
+        PacketBuffer::Free(buffer_1);
+    }
+}
+
+void PacketBufferTest::CheckHandleFree(nlTestSuite * inSuite, void * inContext)
+{
+    struct TestContext * const theContext = static_cast<struct TestContext *>(inContext);
+    PacketBufferTest * const test         = theContext->test;
+    NL_TEST_ASSERT(inSuite, test->mContext == theContext);
+
+    for (auto & config_1 : test->configurations)
+    {
+        test->PrepareTestBuffer(&config_1, kRecordHandle);
+
+        const PacketBuffer * const buffer_1 = config_1.handle.Get();
+        NL_TEST_ASSERT(inSuite, buffer_1->ref == 2); // test.handles and config_1.handle
+
+        config_1.handle = nullptr;
+        NL_TEST_ASSERT(inSuite, config_1.handle.IsNull());
+        NL_TEST_ASSERT(inSuite, config_1.handle.Get() == nullptr);
+        NL_TEST_ASSERT(inSuite, buffer_1->ref == 1); // test.handles only
+    }
+}
+
+void PacketBufferTest::CheckHandleRetain(nlTestSuite * inSuite, void * inContext)
+{
+    struct TestContext * const theContext = static_cast<struct TestContext *>(inContext);
+    PacketBufferTest * const test         = theContext->test;
+    NL_TEST_ASSERT(inSuite, test->mContext == theContext);
+
+    for (auto & config_1 : test->configurations)
+    {
+        test->PrepareTestBuffer(&config_1, kRecordHandle);
+
+        NL_TEST_ASSERT(inSuite, config_1.handle->ref == 2); // test.handles and config_1.handle
+
+        PacketBufferHandle handle_1 = config_1.handle.Retain();
+
+        NL_TEST_ASSERT(inSuite, config_1.handle == handle_1);
+        NL_TEST_ASSERT(inSuite, config_1.handle->ref == 3); // test.handles and config_1.handle and handle_1
+    }
+}
+
+void PacketBufferTest::CheckHandleAdopt(nlTestSuite * inSuite, void * inContext)
+{
+    struct TestContext * const theContext = static_cast<struct TestContext *>(inContext);
+    PacketBufferTest * const test         = theContext->test;
+    NL_TEST_ASSERT(inSuite, test->mContext == theContext);
+
+    for (auto & config_1 : test->configurations)
+    {
+        test->PrepareTestBuffer(&config_1, kRecordHandle);
+        PacketBuffer * buffer_1 = std::move(config_1.handle).UnsafeRelease();
+
+        NL_TEST_ASSERT(inSuite, config_1.handle.IsNull());
+        NL_TEST_ASSERT(inSuite, buffer_1->ref == 2); // test.handles and buffer_1
+
+        config_1.handle = PacketBufferHandle::Adopt(buffer_1);
+        NL_TEST_ASSERT(inSuite, config_1.handle.Get() == buffer_1);
+        NL_TEST_ASSERT(inSuite, config_1.handle->ref == 2); // test.handles and config_1.handle
+
+        config_1.handle = nullptr;
+        NL_TEST_ASSERT(inSuite, config_1.handle.IsNull());
+        NL_TEST_ASSERT(inSuite, buffer_1->ref == 1); // test.handles only
+    }
+}
+
+void PacketBufferTest::CheckHandleHold(nlTestSuite * inSuite, void * inContext)
+{
+    struct TestContext * const theContext = static_cast<struct TestContext *>(inContext);
+    PacketBufferTest * const test         = theContext->test;
+    NL_TEST_ASSERT(inSuite, test->mContext == theContext);
+
+    for (auto & config_1 : test->configurations)
+    {
+        test->PrepareTestBuffer(&config_1, kRecordHandle);
+        PacketBuffer * buffer_1 = std::move(config_1.handle).UnsafeRelease();
+
+        NL_TEST_ASSERT(inSuite, config_1.handle.IsNull());
+        NL_TEST_ASSERT(inSuite, buffer_1->ref == 2); // test.handles and buffer_1
+
+        config_1.handle = PacketBufferHandle::Hold(buffer_1);
+        NL_TEST_ASSERT(inSuite, config_1.handle.Get() == buffer_1);
+        NL_TEST_ASSERT(inSuite, config_1.handle->ref == 3); // test.handles and config_1.handle and buffer_1
+
+        config_1.handle = nullptr;
+        NL_TEST_ASSERT(inSuite, config_1.handle.IsNull());
+        NL_TEST_ASSERT(inSuite, buffer_1->ref == 2); // test.handles only and buffer_1
+
+        PacketBuffer::Free(buffer_1);
+    }
+}
+
+void PacketBufferTest::CheckHandleAdvance(nlTestSuite * inSuite, void * inContext)
+{
+    struct TestContext * const theContext = static_cast<struct TestContext *>(inContext);
+    PacketBufferTest * const test         = theContext->test;
+    NL_TEST_ASSERT(inSuite, test->mContext == theContext);
+
+    for (auto & config_1 : test->configurations)
+    {
+        for (auto & config_2 : test->configurations)
+        {
+            for (auto & config_3 : test->configurations)
+            {
+                if (&config_1 == &config_2 || &config_1 == &config_3 || &config_2 == &config_3)
+                {
+                    continue;
+                }
+
+                test->PrepareTestBuffer(&config_1);
+                test->PrepareTestBuffer(&config_2);
+                test->PrepareTestBuffer(&config_3);
+
+                PacketBufferHandle handle_1 = config_1.handle.Retain();
+                PacketBufferHandle handle_2 = config_2.handle.Retain();
+                PacketBufferHandle handle_3 = config_3.handle.Retain();
+
+                config_1.handle->AddToEnd(config_2.handle.Retain());
+                config_1.handle->AddToEnd(config_3.handle.Retain());
+
+                NL_TEST_ASSERT(inSuite, config_1.handle->ChainedBuffer() == config_2.handle.Get());
+                NL_TEST_ASSERT(inSuite, config_2.handle->ChainedBuffer() == config_3.handle.Get());
+                NL_TEST_ASSERT(inSuite, config_3.handle->HasChainedBuffer() == false);
+                NL_TEST_ASSERT(inSuite, handle_1->ref == 2); // handle_1 and config_1.handle
+                NL_TEST_ASSERT(inSuite, handle_2->ref == 3); // handle_2 and config_2.handle and config_1.handle->next
+                NL_TEST_ASSERT(inSuite, handle_3->ref == 3); // handle_3 and config_3.handle and config_2.handle->next
+
+                config_1.handle.Advance();
+
+                NL_TEST_ASSERT(inSuite, config_1.handle == handle_2);
+                NL_TEST_ASSERT(inSuite, handle_1->ref == 1); // handle_1 only
+                NL_TEST_ASSERT(inSuite, handle_2->ref == 4); // handle_2, config_[12].handle, handle_1->next
+                NL_TEST_ASSERT(inSuite, handle_3->ref == 3); // handle_3, config_3.handle, config_2.handle->next
+
+                config_1.handle.Advance();
+
+                NL_TEST_ASSERT(inSuite, config_1.handle == handle_3);
+                NL_TEST_ASSERT(inSuite, handle_1->ref == 1); // handle_1 only
+                NL_TEST_ASSERT(inSuite, handle_2->ref == 3); // handle_2, config_2.handle, handle_1->next
+                NL_TEST_ASSERT(inSuite, handle_3->ref == 4); // handle_3, config_[13].handle, handle_2->next
+
+                config_1.handle = nullptr;
+                config_2.handle = nullptr;
+                config_3.handle = nullptr;
+            }
+        }
+    }
+}
+
+void PacketBufferTest::CheckHandleRightSize(nlTestSuite * inSuite, void * inContext)
+{
+    struct TestContext * const theContext = static_cast<struct TestContext *>(inContext);
+    PacketBufferTest * const test         = theContext->test;
+    NL_TEST_ASSERT(inSuite, test->mContext == theContext);
+
+    const char kPayload[]     = "Joy!";
+    PacketBufferHandle handle = PacketBufferHandle::New(chip::System::kMaxPacketBufferSizeWithoutReserve, 0);
+    PacketBuffer * buffer     = handle.mBuffer;
+
+    memcpy(handle->Start(), kPayload, sizeof kPayload);
+    buffer->SetDataLength(sizeof kPayload);
+    NL_TEST_ASSERT(inSuite, handle->ref == 1);
+
+    // RightSize should do nothing if there is another reference to the buffer.
+    {
+        PacketBufferHandle anotherHandle = handle.Retain();
+        handle.RightSize();
+        NL_TEST_ASSERT(inSuite, handle.mBuffer == buffer);
+    }
+
+#if (CHIP_SYSTEM_CONFIG_USE_LWIP && LWIP_PBUF_FROM_CUSTOM_POOLS) || (CHIP_SYSTEM_CONFIG_PACKETBUFFER_MAXALLOC == 0)
+
+    handle.RightSize();
+    NL_TEST_ASSERT(inSuite, handle.mBuffer != buffer);
+    NL_TEST_ASSERT(inSuite, handle->DataSize() == sizeof kPayload);
+    NL_TEST_ASSERT(inSuite, memcmp(handle->Start(), kPayload, sizeof kPayload) == 0);
+
+#else // !((CHIP_SYSTEM_CONFIG_USE_LWIP && LWIP_PBUF_FROM_CUSTOM_POOLS) || (CHIP_SYSTEM_CONFIG_PACKETBUFFER_MAXALLOC == 0))
+
+    // For this configuration, RightSize() does nothing.
+    handle.RightSize();
+    NL_TEST_ASSERT(inSuite, handle.mBuffer == buffer);
+
+#endif // !((CHIP_SYSTEM_CONFIG_USE_LWIP && LWIP_PBUF_FROM_CUSTOM_POOLS) || (CHIP_SYSTEM_CONFIG_PACKETBUFFER_MAXALLOC == 0))
+}
+
+void PacketBufferTest::CheckPacketBufferWriter(nlTestSuite * inSuite, void * inContext)
+{
+    struct TestContext * const theContext = static_cast<struct TestContext *>(inContext);
+    PacketBufferTest * const test         = theContext->test;
+    NL_TEST_ASSERT(inSuite, test->mContext == theContext);
+
+    const char kPayload[] = "Hello, world!";
+
+    PacketBufferWriter yay(sizeof(kPayload));
+    PacketBufferWriter nay(sizeof(kPayload) - 2);
+    NL_TEST_ASSERT(inSuite, !yay.IsNull());
+    NL_TEST_ASSERT(inSuite, !nay.IsNull());
+
+    yay.Put(kPayload);
+    nay.Put(kPayload);
+    NL_TEST_ASSERT(inSuite, yay.Fit());
+    NL_TEST_ASSERT(inSuite, !nay.Fit());
+
+    PacketBufferHandle yayBuffer = yay.Finalize();
+    PacketBufferHandle nayBuffer = nay.Finalize();
+    NL_TEST_ASSERT(inSuite, yay.IsNull());
+    NL_TEST_ASSERT(inSuite, nay.IsNull());
+    NL_TEST_ASSERT(inSuite, !yayBuffer.IsNull());
+    NL_TEST_ASSERT(inSuite, nayBuffer.IsNull());
+    NL_TEST_ASSERT(inSuite, memcmp(yayBuffer->Start(), kPayload, sizeof kPayload) == 0);
 }
 
 /**
  *   Test Suite. It lists all the test functions.
  */
 // clang-format off
-static const nlTest sTests[] =
+const nlTest sTests[] =
 {
-    NL_TEST_DEF("PacketBuffer::NewWithAvailableSize&PacketBuffer::Free", CheckNewWithAvailableSizeAndFree),
-    NL_TEST_DEF("PacketBuffer::Start",                          CheckStart),
-    NL_TEST_DEF("PacketBuffer::SetStart",                       CheckSetStart),
-    NL_TEST_DEF("PacketBuffer::DataLength",                     CheckDataLength),
-    NL_TEST_DEF("PacketBuffer::SetDataLength",                  CheckSetDataLength),
-    NL_TEST_DEF("PacketBuffer::TotalLength",                    CheckTotalLength),
-    NL_TEST_DEF("PacketBuffer::MaxDataLength",                  CheckMaxDataLength),
-    NL_TEST_DEF("PacketBuffer::AvailableDataLength",            CheckAvailableDataLength),
-    NL_TEST_DEF("PacketBuffer::ReservedSize",                   CheckReservedSize),
-    NL_TEST_DEF("PacketBuffer::AddToEnd",                       CheckAddToEnd),
-    NL_TEST_DEF("PacketBuffer::DetachTail",                     CheckDetachTail),
-    NL_TEST_DEF("PacketBuffer::CompactHead",                    CheckCompactHead),
-    NL_TEST_DEF("PacketBuffer::ConsumeHead",                    CheckConsumeHead),
-    NL_TEST_DEF("PacketBuffer::Consume",                        CheckConsume),
-    NL_TEST_DEF("PacketBuffer::EnsureReservedSize",             CheckEnsureReservedSize),
-    NL_TEST_DEF("PacketBuffer::AlignPayload",                   CheckAlignPayload),
-    NL_TEST_DEF("PacketBuffer::Next",                           CheckNext),
-    NL_TEST_DEF("PacketBuffer::AddRef",                         CheckAddRef),
-    NL_TEST_DEF("PacketBuffer::Free",                           CheckFree),
-    NL_TEST_DEF("PacketBuffer::FreeHead",                       CheckFreeHead),
-    NL_TEST_DEF("PacketBuffer::BuildFreeList",                  CheckBuildFreeList),
+    NL_TEST_DEF("PacketBuffer::New",                    PacketBufferTest::CheckNew),
+    NL_TEST_DEF("PacketBuffer::Start",                  PacketBufferTest::CheckStart),
+    NL_TEST_DEF("PacketBuffer::SetStart",               PacketBufferTest::CheckSetStart),
+    NL_TEST_DEF("PacketBuffer::DataLength",             PacketBufferTest::CheckDataLength),
+    NL_TEST_DEF("PacketBuffer::SetDataLength",          PacketBufferTest::CheckSetDataLength),
+    NL_TEST_DEF("PacketBuffer::TotalLength",            PacketBufferTest::CheckTotalLength),
+    NL_TEST_DEF("PacketBuffer::MaxDataLength",          PacketBufferTest::CheckMaxDataLength),
+    NL_TEST_DEF("PacketBuffer::AvailableDataLength",    PacketBufferTest::CheckAvailableDataLength),
+    NL_TEST_DEF("PacketBuffer::HasChainedBuffer",       PacketBufferTest::CheckHasChainedBuffer),
+    NL_TEST_DEF("PacketBuffer::ReservedSize",           PacketBufferTest::CheckReservedSize),
+    NL_TEST_DEF("PacketBuffer::AddToEnd",               PacketBufferTest::CheckAddToEnd),
+    NL_TEST_DEF("PacketBuffer::PopHead",                PacketBufferTest::CheckPopHead),
+    NL_TEST_DEF("PacketBuffer::CompactHead",            PacketBufferTest::CheckCompactHead),
+    NL_TEST_DEF("PacketBuffer::ConsumeHead",            PacketBufferTest::CheckConsumeHead),
+    NL_TEST_DEF("PacketBuffer::Consume",                PacketBufferTest::CheckConsume),
+    NL_TEST_DEF("PacketBuffer::EnsureReservedSize",     PacketBufferTest::CheckEnsureReservedSize),
+    NL_TEST_DEF("PacketBuffer::AlignPayload",           PacketBufferTest::CheckAlignPayload),
+    NL_TEST_DEF("PacketBuffer::Next",                   PacketBufferTest::CheckNext),
+    NL_TEST_DEF("PacketBuffer::Last",                   PacketBufferTest::CheckLast),
+    NL_TEST_DEF("PacketBuffer::AddRef",                 PacketBufferTest::CheckAddRef),
+    NL_TEST_DEF("PacketBuffer::Free",                   PacketBufferTest::CheckFree),
+    NL_TEST_DEF("PacketBuffer::FreeHead",               PacketBufferTest::CheckFreeHead),
+    NL_TEST_DEF("PacketBuffer::HandleConstruct",        PacketBufferTest::CheckHandleConstruct),
+    NL_TEST_DEF("PacketBuffer::HandleMove",             PacketBufferTest::CheckHandleMove),
+    NL_TEST_DEF("PacketBuffer::HandleRelease",          PacketBufferTest::CheckHandleRelease),
+    NL_TEST_DEF("PacketBuffer::HandleFree",             PacketBufferTest::CheckHandleFree),
+    NL_TEST_DEF("PacketBuffer::HandleRetain",           PacketBufferTest::CheckHandleRetain),
+    NL_TEST_DEF("PacketBuffer::HandleAdopt",            PacketBufferTest::CheckHandleAdopt),
+    NL_TEST_DEF("PacketBuffer::HandleHold",             PacketBufferTest::CheckHandleHold),
+    NL_TEST_DEF("PacketBuffer::HandleAdvance",          PacketBufferTest::CheckHandleAdvance),
+    NL_TEST_DEF("PacketBuffer::HandleRightSize",        PacketBufferTest::CheckHandleRightSize),
+    NL_TEST_DEF("PacketBuffer::PacketBufferWriter",     PacketBufferTest::CheckPacketBufferWriter),
 
     NL_TEST_SENTINEL()
 };
 // clang-format on
 
-/**
- * Set up the test suite.
- *
- *  This is a work-around to initiate PacketBuffer protected class instance's data and set it to a known state, before an instance
- *  is created.
- */
-static int TestSetup(void * inContext)
-{
-    struct TestContext * theContext = reinterpret_cast<TestContext *>(inContext);
-
-    for (size_t ith = 0; ith < kTestElements; ith++)
-    {
-        BufferAlloc(theContext);
-        theContext++;
-    }
-
-    return (SUCCESS);
-}
-
-/**
- * Tear down the test suite.
- *
- *  Free memory reserved at TestSetup.
- */
-static int TestTeardown(void * inContext)
-{
-    struct TestContext * theContext = reinterpret_cast<TestContext *>(inContext);
-
-    for (size_t ith = 0; ith < kTestElements; ith++)
-    {
-        BufferFree(theContext);
-        theContext++;
-    }
-
-    return (SUCCESS);
-}
-
 int TestSystemPacketBuffer(void)
 {
     // clang-format off
-    nlTestSuite theSuite =
-	{
-        "chip-system-packetbuffer",
-        &sTests[0],
-        TestSetup,
-        TestTeardown
+    nlTestSuite theSuite = {
+        .name ="chip-system-packetbuffer",
+        .tests = &sTests[0],
+        .setup = PacketBufferTest::TestSetup,
+        .tear_down = PacketBufferTest::TestTeardown,
+        // .initialize = PacketBufferTest::TestInitialize,
+        .terminate = PacketBufferTest::TestTerminate
     };
     // clang-format on
 
@@ -1210,7 +1791,4 @@ int TestSystemPacketBuffer(void)
     return (nlTestRunnerStats(&theSuite));
 }
 
-static void __attribute__((constructor)) TestSystemPacketBufferCtor(void)
-{
-    VerifyOrDie(chip::RegisterUnitTests(&TestSystemPacketBuffer) == CHIP_NO_ERROR);
-}
+CHIP_REGISTER_TEST_SUITE(TestSystemPacketBuffer)

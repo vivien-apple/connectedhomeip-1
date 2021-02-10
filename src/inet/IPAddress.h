@@ -1,6 +1,6 @@
 /*
  *
- *    Copyright (c) 2020 Project CHIP Authors
+ *    Copyright (c) 2020-2021 Project CHIP Authors
  *    Copyright (c) 2019 Google LLC.
  *    Copyright (c) 2013-2018 Nest Labs, Inc.
  *
@@ -26,8 +26,7 @@
  *      internally in the V4COMPAT format, reserved for that purpose.)
  */
 
-#ifndef IPADDRESS_H
-#define IPADDRESS_H
+#pragma once
 
 #include <stddef.h>
 #include <stdint.h>
@@ -48,7 +47,6 @@
 #endif // CHIP_SYSTEM_CONFIG_USE_LWIP
 
 #if CHIP_SYSTEM_CONFIG_USE_SOCKETS || CHIP_SYSTEM_CONFIG_USE_NETWORK_FRAMEWORK
-#include <ifaddrs.h>
 #include <net/if.h>
 #include <netinet/in.h>
 #endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS || CHIP_SYSTEM_CONFIG_USE_NETWORK_FRAMEWORK
@@ -125,6 +123,15 @@ typedef enum
 } IPv6MulticastFlag;
 
 /**
+ * @brief   Maximum length of the string representation of an IP address.
+ */
+#if CHIP_SYSTEM_CONFIG_USE_LWIP
+constexpr uint16_t kMaxIPAddressStringLength = IP6ADDR_STRLEN_MAX;
+#else
+constexpr uint16_t kMaxIPAddressStringLength = INET6_ADDRSTRLEN;
+#endif
+
+/**
  * @brief   Internet protocol address
  *
  * @details
@@ -134,6 +141,14 @@ typedef enum
 class DLL_EXPORT IPAddress
 {
 public:
+    IPAddress() = default;
+
+    /**
+     *  Copy constructor for the IPAddress class.
+     *
+     */
+    IPAddress(const IPAddress & other) = default;
+
     /**
      * @brief   Opaque word array to contain IP addresses (independent of protocol version)
      *
@@ -155,7 +170,7 @@ public:
      * @retval true   The address is IPv6 and not the unspecified address.
      * @retval false  The address is IPv4 or the unspecified address.
      */
-    bool IsIPv6(void) const;
+    bool IsIPv6() const;
 
     /**
      * @brief   Test whether address is IPv6 global unicast address.
@@ -167,7 +182,7 @@ public:
      * @retval true  Address is IPv6 global unicast
      * @retval false Otherwise
      */
-    bool IsIPv6GlobalUnicast(void) const;
+    bool IsIPv6GlobalUnicast() const;
 
     /**
      * @brief   Test whether address is IPv6 unique-local address (ULA).
@@ -179,7 +194,7 @@ public:
      * @retval true  Address is IPv6 unique-local
      * @retval false Otherwise
      */
-    bool IsIPv6ULA(void) const;
+    bool IsIPv6ULA() const;
 
     /**
      * @brief   Test whether address is IPv6 link-local address (LL).
@@ -191,7 +206,7 @@ public:
      * @retval true  Address is IPv6 link-local
      * @retval false Otherwise
      */
-    bool IsIPv6LinkLocal(void) const;
+    bool IsIPv6LinkLocal() const;
 
     /**
      * @brief   Test whether address is IPv6 multicast.
@@ -203,7 +218,7 @@ public:
      * @retval true  Address is IPv6 multicast
      * @retval false Otherwise
      */
-    bool IsIPv6Multicast(void) const;
+    bool IsIPv6Multicast() const;
 
     /**
      * @brief   Test whether address is IPv4 or IPv6 multicast.
@@ -215,7 +230,7 @@ public:
      * @retval true  Address is IPv4 or IPv6 multicast
      * @retval false Otherwise
      */
-    bool IsMulticast(void) const;
+    bool IsMulticast() const;
 
     /**
      * @brief   Extract the IID of an IPv6 ULA address.
@@ -228,7 +243,7 @@ public:
      * @return 64-bit interface identifier, or zero if the IP address is not
      *  an IPv6 unique-local address.
      */
-    uint64_t InterfaceId(void) const;
+    uint64_t InterfaceId() const;
 
     /**
      * @brief   Extract the 16-bit subnet identifier of an IPv6 ULA address.
@@ -243,7 +258,7 @@ public:
      * @return 16-bit subnet identifier, or zero if the IP address is not
      *  an IPv6 unique-local address.
      */
-    uint16_t Subnet(void) const;
+    uint16_t Subnet() const;
 
     /**
      * @brief   Extract the 16-bit global network identifier of an IPv6 ULA
@@ -259,7 +274,7 @@ public:
      * @return 40-bit global network identifier, or zero if the IP address
      *  is not an IPv6 unique-local address.
      */
-    uint64_t GlobalId(void) const;
+    uint64_t GlobalId() const;
 
     /**
      * @brief   Extract the type of the IP address.
@@ -272,7 +287,7 @@ public:
      * @retval  kIPAddressType_IPv6 The address is IPv6.
      * @retval  kIPAddressType_Any  The address is the unspecified address.
      */
-    IPAddressType Type(void) const;
+    IPAddressType Type() const;
 
     /**
      * @brief   Compare this IP address with another for equivalence.
@@ -390,7 +405,7 @@ public:
      * @retval true   The address is IPv4 and not the unspecified address.
      * @retval false  The address is IPv6 or the unspecified address.
      */
-    bool IsIPv4(void) const;
+    bool IsIPv4() const;
 
     /**
      * @brief   Test whether address is IPv4 multicast.
@@ -402,7 +417,7 @@ public:
      * @retval true  Address is the IPv4 multicast
      * @retval false Otherwise
      */
-    bool IsIPv4Multicast(void) const;
+    bool IsIPv4Multicast() const;
 
     /**
      * @brief   Test whether address is IPv4 broadcast.
@@ -414,7 +429,7 @@ public:
      * @retval true  Address is the IPv4 broadcast
      * @retval false Otherwise
      */
-    bool IsIPv4Broadcast(void) const;
+    bool IsIPv4Broadcast() const;
 
     /**
      * @fn      ToIPv4() const
@@ -539,11 +554,11 @@ public:
 
 #if CHIP_SYSTEM_CONFIG_USE_SOCKETS || CHIP_SYSTEM_CONFIG_USE_NETWORK_FRAMEWORK
 
-    struct in6_addr ToIPv6(void) const;
+    struct in6_addr ToIPv6() const;
     static IPAddress FromIPv6(const struct in6_addr & addr);
 
 #if INET_CONFIG_ENABLE_IPV4
-    struct in_addr ToIPv4(void) const;
+    struct in_addr ToIPv4() const;
     static IPAddress FromIPv4(const struct in_addr & addr);
 #endif // INET_CONFIG_ENABLE_IPV4
 
@@ -656,7 +671,7 @@ public:
      *
      * @return  The constructed IP address.
      */
-    static IPAddress MakeIPv4Broadcast(void);
+    static IPAddress MakeIPv4Broadcast();
 
     /**
      * @brief   The distinguished unspecified IP address object.
@@ -670,5 +685,3 @@ public:
 
 } // namespace Inet
 } // namespace chip
-
-#endif // !defined(IPADDRESS_H)

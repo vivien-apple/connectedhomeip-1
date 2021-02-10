@@ -30,6 +30,7 @@
 /* this file behaves like a config.h, comes first */
 #include <platform/internal/CHIPDeviceLayerInternal.h>
 
+#include <support/CodeUtils.h>
 #include <support/logging/CHIPLogging.h>
 
 #include <queue.h>
@@ -42,10 +43,25 @@
 #define LOG_RTT_BUFFER_INDEX 0
 #endif
 
+/**
+ * @def LOG_RTT_BUFFER_NAME
+ *
+ * RTT's name. Only used if LOG_RTT_BUFFER_INDEX is not 0. Otherwise,
+ * the buffer name is fixed to "Terminal".
+ *
+ */
 #ifndef LOG_RTT_BUFFER_NAME
 #define LOG_RTT_BUFFER_NAME "Terminal"
 #endif
 
+/**
+ * @def LOG_RTT_BUFFER_SIZE
+ *
+ * LOG RTT's buffer size. Only used if LOG_RTT_BUFFER_INDEX is not 0. To
+ * configure buffer #0 size, check the BUFFER_SIZE_UP definition in
+ * SEGGER_RTT_Conf.h
+ *
+ */
 #ifndef LOG_RTT_BUFFER_SIZE
 #define LOG_RTT_BUFFER_SIZE 256
 #endif
@@ -66,7 +82,10 @@ using namespace ::chip::DeviceLayer;
 using namespace ::chip::DeviceLayer::Internal;
 
 static bool sLogInitialized = false;
+#if LOG_RTT_BUFFER_INDEX != 0
 static uint8_t sLogBuffer[LOG_RTT_BUFFER_SIZE];
+static uint8_t sCmdLineBuffer[LOG_RTT_BUFFER_SIZE];
+#endif
 
 /**
  * Print a log message to RTT
@@ -78,11 +97,11 @@ static void PrintLog(const char * msg)
     {
         size_t sz;
         sz = strlen(msg);
-        SEGGER_RTT_WriteNoLock(0, msg, sz);
+        SEGGER_RTT_WriteNoLock(LOG_RTT_BUFFER_INDEX, msg, sz);
 
         const char * newline = "\r\n";
         sz                   = strlen(newline);
-        SEGGER_RTT_WriteNoLock(0, newline, sz);
+        SEGGER_RTT_WriteNoLock(LOG_RTT_BUFFER_INDEX, newline, sz);
     }
 #endif // EFR32_LOG_ENABLED
 }
@@ -90,15 +109,20 @@ static void PrintLog(const char * msg)
 /**
  * Initialize Segger RTT for logging
  */
-extern "C" int efr32LogInit(void)
+extern "C" void efr32LogInit(void)
 {
 #if EFR32_LOG_ENABLED
+#if LOG_RTT_BUFFER_INDEX != 0
     SEGGER_RTT_ConfigUpBuffer(LOG_RTT_BUFFER_INDEX, LOG_RTT_BUFFER_NAME, sLogBuffer, LOG_RTT_BUFFER_SIZE,
                               SEGGER_RTT_MODE_NO_BLOCK_TRIM);
+
+    SEGGER_RTT_ConfigDownBuffer(LOG_RTT_BUFFER_INDEX, LOG_RTT_BUFFER_NAME, sCmdLineBuffer, LOG_RTT_BUFFER_SIZE,
+                                SEGGER_RTT_MODE_NO_BLOCK_SKIP);
+#else
+    SEGGER_RTT_SetFlagsUpBuffer(LOG_RTT_BUFFER_INDEX, SEGGER_RTT_MODE_NO_BLOCK_TRIM);
+#endif
     sLogInitialized = true;
 #endif // EFR32_LOG_ENABLED
-
-    return 0;
 }
 
 /**
@@ -126,22 +150,6 @@ extern "C" void efr32Log(const char * aFormat, ...)
 
     va_end(v);
 }
-
-namespace {
-
-void GetModuleName(char * buf, uint8_t module)
-{
-    if (module == ::chip::Logging::kLogModule_DeviceLayer)
-    {
-        memcpy(buf, "DL", 3);
-    }
-    else
-    {
-        ::chip::Logging::GetModuleName(buf, module);
-    }
-}
-
-} // unnamed namespace
 
 namespace chip {
 namespace DeviceLayer {
@@ -171,7 +179,7 @@ void LogV(uint8_t module, uint8_t category, const char * aFormat, va_list v)
         char formattedMsg[CHIP_DEVICE_CONFIG_LOG_MESSAGE_MAX_SIZE];
         size_t formattedMsgLen;
 
-        constexpr size_t maxPrefixLen = ChipLoggingModuleNameLen + 3;
+        constexpr size_t maxPrefixLen = chip::Logging::kMaxModuleNameLen + 3;
         static_assert(sizeof(formattedMsg) > maxPrefixLen);
 
         switch (category)
@@ -180,7 +188,6 @@ void LogV(uint8_t module, uint8_t category, const char * aFormat, va_list v)
             strcpy(formattedMsg, LOG_ERROR);
             break;
         case kLogCategory_Progress:
-        case kLogCategory_Retain:
         default:
             strcpy(formattedMsg, LOG_INFO);
             break;
@@ -193,7 +200,7 @@ void LogV(uint8_t module, uint8_t category, const char * aFormat, va_list v)
 
         // Form the log prefix, e.g. "[DL] "
         formattedMsg[formattedMsgLen++] = '[';
-        ::GetModuleName(formattedMsg + formattedMsgLen, module);
+        GetModuleName(formattedMsg + formattedMsgLen, chip::Logging::kMaxModuleNameLen + 1, module);
         formattedMsgLen                 = strlen(formattedMsg);
         formattedMsg[formattedMsgLen++] = ']';
         formattedMsg[formattedMsgLen++] = ' ';
@@ -237,6 +244,13 @@ extern "C" void LwIPLog(const char * aFormat, ...)
     }
 
     PrintLog(formattedMsg);
+
+#if configCHECK_FOR_STACK_OVERFLOW
+    // Force a stack overflow check.
+    if (xTaskGetSchedulerState() != taskSCHEDULER_NOT_STARTED)
+        taskYIELD();
+#endif
+
     // Let the application know that a log message has been emitted.
     DeviceLayer::OnLogOutput();
 #endif // EFR32_LOG_ENABLED
@@ -289,6 +303,12 @@ extern "C" void otPlatLog(otLogLevel aLogLevel, otLogRegion aLogRegion, const ch
         }
 
         PrintLog(formattedMsg);
+
+#if configCHECK_FOR_STACK_OVERFLOW
+        // Force a stack overflow check.
+        if (xTaskGetSchedulerState() != taskSCHEDULER_NOT_STARTED)
+            taskYIELD();
+#endif
     }
 
     // Let the application know that a log message has been emitted.

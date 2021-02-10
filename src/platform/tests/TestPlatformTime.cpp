@@ -22,8 +22,6 @@
  *
  */
 
-#include "TestPlatformTime.h"
-
 #include <inttypes.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -32,6 +30,7 @@
 
 #include <nlunit-test.h>
 #include <support/CodeUtils.h>
+#include <support/UnitTestRegistration.h>
 #include <system/SystemClock.h>
 
 #include <platform/internal/CHIPDeviceLayerInternal.h>
@@ -80,7 +79,7 @@ void test_os_sleep_ms(uint64_t millisecs)
     sleep_time.tv_sec  = s;
     sleep_time.tv_nsec = millisecs * 1000000;
 
-    nanosleep(&sleep_time, NULL);
+    nanosleep(&sleep_time, nullptr);
 }
 
 void test_os_sleep_us(uint64_t microsecs)
@@ -92,7 +91,7 @@ void test_os_sleep_us(uint64_t microsecs)
     sleep_time.tv_sec  = s;
     sleep_time.tv_nsec = microsecs * 1000;
 
-    nanosleep(&sleep_time, NULL);
+    nanosleep(&sleep_time, nullptr);
 }
 
 // =================================
@@ -184,7 +183,6 @@ static void TestDevice_GetClock_MonotonicHiRes(nlTestSuite * inSuite, void * inC
         ChipLogProgress(DeviceLayer, "Start=%" PRIu64 " End=%" PRIu64 " Delta=%" PRIu64 " Expected=%" PRIu64, Tstart, Tend, Tdelta,
                         Tdelay);
         NL_TEST_ASSERT(inSuite, Tdelta > (Tdelay - margin));
-        NL_TEST_ASSERT(inSuite, Tdelta < (Tdelay + margin));
         numOfTestsRan++;
     }
     NL_TEST_ASSERT(inSuite, numOfTestsRan > 0);
@@ -202,11 +200,13 @@ static const nlTest sTests[] = {
     NL_TEST_SENTINEL()
 };
 
-int TestPlatformTime(void)
+int TestPlatformTime()
 {
-    nlTestSuite theSuite = { "CHIP DeviceLayer tests", &sTests[0], NULL, NULL };
+    nlTestSuite theSuite = { "PlatformTime tests", &sTests[0], nullptr, nullptr };
 
     // Run test suit againt one context.
-    nlTestRunner(&theSuite, NULL);
+    nlTestRunner(&theSuite, nullptr);
     return nlTestRunnerStats(&theSuite);
 }
+
+CHIP_REGISTER_TEST_SUITE(TestPlatformTime)

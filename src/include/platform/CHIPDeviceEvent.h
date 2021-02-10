@@ -22,8 +22,7 @@
  *          or changes in device state.
  */
 
-#ifndef CHIP_DEVICE_EVENT_H
-#define CHIP_DEVICE_EVENT_H
+#pragma once
 
 namespace chip {
 namespace DeviceLayer {
@@ -122,13 +121,6 @@ enum PublicEventTypes
      * Signals a change in the device's ability to communicate via the Internet.
      */
     kInternetConnectivityChange,
-
-    /**
-     * Service Tunnel State Change
-     *
-     * Signals a change in connectivity of the device's IP tunnel to a chip-enabled service.
-     */
-    kServiceTunnelStateChange,
 
     /**
      * Service Connectivity Change
@@ -252,10 +244,9 @@ inline ConnectivityChange GetConnectivityChange(bool prevState, bool newState)
 {
     if (prevState == newState)
         return kConnectivity_NoChange;
-    else if (newState)
+    if (newState)
         return kConnectivity_Established;
-    else
-        return kConnectivity_Lost;
+    return kConnectivity_Lost;
 }
 
 /**
@@ -270,11 +261,12 @@ typedef void (*AsyncWorkFunct)(intptr_t arg);
  */
 #ifdef EXTERNAL_CHIPDEVICEPLATFORMEVENT_HEADER
 #include EXTERNAL_CHIPDEVICEPLATFORMEVENT_HEADER
-#else
+#elif defined(CHIP_DEVICE_LAYER_TARGET)
 #define CHIPDEVICEPLATFORMEVENT_HEADER <platform/CHIP_DEVICE_LAYER_TARGET/CHIPDevicePlatformEvent.h>
 #include CHIPDEVICEPLATFORMEVENT_HEADER
-#endif
+#endif // defined(CHIP_DEVICE_LAYER_TARGET)
 
+#include <ble/BleConfig.h>
 #include <system/SystemPacketBuffer.h>
 
 namespace chip {
@@ -313,22 +305,14 @@ struct ChipDeviceEvent final
         {
             ConnectivityChange IPv4;
             ConnectivityChange IPv6;
+            char address[INET6_ADDRSTRLEN];
         } InternetConnectivityChange;
-        struct
-        {
-            ConnectivityChange Result;
-            bool IsRestricted;
-        } ServiceTunnelStateChange;
         struct
         {
             struct
             {
                 ConnectivityChange Result;
             } Overall;
-            struct
-            {
-                ConnectivityChange Result;
-            } ViaTunnel;
             struct
             {
                 ConnectivityChange Result;
@@ -410,5 +394,3 @@ struct ChipDeviceEvent final
 
 } // namespace DeviceLayer
 } // namespace chip
-
-#endif // CHIP_DEVICE_EVENT_H

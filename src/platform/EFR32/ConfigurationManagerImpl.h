@@ -22,8 +22,7 @@
  *          for EFR32 platforms using the Silicon Labs SDK.
  */
 
-#ifndef CONFIGURATION_MANAGER_IMPL_H
-#define CONFIGURATION_MANAGER_IMPL_H
+#pragma once
 
 #include <platform/internal/GenericConfigurationManagerImpl.h>
 
@@ -49,7 +48,9 @@ class ConfigurationManagerImpl final : public ConfigurationManager,
 
     // Allow the GenericConfigurationManagerImpl base class to access helper methods and types
     // defined on this class.
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
     friend class Internal::GenericConfigurationManagerImpl<ConfigurationManagerImpl>;
+#endif
 
 private:
     // ===== Members that implement the ConfigurationManager public interface.
@@ -105,5 +106,3 @@ inline CHIP_ERROR ConfigurationManagerImpl::_GetPrimaryWiFiMACAddress(uint8_t * 
 
 } // namespace DeviceLayer
 } // namespace chip
-
-#endif // CONFIGURATION_MANAGER_IMPL_H

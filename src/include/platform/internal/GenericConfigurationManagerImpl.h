@@ -23,8 +23,7 @@
  *          for use on various platforms.
  */
 
-#ifndef GENERIC_CONFIGURATION_MANAGER_IMPL_H
-#define GENERIC_CONFIGURATION_MANAGER_IMPL_H
+#pragma once
 
 namespace chip {
 namespace DeviceLayer {
@@ -83,8 +82,10 @@ public:
     CHIP_ERROR _StoreManufacturerDeviceIntermediateCACerts(const uint8_t * certs, size_t certsLen);
     CHIP_ERROR _GetManufacturerDevicePrivateKey(uint8_t * buf, size_t bufSize, size_t & keyLen);
     CHIP_ERROR _StoreManufacturerDevicePrivateKey(const uint8_t * key, size_t keyLen);
-    CHIP_ERROR _GetPairingCode(char * buf, size_t bufSize, size_t & pairingCodeLen);
-    CHIP_ERROR _StorePairingCode(const char * pairingCode, size_t pairingCodeLen);
+    CHIP_ERROR _GetSetupPinCode(uint32_t & setupPinCode);
+    CHIP_ERROR _StoreSetupPinCode(uint32_t setupPinCode);
+    CHIP_ERROR _GetSetupDiscriminator(uint16_t & setupDiscriminator);
+    CHIP_ERROR _StoreSetupDiscriminator(uint16_t setupDiscriminator);
     CHIP_ERROR _GetFabricId(uint64_t & fabricId);
     CHIP_ERROR _StoreFabricId(uint64_t fabricId);
     CHIP_ERROR _GetServiceId(uint64_t & serviceId);
@@ -101,7 +102,7 @@ public:
     CHIP_ERROR _GetWiFiAPSSID(char * buf, size_t bufSize);
     CHIP_ERROR _GetBLEDeviceIdentificationInfo(Ble::ChipBLEDeviceIdentificationInfo & deviceIdInfo);
     CHIP_ERROR _ConfigureChipStack();
-#if defined(DEBUG)
+#if !defined(NDEBUG)
     CHIP_ERROR _RunUnitTests(void);
 #endif
     bool _IsServiceProvisioned();
@@ -113,6 +114,7 @@ public:
     bool _OperationalDeviceCredentialsProvisioned();
     void _UseManufacturerCredentialsAsOperational(bool val);
 #endif
+    void _LogDeviceConfig();
 
 protected:
     enum
@@ -126,7 +128,6 @@ protected:
 
     uint8_t mFlags;
 
-    void LogDeviceConfig();
     CHIP_ERROR PersistProvisioningData(ProvisioningDataSet & provData);
 
 private:
@@ -143,19 +144,17 @@ extern template class Internal::GenericConfigurationManagerImpl<ConfigurationMan
 template <class ImplClass>
 inline CHIP_ERROR GenericConfigurationManagerImpl<ImplClass>::_GetVendorId(uint16_t & vendorId)
 {
-    vendorId = (uint16_t) CHIP_DEVICE_CONFIG_DEVICE_VENDOR_ID;
+    vendorId = static_cast<uint16_t>(CHIP_DEVICE_CONFIG_DEVICE_VENDOR_ID);
     return CHIP_NO_ERROR;
 }
 
 template <class ImplClass>
 inline CHIP_ERROR GenericConfigurationManagerImpl<ImplClass>::_GetProductId(uint16_t & productId)
 {
-    productId = (uint16_t) CHIP_DEVICE_CONFIG_DEVICE_PRODUCT_ID;
+    productId = static_cast<uint16_t>(CHIP_DEVICE_CONFIG_DEVICE_PRODUCT_ID);
     return CHIP_NO_ERROR;
 }
 
 } // namespace Internal
 } // namespace DeviceLayer
 } // namespace chip
-
-#endif // GENERIC_CONFIGURATION_MANAGER_IMPL_H

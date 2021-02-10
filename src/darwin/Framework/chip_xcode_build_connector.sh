@@ -17,103 +17,148 @@
 #    limitations under the License.
 #
 
+# This script connects Xcode's "Run Script" build phase to a build of CHIP for Apple's environments.
+#
+# Conventions used in this script:
+#  * Variables in upper case supplied by Xcode (or other executor), are exported to subprocesses, or
+#      are upper-case elsewhere in CHIP scripts (e.g. CHIP_ROOT is only used locally,
+#      but is all uppper). Variables defined herein and used locally are lower-case
+#
+
 here=$(cd "${0%/*}" && pwd)
 me=${0##*/}
+
+CHIP_ROOT=$(cd "$here/../../.." && pwd)
 
 die() {
     echo "$me: *** ERROR: $*"
     exit 1
 }
 
-export >"$TEMP_DIR/env.sh"
-
-export PKG_CONFIG_PATH="/usr/local/opt/openssl@1.1/lib/pkgconfig"
-
+# lotsa debug output :-)
 set -ex
 
-if [ "$ARCHS" = arm64 ]; then
-    target=aarch64-apple-darwin
-else
-    target=$ARCHS-apple-darwin
-fi
+# helpful debugging, save off environment that Xcode gives us, can source it to
+#  retry/repro failures from a bash terminal
+mkdir -p "$TEMP_DIR"
+export >"$TEMP_DIR/env.sh"
 
-# these should be set by the Xcode project
-CHIP_ROOT=${CHIP_ROOT:-"$SRCROOT/../../.."}
-CHIP_ROOT=$(cd "$CHIP_ROOT" && pwd)
-CHIP_PREFIX=${CHIP_PREFIX:-"$BUILT_PRODUCTS_DIR"}
+declare -a defines=()
+# lots of environment variables passed by Xcode to this script
+read -r -a defines <<<"$GCC_PREPROCESSOR_DEFINITIONS"
 
-[[ -d ${CHIP_ROOT} ]] || die Please set CHIP_ROOT to the location of the CHIP directory
+declare target_defines=
+for define in "${defines[@]}"; do
 
-DEFINES=()
-# lots of environment variables passed by xcode to this script
-if [[ ${CONFIGURATION} == Debug* ]]; then
-    configure_OPTIONS+=(--enable-debug)
-    DEFINES+=(-UNDEBUG)
-else
-    DEFINES+=(-UDEBUG)
-fi
+    # skip over those that GN does for us
+    case "$define" in
+        CHIP_DEVICE_LAYER*)
+            continue
+            ;;
+        CHIP_*_CONFIG_INCLUDE)
+            continue
+            ;;
+        CHIP_SYSTEM_CONFIG_*)
+            continue
+            ;;
+        CONFIG_NETWORK_LAYER*)
+            continue
+            ;;
+        CHIP_CRYPTO_*)
+            continue
+            ;;
+        CHIP_LOGGING_STYLE_*)
+            continue
+            ;;
+    esac
+    target_defines+=,\"${define//\"/\\\"}\"
+done
+target_defines=[${target_defines:1}]
 
-read -r -a GCC_PREPROCESSOR_DEFINITIONS <<<"$GCC_PREPROCESSOR_DEFINITIONS"
+declare target_cflags='"-target","'"$PLATFORM_PREFERRED_ARCH"'-'"$LLVM_TARGET_TRIPLE_VENDOR"'-'"$LLVM_TARGET_TRIPLE_OS_VERSION"'"'
 
-DEFINES+=("${GCC_PREPROCESSOR_DEFINITIONS[@]/#/-D}")
+read -r -a archs <<<"$ARCHS"
 
-ARCH_FLAGS="-arch $ARCHS"
-SYSROOT_FLAGS="-isysroot $SDK_DIR"
-COMPILER_FLAGS="$ARCH_FLAGS $SYSROOT_FLAGS ${DEFINES[*]}"
+for arch in "${archs[@]}"; do
+    target_cflags+=',"-arch","'"$arch"'"'
+done
 
-configure_OPTIONS+=(
-    CPP="cc -E"
-    CPPFLAGS="$COMPILER_FLAGS"
-    CFLAGS="$COMPILER_FLAGS"
-    CXXFLAGS="$COMPILER_FLAGS"
-    OBJCFLAGS="$COMPILER_FLAGS"
-    OBJCXXFLAGS="$COMPILER_FLAGS"
-    LDFLAGS="$ARCH_FLAGS"
-)
-
-[[ ${PLATFORM_FAMILY_NAME} == iOS ]] && {
-    configure_OPTIONS+=(--with-chip-project-includes="$CHIP_ROOT"/config/ios)
+[[ $ENABLE_BITCODE == YES ]] && {
+    target_cflags+=',"-flto"'
 }
 
-[[ ${PLATFORM_FAMILY_NAME} == macOS ]] && {
-    configure_OPTIONS+=(--with-chip-project-includes="$CHIP_ROOT"/config/standalone)
-}
-
-configure_OPTIONS+=(
-    --prefix="$CHIP_PREFIX"
-    --target="$target"
-    --host="$target"
-    --disable-docs
-    --disable-java
-    --disable-python
-    --disable-shared
-    --disable-tests
-    --disable-tools
-    --with-logging-style=external
-    --with-chip-system-project-includes=no
-    --with-chip-inet-project-includes=no
-    --with-chip-ble-project-includes=no
-    --with-chip-warm-project-includes=no
-    --with-chip-device-project-includes=no
-    --with-crypto=mbedtls
+declare -a args=(
+    'default_configs_cosmetic=[]' # suppress colorization
+    'chip_crypto="mbedtls"'
+    'chip_logging_style="darwin"'
+    'chip_build_tools=false'
+    'chip_build_tests=false'
+    'chip_ble_project_config_include=""'
+    'chip_device_project_config_include=""'
+    'chip_inet_project_config_include=""'
+    'chip_system_project_config_include=""'
+    'target_cpu="'"$PLATFORM_PREFERRED_ARCH"'"'
+    'target_defines='"$target_defines"
+    'target_cflags=['"$target_cflags"']'
 )
 
+[[ $CONFIGURATION != Debug* ]] && args+='is_debug=true'
+
+[[ $PLATFORM_FAMILY_NAME == iOS || $PLATFORM_FAMILY_NAME == watchOS || $PLATFORM_FAMILY_NAME == tvOS ]] && {
+    args+=(
+        'target_os="ios"'
+        'import("//config/ios/args.gni")'
+    )
+}
+
+[[ $PLATFORM_FAMILY_NAME == macOS ]] && {
+    args+=(
+        'target_os="mac"'
+        'import("//config/standalone/args.gni")'
+        'chip_project_config_include_dirs=["'"$CHIP_ROOT"'/config/standalone"]'
+    )
+}
+
+# search current (or $2) and its parent directories until
+#  a name match is found, which is output on stdout
+find_in_ancestors() {
+    declare to_find="${1}"
+    declare dir="${2:-$(pwd)}"
+
+    while [[ ! -e ${dir}/${to_find} && -n ${dir} ]]; do
+        dir=${dir%/*}
+    done
+
+    if [[ ! -e ${dir}/${to_find} ]]; then
+        printf 'error: find_in_ancestors: %s not found\n' "$to_find" >&2
+        return 1
+    fi
+    printf '%s\n' "$dir/$to_find"
+}
+
+# actual build stuff
 (
-    cd "$TEMP_DIR"
+    cd "$CHIP_ROOT" # pushd and popd because we need the env vars from activate
 
-    if [[ ! -x config.status || ${here}/${me} -nt config.status ]]; then
-        "$CHIP_ROOT"/bootstrap-configure -C "${configure_OPTIONS[@]}"
-    else
-        while IFS= read -r -d '' makefile_am; do
-            [[ ${makefile_am} -ot ${makefile_am/.am/.in} ]] || {
-                "$CHIP_ROOT"/bootstrap -w make
-                break
-            }
-        done < <(find "$CHIP_ROOT" -name Makefile.am)
+    if ENV=$(find_in_ancestors chip_xcode_build_connector_env.sh 2>/dev/null); then
+        . "$ENV"
     fi
 
-    make V=1 install-data                   # all the headers
-    make V=1 -C src/lib install             # libCHIP.a
-    make V=1 -C src/setup_payload install   # libSetupPayload.a
-    make V=1 -C third_party/mbedtls install # libmbedtls.a
+    # there are environments where these bits are unwanted, unnecessary, or impossible
+    [[ -n $CHIP_NO_SUBMODULES ]] || git submodule update --init
+    if [[ -z $CHIP_NO_ACTIVATE ]]; then
+        # first run bootstrap/activate in an external env to build everything
+        env -i PW_ENVSETUP_NO_BANNER=1 PW_ENVSETUP_QUIET=1 bash -c '. scripts/activate.sh'
+        set +ex
+        # now source activate for env vars
+        PW_ENVSETUP_NO_BANNER=1 PW_ENVSETUP_QUIET=1 . scripts/activate.sh
+        set -ex
+    fi
+
+    # put build intermediates in TEMP_DIR
+    cd "$TEMP_DIR"
+
+    # gnerate and build
+    gn --root="$CHIP_ROOT" gen --check out --args="${args[*]}"
+    ninja -v -C out
 )

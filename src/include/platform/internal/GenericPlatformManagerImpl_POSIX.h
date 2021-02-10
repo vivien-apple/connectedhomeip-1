@@ -22,8 +22,7 @@
  *          for use on Linux platforms.
  */
 
-#ifndef GENERIC_PLATFORM_MANAGER_IMPL_POSIX_H
-#define GENERIC_PLATFORM_MANAGER_IMPL_POSIX_H
+#pragma once
 
 #include <platform/internal/GenericPlatformManagerImpl.h>
 
@@ -33,6 +32,7 @@
 #include <sys/time.h>
 #include <unistd.h>
 
+#include <atomic>
 #include <pthread.h>
 #include <queue>
 
@@ -71,13 +71,14 @@ protected:
 
     CHIP_ERROR
     _InitChipStack();
-    void _LockChipStack(void);
-    bool _TryLockChipStack(void);
-    void _UnlockChipStack(void);
+    void _LockChipStack();
+    bool _TryLockChipStack();
+    void _UnlockChipStack();
     void _PostEvent(const ChipDeviceEvent * event);
-    void _RunEventLoop(void);
-    CHIP_ERROR _StartEventLoopTask(void);
-    CHIP_ERROR _StartChipTimer(uint32_t durationMS);
+    void _RunEventLoop();
+    CHIP_ERROR _StartEventLoopTask();
+    CHIP_ERROR _StartChipTimer(int64_t durationMS);
+    CHIP_ERROR _Shutdown();
 
     // ===== Methods available to the implementation subclass.
 
@@ -92,6 +93,7 @@ private:
 
     void ProcessDeviceEvents();
 
+    std::atomic<bool> mShouldRunEventLoop;
     static void * EventLoopTaskMain(void * arg);
 };
 
@@ -101,5 +103,3 @@ extern template class GenericPlatformManagerImpl_POSIX<PlatformManagerImpl>;
 } // namespace Internal
 } // namespace DeviceLayer
 } // namespace chip
-
-#endif // GENERIC_PLATFORM_MANAGER_IMPL_POSIX_H

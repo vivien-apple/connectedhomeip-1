@@ -26,10 +26,12 @@
 #ifndef __STDC_LIMIT_MACROS
 #define __STDC_LIMIT_MACROS
 #endif
+#include <limits>
 #include <stdint.h>
 #include <string.h>
 
 #include <inet/InetLayer.h>
+#include <support/CodeUtils.h>
 
 #if !CHIP_SYSTEM_CONFIG_USE_LWIP
 #include <arpa/inet.h>
@@ -59,15 +61,26 @@ char * IPAddress::ToString(char * buf, uint32_t bufSize) const
         ip6addr_ntoa_r(&ip6_addr, buf, (int) bufSize);
     }
 #else // !CHIP_SYSTEM_CONFIG_USE_LWIP
+    // socklen_t is sometimes signed, sometimes not, so the only safe way to do
+    // this is to promote everything to an unsigned type that's known to be big
+    // enough for everything, then cast back to uint32_t after taking the min.
+    bufSize =
+        static_cast<uint32_t>(min(static_cast<uintmax_t>(std::numeric_limits<socklen_t>::max()), static_cast<uintmax_t>(bufSize)));
 #if INET_CONFIG_ENABLE_IPV4
     if (IsIPv4())
     {
-        buf = (char *) inet_ntop(AF_INET, (const void *) &Addr[3], buf, bufSize);
+        const void * addr = &Addr[3];
+        const char * s    = inet_ntop(AF_INET, addr, buf, static_cast<socklen_t>(bufSize));
+        // This cast is safe because |s| points into |buf| which is not const.
+        buf = const_cast<char *>(s);
     }
     else
 #endif // INET_CONFIG_ENABLE_IPV4
     {
-        buf = (char *) inet_ntop(AF_INET6, (const void *) Addr, buf, bufSize);
+        const void * addr = &Addr[0];
+        const char * s    = inet_ntop(AF_INET6, addr, buf, static_cast<socklen_t>(bufSize));
+        // This cast is safe because |s| points into |buf| which is not const.
+        buf = const_cast<char *>(s);
     }
 #endif // !CHIP_SYSTEM_CONFIG_USE_LWIP
 
@@ -77,7 +90,7 @@ char * IPAddress::ToString(char * buf, uint32_t bufSize) const
 bool IPAddress::FromString(const char * str, IPAddress & output)
 {
 #if INET_CONFIG_ENABLE_IPV4
-    if (strchr(str, ':') == NULL)
+    if (strchr(str, ':') == nullptr)
     {
 #if CHIP_SYSTEM_CONFIG_USE_LWIP
 #if LWIP_VERSION_MAJOR > 1 || LWIP_VERSION_MINOR >= 5

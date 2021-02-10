@@ -25,8 +25,7 @@
  *      address prefixes of both IPv4 and IPv6 address families.
  */
 
-#ifndef IPPREFIX_H
-#define IPPREFIX_H
+#pragma once
 
 #include <inet/IPAddress.h>
 
@@ -46,6 +45,14 @@ namespace Inet {
 class IPPrefix
 {
 public:
+    IPPrefix() = default;
+
+    /**
+     *  Copy constructor for the IPPrefix class.
+     *
+     */
+    IPPrefix(const IPPrefix & other) = default;
+
     /** An IPv6 or IPv4 address. */
     IPAddress IPAddr;
 
@@ -75,7 +82,7 @@ public:
      *
      * @return  \c true if equivalent to \c Zero, else \c false.
      */
-    bool IsZero(void) const;
+    bool IsZero() const;
 
     /**
      * @brief   Compares the prefix with another for equivalence.
@@ -120,5 +127,3 @@ public:
 
 } // namespace Inet
 } // namespace chip
-
-#endif // !defined(IPPREFIX_H)

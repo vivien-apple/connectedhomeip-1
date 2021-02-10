@@ -30,9 +30,12 @@
 #include <support/logging/CHIPLogging.h>
 
 #include "esp_event.h"
+#include "esp_netif.h"
+#include "esp_netif_net_stack.h"
 #include "esp_wifi.h"
 
 using namespace ::chip::DeviceLayer::Internal;
+using chip::DeviceLayer::Internal::DeviceNetworkInfo;
 
 CHIP_ERROR ESP32Utils::IsAPEnabled(bool & apEnabled)
 {
@@ -151,7 +154,7 @@ CHIP_ERROR ESP32Utils::SetAPMode(bool enabled)
 
     // If station mode is not already enabled (implying the current mode is WIFI_MODE_AP), change
     // the mode to WIFI_MODE_APSTA.
-    if (true /* curWiFiMode != targetWiFiMode */)
+    if (curWiFiMode != targetWiFiMode)
     {
         ChipLogProgress(DeviceLayer, "Changing ESP WiFi mode: %s -> %s", WiFiModeToStr(curWiFiMode), WiFiModeToStr(targetWiFiMode));
 
@@ -202,38 +205,112 @@ const char * ESP32Utils::WiFiModeToStr(wifi_mode_t wifiMode)
 
 struct netif * ESP32Utils::GetStationNetif(void)
 {
-    return GetNetif(TCPIP_ADAPTER_IF_STA);
+    return GetNetif("WIFI_STA_DEF");
 }
 
-struct netif * ESP32Utils::GetNetif(tcpip_adapter_if_t intfId)
+struct netif * ESP32Utils::GetNetif(const char * ifKey)
 {
-    struct netif * netif;
-    return (tcpip_adapter_get_netif(intfId, (void **) &netif) == ESP_OK) ? netif : NULL;
+    struct netif * netif       = NULL;
+    esp_netif_t * netif_handle = NULL;
+    netif_handle               = esp_netif_get_handle_from_ifkey(ifKey);
+    netif                      = (struct netif *) esp_netif_get_netif_impl(netif_handle);
+    return netif;
 }
 
-bool ESP32Utils::IsInterfaceUp(tcpip_adapter_if_t intfId)
+bool ESP32Utils::IsInterfaceUp(const char * ifKey)
 {
-    struct netif * netif = GetNetif(intfId);
+    struct netif * netif = GetNetif(ifKey);
     return netif != NULL && netif_is_up(netif);
 }
 
-const char * ESP32Utils::InterfaceIdToName(tcpip_adapter_if_t intfId)
+bool ESP32Utils::HasIPv6LinkLocalAddress(const char * ifKey)
 {
-    switch (intfId)
-    {
-    case TCPIP_ADAPTER_IF_STA:
-        return "WiFi station";
-    case TCPIP_ADAPTER_IF_AP:
-        return "WiFi AP";
-    case TCPIP_ADAPTER_IF_ETH:
-        return "Ethernet";
-    default:
-        return "(unknown)";
-    }
+    struct esp_ip6_addr if_ip6_unused;
+    return esp_netif_get_ip6_linklocal(esp_netif_get_handle_from_ifkey(ifKey), &if_ip6_unused) == ESP_OK;
 }
 
-bool ESP32Utils::HasIPv6LinkLocalAddress(tcpip_adapter_if_t intfId)
+CHIP_ERROR ESP32Utils::GetWiFiStationProvision(Internal::DeviceNetworkInfo & netInfo, bool includeCredentials)
 {
-    ip6_addr_t unused;
-    return tcpip_adapter_get_ip6_linklocal(intfId, &unused) == ESP_OK;
+    CHIP_ERROR err = CHIP_NO_ERROR;
+    wifi_config_t stationConfig;
+
+    err = esp_wifi_get_config(ESP_IF_WIFI_STA, &stationConfig);
+    SuccessOrExit(err);
+
+    VerifyOrExit(stationConfig.sta.ssid[0] != 0, err = CHIP_ERROR_INCORRECT_STATE);
+
+    netInfo.NetworkId              = kWiFiStationNetworkId;
+    netInfo.FieldPresent.NetworkId = true;
+    memcpy(netInfo.WiFiSSID, stationConfig.sta.ssid,
+           min(strlen(reinterpret_cast<char *>(stationConfig.sta.ssid)) + 1, sizeof(netInfo.WiFiSSID)));
+
+    // Enforce that netInfo wifiSSID is null terminated
+    netInfo.WiFiSSID[kMaxWiFiSSIDLength] = '\0';
+
+    if (includeCredentials)
+    {
+        static_assert(sizeof(netInfo.WiFiKey) < 255, "Our min might not fit in netInfo.WiFiKeyLen");
+        netInfo.WiFiKeyLen = static_cast<uint8_t>(min(strlen((char *) stationConfig.sta.password), sizeof(netInfo.WiFiKey)));
+        memcpy(netInfo.WiFiKey, stationConfig.sta.password, netInfo.WiFiKeyLen);
+    }
+
+exit:
+    return err;
+}
+
+CHIP_ERROR ESP32Utils::SetWiFiStationProvision(const Internal::DeviceNetworkInfo & netInfo)
+{
+    CHIP_ERROR err = CHIP_NO_ERROR;
+    wifi_config_t wifiConfig;
+
+    char wifiSSID[kMaxWiFiSSIDLength + 1];
+    size_t netInfoSSIDLen = strlen(netInfo.WiFiSSID);
+
+    // Ensure that ESP station mode is enabled.  This is required before esp_wifi_set_config(ESP_IF_WIFI_STA,...)
+    // can be called.
+    err = ESP32Utils::EnableStationMode();
+    SuccessOrExit(err);
+
+    // Enforce that wifiSSID is null terminated before copying it
+    memcpy(wifiSSID, netInfo.WiFiSSID, min(netInfoSSIDLen + 1, sizeof(wifiSSID)));
+    if (netInfoSSIDLen + 1 < sizeof(wifiSSID))
+    {
+        wifiSSID[netInfoSSIDLen] = '\0';
+    }
+    else
+    {
+        wifiSSID[kMaxWiFiSSIDLength] = '\0';
+    }
+
+    // Initialize an ESP wifi_config_t structure based on the new provision information.
+    memset(&wifiConfig, 0, sizeof(wifiConfig));
+    memcpy(wifiConfig.sta.ssid, wifiSSID, min(strlen(wifiSSID) + 1, sizeof(wifiConfig.sta.ssid)));
+    memcpy(wifiConfig.sta.password, netInfo.WiFiKey, min((size_t) netInfo.WiFiKeyLen, sizeof(wifiConfig.sta.password)));
+    wifiConfig.sta.scan_method = WIFI_ALL_CHANNEL_SCAN;
+    wifiConfig.sta.sort_method = WIFI_CONNECT_AP_BY_SIGNAL;
+
+    // Configure the ESP WiFi interface.
+    err = esp_wifi_set_config(ESP_IF_WIFI_STA, &wifiConfig);
+    if (err != ESP_OK)
+    {
+        ChipLogError(DeviceLayer, "esp_wifi_set_config() failed: %s", chip::ErrorStr(err));
+    }
+    SuccessOrExit(err);
+
+    ChipLogProgress(DeviceLayer, "WiFi station provision set (SSID: %s)", netInfo.WiFiSSID);
+
+exit:
+    return err;
+}
+
+CHIP_ERROR ESP32Utils::ClearWiFiStationProvision(void)
+{
+    CHIP_ERROR err = CHIP_NO_ERROR;
+    wifi_config_t stationConfig;
+
+    // Clear the ESP WiFi station configuration.
+    memset(&stationConfig, 0, sizeof(stationConfig));
+    esp_wifi_set_config(ESP_IF_WIFI_STA, &stationConfig);
+
+    return err;
 }

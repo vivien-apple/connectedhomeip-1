@@ -21,8 +21,7 @@
  *          Defines the public interface for the Device Layer ThreadStackManager object.
  */
 
-#ifndef THREAD_STACK_MANAGER_H
-#define THREAD_STACK_MANAGER_H
+#pragma once
 
 namespace chip {
 namespace DeviceLayer {
@@ -34,8 +33,11 @@ class ConfigurationManagerImpl;
 namespace Internal {
 class DeviceNetworkInfo;
 class DeviceControlServer;
+class BLEManagerImpl;
 template <class>
 class GenericPlatformManagerImpl;
+template <class>
+class GenericConfigurationManagerImpl;
 template <class>
 class GenericPlatformManagerImpl_FreeRTOS;
 template <class>
@@ -61,26 +63,31 @@ class ThreadStackManager
 public:
     // ===== Members that define the public interface of the ThreadStackManager
 
-    CHIP_ERROR InitThreadStack(void);
-    void ProcessThreadActivity(void);
-    CHIP_ERROR StartThreadTask(void);
-    void LockThreadStack(void);
-    bool TryLockThreadStack(void);
-    void UnlockThreadStack(void);
-    bool HaveRouteToAddress(const IPAddress & destAddr);
-    CHIP_ERROR GetAndLogThreadStatsCounters(void);
-    CHIP_ERROR GetAndLogThreadTopologyMinimal(void);
-    CHIP_ERROR GetAndLogThreadTopologyFull(void);
+    CHIP_ERROR InitThreadStack();
+    void ProcessThreadActivity();
+    CHIP_ERROR StartThreadTask();
+    void LockThreadStack();
+    bool TryLockThreadStack();
+    void UnlockThreadStack();
+    bool HaveRouteToAddress(const chip::Inet::IPAddress & destAddr);
+    CHIP_ERROR GetAndLogThreadStatsCounters();
+    CHIP_ERROR GetAndLogThreadTopologyMinimal();
+    CHIP_ERROR GetAndLogThreadTopologyFull();
     CHIP_ERROR GetPrimary802154MACAddress(uint8_t * buf);
+    CHIP_ERROR GetSlaacIPv6Address(chip::Inet::IPAddress & addr);
 
-    void FactoryReset(void);
+    CHIP_ERROR JoinerStart();
+    CHIP_ERROR SetThreadProvision(const Internal::DeviceNetworkInfo & netInfo);
+    CHIP_ERROR SetThreadEnabled(bool val);
 
 private:
     // ===== Members for internal use by the following friends.
 
     friend class PlatformManagerImpl;
     friend class ConfigurationManagerImpl;
+#if CHIP_DEVICE_CONFIG_ENABLE_CHIPOBLE
     friend class Internal::BLEManagerImpl;
+#endif
     friend class Internal::DeviceControlServer;
     template <class>
     friend class Internal::GenericPlatformManagerImpl;
@@ -100,21 +107,19 @@ private:
     friend class Internal::GenericNetworkProvisioningServerImpl;
 
     void OnPlatformEvent(const ChipDeviceEvent * event);
-    bool IsThreadEnabled(void);
-    CHIP_ERROR SetThreadEnabled(bool val);
-    bool IsThreadProvisioned(void);
-    bool IsThreadAttached(void);
+    bool IsThreadEnabled();
+    bool IsThreadProvisioned();
+    bool IsThreadAttached();
     CHIP_ERROR GetThreadProvision(Internal::DeviceNetworkInfo & netInfo, bool includeCredentials);
-    CHIP_ERROR SetThreadProvision(const Internal::DeviceNetworkInfo & netInfo);
-    void ErasePersistentInfo(void);
-    ConnectivityManager::ThreadDeviceType GetThreadDeviceType(void);
+    void ErasePersistentInfo();
+    ConnectivityManager::ThreadDeviceType GetThreadDeviceType();
     CHIP_ERROR SetThreadDeviceType(ConnectivityManager::ThreadDeviceType threadRole);
     void GetThreadPollingConfig(ConnectivityManager::ThreadPollingConfig & pollingConfig);
     CHIP_ERROR SetThreadPollingConfig(const ConnectivityManager::ThreadPollingConfig & pollingConfig);
-    bool HaveMeshConnectivity(void);
+    bool HaveMeshConnectivity();
     void OnMessageLayerActivityChanged(bool messageLayerIsActive);
-    void OnCHIPoBLEAdvertisingStart(void);
-    void OnCHIPoBLEAdvertisingStop(void);
+    void OnCHIPoBLEAdvertisingStart();
+    void OnCHIPoBLEAdvertisingStop();
 
 protected:
     // Construction/destruction limited to subclasses.
@@ -133,7 +138,7 @@ protected:
  * chip applications should use this to access features of the ThreadStackManager object
  * that are common to all platforms.
  */
-extern ThreadStackManager & ThreadStackMgr(void);
+extern ThreadStackManager & ThreadStackMgr();
 
 /**
  * Returns the platform-specific implementation of the ThreadStackManager singleton object.
@@ -141,7 +146,7 @@ extern ThreadStackManager & ThreadStackMgr(void);
  * chip applications can use this to gain access to features of the ThreadStackManager
  * that are specific to the selected platform.
  */
-extern ThreadStackManagerImpl & ThreadStackMgrImpl(void);
+extern ThreadStackManagerImpl & ThreadStackMgrImpl();
 
 } // namespace DeviceLayer
 } // namespace chip
@@ -151,10 +156,10 @@ extern ThreadStackManagerImpl & ThreadStackMgrImpl(void);
  */
 #ifdef EXTERNAL_THREADSTACKMANAGERIMPL_HEADER
 #include EXTERNAL_THREADSTACKMANAGERIMPL_HEADER
-#else
+#elif defined(CHIP_DEVICE_LAYER_TARGET)
 #define THREADSTACKMANAGERIMPL_HEADER <platform/CHIP_DEVICE_LAYER_TARGET/ThreadStackManagerImpl.h>
 #include THREADSTACKMANAGERIMPL_HEADER
-#endif
+#endif // defined(CHIP_DEVICE_LAYER_TARGET)
 
 namespace chip {
 namespace DeviceLayer {
@@ -192,7 +197,7 @@ inline void ThreadStackManager::UnlockThreadStack()
 /**
  * Determines whether a route exists via the Thread interface to the specified destination address.
  */
-inline bool ThreadStackManager::HaveRouteToAddress(const IPAddress & destAddr)
+inline bool ThreadStackManager::HaveRouteToAddress(const chip::Inet::IPAddress & destAddr)
 {
     return static_cast<ImplClass *>(this)->_HaveRouteToAddress(destAddr);
 }
@@ -202,7 +207,7 @@ inline void ThreadStackManager::OnPlatformEvent(const ChipDeviceEvent * event)
     static_cast<ImplClass *>(this)->_OnPlatformEvent(event);
 }
 
-inline bool ThreadStackManager::IsThreadEnabled(void)
+inline bool ThreadStackManager::IsThreadEnabled()
 {
     return static_cast<ImplClass *>(this)->_IsThreadEnabled();
 }
@@ -212,12 +217,12 @@ inline CHIP_ERROR ThreadStackManager::SetThreadEnabled(bool val)
     return static_cast<ImplClass *>(this)->_SetThreadEnabled(val);
 }
 
-inline bool ThreadStackManager::IsThreadProvisioned(void)
+inline bool ThreadStackManager::IsThreadProvisioned()
 {
     return static_cast<ImplClass *>(this)->_IsThreadProvisioned();
 }
 
-inline bool ThreadStackManager::IsThreadAttached(void)
+inline bool ThreadStackManager::IsThreadAttached()
 {
     return static_cast<ImplClass *>(this)->_IsThreadAttached();
 }
@@ -232,12 +237,12 @@ inline CHIP_ERROR ThreadStackManager::SetThreadProvision(const Internal::DeviceN
     return static_cast<ImplClass *>(this)->_SetThreadProvision(netInfo);
 }
 
-inline void ThreadStackManager::ErasePersistentInfo(void)
+inline void ThreadStackManager::ErasePersistentInfo()
 {
     static_cast<ImplClass *>(this)->_ErasePersistentInfo();
 }
 
-inline ConnectivityManager::ThreadDeviceType ThreadStackManager::GetThreadDeviceType(void)
+inline ConnectivityManager::ThreadDeviceType ThreadStackManager::GetThreadDeviceType()
 {
     return static_cast<ImplClass *>(this)->_GetThreadDeviceType();
 }
@@ -257,7 +262,7 @@ inline CHIP_ERROR ThreadStackManager::SetThreadPollingConfig(const ConnectivityM
     return static_cast<ImplClass *>(this)->_SetThreadPollingConfig(pollingConfig);
 }
 
-inline bool ThreadStackManager::HaveMeshConnectivity(void)
+inline bool ThreadStackManager::HaveMeshConnectivity()
 {
     return static_cast<ImplClass *>(this)->_HaveMeshConnectivity();
 }
@@ -267,27 +272,27 @@ inline void ThreadStackManager::OnMessageLayerActivityChanged(bool messageLayerI
     return static_cast<ImplClass *>(this)->_OnMessageLayerActivityChanged(messageLayerIsActive);
 }
 
-inline void ThreadStackManager::OnCHIPoBLEAdvertisingStart(void)
+inline void ThreadStackManager::OnCHIPoBLEAdvertisingStart()
 {
     static_cast<ImplClass *>(this)->_OnCHIPoBLEAdvertisingStart();
 }
 
-inline void ThreadStackManager::OnCHIPoBLEAdvertisingStop(void)
+inline void ThreadStackManager::OnCHIPoBLEAdvertisingStop()
 {
     static_cast<ImplClass *>(this)->_OnCHIPoBLEAdvertisingStop();
 }
 
-inline CHIP_ERROR ThreadStackManager::GetAndLogThreadStatsCounters(void)
+inline CHIP_ERROR ThreadStackManager::GetAndLogThreadStatsCounters()
 {
     return static_cast<ImplClass *>(this)->_GetAndLogThreadStatsCounters();
 }
 
-inline CHIP_ERROR ThreadStackManager::GetAndLogThreadTopologyMinimal(void)
+inline CHIP_ERROR ThreadStackManager::GetAndLogThreadTopologyMinimal()
 {
     return static_cast<ImplClass *>(this)->_GetAndLogThreadTopologyMinimal();
 }
 
-inline CHIP_ERROR ThreadStackManager::GetAndLogThreadTopologyFull(void)
+inline CHIP_ERROR ThreadStackManager::GetAndLogThreadTopologyFull()
 {
     return static_cast<ImplClass *>(this)->_GetAndLogThreadTopologyFull();
 }
@@ -297,7 +302,15 @@ inline CHIP_ERROR ThreadStackManager::GetPrimary802154MACAddress(uint8_t * buf)
     return static_cast<ImplClass *>(this)->_GetPrimary802154MACAddress(buf);
 }
 
+inline CHIP_ERROR ThreadStackManager::GetSlaacIPv6Address(chip::Inet::IPAddress & addr)
+{
+    return static_cast<ImplClass *>(this)->_GetSlaacIPv6Address(addr);
+}
+
+inline CHIP_ERROR ThreadStackManager::JoinerStart()
+{
+    return static_cast<ImplClass *>(this)->_JoinerStart();
+}
+
 } // namespace DeviceLayer
 } // namespace chip
-
-#endif // THREAD_STACK_MANAGER_H

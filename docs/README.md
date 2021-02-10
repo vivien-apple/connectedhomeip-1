@@ -4,6 +4,9 @@
 
 -   Documentation about building from the command line can be found in
     [the build guide](./BUILDING.md)
+-   Documentation about running [cirque](https://github.com/openweave/cirque)
+    tests can be found in
+    [the cirque test guide](src/test_driver/linux-cirque/README.md)
 -   Documentation about standard build & development flows using
     [Visual Studio Code](https://code.visualstudio.com/) can be found in
     [the development guide](./VSCODE_DEVELOPMENT.md)
@@ -28,5 +31,5 @@ Some tools and utilities are dependent on third party tools, such as Docker.
 environments that don't pollute the host OS. It is also much easier to maintain
 stability across multiple host environments. Install stable version of
 [Docker Desktop](https://www.docker.com/products/docker-desktop) relevant to
-your native OS (MacOS or Windows). Once installed, you can run docker commands
+your native OS (macOS or Windows). Once installed, you can run docker commands
 from the shell/terminal.

@@ -22,8 +22,7 @@
  *      Asynchronous Domain Name System (DNS) resolution in InetLayer.
  *
  */
-#ifndef _ASYNC_DNS_SOCKETS_H_
-#define _ASYNC_DNS_SOCKETS_H_
+#pragma once
 
 #include <inet/IPAddress.h>
 #include <inet/InetError.h>
@@ -62,7 +61,7 @@ public:
 
     INET_ERROR Cancel(DNSResolver & resolver);
 
-    INET_ERROR Shutdown(void);
+    INET_ERROR Shutdown();
 
     INET_ERROR PrepareDNSResolver(DNSResolver & resolver, const char * hostName, uint16_t hostNameLen, uint8_t options,
                                   uint8_t maxAddrs, IPAddress * addrArray, DNSResolver::OnResolveCompleteFunct onComplete,
@@ -81,7 +80,7 @@ private:
 
     INET_ERROR DequeueRequest(DNSResolver ** outResolver);
 
-    bool ShouldThreadShutdown(void);
+    bool ShouldThreadShutdown();
 
     void Resolve(DNSResolver & resolver);
 
@@ -91,14 +90,12 @@ private:
 
     static void NotifyChipThread(DNSResolver * resolver);
 
-    void AsyncMutexLock(void);
+    void AsyncMutexLock();
 
-    void AsyncMutexUnlock(void);
+    void AsyncMutexUnlock();
 };
 
 } // namespace Inet
 } // namespace chip
 #endif // INET_CONFIG_ENABLE_DNS_RESOLVER && INET_CONFIG_ENABLE_ASYNC_DNS_SOCKETS
 #endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS
-
-#endif // !defined(_ASYNC_DNS_SOCKETS_H_)

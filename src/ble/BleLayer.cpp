@@ -1,6 +1,6 @@
 /*
  *
- *    Copyright (c) 2020 Project CHIP Authors
+ *    Copyright (c) 2020-2021 Project CHIP Authors
  *    Copyright (c) 2014-2017 Nest Labs, Inc.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
@@ -66,31 +66,9 @@
 #include <support/CodeUtils.h>
 #include <support/logging/CHIPLogging.h>
 
-// clang-format off
-
-#define CAPABILITIES_REQUEST_MAGICNUM_LEN 2
-#define CAPABILITIES_REQUEST_L2CAP_MTU_LEN 2
-#define CAPABILITIES_REQUEST_SUPPORTED_VERSIONS_LEN 4
-#define CAPABILITIES_REQUEST_WINDOW_SIZE_LEN 1
-#define CAPABILITIES_REQUEST_LEN (CAPABILITIES_REQUEST_MAGICNUM_LEN + \
-                                  CAPABILITIES_REQUEST_L2CAP_MTU_LEN + \
-                                  CAPABILITIES_REQUEST_SUPPORTED_VERSIONS_LEN + \
-                                  CAPABILITIES_REQUEST_WINDOW_SIZE_LEN)
-
-#define CAPABILITIES_RESPONSE_MAGICNUM_LEN 2
-#define CAPABILITIES_RESPONSE_L2CAP_MTU_LEN 2
-#define CAPABILITIES_RESPONSE_SELECTED_PROTOCOL_VERSION_LEN 1
-#define CAPABILITIES_RESPONSE_WINDOW_SIZE_LEN 1
-#define CAPABILITIES_RESPONSE_LEN (CAPABILITIES_RESPONSE_MAGICNUM_LEN + \
-                                   CAPABILITIES_RESPONSE_L2CAP_MTU_LEN + \
-                                   CAPABILITIES_RESPONSE_SELECTED_PROTOCOL_VERSION_LEN + \
-                                   CAPABILITIES_RESPONSE_WINDOW_SIZE_LEN)
-
 // Magic values expected in first 2 bytes of valid BLE transport capabilities request or response:
 #define CAPABILITIES_MSG_CHECK_BYTE_1 'n'
 #define CAPABILITIES_MSG_CHECK_BYTE_2 'l'
-
-// clang-format on
 
 namespace chip {
 namespace Ble {
@@ -100,7 +78,7 @@ class BleEndPointPool
 public:
     int Size() const { return BLE_LAYER_NUM_BLE_ENDPOINTS; }
 
-    BLEEndPoint * Get(int i) const
+    BLEEndPoint * Get(size_t i) const
     {
         static union
         {
@@ -110,44 +88,42 @@ public:
 
         if (i < BLE_LAYER_NUM_BLE_ENDPOINTS)
         {
-            return (BLEEndPoint *) (sEndPointPool.Pool + (sizeof(BLEEndPoint) * i));
+            return reinterpret_cast<BLEEndPoint *>(sEndPointPool.Pool + (sizeof(BLEEndPoint) * i));
         }
-        else
-        {
-            return NULL;
-        }
+
+        return nullptr;
     }
 
     BLEEndPoint * Find(BLE_CONNECTION_OBJECT c)
     {
         if (c == BLE_CONNECTION_UNINITIALIZED)
         {
-            return NULL;
+            return nullptr;
         }
 
-        for (int i = 0; i < BLE_LAYER_NUM_BLE_ENDPOINTS; i++)
+        for (size_t i = 0; i < BLE_LAYER_NUM_BLE_ENDPOINTS; i++)
         {
             BLEEndPoint * elem = Get(i);
-            if (elem->mBle != NULL && elem->mConnObj == c)
+            if (elem->mBle != nullptr && elem->mConnObj == c)
             {
                 return elem;
             }
         }
 
-        return NULL;
+        return nullptr;
     }
 
     BLEEndPoint * GetFree() const
     {
-        for (int i = 0; i < BLE_LAYER_NUM_BLE_ENDPOINTS; i++)
+        for (size_t i = 0; i < BLE_LAYER_NUM_BLE_ENDPOINTS; i++)
         {
             BLEEndPoint * elem = Get(i);
-            if (elem->mBle == NULL)
+            if (elem->mBle == nullptr)
             {
                 return elem;
             }
         }
-        return NULL;
+        return nullptr;
     }
 };
 
@@ -165,6 +141,10 @@ const ChipBleUUID BleLayer::CHIP_BLE_CHAR_2_ID = { { // 18EE2EF5-263D-4559-959F-
                                                      0x18, 0xEE, 0x2E, 0xF5, 0x26, 0x3D, 0x45, 0x59, 0x95, 0x9F, 0x4F, 0x9C, 0x42,
                                                      0x9F, 0x9D, 0x12 } };
 
+const ChipBleUUID BleLayer::CHIP_BLE_CHAR_3_ID = { { // 64630238-8772-45F2-B87D-748A83218F04
+                                                     0x64, 0x63, 0x02, 0x38, 0x87, 0x72, 0x45, 0xF2, 0xB8, 0x7D, 0x74, 0x8A, 0x83,
+                                                     0x21, 0x8F, 0x04 } };
+
 void BleLayerObject::Release()
 {
     // Decrement the ref count.  When it reaches zero, NULL out the pointer to the chip::System::Layer
@@ -172,7 +152,7 @@ void BleLayerObject::Release()
     mRefCount--;
     if (mRefCount == 0)
     {
-        mBle = NULL;
+        mBle = nullptr;
     }
 }
 
@@ -190,52 +170,54 @@ void BleTransportCapabilitiesRequestMessage::SetSupportedProtocolVersion(uint8_t
     else
     {
         mask    = 0xF0;
-        version = version << 4;
+        version = static_cast<uint8_t>(version << 4);
     }
 
     version &= mask;
 
-    mSupportedProtocolVersions[(index / 2)] &= ~mask; // Clear version at index; leave other version in same byte alone
-    mSupportedProtocolVersions[(index / 2)] |= version;
+    uint8_t & slot = mSupportedProtocolVersions[(index / 2)];
+    slot           = static_cast<uint8_t>(slot & ~mask); // Clear version at index; leave other version in same byte alone
+    slot |= version;
 }
 
-BLE_ERROR BleTransportCapabilitiesRequestMessage::Encode(PacketBuffer * msgBuf) const
+BLE_ERROR BleTransportCapabilitiesRequestMessage::Encode(const PacketBufferHandle & msgBuf) const
 {
     uint8_t * p   = msgBuf->Start();
     BLE_ERROR err = BLE_NO_ERROR;
 
     // Verify we can write the fixed-length request without running into the end of the buffer.
-    VerifyOrExit(msgBuf->MaxDataLength() >= CAPABILITIES_REQUEST_LEN, err = BLE_ERROR_NO_MEMORY);
+    VerifyOrExit(msgBuf->MaxDataLength() >= kCapabilitiesRequestLength, err = BLE_ERROR_NO_MEMORY);
 
     chip::Encoding::Write8(p, CAPABILITIES_MSG_CHECK_BYTE_1);
     chip::Encoding::Write8(p, CAPABILITIES_MSG_CHECK_BYTE_2);
 
-    for (int i = 0; i < CAPABILITIES_REQUEST_SUPPORTED_VERSIONS_LEN; i++)
+    for (uint8_t version : mSupportedProtocolVersions)
     {
-        chip::Encoding::Write8(p, mSupportedProtocolVersions[i]);
+        chip::Encoding::Write8(p, version);
     }
 
     chip::Encoding::LittleEndian::Write16(p, mMtu);
     chip::Encoding::Write8(p, mWindowSize);
 
-    msgBuf->SetDataLength(CAPABILITIES_REQUEST_LEN);
+    msgBuf->SetDataLength(kCapabilitiesRequestLength);
 
 exit:
     return err;
 }
 
-BLE_ERROR BleTransportCapabilitiesRequestMessage::Decode(const PacketBuffer & msgBuf, BleTransportCapabilitiesRequestMessage & msg)
+BLE_ERROR BleTransportCapabilitiesRequestMessage::Decode(const PacketBufferHandle & msgBuf,
+                                                         BleTransportCapabilitiesRequestMessage & msg)
 {
-    const uint8_t * p = msgBuf.Start();
+    const uint8_t * p = msgBuf->Start();
     BLE_ERROR err     = BLE_NO_ERROR;
 
     // Verify we can read the fixed-length request without running into the end of the buffer.
-    VerifyOrExit(msgBuf.DataLength() >= CAPABILITIES_REQUEST_LEN, err = BLE_ERROR_MESSAGE_INCOMPLETE);
+    VerifyOrExit(msgBuf->DataLength() >= kCapabilitiesRequestLength, err = BLE_ERROR_MESSAGE_INCOMPLETE);
 
     VerifyOrExit(CAPABILITIES_MSG_CHECK_BYTE_1 == chip::Encoding::Read8(p), err = BLE_ERROR_INVALID_MESSAGE);
     VerifyOrExit(CAPABILITIES_MSG_CHECK_BYTE_2 == chip::Encoding::Read8(p), err = BLE_ERROR_INVALID_MESSAGE);
 
-    for (int i = 0; i < CAPABILITIES_REQUEST_SUPPORTED_VERSIONS_LEN; i++)
+    for (size_t i = 0; i < kCapabilitiesRequestSupportedVersionsLength; i++)
     {
         msg.mSupportedProtocolVersions[i] = chip::Encoding::Read8(p);
     }
@@ -249,13 +231,13 @@ exit:
 
 // BleTransportCapabilitiesResponseMessage implementation:
 
-BLE_ERROR BleTransportCapabilitiesResponseMessage::Encode(PacketBuffer * msgBuf) const
+BLE_ERROR BleTransportCapabilitiesResponseMessage::Encode(const PacketBufferHandle & msgBuf) const
 {
     uint8_t * p   = msgBuf->Start();
     BLE_ERROR err = BLE_NO_ERROR;
 
     // Verify we can write the fixed-length request without running into the end of the buffer.
-    VerifyOrExit(msgBuf->MaxDataLength() >= CAPABILITIES_RESPONSE_LEN, err = BLE_ERROR_NO_MEMORY);
+    VerifyOrExit(msgBuf->MaxDataLength() >= kCapabilitiesResponseLength, err = BLE_ERROR_NO_MEMORY);
 
     chip::Encoding::Write8(p, CAPABILITIES_MSG_CHECK_BYTE_1);
     chip::Encoding::Write8(p, CAPABILITIES_MSG_CHECK_BYTE_2);
@@ -264,20 +246,20 @@ BLE_ERROR BleTransportCapabilitiesResponseMessage::Encode(PacketBuffer * msgBuf)
     chip::Encoding::LittleEndian::Write16(p, mFragmentSize);
     chip::Encoding::Write8(p, mWindowSize);
 
-    msgBuf->SetDataLength(CAPABILITIES_RESPONSE_LEN);
+    msgBuf->SetDataLength(kCapabilitiesResponseLength);
 
 exit:
     return err;
 }
 
-BLE_ERROR BleTransportCapabilitiesResponseMessage::Decode(const PacketBuffer & msgBuf,
+BLE_ERROR BleTransportCapabilitiesResponseMessage::Decode(const PacketBufferHandle & msgBuf,
                                                           BleTransportCapabilitiesResponseMessage & msg)
 {
-    const uint8_t * p = msgBuf.Start();
+    const uint8_t * p = msgBuf->Start();
     BLE_ERROR err     = BLE_NO_ERROR;
 
     // Verify we can read the fixed-length response without running into the end of the buffer.
-    VerifyOrExit(msgBuf.DataLength() >= CAPABILITIES_RESPONSE_LEN, err = BLE_ERROR_MESSAGE_INCOMPLETE);
+    VerifyOrExit(msgBuf->DataLength() >= kCapabilitiesResponseLength, err = BLE_ERROR_MESSAGE_INCOMPLETE);
 
     VerifyOrExit(CAPABILITIES_MSG_CHECK_BYTE_1 == chip::Encoding::Read8(p), err = BLE_ERROR_INVALID_MESSAGE);
     VerifyOrExit(CAPABILITIES_MSG_CHECK_BYTE_2 == chip::Encoding::Read8(p), err = BLE_ERROR_INVALID_MESSAGE);
@@ -297,22 +279,25 @@ BleLayer::BleLayer()
     mState = kState_NotInitialized;
 }
 
-BLE_ERROR BleLayer::Init(BlePlatformDelegate * platformDelegate, BleApplicationDelegate * appDelegate,
-                         chip::System::Layer * systemLayer)
+BLE_ERROR BleLayer::Init(BlePlatformDelegate * platformDelegate, BleConnectionDelegate * connDelegate,
+                         BleApplicationDelegate * appDelegate, chip::System::Layer * systemLayer)
 {
     BLE_ERROR err = BLE_NO_ERROR;
 
     Ble::RegisterLayerErrorFormatter();
 
-    VerifyOrExit(platformDelegate != NULL, err = BLE_ERROR_BAD_ARGS);
-    VerifyOrExit(appDelegate != NULL, err = BLE_ERROR_BAD_ARGS);
-    VerifyOrExit(systemLayer != NULL, err = BLE_ERROR_BAD_ARGS);
+    // It is totally valid to not have a connDelegate. In this case the client application
+    // will take care of the connection steps.
+    VerifyOrExit(platformDelegate != nullptr, err = BLE_ERROR_BAD_ARGS);
+    VerifyOrExit(appDelegate != nullptr, err = BLE_ERROR_BAD_ARGS);
+    VerifyOrExit(systemLayer != nullptr, err = BLE_ERROR_BAD_ARGS);
 
     if (mState != kState_NotInitialized)
     {
         return BLE_ERROR_INCORRECT_STATE;
     }
 
+    mConnectionDelegate  = connDelegate;
     mPlatformDelegate    = platformDelegate;
     mApplicationDelegate = appDelegate;
     mSystemLayer         = systemLayer;
@@ -329,17 +314,23 @@ exit:
     return err;
 }
 
+BLE_ERROR BleLayer::Init(BlePlatformDelegate * platformDelegate, BleApplicationDelegate * appDelegate,
+                         chip::System::Layer * systemLayer)
+{
+    return Init(platformDelegate, nullptr, appDelegate, systemLayer);
+}
+
 BLE_ERROR BleLayer::Shutdown()
 {
     mState = kState_NotInitialized;
 
     // Close and free all BLE end points.
-    for (int i = 0; i < BLE_LAYER_NUM_BLE_ENDPOINTS; i++)
+    for (size_t i = 0; i < BLE_LAYER_NUM_BLE_ENDPOINTS; i++)
     {
         BLEEndPoint * elem = sBLEEndPointPool.Get(i);
 
         // If end point was initialized, and has not since been freed...
-        if (elem->mBle != NULL)
+        if (elem->mBle != nullptr)
         {
             // If end point hasn't already been closed...
             if (elem->mState != BLEEndPoint::kState_Closed)
@@ -360,9 +351,26 @@ BLE_ERROR BleLayer::Shutdown()
     return BLE_NO_ERROR;
 }
 
+BLE_ERROR BleLayer::NewBleConnection(void * appState, const uint16_t connDiscriminator,
+                                     BleConnectionDelegate::OnConnectionCompleteFunct onConnectionComplete,
+                                     BleConnectionDelegate::OnConnectionErrorFunct onConnectionError)
+{
+    BLE_ERROR err = BLE_NO_ERROR;
+
+    VerifyOrExit(mState == kState_Initialized, err = BLE_ERROR_INCORRECT_STATE);
+    VerifyOrExit(mConnectionDelegate != nullptr, err = BLE_ERROR_INCORRECT_STATE);
+
+    mConnectionDelegate->OnConnectionComplete = onConnectionComplete;
+    mConnectionDelegate->OnConnectionError    = onConnectionError;
+    mConnectionDelegate->NewConnection(this, appState, connDiscriminator);
+
+exit:
+    return err;
+}
+
 BLE_ERROR BleLayer::NewBleEndPoint(BLEEndPoint ** retEndPoint, BLE_CONNECTION_OBJECT connObj, BleRole role, bool autoClose)
 {
-    *retEndPoint = NULL;
+    *retEndPoint = nullptr;
 
     if (mState != kState_Initialized)
     {
@@ -375,7 +383,7 @@ BLE_ERROR BleLayer::NewBleEndPoint(BLEEndPoint ** retEndPoint, BLE_CONNECTION_OB
     }
 
     *retEndPoint = sBLEEndPointPool.GetFree();
-    if (*retEndPoint == NULL)
+    if (*retEndPoint == nullptr)
     {
         ChipLogError(Ble, "%s endpoint pool FULL", "Ble");
         return BLE_ERROR_NO_ENDPOINTS;
@@ -391,10 +399,10 @@ BLE_ERROR BleLayer::NewBleEndPoint(BLEEndPoint ** retEndPoint, BLE_CONNECTION_OB
 }
 
 // Handle remote central's initiation of CHIP over BLE protocol handshake.
-BLE_ERROR BleLayer::HandleBleTransportConnectionInitiated(BLE_CONNECTION_OBJECT connObj, PacketBuffer * pBuf)
+BLE_ERROR BleLayer::HandleBleTransportConnectionInitiated(BLE_CONNECTION_OBJECT connObj, PacketBufferHandle pBuf)
 {
     BLE_ERROR err             = BLE_NO_ERROR;
-    BLEEndPoint * newEndPoint = NULL;
+    BLEEndPoint * newEndPoint = nullptr;
 
     // Only BLE peripherals can receive GATT writes, so specify this role in our creation of the BLEEndPoint.
     // Set autoClose = false. Peripherals only notify the application when an end point releases a BLE connection.
@@ -403,19 +411,13 @@ BLE_ERROR BleLayer::HandleBleTransportConnectionInitiated(BLE_CONNECTION_OBJECT 
 
     newEndPoint->mAppState = mAppState;
 
-    err  = newEndPoint->Receive(pBuf);
-    pBuf = NULL;
+    err = newEndPoint->Receive(std::move(pBuf));
     SuccessOrExit(err); // If we fail here, end point will have already released connection and freed itself.
 
 exit:
-    if (pBuf != NULL)
-    {
-        PacketBuffer::Free(pBuf);
-    }
-
     // If we failed to allocate a new end point, release underlying BLE connection. Central's handshake will time out
     // if the application decides to keep the BLE connection open.
-    if (newEndPoint == NULL)
+    if (newEndPoint == nullptr)
     {
         mApplicationDelegate->NotifyChipConnectionClosed(connObj);
     }
@@ -429,7 +431,7 @@ exit:
 }
 
 bool BleLayer::HandleWriteReceived(BLE_CONNECTION_OBJECT connObj, const ChipBleUUID * svcId, const ChipBleUUID * charId,
-                                   PacketBuffer * pBuf)
+                                   PacketBufferHandle pBuf)
 {
     if (!UUIDsMatch(&CHIP_BLE_SVC_ID, svcId))
     {
@@ -439,7 +441,7 @@ bool BleLayer::HandleWriteReceived(BLE_CONNECTION_OBJECT connObj, const ChipBleU
 
     if (UUIDsMatch(&CHIP_BLE_CHAR_1_ID, charId))
     {
-        if (pBuf == NULL)
+        if (pBuf.IsNull())
         {
             ChipLogError(Ble, "rcvd null ble write");
             ExitNow();
@@ -448,10 +450,9 @@ bool BleLayer::HandleWriteReceived(BLE_CONNECTION_OBJECT connObj, const ChipBleU
         // Find matching connection end point.
         BLEEndPoint * endPoint = sBLEEndPointPool.Find(connObj);
 
-        if (endPoint != NULL)
+        if (endPoint != nullptr)
         {
-            BLE_ERROR status = endPoint->Receive(pBuf);
-            pBuf             = NULL;
+            BLE_ERROR status = endPoint->Receive(std::move(pBuf));
             if (status != BLE_NO_ERROR)
             {
                 ChipLogError(Ble, "BLEEndPoint rcv failed, err = %d", status);
@@ -459,8 +460,7 @@ bool BleLayer::HandleWriteReceived(BLE_CONNECTION_OBJECT connObj, const ChipBleU
         }
         else
         {
-            BLE_ERROR status = HandleBleTransportConnectionInitiated(connObj, pBuf);
-            pBuf             = NULL;
+            BLE_ERROR status = HandleBleTransportConnectionInitiated(connObj, std::move(pBuf));
             if (status != BLE_NO_ERROR)
             {
                 ChipLogError(Ble, "failed handle new chip BLE connection, status = %d", status);
@@ -473,16 +473,11 @@ bool BleLayer::HandleWriteReceived(BLE_CONNECTION_OBJECT connObj, const ChipBleU
     }
 
 exit:
-    if (pBuf != NULL)
-    {
-        PacketBuffer::Free(pBuf);
-    }
-
     return true;
 }
 
 bool BleLayer::HandleIndicationReceived(BLE_CONNECTION_OBJECT connObj, const ChipBleUUID * svcId, const ChipBleUUID * charId,
-                                        PacketBuffer * pBuf)
+                                        PacketBufferHandle pBuf)
 {
     if (!UUIDsMatch(&CHIP_BLE_SVC_ID, svcId))
     {
@@ -491,7 +486,7 @@ bool BleLayer::HandleIndicationReceived(BLE_CONNECTION_OBJECT connObj, const Chi
 
     if (UUIDsMatch(&CHIP_BLE_CHAR_2_ID, charId))
     {
-        if (pBuf == NULL)
+        if (pBuf.IsNull())
         {
             ChipLogError(Ble, "rcvd null ble indication");
             ExitNow();
@@ -500,10 +495,9 @@ bool BleLayer::HandleIndicationReceived(BLE_CONNECTION_OBJECT connObj, const Chi
         // find matching connection end point.
         BLEEndPoint * endPoint = sBLEEndPointPool.Find(connObj);
 
-        if (endPoint != NULL)
+        if (endPoint != nullptr)
         {
-            BLE_ERROR status = endPoint->Receive(pBuf);
-            pBuf             = NULL;
+            BLE_ERROR status = endPoint->Receive(std::move(pBuf));
             if (status != BLE_NO_ERROR)
             {
                 ChipLogError(Ble, "BLEEndPoint rcv failed, err = %d", status);
@@ -520,11 +514,6 @@ bool BleLayer::HandleIndicationReceived(BLE_CONNECTION_OBJECT connObj, const Chi
     }
 
 exit:
-    if (pBuf != NULL)
-    {
-        PacketBuffer::Free(pBuf);
-    }
-
     return true;
 }
 
@@ -571,7 +560,7 @@ void BleLayer::HandleAckReceived(BLE_CONNECTION_OBJECT connObj)
     // find matching connection end point.
     BLEEndPoint * endPoint = sBLEEndPointPool.Find(connObj);
 
-    if (endPoint != NULL)
+    if (endPoint != nullptr)
     {
         BLE_ERROR status = endPoint->HandleGattSendConfirmationReceived();
 
@@ -593,12 +582,12 @@ bool BleLayer::HandleSubscribeReceived(BLE_CONNECTION_OBJECT connObj, const Chip
         return false;
     }
 
-    if (UUIDsMatch(&CHIP_BLE_CHAR_2_ID, charId))
+    if (UUIDsMatch(&CHIP_BLE_CHAR_2_ID, charId) || UUIDsMatch(&CHIP_BLE_CHAR_3_ID, charId))
     {
         // Find end point already associated with BLE connection, if any.
         BLEEndPoint * endPoint = sBLEEndPointPool.Find(connObj);
 
-        if (endPoint != NULL)
+        if (endPoint != nullptr)
         {
             endPoint->HandleSubscribeReceived();
         }
@@ -618,11 +607,11 @@ bool BleLayer::HandleSubscribeComplete(BLE_CONNECTION_OBJECT connObj, const Chip
         return false;
     }
 
-    if (UUIDsMatch(&CHIP_BLE_CHAR_2_ID, charId))
+    if (UUIDsMatch(&CHIP_BLE_CHAR_2_ID, charId) || UUIDsMatch(&CHIP_BLE_CHAR_3_ID, charId))
     {
         BLEEndPoint * endPoint = sBLEEndPointPool.Find(connObj);
 
-        if (endPoint != NULL)
+        if (endPoint != nullptr)
         {
             endPoint->HandleSubscribeComplete();
         }
@@ -642,12 +631,12 @@ bool BleLayer::HandleUnsubscribeReceived(BLE_CONNECTION_OBJECT connObj, const Ch
         return false;
     }
 
-    if (UUIDsMatch(&CHIP_BLE_CHAR_2_ID, charId))
+    if (UUIDsMatch(&CHIP_BLE_CHAR_2_ID, charId) || UUIDsMatch(&CHIP_BLE_CHAR_3_ID, charId))
     {
         // Find end point already associated with BLE connection, if any.
         BLEEndPoint * endPoint = sBLEEndPointPool.Find(connObj);
 
-        if (endPoint != NULL)
+        if (endPoint != nullptr)
         {
             endPoint->DoClose(kBleCloseFlag_AbortTransmission, BLE_ERROR_CENTRAL_UNSUBSCRIBED);
         }
@@ -667,12 +656,12 @@ bool BleLayer::HandleUnsubscribeComplete(BLE_CONNECTION_OBJECT connObj, const Ch
         return false;
     }
 
-    if (UUIDsMatch(&CHIP_BLE_CHAR_2_ID, charId))
+    if (UUIDsMatch(&CHIP_BLE_CHAR_2_ID, charId) || UUIDsMatch(&CHIP_BLE_CHAR_3_ID, charId))
     {
         // Find end point already associated with BLE connection, if any.
         BLEEndPoint * endPoint = sBLEEndPointPool.Find(connObj);
 
-        if (endPoint != NULL)
+        if (endPoint != nullptr)
         {
             endPoint->HandleUnsubscribeComplete();
         }
@@ -690,7 +679,7 @@ void BleLayer::HandleConnectionError(BLE_CONNECTION_OBJECT connObj, BLE_ERROR er
     // BLE connection has failed somehow, we must find and abort matching connection end point.
     BLEEndPoint * endPoint = sBLEEndPointPool.Find(connObj);
 
-    if (endPoint != NULL)
+    if (endPoint != nullptr)
     {
         if (err == BLE_ERROR_GATT_UNSUBSCRIBE_FAILED && endPoint->IsUnsubscribePending())
         {

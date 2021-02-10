@@ -21,11 +21,10 @@
 
 #if CHIP_DEVICE_CONFIG_ENABLE_SOFTWARE_UPDATE_MANAGER
 
-#include <Profiles/CHIPProfiles.h>
-#include <Profiles/common/CommonProfile.h>
+#include <protocols/Protocols.h>
 
-#include <DeviceLayer/internal/GenericSoftwareUpdateManagerImpl.ipp>
-#include <DeviceLayer/internal/GenericSoftwareUpdateManagerImpl_BDX.ipp>
+#include <DeviceLayer/internal/GenericSoftwareUpdateManagerImpl.cpp>
+#include <DeviceLayer/internal/GenericSoftwareUpdateManagerImpl_BDX.cpp>
 
 namespace chip {
 namespace DeviceLayer {

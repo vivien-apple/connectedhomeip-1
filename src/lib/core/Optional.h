@@ -21,6 +21,7 @@
  *      or may not be present.
  *
  */
+#pragma once
 
 #include <assert.h>
 
@@ -39,7 +40,25 @@ public:
 
     constexpr Optional(const Optional & other) = default;
     constexpr Optional(Optional && other)      = default;
-    Optional & operator=(const Optional & other) = default;
+
+    /**
+     * Assignment operator implementation.
+     *
+     * NOTE: Manually implemented instead of =default  since other::mValue may not be initialized
+     * if it has no value.
+     */
+    Optional & operator=(const Optional & other)
+    {
+        if (other.HasValue())
+        {
+            SetValue(other.Value());
+        }
+        else
+        {
+            ClearValue();
+        }
+        return *this;
+    }
 
     /** Make the optional contain a specific value */
     void SetValue(const T & value)
@@ -49,13 +68,24 @@ public:
     }
 
     /** Invalidate the value inside the optional. Optional now has no value */
-    void ClearValue(void) { mHasValue = false; }
+    void ClearValue() { mHasValue = false; }
 
     /** Gets the current value of the optional. Valid IFF `HasValue`. */
-    const T & Value(void) const
+    const T & Value() const
     {
         assert(HasValue());
         return mValue;
+    }
+
+    /** Gets the current value of the optional if the optional has a value;
+        otherwise returns the provided default value. */
+    const T & ValueOr(const T & defaultValue) const
+    {
+        if (HasValue())
+        {
+            return mValue;
+        }
+        return defaultValue;
     }
 
     /** Checks if the optional contains a value or not */
@@ -71,7 +101,7 @@ public:
     bool operator!=(const Optional & other) const { return !(*this == other); }
 
     /** Convenience method to create an optional without a valid value. */
-    static Optional<T> Missing(void) { return Optional<T>(); }
+    static Optional<T> Missing() { return Optional<T>(); }
 
     /** Convenience method to create an optional containing the specified value. */
     static Optional<T> Value(const T & value) { return Optional(value); }

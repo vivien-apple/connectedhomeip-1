@@ -22,8 +22,7 @@
  *
  */
 
-#ifndef CHIPTLVTAGS_H_
-#define CHIPTLVTAGS_H_
+#pragma once
 
 namespace chip {
 namespace TLV {
@@ -53,17 +52,25 @@ enum TLVTagFields
 };
 
 // TODO: Move to private namespace
-enum TLVTagControl
+enum class TLVTagControl : uint8_t
 {
-    kTLVTagControl_Anonymous              = 0x00,
-    kTLVTagControl_ContextSpecific        = 0x20,
-    kTLVTagControl_CommonProfile_2Bytes   = 0x40,
-    kTLVTagControl_CommonProfile_4Bytes   = 0x60,
-    kTLVTagControl_ImplicitProfile_2Bytes = 0x80,
-    kTLVTagControl_ImplicitProfile_4Bytes = 0xA0,
-    kTLVTagControl_FullyQualified_6Bytes  = 0xC0,
-    kTLVTagControl_FullyQualified_8Bytes  = 0xE0
+    // IMPORTANT: All values here must have no bits in common with specified
+    // values of TLVElementType.
+    Anonymous              = 0x00,
+    ContextSpecific        = 0x20,
+    CommonProfile_2Bytes   = 0x40,
+    CommonProfile_4Bytes   = 0x60,
+    ImplicitProfile_2Bytes = 0x80,
+    ImplicitProfile_4Bytes = 0xA0,
+    FullyQualified_6Bytes  = 0xC0,
+    FullyQualified_8Bytes  = 0xE0
 };
+
+template <typename T>
+inline uint8_t operator>>(TLVTagControl lhs, const T & rhs)
+{
+    return static_cast<uint8_t>(static_cast<uint8_t>(lhs) >> rhs);
+}
 
 // TODO: Move to private namespace
 enum
@@ -81,7 +88,7 @@ enum
  */
 inline uint64_t ProfileTag(uint32_t profileId, uint32_t tagNum)
 {
-    return (((uint64_t) profileId) << kProfileIdShift) | tagNum;
+    return ((static_cast<uint64_t>(profileId)) << kProfileIdShift) | tagNum;
 }
 
 /**
@@ -94,7 +101,8 @@ inline uint64_t ProfileTag(uint32_t profileId, uint32_t tagNum)
  */
 inline uint64_t ProfileTag(uint16_t vendorId, uint16_t profileNum, uint32_t tagNum)
 {
-    return (((uint64_t) vendorId) << kVendorIdShift) | (((uint64_t) profileNum) << kProfileNumShift) | tagNum;
+    return ((static_cast<uint64_t>(vendorId)) << kVendorIdShift) | ((static_cast<uint64_t>(profileNum)) << kProfileNumShift) |
+        tagNum;
 }
 
 /**
@@ -140,7 +148,7 @@ enum
  */
 inline uint32_t ProfileIdFromTag(uint64_t tag)
 {
-    return (uint32_t)((tag & kProfileIdMask) >> kProfileIdShift);
+    return static_cast<uint32_t>((tag & kProfileIdMask) >> kProfileIdShift);
 }
 
 /**
@@ -153,7 +161,7 @@ inline uint32_t ProfileIdFromTag(uint64_t tag)
  */
 inline uint16_t ProfileNumFromTag(uint64_t tag)
 {
-    return (uint16_t)((tag & kProfileIdMask) >> kProfileIdShift);
+    return static_cast<uint16_t>((tag & kProfileIdMask) >> kProfileIdShift);
 }
 
 /**
@@ -169,7 +177,7 @@ inline uint16_t ProfileNumFromTag(uint64_t tag)
  */
 inline uint32_t TagNumFromTag(uint64_t tag)
 {
-    return (uint32_t)(tag & kTagNumMask);
+    return static_cast<uint32_t>(tag & kTagNumMask);
 }
 
 /**
@@ -182,7 +190,7 @@ inline uint32_t TagNumFromTag(uint64_t tag)
  */
 inline uint16_t VendorIdFromTag(uint64_t tag)
 {
-    return (uint16_t)((tag & kProfileIdMask) >> kVendorIdShift);
+    return static_cast<uint16_t>((tag & kProfileIdMask) >> kVendorIdShift);
 }
 
 /**
@@ -209,5 +217,3 @@ inline bool IsSpecialTag(uint64_t tag)
 
 } // namespace TLV
 } // namespace chip
-
-#endif /* CHIPTLVTAGS_H_ */

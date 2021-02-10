@@ -21,28 +21,34 @@
  *   all references to it have been removed.
  */
 
-#ifndef REFERENCE_COUNTED_H_
-#define REFERENCE_COUNTED_H_
+#pragma once
 
 #include <limits>
 #include <stdlib.h>
 
+#include <support/CHIPMem.h>
+
 namespace chip {
+
+template <class T>
+class DeleteDeletor
+{
+public:
+    static void Release(T * obj) { chip::Platform::Delete(obj); }
+};
 
 /**
  * A reference counted object maintains a count of usages and when the usage
  * count drops to 0, it deletes itself.
  */
-template <class SUBCLASS>
+template <class Subclass, class Deletor = DeleteDeletor<Subclass>, int kInitRefCount = 1>
 class ReferenceCounted
 {
 public:
-    virtual ~ReferenceCounted() {}
-
     typedef uint32_t count_type;
 
     /** Adds one to the usage count of this class */
-    SUBCLASS * Retain(void)
+    Subclass * Retain()
     {
         if (mRefCount == std::numeric_limits<count_type>::max())
         {
@@ -50,11 +56,11 @@ public:
         }
         ++mRefCount;
 
-        return reinterpret_cast<SUBCLASS *>(this);
+        return static_cast<Subclass *>(this);
     }
 
     /** Release usage of this class */
-    void Release(void)
+    void Release()
     {
         if (mRefCount == 0)
         {
@@ -63,7 +69,7 @@ public:
 
         if (--mRefCount == 0)
         {
-            delete this;
+            Deletor::Release(static_cast<Subclass *>(this));
         }
     }
 
@@ -71,9 +77,7 @@ public:
     count_type GetReferenceCount() const { return mRefCount; }
 
 private:
-    count_type mRefCount = 1;
+    count_type mRefCount = kInitRefCount;
 };
 
 } // namespace chip
-
-#endif // REFERENCE_COUNTED_H_

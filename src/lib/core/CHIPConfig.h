@@ -33,9 +33,13 @@
  *
  */
 
-#ifndef CHIP_CONFIG_H_
-#define CHIP_CONFIG_H_
+#pragma once
 
+#if CHIP_HAVE_CONFIG_H
+#include <core/CHIPBuildConfig.h>
+#endif
+
+#include <ble/BleConfig.h>
 #include <system/SystemConfig.h>
 
 /* COMING SOON: making the INET Layer optional entails making this inclusion optional. */
@@ -79,11 +83,9 @@
 
 #include "CHIPTimeConfig.h"
 
-#include "CHIPTunnelConfig.h"
-
 #include "CHIPEventLoggingConfig.h"
 
-#include "CHIPWRMPConfig.h"
+#include "CHIPRMPConfig.h"
 */
 /**
  *  @def CHIP_CONFIG_ERROR_TYPE
@@ -455,9 +457,9 @@
  *    The following definitions enable one of three potential chip
  *    Security Manager memory-management options:
  *
- *      * #CHIP_CONFIG_SECURITY_MGR_MEMORY_MGMT_PLATFORM
- *      * #CHIP_CONFIG_SECURITY_MGR_MEMORY_MGMT_SIMPLE
- *      * #CHIP_CONFIG_SECURITY_MGR_MEMORY_MGMT_MALLOC
+ *      * #CHIP_CONFIG_MEMORY_MGMT_PLATFORM
+ *      * #CHIP_CONFIG_MEMORY_MGMT_SIMPLE
+ *      * #CHIP_CONFIG_MEMORY_MGMT_MALLOC
  *
  *    Note that these options are mutually exclusive and only one
  *    of these options should be set.
@@ -466,7 +468,7 @@
  */
 
 /**
- *  @def CHIP_CONFIG_SECURITY_MGR_MEMORY_MGMT_PLATFORM
+ *  @def CHIP_CONFIG_MEMORY_MGMT_PLATFORM
  *
  *  @brief
  *    Enable (1) or disable (0) support for platform-specific
@@ -474,16 +476,16 @@
  *    functions.
  *
  *  @note This configuration is mutual exclusive with
- *        #CHIP_CONFIG_SECURITY_MGR_MEMORY_MGMT_SIMPLE and
- *        #CHIP_CONFIG_SECURITY_MGR_MEMORY_MGMT_MALLOC.
+ *        #CHIP_CONFIG_MEMORY_MGMT_SIMPLE and
+ *        #CHIP_CONFIG_MEMORY_MGMT_MALLOC.
  *
  */
-#ifndef CHIP_CONFIG_SECURITY_MGR_MEMORY_MGMT_PLATFORM
-#define CHIP_CONFIG_SECURITY_MGR_MEMORY_MGMT_PLATFORM      0
-#endif // CHIP_CONFIG_SECURITY_MGR_MEMORY_MGMT_PLATFORM
+#ifndef CHIP_CONFIG_MEMORY_MGMT_PLATFORM
+#define CHIP_CONFIG_MEMORY_MGMT_PLATFORM      0
+#endif // CHIP_CONFIG_MEMORY_MGMT_PLATFORM
 
 /**
- *  @def CHIP_CONFIG_SECURITY_MGR_MEMORY_MGMT_SIMPLE
+ *  @def CHIP_CONFIG_MEMORY_MGMT_SIMPLE
  *
  *  @brief
  *    Enable (1) or disable (0) support for a chip-provided
@@ -492,16 +494,16 @@
  *    release.
  *
  *  @note This configuration is mutual exclusive with
- *        #CHIP_CONFIG_SECURITY_MGR_MEMORY_MGMT_PLATFORM and
- *        #CHIP_CONFIG_SECURITY_MGR_MEMORY_MGMT_MALLOC.
+ *        #CHIP_CONFIG_MEMORY_MGMT_PLATFORM and
+ *        #CHIP_CONFIG_MEMORY_MGMT_MALLOC.
  *
  */
-#ifndef CHIP_CONFIG_SECURITY_MGR_MEMORY_MGMT_SIMPLE
-#define CHIP_CONFIG_SECURITY_MGR_MEMORY_MGMT_SIMPLE        0
-#endif // CHIP_CONFIG_SECURITY_MGR_MEMORY_MGMT_SIMPLE
+#ifndef CHIP_CONFIG_MEMORY_MGMT_SIMPLE
+#define CHIP_CONFIG_MEMORY_MGMT_SIMPLE        0
+#endif // CHIP_CONFIG_MEMORY_MGMT_SIMPLE
 
 /**
- *  @def CHIP_CONFIG_SECURITY_MGR_MEMORY_MGMT_MALLOC
+ *  @def CHIP_CONFIG_MEMORY_MGMT_MALLOC
  *
  *  @brief
  *    Enable (1) or disable (0) support for a chip-provided
@@ -510,21 +512,25 @@
  *    functions.
  *
  *  @note This configuration is mutual exclusive with
- *        #CHIP_CONFIG_SECURITY_MGR_MEMORY_MGMT_PLATFORM and
- *        #CHIP_CONFIG_SECURITY_MGR_MEMORY_MGMT_SIMPLE.
+ *        #CHIP_CONFIG_MEMORY_MGMT_PLATFORM and
+ *        #CHIP_CONFIG_MEMORY_MGMT_SIMPLE.
  *
  */
-#ifndef CHIP_CONFIG_SECURITY_MGR_MEMORY_MGMT_MALLOC
-#define CHIP_CONFIG_SECURITY_MGR_MEMORY_MGMT_MALLOC        1
-#endif // CHIP_CONFIG_SECURITY_MGR_MEMORY_MGMT_MALLOC
+#ifndef CHIP_CONFIG_MEMORY_MGMT_MALLOC
+#define CHIP_CONFIG_MEMORY_MGMT_MALLOC        1
+#endif // CHIP_CONFIG_MEMORY_MGMT_MALLOC
 
 /**
  *  @}
  */
 
-#if ((CHIP_CONFIG_SECURITY_MGR_MEMORY_MGMT_PLATFORM + CHIP_CONFIG_SECURITY_MGR_MEMORY_MGMT_SIMPLE + CHIP_CONFIG_SECURITY_MGR_MEMORY_MGMT_MALLOC) != 1)
-#error "Please assert exactly one of CHIP_CONFIG_SECURITY_MGR_MEMORY_MGMT_PLATFORM, CHIP_CONFIG_SECURITY_MGR_MEMORY_MGMT_SIMPLE, or CHIP_CONFIG_SECURITY_MGR_MEMORY_MGMT_MALLOC."
-#endif // ((CHIP_CONFIG_SECURITY_MGR_MEMORY_MGMT_PLATFORM + CHIP_CONFIG_SECURITY_MGR_MEMORY_MGMT_SIMPLE + CHIP_CONFIG_SECURITY_MGR_MEMORY_MGMT_MALLOC) != 1)
+#if ((CHIP_CONFIG_MEMORY_MGMT_PLATFORM + CHIP_CONFIG_MEMORY_MGMT_SIMPLE + CHIP_CONFIG_MEMORY_MGMT_MALLOC) != 1)
+#error "Please assert exactly one of CHIP_CONFIG_MEMORY_MGMT_PLATFORM, CHIP_CONFIG_MEMORY_MGMT_SIMPLE, or CHIP_CONFIG_MEMORY_MGMT_MALLOC."
+#endif // ((CHIP_CONFIG_MEMORY_MGMT_PLATFORM + CHIP_CONFIG_MEMORY_MGMT_SIMPLE + CHIP_CONFIG_MEMORY_MGMT_MALLOC) != 1)
+
+#if !CHIP_CONFIG_MEMORY_MGMT_MALLOC && CHIP_SYSTEM_CONFIG_USE_BSD_IFADDRS
+#error "!CHIP_CONFIG_MEMORY_MGMT_MALLOC but getifaddrs() uses malloc()"
+#endif
 
 /**
  *  @def CHIP_CONFIG_SIMPLE_ALLOCATOR_USE_SMALL_BUFFERS
@@ -536,7 +542,7 @@
  *    600 bytes.
  *
  *  @note This configuration is only relevant when
- *        #CHIP_CONFIG_SECURITY_MGR_MEMORY_MGMT_SIMPLE is set and
+ *        #CHIP_CONFIG_MEMORY_MGMT_SIMPLE is set and
  *        ignored otherwise.
  *
  */
@@ -1045,17 +1051,6 @@
 #endif // CHIP_CONFIG_MAX_INCOMING_TCP_CON_FROM_SINGLE_IP
 
 /**
- *  @def CHIP_CONFIG_MAX_TUNNELS
- *
- *  @brief
- *    Maximum number of simultaneously active connection tunnels.
- *
- */
-#ifndef CHIP_CONFIG_MAX_TUNNELS
-#define CHIP_CONFIG_MAX_TUNNELS                            1
-#endif // CHIP_CONFIG_MAX_TUNNELS
-
-/**
  *  @def CHIP_CONFIG_MAX_SESSION_KEYS
  *
  *  @brief
@@ -1337,7 +1332,7 @@
  *
  */
 #ifndef CHIP_PORT
-#define CHIP_PORT                                          11095
+#define CHIP_PORT                                          11097
 #endif // CHIP_PORT
 
 /**
@@ -1447,7 +1442,7 @@
  *
  */
 #ifndef CHIP_CONFIG_OPERATIONAL_DEVICE_CERT_CURVE_ID
-#define CHIP_CONFIG_OPERATIONAL_DEVICE_CERT_CURVE_ID       (chip::Profiles::Security::kchipCurveId_prime256v1)
+#define CHIP_CONFIG_OPERATIONAL_DEVICE_CERT_CURVE_ID       (chip::Profiles::Security::kChipCurveId_prime256v1)
 #endif // CHIP_CONFIG_OPERATIONAL_DEVICE_CERT_CURVE_ID
 
 /**
@@ -1557,13 +1552,13 @@
  */
 #ifndef CHIP_CONFIG_DEFAULT_CASE_CURVE_ID
 #if CHIP_CONFIG_SUPPORT_ELLIPTIC_CURVE_SECP224R1
-#define CHIP_CONFIG_DEFAULT_CASE_CURVE_ID                  (chip::Profiles::Security::kchipCurveId_secp224r1)
+#define CHIP_CONFIG_DEFAULT_CASE_CURVE_ID                  (chip::Profiles::Security::kChipCurveId_secp224r1)
 #elif CHIP_CONFIG_SUPPORT_ELLIPTIC_CURVE_SECP256R1
-#define CHIP_CONFIG_DEFAULT_CASE_CURVE_ID                  (chip::Profiles::Security::kchipCurveId_prime256v1)
+#define CHIP_CONFIG_DEFAULT_CASE_CURVE_ID                  (chip::Profiles::Security::kChipCurveId_prime256v1)
 #elif CHIP_CONFIG_SUPPORT_ELLIPTIC_CURVE_SECP192R1
-#define CHIP_CONFIG_DEFAULT_CASE_CURVE_ID                  (chip::Profiles::Security::kchipCurveId_prime192v1)
+#define CHIP_CONFIG_DEFAULT_CASE_CURVE_ID                  (chip::Profiles::Security::kChipCurveId_prime192v1)
 #else
-#define CHIP_CONFIG_DEFAULT_CASE_CURVE_ID                  (chip::Profiles::Security::kchipCurveId_secp160r1)
+#define CHIP_CONFIG_DEFAULT_CASE_CURVE_ID                  (chip::Profiles::Security::kChipCurveId_secp160r1)
 #endif
 #endif // CHIP_CONFIG_DEFAULT_CASE_CURVE_ID
 
@@ -1576,9 +1571,9 @@
  */
 #ifndef CHIP_CONFIG_DEFAULT_CASE_ALLOWED_CURVES
 #if CHIP_CONFIG_SUPPORT_ELLIPTIC_CURVE_SECP224R1 || CHIP_CONFIG_SUPPORT_ELLIPTIC_CURVE_SECP256R1
-#define CHIP_CONFIG_DEFAULT_CASE_ALLOWED_CURVES            (chip::Profiles::Security::kchipCurveSet_secp224r1|chip::Profiles::Security::kchipCurveSet_prime256v1)
+#define CHIP_CONFIG_DEFAULT_CASE_ALLOWED_CURVES            (chip::Profiles::Security::kChipCurveSet_secp224r1|chip::Profiles::Security::kChipCurveSet_prime256v1)
 #else
-#define CHIP_CONFIG_DEFAULT_CASE_ALLOWED_CURVES            (chip::Profiles::Security::kchipCurveSet_All)
+#define CHIP_CONFIG_DEFAULT_CASE_ALLOWED_CURVES            (chip::Profiles::Security::kChipCurveSet_All)
 #endif
 #endif // CHIP_CONFIG_DEFAULT_CASE_ALLOWED_CURVES
 
@@ -1822,18 +1817,6 @@
 #endif // CHIP_DETAIL_LOGGING
 
 /**
- *  @def CHIP_RETAIN_LOGGING
- *
- *  @brief
- *    If asserted (1), enable logging of all messages in the
- *    chip::Logging::LogCategory::kLogCategory_Retain category.
- *    If not defined by the application, by default CHIP_RETAIN_LOGGING is
- *    remapped to CHIP_PROGRESS_LOGGING
- *
- */
-
-
-/**
  *  @def CHIP_CONFIG_ENABLE_FUNCT_ERROR_LOGGING
  *
  *  @brief
@@ -1855,29 +1838,6 @@
 #ifndef CHIP_CONFIG_ENABLE_CONDITION_LOGGING
 #define CHIP_CONFIG_ENABLE_CONDITION_LOGGING 0
 #endif // CHIP_CONFIG_ENABLE_CONDITION_LOGGING
-
-
-/**
- *  @def CHIP_CONFIG_ENABLE_SERVICE_DIRECTORY
- *
- *  @brief
- *    If set to (1), use of the ServiceDirectory implementation
- *    is enabled. Default value is (1) or enabled.
- *
- *  @note
- *    Enabling this profile allows applications using chip to
- *    request a connection to a particular chip service using
- *    a predefined service endpoint. It is relevant for
- *    applications that run on devices that interact with the
- *    Service over a direct TCP/IPv4 connection rather than those
- *    that use the chip Tunnel through a gateway device. For
- *    devices of the latter category, the Service Directory
- *    profile can be disabled via this compilation switch.
- *
- */
-#ifndef CHIP_CONFIG_ENABLE_SERVICE_DIRECTORY
-#define CHIP_CONFIG_ENABLE_SERVICE_DIRECTORY               1
-#endif // CHIP_CONFIG_ENABLE_SERVICE_DIRECTORY
 
 /**
  *  @def CHIP_CONFIG_SERVICE_DIR_CONNECT_TIMEOUT_MSECS
@@ -2301,6 +2261,33 @@
 #endif // CHIP_PEER_CONNECTION_TIMEOUT_CHECK_FREQUENCY_MS
 
 /**
+   *  @def CHIP_CONFIG_MAX_BINDINGS
+   *
+   *  @brief
+   *    Maximum number of simultaneously active bindings per WeaveExchangeManager
+   *    The new single source TimeSync client takes one binding.
+   *    Every WDM one-way subscription takes one binding. Mutual subscription counts as two one-way subscriptions.
+   *    A reserved slot is needed to take an incoming subscription request.
+   *    For a device with 2 mutual subscriptions, and one single source time sync client, it needs 2 x 2 + 1 = 5 bindings at least.
+   *    At least six is needed if it still wants to take new WDM subscriptions under this load.
+   */
+  #ifndef CHIP_CONFIG_MAX_BINDINGS
+  #define CHIP_CONFIG_MAX_BINDINGS                           6
+  #endif // CHIP_CONFIG_MAX_BINDINGS
+
+/**
+   *  @def CHIP_CONFIG_MAX_DEVICE_ADMINS
+   *
+   *  @brief
+   *    Maximum number of administrators that can provision the device. Each admin
+   *    can provision the device with their unique operational credentials and manage
+   *    their access control lists.
+   */
+  #ifndef CHIP_CONFIG_MAX_DEVICE_ADMINS
+  #define CHIP_CONFIG_MAX_DEVICE_ADMINS                      16
+  #endif // CHIP_CONFIG_MAX_DEVICE_ADMINS
+
+  /**
  * @def CHIP_NON_PRODUCTION_MARKER
  *
  * @brief Defines the name of a mark symbol whose presence signals that the chip code
@@ -2321,5 +2308,3 @@ extern const char CHIP_NON_PRODUCTION_MARKER[];
 #endif
 
 // clang-format on
-
-#endif /* CHIP_CONFIG_H_ */

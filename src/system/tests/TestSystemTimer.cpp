@@ -26,16 +26,13 @@
 #ifndef __STDC_LIMIT_MACROS
 #define __STDC_LIMIT_MACROS
 #endif
-// config
-#include <system/SystemConfig.h>
 
-// module header
-#include "TestSystemLayer.h"
+#include <system/SystemConfig.h>
 
 #include <nlunit-test.h>
 #include <support/CodeUtils.h>
 #include <support/ErrorStr.h>
-#include <support/TestUtils.h>
+#include <support/UnitTestRegistration.h>
 #include <system/SystemError.h>
 #include <system/SystemLayer.h>
 #include <system/SystemTimer.h>
@@ -46,9 +43,9 @@
 #include <lwip/tcpip.h>
 #endif // CHIP_SYSTEM_CONFIG_USE_LWIP
 
-#if CHIP_SYSTEM_CONFIG_USE_SOCKETS
+#if CHIP_SYSTEM_CONFIG_USE_SOCKETS || CHIP_SYSTEM_CONFIG_USE_NETWORK_FRAMEWORK
 #include <sys/select.h>
-#endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS
+#endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS || CHIP_SYSTEM_CONFIG_USE_NETWORK_FRAMEWORK
 
 #include <errno.h>
 #include <stdint.h>
@@ -59,7 +56,7 @@ using namespace chip::System;
 
 static void ServiceEvents(Layer & aLayer, ::timeval & aSleepTime)
 {
-#if CHIP_SYSTEM_CONFIG_USE_SOCKETS
+#if CHIP_SYSTEM_CONFIG_USE_SOCKETS || CHIP_SYSTEM_CONFIG_USE_NETWORK_FRAMEWORK
     fd_set readFDs, writeFDs, exceptFDs;
     int numFDs = 0;
 
@@ -76,13 +73,13 @@ static void ServiceEvents(Layer & aLayer, ::timeval & aSleepTime)
         printf("select failed: %s\n", ErrorStr(MapErrorPOSIX(errno)));
         return;
     }
-#endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS
+#endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS || CHIP_SYSTEM_CONFIG_USE_NETWORK_FRAMEWORK
 
     if (aLayer.State() == kLayerState_Initialized)
     {
-#if CHIP_SYSTEM_CONFIG_USE_SOCKETS
+#if CHIP_SYSTEM_CONFIG_USE_SOCKETS || CHIP_SYSTEM_CONFIG_USE_NETWORK_FRAMEWORK
         aLayer.HandleSelectResult(selectRes, &readFDs, &writeFDs, &exceptFDs);
-#endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS
+#endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS || CHIP_SYSTEM_CONFIG_USE_NETWORK_FRAMEWORK
 
 #if CHIP_SYSTEM_CONFIG_USE_LWIP
         if (aLayer.State() == kLayerState_Initialized)
@@ -122,9 +119,9 @@ public:
     {
         TestContext * lContext = static_cast<TestContext *>(p);
         lContext->GreedyTimer();
-    };
+    }
 
-    TestContext() : mGreedyTimer(GreedyTimer, this), mNumTimersHandled(0){};
+    TestContext() : mGreedyTimer(GreedyTimer, this), mNumTimersHandled(0) {}
 };
 
 // Test input data.
@@ -236,15 +233,15 @@ static nlTestSuite kTheSuite =
 };
 // clang-format on
 
+static Layer sLayer;
+
 /**
  *  Set up the test suite.
  */
 static int TestSetup(void * aContext)
 {
-    static Layer sLayer;
-
     TestContext & lContext = *reinterpret_cast<TestContext *>(aContext);
-    void * lLayerContext   = NULL;
+    void * lLayerContext   = nullptr;
 
 #if CHIP_SYSTEM_CONFIG_USE_LWIP
 #if LWIP_VERSION_MAJOR <= 2 && LWIP_VERSION_MINOR < 1
@@ -293,7 +290,4 @@ int TestSystemTimer(void)
     return nlTestRunnerStats(&kTheSuite);
 }
 
-static void __attribute__((constructor)) TestSystemTimerCtor(void)
-{
-    VerifyOrDie(chip::RegisterUnitTests(&TestSystemTimer) == CHIP_NO_ERROR);
-}
+CHIP_REGISTER_TEST_SUITE(TestSystemTimer)
