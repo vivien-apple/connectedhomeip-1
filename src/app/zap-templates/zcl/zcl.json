@@ -6,6 +6,7 @@
         "clusters-extensions.xml",
         "custom-types.xml",
         "chip-devices.xml",
+        "descriptor-cluster.xml",
         "types.xml",
         "general.xml",
         "ha.xml",

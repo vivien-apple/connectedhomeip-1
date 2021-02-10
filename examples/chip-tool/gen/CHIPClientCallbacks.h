@@ -35,6 +35,8 @@ typedef void (*Int64uAttributeCallback)(void * context, uint64_t value);
 typedef void (*Int64sAttributeCallback)(void * context, int64_t value);
 typedef void (*ReadReportingConfigurationReportedCallback)(void * context, uint16_t minInterval, uint16_t maxInterval);
 typedef void (*ReadReportingConfigurationReceivedCallback)(void * context, uint16_t timeout);
+typedef void (*EndpointIdsAttributeCallback)(void * context, uint16_t length, uint8_t * endpointIds);
+typedef void (*ClusterIdsAttributeCallback)(void * context, uint16_t length, uint16_t * clusterIds);
 
 // Cluster Specific Response Callbacks
 typedef void (*DoorLockClusterClearAllPinsResponseCallback)(void * context);

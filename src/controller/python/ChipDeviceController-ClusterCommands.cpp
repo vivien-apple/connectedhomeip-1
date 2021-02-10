@@ -249,6 +249,9 @@ CHIP_ERROR chip_ime_AppendCommand_ColorControl_StopMoveStep(chip::Controller::De
 }
 // End of Cluster ColorControl
 
+// Cluster Descriptor
+// End of Cluster Descriptor
+
 // Cluster DoorLock
 CHIP_ERROR chip_ime_AppendCommand_DoorLock_ClearAllPins(chip::Controller::Device * device, chip::EndpointId ZCLendpointId,
                                                         chip::GroupId ZCLgroupId)

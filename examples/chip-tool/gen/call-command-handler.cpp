@@ -32,6 +32,7 @@ EmberAfStatus emberAfBarrierControlClusterClientCommandParse(EmberAfClusterComma
 EmberAfStatus emberAfBasicClusterClientCommandParse(EmberAfClusterCommand * cmd);
 EmberAfStatus emberAfBindingClusterClientCommandParse(EmberAfClusterCommand * cmd);
 EmberAfStatus emberAfColorControlClusterClientCommandParse(EmberAfClusterCommand * cmd);
+EmberAfStatus emberAfDescriptorClusterClientCommandParse(EmberAfClusterCommand * cmd);
 EmberAfStatus emberAfDoorLockClusterClientCommandParse(EmberAfClusterCommand * cmd);
 EmberAfStatus emberAfGroupsClusterClientCommandParse(EmberAfClusterCommand * cmd);
 EmberAfStatus emberAfIdentifyClusterClientCommandParse(EmberAfClusterCommand * cmd);
@@ -83,6 +84,10 @@ EmberAfStatus emberAfClusterSpecificCommandParse(EmberAfClusterCommand * cmd)
             break;
         case ZCL_COLOR_CONTROL_CLUSTER_ID:
             // No commands are enabled for cluster Color Control
+            result = status(false, true, cmd->mfgSpecific);
+            break;
+        case ZCL_DESCRIPTOR_CLUSTER_ID:
+            // No commands are enabled for cluster Descriptor
             result = status(false, true, cmd->mfgSpecific);
             break;
         case ZCL_DOOR_LOCK_CLUSTER_ID:

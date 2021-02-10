@@ -157,6 +157,8 @@ class ChipCluster:
                     "optionsOverride": "int",
                 },
             },
+            "Descriptor": {
+            },
             "DoorLock": {
                 "ClearAllPins": {
                 },
@@ -930,6 +932,7 @@ class ChipCluster:
         # Cluster ColorControl Command StopMoveStep
         self._chipLib.chip_ime_AppendCommand_ColorControl_StopMoveStep.argtypes = [ctypes.c_void_p, ctypes.c_uint8, ctypes.c_uint16, ctypes.c_uint8, ctypes.c_uint8]
         self._chipLib.chip_ime_AppendCommand_ColorControl_StopMoveStep.restype = ctypes.c_uint32
+        # Cluster Descriptor
         # Cluster DoorLock
         # Cluster DoorLock Command ClearAllPins
         self._chipLib.chip_ime_AppendCommand_DoorLock_ClearAllPins.argtypes = [ctypes.c_void_p, ctypes.c_uint8, ctypes.c_uint16]

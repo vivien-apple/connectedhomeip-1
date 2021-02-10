@@ -180,6 +180,21 @@ bool emberAfIsLongStringAttributeType(EmberAfAttributeType attributeType)
     return (attributeType == ZCL_LONG_OCTET_STRING_ATTRIBUTE_TYPE || attributeType == ZCL_LONG_CHAR_STRING_ATTRIBUTE_TYPE);
 }
 
+bool emberAfIsThisDataTypeAnArrayType(EmberAfAttributeType dataType)
+{
+    return (dataType == ZCL_ENDPOINT_ID_LIST_ATTRIBUTE_TYPE || dataType == ZCL_CLUSTER_ID_LIST_ATTRIBUTE_TYPE);
+}
+
+bool emberAfIsEndpointIdsArrayAttributeType(EmberAfAttributeType dataType)
+{
+    return (dataType == ZCL_ENDPOINT_ID_LIST_ATTRIBUTE_TYPE);
+}
+
+bool emberAfIsClusterIdsArrayAttributeType(EmberAfAttributeType dataType)
+{
+    return (dataType == ZCL_CLUSTER_ID_LIST_ATTRIBUTE_TYPE);
+}
+
 // This function is used to call the per-cluster default response callback
 void emberAfClusterDefaultResponseWithMfgCodeCallback(EndpointId endpoint, ClusterId clusterId, uint8_t commandId,
                                                       EmberAfStatus status, uint8_t clientServerMask, uint16_t manufacturerCode)

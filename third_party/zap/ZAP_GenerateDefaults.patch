@@ -1,0 +1,80 @@
+diff --git a/src-electron/generator/helper-endpointconfig.js b/src-electron/generator/helper-endpointconfig.js
+index d2067f6..30345d1 100644
+--- a/src-electron/generator/helper-endpointconfig.js
++++ b/src-electron/generator/helper-endpointconfig.js
+@@ -365,21 +365,70 @@ function collectAttributes(endpointTypes) {
+       attributeIndex += c.attributes.length
+ 
+       // Go over all the attributes in the endpoint and add them to the list.
+       c.attributes.forEach((a) => {
+         let attributeDefaultValue = a.defaultValue
+         if (a.typeSize > 2) {
+           // We will need to generate the GENERATED_DEFAULTS
+           longDefaults.push(a)
+-          let def = types.longTypeDefaultValue(
+-            a.typeSize,
+-            a.type,
+-            a.defaultValue
+-          )
++
++          let def = null;
++
++          // TODO
++          //
++          // The descriptor cluster contains readonly attributes that depends on the ZAP configuration. The attributes
++          // can be automatically generated from the ZAP definition.
++          // The following code generates defaults for (server, client, parts) of the Descriptor Cluster, it should
++          // be cleaned up and moves at the right place instead of hooking it directly here.
++          //
++          // One possible place could be to generate those values when the `.zap` file is written to the disk, so the
++          // a.defaultValue field will be populated correctly.
++          //
++          if (c.hexCode == '0xF001')
++          {
++              function generateDefaultsBytes(targets, size, field)
++              {
++                  // Get an array of size = a.typeSize. I guess we can do better to save some space on the device, but it means we will
++                  // need to update the GENERATED_ATTRIBUTES too to take into account the dynamic size.
++                  const bytesCount = targets.length * size;
++
++                  let bytes = [types.longTypeDefaultValue(1, 0, '0x' + bytesCount.toString(16)).split(', ')[0]];
++                  bytes = bytes.concat(targets.map(c => types.longTypeDefaultValue(size, 0, '0x' + c[field].toString(16)).slice(0, -2).split(', ').reverse()).flat());
++                  bytes = bytes.concat(new Array(a.typeSize - bytesCount - 1).fill('0x00'));
++                  bytes[bytes.length - 1] += ',';
++                  return bytes;
++              }
++
++              if (a.name == 'server' || a.name == 'client')
++              {
++                  def = generateDefaultsBytes(ept.clusters.filter(cluster => cluster.side == a.name), 2, 'code');
++              }
++              else if (a.name == 'parts')
++              {
++                  if (ept.endpointId == 0)
++                  {
++                      def = generateDefaultsBytes(endpointTypes.filter(endpoint => endpoint.endpointId != ept.endpointId), 1, 'endpointId');
++                  }
++                  else
++                  {
++                      def = generateDefaultsBytes([], 1);
++                  }
++              }
++          }
++
++          if (def == null)
++          {
++              def = types.longTypeDefaultValue(
++                a.typeSize,
++                a.type,
++                a.defaultValue
++              )
++          }
++
+           let longDef = {
+             value: def,
+             size: a.typeSize,
+             comment: `Default for cluster: "${c.name}", attribute: "${a.name}". side: ${a.side}`,
+           }
+           attributeDefaultValue = `ZAP_LONG_DEFAULTS_INDEX(${longDefaultsIndex})`
+           longDefaultsList.push(longDef)
+           longDefaultsIndex += a.typeSize

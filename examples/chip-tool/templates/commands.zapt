@@ -60,6 +60,22 @@ static void OnInt16sAttributeResponse(void * context, int16_t value)
     command->SetCommandExitStatus(true);
 }
 
+static void OnClusterIdsAttributeResponse(void * context, uint16_t length, uint16_t * clusterIds)
+{
+    ChipLogProgress(chipTool, "Got %lu clusters Ids", length);
+
+    ModelCommand * command = reinterpret_cast<ModelCommand *>(context);
+    command->SetCommandExitStatus(true);
+}
+
+static void OnEndpointIdsAttributeResponse(void * context, uint16_t length, uint8_t * endpointIds)
+{
+    ChipLogProgress(chipTool, "Got %lu endpoint Ids", length);
+
+    ModelCommand * command = reinterpret_cast<ModelCommand *>(context);
+    command->SetCommandExitStatus(true);
+}
+
 {{#all_user_clusters}}
 {{#if (isClient side) }}
 {{#if (user_cluster_has_enabled_command name side)}}

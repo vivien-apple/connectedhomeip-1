@@ -82,5 +82,7 @@ enum
     ZCL_GROUP_ID_ATTRIBUTE_TYPE          = 0xF3, // Group Id
     ZCL_COMMAND_ID_ATTRIBUTE_TYPE        = 0xF4, // Command Id
     ZCL_NODE_ID_ATTRIBUTE_TYPE           = 0xF5, // Node Id
+    ZCL_ENDPOINT_ID_LIST_ATTRIBUTE_TYPE  = 0xF6, // List of Endpoint Id
+    ZCL_CLUSTER_ID_LIST_ATTRIBUTE_TYPE   = 0xF7, // List of Cluster Id
     ZCL_UNKNOWN_ATTRIBUTE_TYPE           = 0xFF, // Unknown
 };

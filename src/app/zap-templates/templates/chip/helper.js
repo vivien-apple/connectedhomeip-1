@@ -491,6 +491,10 @@ function asCallbackAttributeType(attributeType)
     return 'Int32s';
   case 0x2F: // int64 / Signed 64-bit integer
     return 'Int64s';
+  case 0xF6:
+    return 'EndpointIds'; // Array of EndpointIds
+  case 0xF7:
+    return 'ClusterIds'; //  Array of ClusterIds
   default:
     error = 'Unhandled attribute type ' + attributeType;
     throw error;

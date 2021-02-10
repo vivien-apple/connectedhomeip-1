@@ -28,7 +28,7 @@ using namespace ::chip;
                                                                                                                                    \
     if (messageLen < value)                                                                                                        \
     {                                                                                                                              \
-        ChipLogError(Zcl, "Unexpected response length: %d", messageLen);                                                           \
+        ChipLogError(Zcl, "Unexpected response length: %d < %d", messageLen, value);                                               \
         if (onFailureCallback != nullptr)                                                                                          \
         {                                                                                                                          \
             Callback::Callback<DefaultFailureCallback> * cb =                                                                      \
@@ -385,6 +385,58 @@ bool emberAfReadAttributesResponseCallback(ClusterId clusterId, uint8_t * messag
                     cb->mCall(cb->mContext, value);
                     break;
                 }
+
+                case 0xF6: // List of endpoint ids
+                {
+                    CHECK_MESSAGE_LENGTH(1);
+                    uint16_t count = chip::Encoding::Read8(message) / sizeof(EndpointId);
+                    ChipLogProgress(Zcl, "  EndpointIds: %lu", count);
+
+                    // TODO
+                    //
+                    // This is just here for making it easy to see the content of the attribute while developing.
+                    //
+                    while (messageLen)
+                    {
+                        CHECK_MESSAGE_LENGTH(1);
+                        EndpointId id = chip::Encoding::Read8(message);
+                        ChipLogProgress(Zcl, "    EndpointId: 0x%02x", id);
+                    }
+
+                    Callback::Callback<EndpointIdsAttributeCallback> * cb = Callback::Callback<EndpointIdsAttributeCallback>::FromCancelable(onSuccessCallback);
+                    cb->mCall(cb->mContext, count, message);
+                    break;
+                }
+
+                case 0xF7: // List of cluster ids
+                {
+                    CHECK_MESSAGE_LENGTH(1);
+                    uint16_t count = chip::Encoding::Read8(message) / sizeof(ClusterId);
+                    ChipLogProgress(Zcl, "  ClusterIds: %lu", count);
+
+                    // TODO
+                    //
+                    // This is just here for making it easy to see the content of the attribute while developing.
+                    //
+                    while (messageLen)
+                    {
+                        CHECK_MESSAGE_LENGTH(2);
+                        ClusterId id = chip::Encoding::LittleEndian::Read16(message);
+                        ChipLogProgress(Zcl, "    ClusterId: 0x%04x", id);
+                    }
+
+                    Callback::Callback<ClusterIdsAttributeCallback> * cb = Callback::Callback<ClusterIdsAttributeCallback>::FromCancelable(onSuccessCallback);
+                    cb->mCall(cb->mContext, count, reinterpret_cast<ClusterId *>(message));
+                    break;
+                }
+
+                default:
+                {
+                    ChipLogError(Zcl, "attributeType 0x%02x is not supported", attributeType);
+                    Callback::Callback<DefaultFailureCallback> * cb = Callback::Callback<DefaultFailureCallback>::FromCancelable(onFailureCallback);
+                    cb->mCall(cb->mContext, EMBER_ZCL_STATUS_INVALID_VALUE);
+                    return true;
+                }
             }
         }
         else
@@ -740,6 +792,8 @@ bool emberAfReportAttributesCallback(ClusterId clusterId, uint8_t * message, uin
             case 0xE9: // attribId / Attribute ID
             case 0xEA: // bacOID / BACnet OID
             case 0xF1: // key128 / 128-bit security key
+            case 0xF6: // List of endpoint ids
+            case 0xF7: // List of cluster ids
             case 0xFF: // unk / Unknown
             {
                 CHECK_MESSAGE_LENGTH(2);
@@ -833,6 +887,14 @@ bool emberAfReportAttributesCallback(ClusterId clusterId, uint8_t * message, uin
                 Callback::Callback<Int64sAttributeCallback> * cb = Callback::Callback<Int64sAttributeCallback>::FromCancelable(onReportCallback);
                 cb->mCall(cb->mContext, value);
                 break;
+            }
+
+            default:
+            {
+                ChipLogError(Zcl, "attributeType 0x%02x is not supported", attributeType);
+                Callback::Callback<DefaultFailureCallback> * cb = Callback::Callback<DefaultFailureCallback>::FromCancelable(onFailureCallback);
+                cb->mCall(cb->mContext, EMBER_ZCL_STATUS_INVALID_VALUE);
+                return true;
             }
         }
     }

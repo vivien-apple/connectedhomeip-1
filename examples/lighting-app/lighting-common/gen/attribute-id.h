@@ -4064,6 +4064,15 @@
 
 // Server attributes
 
+// Attribute ids for cluster: Descriptor
+
+// Client attributes
+
+// Server attributes
+#define ZCL_SERVER_CLUSTERS_ATTRIBUTE_ID (0x0001)
+#define ZCL_CLIENT_CLUSTERS_ATTRIBUTE_ID (0x0002)
+#define ZCL_PARTS_ATTRIBUTE_ID (0x0003)
+
 // Attribute ids for cluster: Sample Mfg Specific Cluster
 
 // Client attributes

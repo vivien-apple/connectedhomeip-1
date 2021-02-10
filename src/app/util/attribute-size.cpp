@@ -87,6 +87,15 @@ uint16_t emberAfAttributeValueSize(EmberAfAttributeType dataType, const uint8_t 
             }
         }
     }
+    else if (emberAfIsThisDataTypeAnArrayType(dataType))
+    {
+        if (buffer != 0)
+        {
+            // size is array length plus 1-byte length prefix
+            // Yes, this is dirty since I'm reusing emberAfStringLength here...
+            dataSize = static_cast<uint16_t>(static_cast<uint16_t>(emberAfStringLength(buffer)) + 1u);
+        }
+    }
     else
     {
         dataSize = (uint16_t) emberAfGetDataSize(dataType);

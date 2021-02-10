@@ -645,6 +645,12 @@ bool emberAfIsStringAttributeType(EmberAfAttributeType attributeType);
 /** @brief Returns true if the given attribute type is a long string. */
 bool emberAfIsLongStringAttributeType(EmberAfAttributeType attributeType);
 
+bool emberAfIsThisDataTypeAnArrayType(EmberAfAttributeType dataType);
+
+bool emberAfIsEndpointIdsArrayAttributeType(EmberAfAttributeType dataType);
+
+bool emberAfIsClusterIdsArrayAttributeType(EmberAfAttributeType dataType);
+
 /**
  * @brief The mask applied by ::emberAfNextSequence when generating ZCL
  * sequence numbers.
