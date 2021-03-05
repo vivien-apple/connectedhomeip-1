@@ -48,21 +48,19 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @interface CHIPBasic : CHIPCluster
 
-- (void)resetToFactoryDefaults:(ResponseHandler)completionHandler;
-
-- (void)readAttributeZclVersion:(ResponseHandler)completionHandler;
-- (void)readAttributeApplicationVersion:(ResponseHandler)completionHandler;
-- (void)readAttributeStackVersion:(ResponseHandler)completionHandler;
+- (void)readAttributeInteractionModelVersion:(ResponseHandler)completionHandler;
+- (void)readAttributeVendorName:(ResponseHandler)completionHandler;
+- (void)readAttributeVendorID:(ResponseHandler)completionHandler;
+- (void)readAttributeProductName:(ResponseHandler)completionHandler;
+- (void)readAttributeProductID:(ResponseHandler)completionHandler;
+- (void)readAttributeUserLabel:(ResponseHandler)completionHandler;
+- (void)writeAttributeUserLabel:(NSData *)value completionHandler:(ResponseHandler)completionHandler;
+- (void)readAttributeLocation:(ResponseHandler)completionHandler;
+- (void)writeAttributeLocation:(NSString *)value completionHandler:(ResponseHandler)completionHandler;
 - (void)readAttributeHardwareVersion:(ResponseHandler)completionHandler;
-- (void)readAttributeManufacturerName:(ResponseHandler)completionHandler;
-- (void)readAttributeModelIdentifier:(ResponseHandler)completionHandler;
-- (void)readAttributeDateCode:(ResponseHandler)completionHandler;
-- (void)readAttributePowerSource:(ResponseHandler)completionHandler;
-- (void)readAttributeGenericDeviceClass:(ResponseHandler)completionHandler;
-- (void)readAttributeGenericDeviceType:(ResponseHandler)completionHandler;
-- (void)readAttributeProductCode:(ResponseHandler)completionHandler;
-- (void)readAttributeProductUrl:(ResponseHandler)completionHandler;
-- (void)readAttributeSwBuildId:(ResponseHandler)completionHandler;
+- (void)readAttributeHardwareVersionString:(ResponseHandler)completionHandler;
+- (void)readAttributeSoftwareVersion:(ResponseHandler)completionHandler;
+- (void)readAttributeSoftwareVersionString:(ResponseHandler)completionHandler;
 - (void)readAttributeClusterRevision:(ResponseHandler)completionHandler;
 
 @end
@@ -108,9 +106,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)reportAttributeCurrentLevel:(ResponseHandler)reportHandler;
 - (void)readAttributeRemainingTime:(ResponseHandler)completionHandler;
 - (void)readAttributeOptions:(ResponseHandler)completionHandler;
-- (void)writeAttributeOptions:(uint8_t)value completionHandler:(ResponseHandler)completionHandler;
+- (void)writeAttributeOptions:(bitmap8)value completionHandler:(ResponseHandler)completionHandler;
 - (void)readAttributeStartUpCurrentLevel:(ResponseHandler)completionHandler;
-- (void)writeAttributeStartUpCurrentLevel:(uint8_t)value completionHandler:(ResponseHandler)completionHandler;
+- (void)writeAttributeStartUpCurrentLevel:(int8u)value completionHandler:(ResponseHandler)completionHandler;
 - (void)readAttributeClusterRevision:(ResponseHandler)completionHandler;
 
 @end
@@ -138,11 +136,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)reportAttributeOnOff:(ResponseHandler)reportHandler;
 - (void)readAttributeGlobalSceneControl:(ResponseHandler)completionHandler;
 - (void)readAttributeOnTime:(ResponseHandler)completionHandler;
-- (void)writeAttributeOnTime:(uint16_t)value completionHandler:(ResponseHandler)completionHandler;
+- (void)writeAttributeOnTime:(int16u)value completionHandler:(ResponseHandler)completionHandler;
 - (void)readAttributeOffWaitTime:(ResponseHandler)completionHandler;
-- (void)writeAttributeOffWaitTime:(uint16_t)value completionHandler:(ResponseHandler)completionHandler;
+- (void)writeAttributeOffWaitTime:(int16u)value completionHandler:(ResponseHandler)completionHandler;
 - (void)readAttributeStartUpOnOff:(ResponseHandler)completionHandler;
-- (void)writeAttributeStartUpOnOff:(uint8_t)value completionHandler:(ResponseHandler)completionHandler;
+- (void)writeAttributeStartUpOnOff:(enum8)value completionHandler:(ResponseHandler)completionHandler;
 - (void)readAttributeClusterRevision:(ResponseHandler)completionHandler;
 
 @end

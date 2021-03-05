@@ -99,10 +99,19 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @interface CHIPBasic : CHIPCluster
 
-- (void)resetToFactoryDefaults:(ResponseHandler)completionHandler;
-
-- (void)readAttributeZclVersion:(ResponseHandler)completionHandler;
-- (void)readAttributePowerSource:(ResponseHandler)completionHandler;
+- (void)readAttributeInteractionModelVersion:(ResponseHandler)completionHandler;
+- (void)readAttributeVendorName:(ResponseHandler)completionHandler;
+- (void)readAttributeVendorID:(ResponseHandler)completionHandler;
+- (void)readAttributeProductName:(ResponseHandler)completionHandler;
+- (void)readAttributeProductID:(ResponseHandler)completionHandler;
+- (void)readAttributeUserLabel:(ResponseHandler)completionHandler;
+- (void)writeAttributeUserLabel:(NSData *)value completionHandler:(ResponseHandler)completionHandler;
+- (void)readAttributeLocation:(ResponseHandler)completionHandler;
+- (void)writeAttributeLocation:(NSString *)value completionHandler:(ResponseHandler)completionHandler;
+- (void)readAttributeHardwareVersion:(ResponseHandler)completionHandler;
+- (void)readAttributeHardwareVersionString:(ResponseHandler)completionHandler;
+- (void)readAttributeSoftwareVersion:(ResponseHandler)completionHandler;
+- (void)readAttributeSoftwareVersionString:(ResponseHandler)completionHandler;
 - (void)readAttributeClusterRevision:(ResponseHandler)completionHandler;
 
 @end
@@ -228,7 +237,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)reportAttributeColorTemperature:(ResponseHandler)reportHandler;
 - (void)readAttributeColorMode:(ResponseHandler)completionHandler;
 - (void)readAttributeColorControlOptions:(ResponseHandler)completionHandler;
-- (void)writeAttributeColorControlOptions:(uint8_t)value completionHandler:(ResponseHandler)completionHandler;
+- (void)writeAttributeColorControlOptions:(bitmap8)value completionHandler:(ResponseHandler)completionHandler;
 - (void)readAttributeNumberOfPrimaries:(ResponseHandler)completionHandler;
 - (void)readAttributePrimary1X:(ResponseHandler)completionHandler;
 - (void)readAttributePrimary1Y:(ResponseHandler)completionHandler;
@@ -249,27 +258,27 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)readAttributePrimary6Y:(ResponseHandler)completionHandler;
 - (void)readAttributePrimary6Intensity:(ResponseHandler)completionHandler;
 - (void)readAttributeWhitePointX:(ResponseHandler)completionHandler;
-- (void)writeAttributeWhitePointX:(uint16_t)value completionHandler:(ResponseHandler)completionHandler;
+- (void)writeAttributeWhitePointX:(int16u)value completionHandler:(ResponseHandler)completionHandler;
 - (void)readAttributeWhitePointY:(ResponseHandler)completionHandler;
-- (void)writeAttributeWhitePointY:(uint16_t)value completionHandler:(ResponseHandler)completionHandler;
+- (void)writeAttributeWhitePointY:(int16u)value completionHandler:(ResponseHandler)completionHandler;
 - (void)readAttributeColorPointRX:(ResponseHandler)completionHandler;
-- (void)writeAttributeColorPointRX:(uint16_t)value completionHandler:(ResponseHandler)completionHandler;
+- (void)writeAttributeColorPointRX:(int16u)value completionHandler:(ResponseHandler)completionHandler;
 - (void)readAttributeColorPointRY:(ResponseHandler)completionHandler;
-- (void)writeAttributeColorPointRY:(uint16_t)value completionHandler:(ResponseHandler)completionHandler;
+- (void)writeAttributeColorPointRY:(int16u)value completionHandler:(ResponseHandler)completionHandler;
 - (void)readAttributeColorPointRIntensity:(ResponseHandler)completionHandler;
-- (void)writeAttributeColorPointRIntensity:(uint8_t)value completionHandler:(ResponseHandler)completionHandler;
+- (void)writeAttributeColorPointRIntensity:(int8u)value completionHandler:(ResponseHandler)completionHandler;
 - (void)readAttributeColorPointGX:(ResponseHandler)completionHandler;
-- (void)writeAttributeColorPointGX:(uint16_t)value completionHandler:(ResponseHandler)completionHandler;
+- (void)writeAttributeColorPointGX:(int16u)value completionHandler:(ResponseHandler)completionHandler;
 - (void)readAttributeColorPointGY:(ResponseHandler)completionHandler;
-- (void)writeAttributeColorPointGY:(uint16_t)value completionHandler:(ResponseHandler)completionHandler;
+- (void)writeAttributeColorPointGY:(int16u)value completionHandler:(ResponseHandler)completionHandler;
 - (void)readAttributeColorPointGIntensity:(ResponseHandler)completionHandler;
-- (void)writeAttributeColorPointGIntensity:(uint8_t)value completionHandler:(ResponseHandler)completionHandler;
+- (void)writeAttributeColorPointGIntensity:(int8u)value completionHandler:(ResponseHandler)completionHandler;
 - (void)readAttributeColorPointBX:(ResponseHandler)completionHandler;
-- (void)writeAttributeColorPointBX:(uint16_t)value completionHandler:(ResponseHandler)completionHandler;
+- (void)writeAttributeColorPointBX:(int16u)value completionHandler:(ResponseHandler)completionHandler;
 - (void)readAttributeColorPointBY:(ResponseHandler)completionHandler;
-- (void)writeAttributeColorPointBY:(uint16_t)value completionHandler:(ResponseHandler)completionHandler;
+- (void)writeAttributeColorPointBY:(int16u)value completionHandler:(ResponseHandler)completionHandler;
 - (void)readAttributeColorPointBIntensity:(ResponseHandler)completionHandler;
-- (void)writeAttributeColorPointBIntensity:(uint8_t)value completionHandler:(ResponseHandler)completionHandler;
+- (void)writeAttributeColorPointBIntensity:(int8u)value completionHandler:(ResponseHandler)completionHandler;
 - (void)readAttributeEnhancedCurrentHue:(ResponseHandler)completionHandler;
 - (void)readAttributeEnhancedColorMode:(ResponseHandler)completionHandler;
 - (void)readAttributeColorLoopActive:(ResponseHandler)completionHandler;
@@ -280,7 +289,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)readAttributeColorTempPhysicalMax:(ResponseHandler)completionHandler;
 - (void)readAttributeCoupleColorTempToLevelMinMireds:(ResponseHandler)completionHandler;
 - (void)readAttributeStartUpColorTemperatureMireds:(ResponseHandler)completionHandler;
-- (void)writeAttributeStartUpColorTemperatureMireds:(uint16_t)value completionHandler:(ResponseHandler)completionHandler;
+- (void)writeAttributeStartUpColorTemperatureMireds:(int16u)value completionHandler:(ResponseHandler)completionHandler;
 - (void)readAttributeClusterRevision:(ResponseHandler)completionHandler;
 
 @end
@@ -406,7 +415,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)reportAttributeColorTemperature:(ResponseHandler)reportHandler;
 - (void)readAttributeColorMode:(ResponseHandler)completionHandler;
 - (void)readAttributeColorControlOptions:(ResponseHandler)completionHandler;
-- (void)writeAttributeColorControlOptions:(uint8_t)value completionHandler:(ResponseHandler)completionHandler;
+- (void)writeAttributeColorControlOptions:(bitmap8)value completionHandler:(ResponseHandler)completionHandler;
 - (void)readAttributeNumberOfPrimaries:(ResponseHandler)completionHandler;
 - (void)readAttributePrimary1X:(ResponseHandler)completionHandler;
 - (void)readAttributePrimary1Y:(ResponseHandler)completionHandler;
@@ -427,27 +436,27 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)readAttributePrimary6Y:(ResponseHandler)completionHandler;
 - (void)readAttributePrimary6Intensity:(ResponseHandler)completionHandler;
 - (void)readAttributeWhitePointX:(ResponseHandler)completionHandler;
-- (void)writeAttributeWhitePointX:(uint16_t)value completionHandler:(ResponseHandler)completionHandler;
+- (void)writeAttributeWhitePointX:(int16u)value completionHandler:(ResponseHandler)completionHandler;
 - (void)readAttributeWhitePointY:(ResponseHandler)completionHandler;
-- (void)writeAttributeWhitePointY:(uint16_t)value completionHandler:(ResponseHandler)completionHandler;
+- (void)writeAttributeWhitePointY:(int16u)value completionHandler:(ResponseHandler)completionHandler;
 - (void)readAttributeColorPointRX:(ResponseHandler)completionHandler;
-- (void)writeAttributeColorPointRX:(uint16_t)value completionHandler:(ResponseHandler)completionHandler;
+- (void)writeAttributeColorPointRX:(int16u)value completionHandler:(ResponseHandler)completionHandler;
 - (void)readAttributeColorPointRY:(ResponseHandler)completionHandler;
-- (void)writeAttributeColorPointRY:(uint16_t)value completionHandler:(ResponseHandler)completionHandler;
+- (void)writeAttributeColorPointRY:(int16u)value completionHandler:(ResponseHandler)completionHandler;
 - (void)readAttributeColorPointRIntensity:(ResponseHandler)completionHandler;
-- (void)writeAttributeColorPointRIntensity:(uint8_t)value completionHandler:(ResponseHandler)completionHandler;
+- (void)writeAttributeColorPointRIntensity:(int8u)value completionHandler:(ResponseHandler)completionHandler;
 - (void)readAttributeColorPointGX:(ResponseHandler)completionHandler;
-- (void)writeAttributeColorPointGX:(uint16_t)value completionHandler:(ResponseHandler)completionHandler;
+- (void)writeAttributeColorPointGX:(int16u)value completionHandler:(ResponseHandler)completionHandler;
 - (void)readAttributeColorPointGY:(ResponseHandler)completionHandler;
-- (void)writeAttributeColorPointGY:(uint16_t)value completionHandler:(ResponseHandler)completionHandler;
+- (void)writeAttributeColorPointGY:(int16u)value completionHandler:(ResponseHandler)completionHandler;
 - (void)readAttributeColorPointGIntensity:(ResponseHandler)completionHandler;
-- (void)writeAttributeColorPointGIntensity:(uint8_t)value completionHandler:(ResponseHandler)completionHandler;
+- (void)writeAttributeColorPointGIntensity:(int8u)value completionHandler:(ResponseHandler)completionHandler;
 - (void)readAttributeColorPointBX:(ResponseHandler)completionHandler;
-- (void)writeAttributeColorPointBX:(uint16_t)value completionHandler:(ResponseHandler)completionHandler;
+- (void)writeAttributeColorPointBX:(int16u)value completionHandler:(ResponseHandler)completionHandler;
 - (void)readAttributeColorPointBY:(ResponseHandler)completionHandler;
-- (void)writeAttributeColorPointBY:(uint16_t)value completionHandler:(ResponseHandler)completionHandler;
+- (void)writeAttributeColorPointBY:(int16u)value completionHandler:(ResponseHandler)completionHandler;
 - (void)readAttributeColorPointBIntensity:(ResponseHandler)completionHandler;
-- (void)writeAttributeColorPointBIntensity:(uint8_t)value completionHandler:(ResponseHandler)completionHandler;
+- (void)writeAttributeColorPointBIntensity:(int8u)value completionHandler:(ResponseHandler)completionHandler;
 - (void)readAttributeEnhancedCurrentHue:(ResponseHandler)completionHandler;
 - (void)readAttributeEnhancedColorMode:(ResponseHandler)completionHandler;
 - (void)readAttributeColorLoopActive:(ResponseHandler)completionHandler;
@@ -458,7 +467,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)readAttributeColorTempPhysicalMax:(ResponseHandler)completionHandler;
 - (void)readAttributeCoupleColorTempToLevelMinMireds:(ResponseHandler)completionHandler;
 - (void)readAttributeStartUpColorTemperatureMireds:(ResponseHandler)completionHandler;
-- (void)writeAttributeStartUpColorTemperatureMireds:(uint16_t)value completionHandler:(ResponseHandler)completionHandler;
+- (void)writeAttributeStartUpColorTemperatureMireds:(int16u)value completionHandler:(ResponseHandler)completionHandler;
 - (void)readAttributeClusterRevision:(ResponseHandler)completionHandler;
 
 @end
@@ -496,7 +505,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)getUserType:(uint16_t)userId completionHandler:(ResponseHandler)completionHandler;
 - (void)getWeekdaySchedule:(uint8_t)scheduleId userId:(uint16_t)userId completionHandler:(ResponseHandler)completionHandler;
 - (void)getYeardaySchedule:(uint8_t)scheduleId userId:(uint16_t)userId completionHandler:(ResponseHandler)completionHandler;
-- (void)lockDoor:(char *)pin completionHandler:(ResponseHandler)completionHandler;
+- (void)lockDoor:(chip::ByteSpan)pin completionHandler:(ResponseHandler)completionHandler;
 - (void)setHolidaySchedule:(uint8_t)scheduleId
                 localStartTime:(uint32_t)localStartTime
                   localEndTime:(uint32_t)localEndTime
@@ -505,12 +514,12 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setPin:(uint16_t)userId
            userStatus:(uint8_t)userStatus
              userType:(uint8_t)userType
-                  pin:(char *)pin
+                  pin:(chip::ByteSpan)pin
     completionHandler:(ResponseHandler)completionHandler;
 - (void)setRfid:(uint16_t)userId
            userStatus:(uint8_t)userStatus
              userType:(uint8_t)userType
-                   id:(char *)id
+                   id:(chip::ByteSpan)id
     completionHandler:(ResponseHandler)completionHandler;
 - (void)setUserType:(uint16_t)userId userType:(uint8_t)userType completionHandler:(ResponseHandler)completionHandler;
 - (void)setWeekdaySchedule:(uint8_t)scheduleId
@@ -526,8 +535,8 @@ NS_ASSUME_NONNULL_BEGIN
             localStartTime:(uint32_t)localStartTime
               localEndTime:(uint32_t)localEndTime
          completionHandler:(ResponseHandler)completionHandler;
-- (void)unlockDoor:(char *)pin completionHandler:(ResponseHandler)completionHandler;
-- (void)unlockWithTimeout:(uint16_t)timeoutInSeconds pin:(char *)pin completionHandler:(ResponseHandler)completionHandler;
+- (void)unlockDoor:(chip::ByteSpan)pin completionHandler:(ResponseHandler)completionHandler;
+- (void)unlockWithTimeout:(uint16_t)timeoutInSeconds pin:(chip::ByteSpan)pin completionHandler:(ResponseHandler)completionHandler;
 
 - (void)readAttributeLockState:(ResponseHandler)completionHandler;
 - (void)configureAttributeLockState:(uint16_t)minInterval
@@ -560,7 +569,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)getUserType:(uint16_t)userId completionHandler:(ResponseHandler)completionHandler;
 - (void)getWeekdaySchedule:(uint8_t)scheduleId userId:(uint16_t)userId completionHandler:(ResponseHandler)completionHandler;
 - (void)getYeardaySchedule:(uint8_t)scheduleId userId:(uint16_t)userId completionHandler:(ResponseHandler)completionHandler;
-- (void)lockDoor:(char *)pin completionHandler:(ResponseHandler)completionHandler;
+- (void)lockDoor:(chip::ByteSpan)pin completionHandler:(ResponseHandler)completionHandler;
 - (void)setHolidaySchedule:(uint8_t)scheduleId
                 localStartTime:(uint32_t)localStartTime
                   localEndTime:(uint32_t)localEndTime
@@ -569,12 +578,12 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setPin:(uint16_t)userId
            userStatus:(uint8_t)userStatus
              userType:(uint8_t)userType
-                  pin:(char *)pin
+                  pin:(chip::ByteSpan)pin
     completionHandler:(ResponseHandler)completionHandler;
 - (void)setRfid:(uint16_t)userId
            userStatus:(uint8_t)userStatus
              userType:(uint8_t)userType
-                   id:(char *)id
+                   id:(chip::ByteSpan)id
     completionHandler:(ResponseHandler)completionHandler;
 - (void)setUserType:(uint16_t)userId userType:(uint8_t)userType completionHandler:(ResponseHandler)completionHandler;
 - (void)setWeekdaySchedule:(uint8_t)scheduleId
@@ -590,8 +599,8 @@ NS_ASSUME_NONNULL_BEGIN
             localStartTime:(uint32_t)localStartTime
               localEndTime:(uint32_t)localEndTime
          completionHandler:(ResponseHandler)completionHandler;
-- (void)unlockDoor:(char *)pin completionHandler:(ResponseHandler)completionHandler;
-- (void)unlockWithTimeout:(uint16_t)timeoutInSeconds pin:(char *)pin completionHandler:(ResponseHandler)completionHandler;
+- (void)unlockDoor:(chip::ByteSpan)pin completionHandler:(ResponseHandler)completionHandler;
+- (void)unlockWithTimeout:(uint16_t)timeoutInSeconds pin:(chip::ByteSpan)pin completionHandler:(ResponseHandler)completionHandler;
 
 - (void)readAttributeLockState:(ResponseHandler)completionHandler;
 - (void)configureAttributeLockState:(uint16_t)minInterval
@@ -610,8 +619,10 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @interface CHIPGroups : CHIPCluster
 
-- (void)addGroup:(uint16_t)groupId groupName:(char *)groupName completionHandler:(ResponseHandler)completionHandler;
-- (void)addGroupIfIdentifying:(uint16_t)groupId groupName:(char *)groupName completionHandler:(ResponseHandler)completionHandler;
+- (void)addGroup:(uint16_t)groupId groupName:(chip::ByteSpan)groupName completionHandler:(ResponseHandler)completionHandler;
+- (void)addGroupIfIdentifying:(uint16_t)groupId
+                    groupName:(chip::ByteSpan)groupName
+            completionHandler:(ResponseHandler)completionHandler;
 - (void)getGroupMembership:(uint8_t)groupCount groupList:(uint16_t)groupList completionHandler:(ResponseHandler)completionHandler;
 - (void)removeAllGroups:(ResponseHandler)completionHandler;
 - (void)removeGroup:(uint16_t)groupId completionHandler:(ResponseHandler)completionHandler;
@@ -632,7 +643,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)readAttributeZoneType:(ResponseHandler)completionHandler;
 - (void)readAttributeZoneStatus:(ResponseHandler)completionHandler;
 - (void)readAttributeIasCieAddress:(ResponseHandler)completionHandler;
-- (void)writeAttributeIasCieAddress:(uint64_t)value completionHandler:(ResponseHandler)completionHandler;
+- (void)writeAttributeIasCieAddress:(ieee_address)value completionHandler:(ResponseHandler)completionHandler;
 - (void)readAttributeZoneId:(ResponseHandler)completionHandler;
 - (void)readAttributeClusterRevision:(ResponseHandler)completionHandler;
 
@@ -648,7 +659,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)identifyQuery:(ResponseHandler)completionHandler;
 
 - (void)readAttributeIdentifyTime:(ResponseHandler)completionHandler;
-- (void)writeAttributeIdentifyTime:(uint16_t)value completionHandler:(ResponseHandler)completionHandler;
+- (void)writeAttributeIdentifyTime:(int16u)value completionHandler:(ResponseHandler)completionHandler;
 - (void)readAttributeClusterRevision:(ResponseHandler)completionHandler;
 
 @end
@@ -746,7 +757,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)addScene:(uint16_t)groupId
               sceneId:(uint8_t)sceneId
        transitionTime:(uint16_t)transitionTime
-            sceneName:(char *)sceneName
+            sceneName:(chip::ByteSpan)sceneName
             clusterId:(uint16_t)clusterId
                length:(uint8_t)length
                 value:(uint8_t)value
