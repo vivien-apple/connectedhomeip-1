@@ -55,6 +55,8 @@ class DeviceController;
 class DeviceStatusDelegate;
 struct SerializedDevice;
 
+constexpr size_t kMaxBlePendingPackets = 1;
+
 using DeviceTransportMgr = TransportMgr<Transport::UDP /* IPv6 */
 #if INET_CONFIG_ENABLE_IPV4
                                         ,
@@ -62,7 +64,7 @@ using DeviceTransportMgr = TransportMgr<Transport::UDP /* IPv6 */
 #endif
 #if CONFIG_NETWORK_LAYER_BLE
                                         ,
-                                        Transport::BLE<4> /* BLE */
+                                        Transport::BLE<kMaxBlePendingPackets> /* BLE */
 #endif
                                         >;
 
