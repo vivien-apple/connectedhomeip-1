@@ -110,9 +110,9 @@ CHIP_ERROR AdvertiseOperational()
 
     auto & mdnsAdvertiser = chip::Mdns::ServiceAdvertiser::Instance();
 
-    ReturnErrorOnFailure(mdnsAdvertiser.Advertise(advertiseParameters));
+    ReturnErrorOnFailure(mdnsAdvertiser.Start(&chip::DeviceLayer::InetLayer, chip::Mdns::kMdnsPort));
 
-    return mdnsAdvertiser.Start(&chip::DeviceLayer::InetLayer, chip::Mdns::kMdnsPort);
+    return mdnsAdvertiser.Advertise(advertiseParameters);
 }
 
 /// Set MDNS commisioning advertisement
@@ -152,9 +152,9 @@ CHIP_ERROR AdvertiseCommisioning()
 
     auto & mdnsAdvertiser = chip::Mdns::ServiceAdvertiser::Instance();
 
-    ReturnErrorOnFailure(mdnsAdvertiser.Advertise(advertiseParameters));
+    ReturnErrorOnFailure(mdnsAdvertiser.Start(&chip::DeviceLayer::InetLayer, chip::Mdns::kMdnsPort));
 
-    return mdnsAdvertiser.Start(&chip::DeviceLayer::InetLayer, chip::Mdns::kMdnsPort);
+    return mdnsAdvertiser.Advertise(advertiseParameters);
 }
 
 /// (Re-)starts the minmdns server
