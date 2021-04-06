@@ -111,6 +111,9 @@ void pychip_ScriptDeviceAddressUpdateDelegate_SetOnAddressUpdateComplete(
     chip::Controller::DeviceAddressUpdateDelegate_OnUpdateComplete callback);
 CHIP_ERROR pychip_Resolver_ResolveNode(uint64_t fabricid, chip::NodeId nodeid);
 
+// BLE
+CHIP_ERROR pychip_DeviceCommissioner_CloseBleConnection(chip::Controller::DeviceCommissioner * devCtrl);
+
 uint8_t pychip_DeviceController_GetLogFilter();
 void pychip_DeviceController_SetLogFilter(uint8_t category);
 
@@ -366,6 +369,15 @@ uint64_t pychip_GetCommandSenderHandle(chip::Controller::Device * device)
 {
     chip::app::CommandSender * sender = device->GetCommandSender();
     return sender == nullptr ? 0 : reinterpret_cast<uint64_t>(sender);
+}
+
+CHIP_ERROR pychip_DeviceCommissioner_CloseBleConnection(chip::Controller::DeviceCommissioner * devCtrl)
+{
+#if CONFIG_NETWORK_LAYER_BLE
+    return devCtrl->CloseBleConnection();
+#else
+    return CHIP_ERROR_UNSUPPORTED_CHIP_FEATURE;
+#endif
 }
 
 void pychip_Stack_SetLogFunct(LogMessageFunct logFunct)

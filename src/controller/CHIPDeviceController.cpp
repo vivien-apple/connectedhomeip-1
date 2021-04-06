@@ -943,5 +943,15 @@ void DeviceCommissioner::OnSessionEstablishmentTimeoutCallback(System::Layer * a
     reinterpret_cast<DeviceCommissioner *>(aAppState)->OnSessionEstablishmentTimeout();
 }
 
+#if CONFIG_NETWORK_LAYER_BLE
+CHIP_ERROR DeviceCommissioner::CloseBleConnection()
+{
+    // It is fine since we can only commission one device at the same time.
+    // We should be able to distinguish different BLE connections if we want
+    // to commission multiple devices at the same time over BLE.
+    return mBleLayer->CloseAllBleConnections();
+}
+#endif
+
 } // namespace Controller
 } // namespace chip
