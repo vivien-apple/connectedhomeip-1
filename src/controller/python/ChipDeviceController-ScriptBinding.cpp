@@ -139,9 +139,7 @@ CHIP_ERROR pychip_DeviceController_NewDeviceController(chip::Controller::DeviceC
         localDeviceId = kDefaultLocalDeviceId;
     }
 
-#if CHIP_ENABLE_INTERACTION_MODEL
     initParams.imDelegate = &PythonInteractionModelDelegate::Instance();
-#endif
 
     SuccessOrExit(err = (*outDevCtrl)->Init(localDeviceId, initParams, &sPairingDelegate));
     SuccessOrExit(err = (*outDevCtrl)->ServiceEvents());
