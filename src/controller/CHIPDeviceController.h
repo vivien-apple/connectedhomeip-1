@@ -47,6 +47,9 @@
 #if CONFIG_NETWORK_LAYER_BLE
 #include <ble/BleLayer.h>
 #endif
+#if CHIP_DEVICE_CONFIG_ENABLE_MDNS
+#include <controller/DeviceAddressUpdater.h>
+#endif
 
 namespace chip {
 namespace Controller {
@@ -62,9 +65,11 @@ struct ControllerInitParams
 #if CHIP_ENABLE_INTERACTION_MODEL
     app::InteractionModelDelegate * imDelegate = nullptr;
 #endif
-
 #if CONFIG_NETWORK_LAYER_BLE
     Ble::BleLayer * bleLayer = nullptr;
+#endif
+#if CHIP_DEVICE_CONFIG_ENABLE_MDNS
+    DeviceAddressUpdateDelegate * mDeviceAddressUpdateDelegate = nullptr;
 #endif
 };
 
@@ -128,6 +133,9 @@ public:
 class DLL_EXPORT DeviceController : public Messaging::ExchangeDelegate,
                                     public Messaging::ExchangeMgrDelegate,
                                     public PersistentStorageResultDelegate,
+#if CHIP_DEVICE_CONFIG_ENABLE_MDNS
+                                    public Mdns::ResolverDelegate,
+#endif
                                     public app::InteractionModelDelegate
 {
 public:
@@ -172,6 +180,18 @@ public:
      * @return CHIP_ERROR CHIP_NO_ERROR on success, or corresponding error code.
      */
     CHIP_ERROR GetDevice(NodeId deviceId, Device ** device);
+
+    /**
+     * @brief
+     *   This function update the device informations asynchronously using mdns.
+     *   If new device informations has been found, it will be persisted.
+     *
+     * @param[in] device    The input device object to update
+     * @param[in] fabricId  The fabricId used for mdns resolution
+     *
+     * @return CHIP_ERROR CHIP_NO_ERROR on success, or corresponding error code.
+     */
+    CHIP_ERROR UpdateDevice(Device * device, uint64_t fabricId);
 
     void PersistDevice(Device * device);
 
@@ -218,6 +238,9 @@ protected:
     SecureSessionMgr * mSessionMgr;
     Messaging::ExchangeManager * mExchangeMgr;
     PersistentStorageDelegate * mStorageDelegate;
+#if CHIP_DEVICE_CONFIG_ENABLE_MDNS
+    DeviceAddressUpdateDelegate * mDeviceAddressUpdateDelegate = nullptr;
+#endif
     Inet::InetLayer * mInetLayer;
     System::Layer * mSystemLayer;
 #if CONFIG_NETWORK_LAYER_BLE
@@ -249,6 +272,12 @@ private:
 
     //////////// PersistentStorageResultDelegate Implementation ///////////////
     void OnPersistentStorageStatus(const char * key, Operation op, CHIP_ERROR err) override;
+
+#if CHIP_DEVICE_CONFIG_ENABLE_MDNS
+    //////////// ResolverDelegate Implementation ///////////////
+    void OnNodeIdResolved(NodeId nodeId, const chip::Mdns::ResolvedNodeData & nodeData) override;
+    void OnNodeIdResolutionFailed(NodeId nodeId, CHIP_ERROR error) override;
+#endif // CHIP_DEVICE_CONFIG_ENABLE_MDNS
 
     void ReleaseAllDevices();
 };
