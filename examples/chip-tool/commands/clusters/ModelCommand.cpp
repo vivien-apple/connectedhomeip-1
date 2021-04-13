@@ -42,8 +42,8 @@ CHIP_ERROR ModelCommand::Run(PersistentStorage & storage, NodeId localId, NodeId
     err = mCommissioner.GetDevice(remoteId, &mDevice);
     VerifyOrExit(err == CHIP_NO_ERROR, ChipLogError(chipTool, "Init failure! No pairing for device: %" PRIu64, localId));
 
-    err = SendCommand(mDevice, mEndPointId);
-    VerifyOrExit(err == CHIP_NO_ERROR, ChipLogError(chipTool, "Failed to send message: %s", ErrorStr(err)));
+    mRemoteId = remoteId;
+    err       = UpdateNetworkAddress(remoteId, 0);
 
     UpdateWaitForResponse(true);
     WaitForResponse(kWaitDurationInSeconds);
@@ -54,4 +54,37 @@ exit:
     mCommissioner.ServiceEventSignal();
     mCommissioner.Shutdown();
     return err;
+}
+
+CHIP_ERROR ModelCommand::UpdateNetworkAddress(NodeId remoteId, uint64_t fabricId)
+{
+    ReturnErrorOnFailure(mAddressUpdater.Init(&mCommissioner, this));
+    ReturnErrorOnFailure(Mdns::Resolver::Instance().SetResolverDelegate(&mAddressUpdater));
+    return Mdns::Resolver::Instance().ResolveNodeId(remoteId, fabricId, Inet::kIPAddressType_Any);
+}
+
+void ModelCommand::OnAddressUpdateComplete(NodeId nodeId, CHIP_ERROR err)
+{
+    if (CHIP_NO_ERROR != err)
+    {
+        ChipLogError(chipTool, "Failed to update the device address: %s", ErrorStr(err));
+        SetCommandExitStatus(false);
+        return;
+    }
+
+    err = mCommissioner.GetDevice(mRemoteId, &mDevice);
+    if (CHIP_NO_ERROR != err)
+    {
+        ChipLogError(chipTool, "Failed to retrieve the device: %" PRIu64, mRemoteId);
+        SetCommandExitStatus(false);
+        return;
+    }
+
+    err = SendCommand(mDevice, mEndPointId);
+    if (CHIP_NO_ERROR != err)
+    {
+        ChipLogError(chipTool, "Failed to send message: %s", ErrorStr(err));
+        SetCommandExitStatus(false);
+        return;
+    }
 }

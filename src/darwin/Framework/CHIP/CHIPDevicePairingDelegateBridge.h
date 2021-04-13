@@ -21,7 +21,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-class CHIPDevicePairingDelegateBridge : public chip::Controller::DevicePairingDelegate {
+class CHIPDevicePairingDelegateBridge : public chip::Controller::DevicePairingDelegate,
+                                        public chip::Controller::DeviceAddressUpdateDelegate {
 public:
     CHIPDevicePairingDelegateBridge();
     ~CHIPDevicePairingDelegateBridge();
@@ -43,11 +44,11 @@ public:
 
     void OnPairingDeleted(CHIP_ERROR error) override;
 
+    void OnAddressUpdateComplete(chip::NodeId nodeId, CHIP_ERROR error) override;
+
 private:
     id<CHIPDevicePairingDelegate> mDelegate;
     dispatch_queue_t mQueue;
-
-    chip::RendezvousDeviceCredentialsDelegate * mCallback;
 
     CHIPPairingStatus MapStatus(chip::RendezvousSessionDelegate::Status status);
 };

@@ -37,8 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
              error:(NSError * __autoreleasing *)error;
 - (BOOL)unpairDevice:(uint64_t)deviceID error:(NSError * __autoreleasing *)error;
 - (BOOL)stopDevicePairing:(uint64_t)deviceID error:(NSError * __autoreleasing *)error;
-- (void)sendWiFiCredentials:(NSString *)ssid password:(NSString *)password;
-- (void)sendThreadCredentials:(NSData *)threadDataSet;
+- (void)updateDevice:(uint64_t)deviceID fabricId:(uint64_t)fabricId;
 
 - (CHIPDevice *)getPairedDevice:(uint64_t)deviceID error:(NSError * __autoreleasing *)error;
 

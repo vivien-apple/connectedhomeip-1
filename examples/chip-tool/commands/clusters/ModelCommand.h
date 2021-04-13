@@ -21,13 +21,14 @@
 #include "../../config/PersistentStorage.h"
 #include "../common/Command.h"
 #include <app/chip-zcl-zpro-codec.h>
+#include <controller/DeviceAddressUpdater.h>
 #include <core/CHIPEncoding.h>
 
 // Limits on endpoint values.
 #define CHIP_ZCL_ENDPOINT_MIN 0x00
 #define CHIP_ZCL_ENDPOINT_MAX 0xF0
 
-class ModelCommand : public Command
+class ModelCommand : public Command, public chip::Controller::DeviceAddressUpdateDelegate
 {
 public:
     ModelCommand(const char * commandName) : Command(commandName) {}
@@ -39,8 +40,15 @@ public:
 
     virtual CHIP_ERROR SendCommand(ChipDevice * device, uint8_t endPointId) = 0;
 
+    /////////// DeviceAddressUpdateDelegate Interface /////////
+    void OnAddressUpdateComplete(NodeId nodeId, CHIP_ERROR error) override;
+
 private:
+    CHIP_ERROR UpdateNetworkAddress(NodeId nodeId, uint64_t fabricId);
+
+    chip::Controller::DeviceAddressUpdater mAddressUpdater;
     ChipDeviceCommissioner mCommissioner;
     ChipDevice * mDevice;
+    NodeId mRemoteId;
     uint8_t mEndPointId;
 };
