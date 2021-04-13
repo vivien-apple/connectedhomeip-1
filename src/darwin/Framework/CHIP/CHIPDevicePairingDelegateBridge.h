@@ -17,6 +17,8 @@
 
 #import "CHIPDevicePairingDelegate.h"
 
+#include <platform/CHIPDeviceBuildConfig.h>
+
 #include <controller/CHIPDeviceController.h>
 
 NS_ASSUME_NONNULL_BEGIN

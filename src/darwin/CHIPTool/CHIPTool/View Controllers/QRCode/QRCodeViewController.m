@@ -549,13 +549,12 @@
     uint32_t timeoutMs = 3000;
 
     __weak typeof(self) weakSelf = self;
-    [_cluster enableNetwork:ssid
+    [_cluster enableNetwork:networkId
                  breadcrumb:breadcrumb
                   timeoutMs:timeoutMs
           completionHandler:^(NSError * err, NSDictionary * values) {
               [weakSelf onEnableNetworkResponse:err];
           }];
-}
 }
 
 - (void)onEnableNetworkResponse:(NSError *)error
@@ -575,6 +574,10 @@
         NSLog(@"Error retrieving device informations over Mdns: %@", error);
         return;
     }
+}
+
+- (void)onNetworkCredentialsRequested:(CHIPNetworkCredentialType)type
+{
 }
 
 - (void)updateUIFields:(CHIPSetupPayload *)payload decimalString:(nullable NSString *)decimalString

@@ -23,6 +23,8 @@
 #import "CHIPPersistentStorageDelegateBridge.h"
 #import "gen/CHIPClustersObjc.h"
 
+#include <platform/CHIPDeviceBuildConfig.h>
+
 #include <controller/CHIPDeviceController.h>
 #include <support/CHIPMem.h>
 
