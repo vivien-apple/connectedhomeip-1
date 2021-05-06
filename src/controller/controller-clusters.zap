@@ -1613,10 +1613,10 @@
           "mfgCode": null,
           "define": "OPERATIONAL_CREDENTIALS_CLUSTER",
           "side": "client",
-          "enabled": 1,
+          "enabled": 0,
           "commands": [
             {
-              "name": "GetFabricId",
+              "name": "SetFabric",
               "code": 0,
               "mfgCode": null,
               "source": "client",
@@ -1691,7 +1691,7 @@
           "enabled": 1,
           "commands": [
             {
-              "name": "GetFabricIdResponse",
+              "name": "SetFabricResponse",
               "code": 1,
               "mfgCode": null,
               "source": "server",

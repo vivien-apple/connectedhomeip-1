@@ -1616,19 +1616,43 @@
           "enabled": 1,
           "commands": [
             {
-              "name": "GetFabricId",
+              "name": "SetFabric",
               "code": 0,
               "mfgCode": null,
               "source": "client",
-              "incoming": 0,
+              "incoming": 1,
               "outgoing": 1
+            },
+            {
+              "name": "OpCSRRequest",
+              "code": 4,
+              "mfgCode": null,
+              "source": "client",
+              "incoming": 1,
+              "outgoing": 0
+            },
+            {
+              "name": "AddOpCert",
+              "code": 6,
+              "mfgCode": null,
+              "source": "client",
+              "incoming": 1,
+              "outgoing": 0
+            },
+            {
+              "name": "UpdateOpCert",
+              "code": 7,
+              "mfgCode": null,
+              "source": "client",
+              "incoming": 1,
+              "outgoing": 0
             },
             {
               "name": "UpdateFabricLabel",
               "code": 9,
               "mfgCode": null,
               "source": "client",
-              "incoming": 0,
+              "incoming": 1,
               "outgoing": 1
             },
             {
@@ -1636,7 +1660,7 @@
               "code": 10,
               "mfgCode": null,
               "source": "client",
-              "incoming": 0,
+              "incoming": 1,
               "outgoing": 1
             }
           ],
@@ -1667,12 +1691,28 @@
           "enabled": 0,
           "commands": [
             {
-              "name": "GetFabricIdResponse",
+              "name": "SetFabricResponse",
               "code": 1,
               "mfgCode": null,
               "source": "server",
               "incoming": 1,
-              "outgoing": 0
+              "outgoing": 1
+            },
+            {
+              "name": "OpCSRResponse",
+              "code": 5,
+              "mfgCode": null,
+              "source": "server",
+              "incoming": 0,
+              "outgoing": 1
+            },
+            {
+              "name": "OpCertResponse",
+              "code": 8,
+              "mfgCode": null,
+              "source": "server",
+              "incoming": 0,
+              "outgoing": 1
             }
           ],
           "attributes": [
