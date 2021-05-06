@@ -686,12 +686,20 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @interface CHIPOperationalCredentials : CHIPCluster
 
+- (void)addOpCert:(NSData *)noc
+     iCACertificate:(NSData *)iCACertificate
+           iPKValue:(NSData *)iPKValue
+      caseAdminNode:(uint64_t)caseAdminNode
+      adminVendorId:(uint16_t)adminVendorId
+    responseHandler:(ResponseHandler)responseHandler;
+- (void)opCSRRequest:(NSData *)cSRNonce responseHandler:(ResponseHandler)responseHandler;
 - (void)removeFabric:(uint64_t)fabricId
               nodeId:(uint64_t)nodeId
             vendorId:(uint16_t)vendorId
      responseHandler:(ResponseHandler)responseHandler;
 - (void)setFabric:(uint16_t)vendorId responseHandler:(ResponseHandler)responseHandler;
 - (void)updateFabricLabel:(NSString *)label responseHandler:(ResponseHandler)responseHandler;
+- (void)updateOpCert:(NSData *)noc iCACertificate:(NSData *)iCACertificate responseHandler:(ResponseHandler)responseHandler;
 
 - (void)readAttributeFabricsListWithResponseHandler:(ResponseHandler)responseHandler;
 - (void)readAttributeClusterRevisionWithResponseHandler:(ResponseHandler)responseHandler;
