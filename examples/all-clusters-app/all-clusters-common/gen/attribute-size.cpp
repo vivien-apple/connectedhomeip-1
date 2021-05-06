@@ -234,6 +234,35 @@ uint16_t emberAfCopyList(ClusterId clusterId, EmberAfAttributeMetadata * am, boo
             copyListMember(dest, src, write, &entryOffset, entryLength); // INT8U
             break;
         }
+        case 0x001B: // list_octet_string
+        {
+            entryLength = 254;
+            if (((index - 1) * entryLength) > (am->size - entryLength))
+            {
+                ChipLogError(Zcl, "Index %l is invalid.", index);
+                return 0;
+            }
+            entryOffset = static_cast<uint16_t>(entryOffset + ((index - 1) * entryLength));
+            copyListMember(dest, src, write, &entryOffset, entryLength); // OCTET_STRING
+            break;
+        }
+        case 0x001C: // list_struct_octet_string
+        {
+            entryLength = 40;
+            if (((index - 1) * entryLength) > (am->size - entryLength))
+            {
+                ChipLogError(Zcl, "Index %l is invalid.", index);
+                return 0;
+            }
+            entryOffset = static_cast<uint16_t>(entryOffset + ((index - 1) * entryLength));
+            // Struct _TestListStructOctet
+            _TestListStructOctet * entry = reinterpret_cast<_TestListStructOctet *>(write ? src : dest);
+            copyListMember(write ? dest : (uint8_t *) &entry->fabricIndex, write ? (uint8_t *) &entry->fabricIndex : src, write,
+                           &entryOffset, sizeof(entry->fabricIndex)); // INT64U
+            copyListMember(write ? dest : (uint8_t *) &entry->operationalCert, write ? (uint8_t *) &entry->operationalCert : src,
+                           write, &entryOffset, 32); // OCTET_STRING
+            break;
+        }
         }
         break;
     }
@@ -305,6 +334,14 @@ uint16_t emberAfAttributeValueListSize(ClusterId clusterId, AttributeId attribut
         case 0x001A: // list_int8u
             // uint8_t
             entryLength = 1;
+            break;
+        case 0x001B: // list_octet_string
+            // chip::ByteSpan
+            entryLength = 254;
+            break;
+        case 0x001C: // list_struct_octet_string
+            // Struct _TestListStructOctet
+            entryLength = 40;
             break;
         }
         break;

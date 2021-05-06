@@ -521,6 +521,40 @@ bool emberAfReadAttributesResponseCallback(ClusterId clusterId, uint8_t * messag
                         cb->mCall(cb->mContext, count, data);
                         break;
                     }
+                    case 0x001B: // OCTET_STRING
+                    {
+                        chip::ByteSpan data[count];
+                        for (size_t i = 0; i < count; i++)
+                        {
+                            data[i] = chip::ByteSpan(message, 254);
+                            message += 254;
+                            CHECK_MESSAGE_LENGTH(254);
+                        }
+
+                        Callback::Callback<TestClusterListOctetStringListAttributeCallback> * cb =
+                            Callback::Callback<TestClusterListOctetStringListAttributeCallback>::FromCancelable(onSuccessCallback);
+                        cb->mCall(cb->mContext, count, data);
+                        break;
+                    }
+                    case 0x001C: // TestListStructOctet
+                    {
+                        _TestListStructOctet data[count];
+                        for (size_t i = 0; i < count; i++)
+                        {
+                            data[i].fabricIndex = emberAfGetInt64u(message, 0, messageLen);
+                            message += 8;
+                            CHECK_MESSAGE_LENGTH(8);
+                            data[i].operationalCert = chip::ByteSpan(message, 32);
+                            message += 32;
+                            CHECK_MESSAGE_LENGTH(32);
+                        }
+
+                        Callback::Callback<TestClusterListStructOctetStringListAttributeCallback> * cb =
+                            Callback::Callback<TestClusterListStructOctetStringListAttributeCallback>::FromCancelable(
+                                onSuccessCallback);
+                        cb->mCall(cb->mContext, count, data);
+                        break;
+                    }
                     }
                     break;
                 }
