@@ -122,6 +122,34 @@ CHIPDevice * GetPairedDevice(uint64_t deviceId)
     XCTAssertTrue(stopped);
 }
 
+{{#chip_tests "onoff"}}
+- (void)testSendClusterOnOffCommand_{{index}}
+{
+    XCTestExpectation * expectation = [self expectationWithDescription:@"{{name}}"];
+    CHIPDevice * device = GetPairedDevice(kDeviceId);
+    dispatch_queue_t queue = dispatch_get_main_queue();
+    CHIP{{cluster}} * cluster = [[CHIP{{cluster}} alloc] initWithDevice:device endpoint:{{endpoint}} queue:queue];
+    XCTAssertNotNil(cluster);
+
+    {{#if isCommand}}
+    [cluster {{command}}:^(NSError * err, NSDictionary * values) {
+        NSLog(@"{{name}} Error: %@", err);
+        XCTAssertEqual(err.code, {{expect-error}});
+        [expectation fulfill];
+    }];
+    {{else}}
+    [cluster readAttribute{{attribute}}WithResponseHandler:^(NSError * err, NSDictionary * values) {
+        NSLog(@"{{name}} Error: %@", err);
+        XCTAssertEqual(err.code, {{expect-error}});
+        XCTAssertEqual([values[@"value"] intValue], {{expect-value}});
+        [expectation fulfill];
+    }];
+    {{/if}}
+
+    [self waitForExpectationsWithTimeout:kTimeoutInSeconds handler:nil];
+}
+{{/chip_tests}}
+
 - (void)testSendClusterTestCommand
 {
     XCTestExpectation * expectation = [self expectationWithDescription:@"TestClusterTestCommand"];

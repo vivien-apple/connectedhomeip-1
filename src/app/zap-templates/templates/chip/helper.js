@@ -23,6 +23,13 @@ const zclHelper    = require(zapPath + 'generator/helper-zcl.js')
 const { Clusters }    = require('../../common/ClustersHelper.js');
 const StringHelper    = require('../../common/StringHelper.js');
 const ChipTypesHelper = require('../../common/ChipTypesHelper.js');
+const TestHelper      = require('../../common/TestHelper.js');
+
+function chip_tests(name, options)
+{
+  const tests = TestHelper.parse(name);
+  return templateUtil.collectBlocks(tests.tests, options, this);
+}
 
 function asBlocks(promise, options)
 {
@@ -433,3 +440,4 @@ exports.isReportableAttribute                 = isReportableAttribute;
 exports.isManufacturerSpecificCommand         = isManufacturerSpecificCommand;
 exports.asCallbackAttributeType               = asCallbackAttributeType;
 exports.hasSpecificResponse                   = hasSpecificResponse;
+exports.chip_tests                            = chip_tests;
