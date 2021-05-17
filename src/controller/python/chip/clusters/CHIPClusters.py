@@ -76,6 +76,8 @@ class ChipClusters:
                 "MfgSpecificPing": {
                 },
             },
+            "BinaryInput(Basic)": {
+            },
             "Binding": {
                 "Bind": {
                     "nodeId": "int",
@@ -675,6 +677,12 @@ class ChipClusters:
                 "ProductLabel",
                 "SerialNumber",
                 "LocalConfigDisabled",
+                "ClusterRevision",
+            ],
+            "BinaryInput(Basic)": [
+                "OutOfService",
+                "PresentValue",
+                "StatusFlags",
                 "ClusterRevision",
             ],
             "Binding": [
@@ -1528,6 +1536,18 @@ class ChipClusters:
         return self._chipLib.chip_ime_ReadAttribute_Basic_LocalConfigDisabled(device, ZCLendpoint, ZCLgroupid)
     def ClusterBasic_ReadAttributeClusterRevision(self, device: ctypes.c_void_p, ZCLendpoint: int, ZCLgroupid: int):
         return self._chipLib.chip_ime_ReadAttribute_Basic_ClusterRevision(device, ZCLendpoint, ZCLgroupid)
+    def ClusterBinaryInput(Basic)_ReadAttributeOutOfService(self, device: ctypes.c_void_p, ZCLendpoint: int, ZCLgroupid: int):
+        return self._chipLib.chip_ime_ReadAttribute_BinaryInput(Basic)_OutOfService(device, ZCLendpoint, ZCLgroupid)
+    def ClusterBinaryInput(Basic)_ReadAttributePresentValue(self, device: ctypes.c_void_p, ZCLendpoint: int, ZCLgroupid: int):
+        return self._chipLib.chip_ime_ReadAttribute_BinaryInput(Basic)_PresentValue(device, ZCLendpoint, ZCLgroupid)
+    def ClusterBinaryInput(Basic)_ConfigureAttributePresentValue(self, device: ctypes.c_void_p, ZCLendpoint: int, minInterval: int, maxInterval: int, change: int):
+        return self._chipLib.chip_ime_ConfigureAttribute_BinaryInput(Basic)_PresentValue(device, ZCLendpoint, minInterval, maxInterval, change)
+    def ClusterBinaryInput(Basic)_ReadAttributeStatusFlags(self, device: ctypes.c_void_p, ZCLendpoint: int, ZCLgroupid: int):
+        return self._chipLib.chip_ime_ReadAttribute_BinaryInput(Basic)_StatusFlags(device, ZCLendpoint, ZCLgroupid)
+    def ClusterBinaryInput(Basic)_ConfigureAttributeStatusFlags(self, device: ctypes.c_void_p, ZCLendpoint: int, minInterval: int, maxInterval: int, change: int):
+        return self._chipLib.chip_ime_ConfigureAttribute_BinaryInput(Basic)_StatusFlags(device, ZCLendpoint, minInterval, maxInterval, change)
+    def ClusterBinaryInput(Basic)_ReadAttributeClusterRevision(self, device: ctypes.c_void_p, ZCLendpoint: int, ZCLgroupid: int):
+        return self._chipLib.chip_ime_ReadAttribute_BinaryInput(Basic)_ClusterRevision(device, ZCLendpoint, ZCLgroupid)
     def ClusterBinding_ReadAttributeClusterRevision(self, device: ctypes.c_void_p, ZCLendpoint: int, ZCLgroupid: int):
         return self._chipLib.chip_ime_ReadAttribute_Binding_ClusterRevision(device, ZCLendpoint, ZCLgroupid)
     def ClusterColorControl_ReadAttributeCurrentHue(self, device: ctypes.c_void_p, ZCLendpoint: int, ZCLgroupid: int):
@@ -1992,6 +2012,25 @@ class ChipClusters:
         # Cluster Basic ReadAttribute ClusterRevision
         self._chipLib.chip_ime_ReadAttribute_Basic_ClusterRevision.argtypes = [ctypes.c_void_p, ctypes.c_uint8, ctypes.c_uint16]
         self._chipLib.chip_ime_ReadAttribute_Basic_ClusterRevision.restype = ctypes.c_uint32
+        # Cluster BinaryInput(Basic)
+        # Cluster BinaryInput(Basic) ReadAttribute OutOfService
+        self._chipLib.chip_ime_ReadAttribute_BinaryInput(Basic)_OutOfService.argtypes = [ctypes.c_void_p, ctypes.c_uint8, ctypes.c_uint16]
+        self._chipLib.chip_ime_ReadAttribute_BinaryInput(Basic)_OutOfService.restype = ctypes.c_uint32
+        # Cluster BinaryInput(Basic) ReadAttribute PresentValue
+        self._chipLib.chip_ime_ReadAttribute_BinaryInput(Basic)_PresentValue.argtypes = [ctypes.c_void_p, ctypes.c_uint8, ctypes.c_uint16]
+        self._chipLib.chip_ime_ReadAttribute_BinaryInput(Basic)_PresentValue.restype = ctypes.c_uint32
+        # Cluster BinaryInput(Basic) ConfigureAttribute PresentValue
+        self._chipLib.chip_ime_ConfigureAttribute_BinaryInput(Basic)_PresentValue.argtypes = [ctypes.c_void_p, ctypes.c_uint8, ctypes.c_uint16, ctypes.c_uint16]
+        self._chipLib.chip_ime_ConfigureAttribute_BinaryInput(Basic)_PresentValue.restype = ctypes.c_uint32
+        # Cluster BinaryInput(Basic) ReadAttribute StatusFlags
+        self._chipLib.chip_ime_ReadAttribute_BinaryInput(Basic)_StatusFlags.argtypes = [ctypes.c_void_p, ctypes.c_uint8, ctypes.c_uint16]
+        self._chipLib.chip_ime_ReadAttribute_BinaryInput(Basic)_StatusFlags.restype = ctypes.c_uint32
+        # Cluster BinaryInput(Basic) ConfigureAttribute StatusFlags
+        self._chipLib.chip_ime_ConfigureAttribute_BinaryInput(Basic)_StatusFlags.argtypes = [ctypes.c_void_p, ctypes.c_uint8, ctypes.c_uint16, ctypes.c_uint16]
+        self._chipLib.chip_ime_ConfigureAttribute_BinaryInput(Basic)_StatusFlags.restype = ctypes.c_uint32
+        # Cluster BinaryInput(Basic) ReadAttribute ClusterRevision
+        self._chipLib.chip_ime_ReadAttribute_BinaryInput(Basic)_ClusterRevision.argtypes = [ctypes.c_void_p, ctypes.c_uint8, ctypes.c_uint16]
+        self._chipLib.chip_ime_ReadAttribute_BinaryInput(Basic)_ClusterRevision.restype = ctypes.c_uint32
         # Cluster Binding
         # Cluster Binding Command Bind
         self._chipLib.chip_ime_AppendCommand_Binding_Bind.argtypes = [ctypes.c_void_p, ctypes.c_uint64, ctypes.c_uint8, ctypes.c_uint16, ctypes.c_uint64, ctypes.c_uint16, ctypes.c_uint8, ctypes.c_uint16]

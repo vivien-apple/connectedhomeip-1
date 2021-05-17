@@ -60,6 +60,7 @@ using namespace chip::Encoding::LittleEndian;
 | AudioOutput                                                         | 0x050B |
 | BarrierControl                                                      | 0x0103 |
 | Basic                                                               | 0x0028 |
+| BinaryInput(Basic)                                                  | 0x000F |
 | Binding                                                             | 0xF000 |
 | ColorControl                                                        | 0x0300 |
 | ContentLaunch                                                       | 0x050A |
@@ -137,6 +138,8 @@ using namespace chip::Encoding::LittleEndian;
 
 #define BASIC_CLUSTER_ID 0x0028
 #define ZCL_MFG_SPECIFIC_PING_COMMAND_ID (0x00)
+
+#define BINARY_INPUT_BASIC_CLUSTER_ID 0x000F
 
 #define BINDING_CLUSTER_ID 0xF000
 #define ZCL_BIND_COMMAND_ID (0x00)
@@ -879,6 +882,121 @@ PacketBufferHandle encodeBasicClusterWriteLocalConfigDisabledAttribute(uint8_t s
 PacketBufferHandle encodeBasicClusterReadClusterRevisionAttribute(uint8_t seqNum, EndpointId destinationEndpoint)
 {
     COMMAND_HEADER("ReadBasicClusterRevision", BASIC_CLUSTER_ID);
+    buf.Put8(kFrameControlGlobalCommand).Put8(seqNum).Put8(ZCL_READ_ATTRIBUTES_COMMAND_ID).Put16(0xFFFD);
+    COMMAND_FOOTER();
+}
+
+/*----------------------------------------------------------------------------*\
+| Cluster BinaryInput(Basic)                                          | 0x000F |
+|------------------------------------------------------------------------------|
+| Commands:                                                           |        |
+|------------------------------------------------------------------------------|
+| Attributes:                                                         |        |
+| * OutOfService                                                      | 0x0051 |
+| * PresentValue                                                      | 0x0055 |
+| * StatusFlags                                                       | 0x006F |
+| * ClusterRevision                                                   | 0xFFFD |
+\*----------------------------------------------------------------------------*/
+
+PacketBufferHandle encodeBinaryInput(Basic) ClusterDiscoverAttributes(uint8_t seqNum, EndpointId destinationEndpoint)
+{
+    COMMAND_HEADER("DiscoverBinaryInput(Basic)Attributes", BINARY_INPUT_BASIC_CLUSTER_ID);
+    buf.Put8(kFrameControlGlobalCommand).Put8(seqNum).Put8(ZCL_DISCOVER_ATTRIBUTES_COMMAND_ID).Put16(0x0000).Put8(0xFF);
+    COMMAND_FOOTER();
+}
+
+/*
+ * Attribute OutOfService
+ */
+PacketBufferHandle encodeBinaryInput(Basic) ClusterReadOutOfServiceAttribute(uint8_t seqNum, EndpointId destinationEndpoint)
+{
+    COMMAND_HEADER("ReadBinaryInput(Basic)OutOfService", BINARY_INPUT_BASIC_CLUSTER_ID);
+    buf.Put8(kFrameControlGlobalCommand).Put8(seqNum).Put8(ZCL_READ_ATTRIBUTES_COMMAND_ID).Put16(0x0051);
+    COMMAND_FOOTER();
+}
+
+PacketBufferHandle encodeBinaryInput(Basic)
+    ClusterWriteOutOfServiceAttribute(uint8_t seqNum, EndpointId destinationEndpoint, uint8_t outOfService)
+{
+    COMMAND_HEADER("WriteBinaryInput(Basic)OutOfService", BINARY_INPUT_BASIC_CLUSTER_ID);
+    buf.Put8(kFrameControlGlobalCommand)
+        .Put8(seqNum)
+        .Put8(ZCL_WRITE_ATTRIBUTES_COMMAND_ID)
+        .Put16(0x0051)
+        .Put8(16)
+        .Put8(static_cast<uint8_t>(outOfService));
+    COMMAND_FOOTER();
+}
+
+/*
+ * Attribute PresentValue
+ */
+PacketBufferHandle encodeBinaryInput(Basic) ClusterReadPresentValueAttribute(uint8_t seqNum, EndpointId destinationEndpoint)
+{
+    COMMAND_HEADER("ReadBinaryInput(Basic)PresentValue", BINARY_INPUT_BASIC_CLUSTER_ID);
+    buf.Put8(kFrameControlGlobalCommand).Put8(seqNum).Put8(ZCL_READ_ATTRIBUTES_COMMAND_ID).Put16(0x0055);
+    COMMAND_FOOTER();
+}
+
+PacketBufferHandle encodeBinaryInput(Basic)
+    ClusterWritePresentValueAttribute(uint8_t seqNum, EndpointId destinationEndpoint, uint8_t presentValue)
+{
+    COMMAND_HEADER("WriteBinaryInput(Basic)PresentValue", BINARY_INPUT_BASIC_CLUSTER_ID);
+    buf.Put8(kFrameControlGlobalCommand)
+        .Put8(seqNum)
+        .Put8(ZCL_WRITE_ATTRIBUTES_COMMAND_ID)
+        .Put16(0x0055)
+        .Put8(16)
+        .Put8(static_cast<uint8_t>(presentValue));
+    COMMAND_FOOTER();
+}
+
+PacketBufferHandle encodeBinaryInput(Basic) ClusterConfigurePresentValueAttribute(uint8_t seqNum, EndpointId destinationEndpoint,
+                                                                                  uint16_t minInterval, uint16_t maxInterval)
+{
+    COMMAND_HEADER("ReportBinaryInput(Basic)PresentValue", BINARY_INPUT_BASIC_CLUSTER_ID);
+    buf.Put8(kFrameControlGlobalCommand)
+        .Put8(seqNum)
+        .Put8(ZCL_CONFIGURE_REPORTING_COMMAND_ID)
+        .Put8(EMBER_ZCL_REPORTING_DIRECTION_REPORTED)
+        .Put16(0x0055)
+        .Put8(16)
+        .Put16(minInterval)
+        .Put16(maxInterval);
+    COMMAND_FOOTER();
+}
+
+/*
+ * Attribute StatusFlags
+ */
+PacketBufferHandle encodeBinaryInput(Basic) ClusterReadStatusFlagsAttribute(uint8_t seqNum, EndpointId destinationEndpoint)
+{
+    COMMAND_HEADER("ReadBinaryInput(Basic)StatusFlags", BINARY_INPUT_BASIC_CLUSTER_ID);
+    buf.Put8(kFrameControlGlobalCommand).Put8(seqNum).Put8(ZCL_READ_ATTRIBUTES_COMMAND_ID).Put16(0x006F);
+    COMMAND_FOOTER();
+}
+
+PacketBufferHandle encodeBinaryInput(Basic)
+    ClusterConfigureStatusFlagsAttribute(uint8_t seqNum, EndpointId destinationEndpoint, uint16_t minInterval, uint16_t maxInterval)
+{
+    COMMAND_HEADER("ReportBinaryInput(Basic)StatusFlags", BINARY_INPUT_BASIC_CLUSTER_ID);
+    buf.Put8(kFrameControlGlobalCommand)
+        .Put8(seqNum)
+        .Put8(ZCL_CONFIGURE_REPORTING_COMMAND_ID)
+        .Put8(EMBER_ZCL_REPORTING_DIRECTION_REPORTED)
+        .Put16(0x006F)
+        .Put8(24)
+        .Put16(minInterval)
+        .Put16(maxInterval);
+    COMMAND_FOOTER();
+}
+
+/*
+ * Attribute ClusterRevision
+ */
+PacketBufferHandle encodeBinaryInput(Basic) ClusterReadClusterRevisionAttribute(uint8_t seqNum, EndpointId destinationEndpoint)
+{
+    COMMAND_HEADER("ReadBinaryInput(Basic)ClusterRevision", BINARY_INPUT_BASIC_CLUSTER_ID);
     buf.Put8(kFrameControlGlobalCommand).Put8(seqNum).Put8(ZCL_READ_ATTRIBUTES_COMMAND_ID).Put16(0xFFFD);
     COMMAND_FOOTER();
 }
