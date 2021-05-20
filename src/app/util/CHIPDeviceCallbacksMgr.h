@@ -35,6 +35,97 @@
 namespace chip {
 namespace app {
 
+struct ResponseCallbackInfo
+{
+    chip::NodeId nodeId;
+    uint8_t sequenceNumber;
+
+    explicit ResponseCallbackInfo(chip::NodeId nodeId, uint8_t sequenceNumber):
+      nodeId(nodeId), sequenceNumber(sequenceNumber) {}
+
+    bool operator==(ResponseCallbackInfo const & other) { return nodeId == other.nodeId && sequenceNumber == other.sequenceNumber; }
+};
+
+struct ReportCallbackInfo
+{
+    chip::NodeId nodeId;
+    chip::EndpointId endpointId;
+    chip::ClusterId clusterId;
+    chip::AttributeId attributeId;
+
+    explicit ReportCallbackInfo(chip::NodeId nodeId,
+      chip::EndpointId endpointId,
+      chip::ClusterId clusterId,
+      chip::AttributeId attributeId):
+      nodeId(nodeId), endpointId(endpointId), clusterId(clusterId), attributeId(attributeId) {}
+
+    bool operator==(ReportCallbackInfo const & other)
+    {
+        return nodeId == other.nodeId && endpointId == other.endpointId && clusterId == other.clusterId &&
+            attributeId == other.attributeId;
+    }
+};
+
+template<typename T>
+class CHIPDeviceCallbackDeque : protected Callback::CallbackDeque
+{
+public:
+    // TODO: add destructor to clean up everything
+    CHIPDeviceCallbackDeque() {}
+
+    ~CHIPDeviceCallbackDeque()
+    {
+        // TODO: Clean-up whatever is remaining, freeing the mInfoPtr
+    }
+
+    CHIP_ERROR Enqueue(Cancelable * ca, const T & info)
+    {
+        ca->mInfoPtr = CHIPPlatformMemoryAlloc(sizeof(info));
+        if (ca->mInfoPtr == nullptr)
+        {
+            return CHIP_ERROR_NO_MEMORY;
+        }
+
+        memcpy(ca->mInfoPtr, &info, sizeof(info));
+
+        Callback::CallbackDeque::Enqueue(ca);
+    }
+
+    CHIP_ERROR CancelCallback(const T & info)
+    {
+        Callback::Cancelable * ca = nullptr;
+        CHIP_ERROR err            = GetCallback(info, &ca);
+        if (CHIP_NO_ERROR == err)
+        {
+            ca->Cancel();
+            CHIPPlatformMemoryFree(ca->mInfoPtr);
+            queue.Dequeue(ca);
+        }
+
+        return err;
+    }
+
+    template <typename T>
+    CHIP_ERROR GetCallback(const T & info, Callback::Cancelable ** callback) const
+    {
+        auto * beginning_entry = this;
+
+        Callback::Cancelable * ca = this;
+        while (ca != nullptr && ca->mNext != beginning)
+        {
+            if (*reinterpret_cast<T *>(ca->mNext->mInfoPtr) == info)
+            {
+                *callback = ca->mNext;
+                return CHIP_NO_ERROR;
+            }
+
+            ca = ca->mNext;
+        }
+
+        return CHIP_ERROR_KEY_NOT_FOUND;
+    }
+};
+
 class DLL_EXPORT CHIPDeviceCallbacksMgr
 {
 public:
@@ -62,42 +153,9 @@ public:
 private:
     CHIPDeviceCallbacksMgr() {}
 
-    template <typename T>
-    CHIP_ERROR CancelCallback(T & info, Callback::CallbackDeque & queue)
-    {
-        Callback::Cancelable * ca = nullptr;
-        CHIP_ERROR err            = GetCallback(info, queue, &ca);
-        if (CHIP_NO_ERROR == err)
-        {
-            ca->Cancel();
-            CHIPPlatformMemoryFree(ca->mInfoPtr);
-            queue.Dequeue(ca);
-        }
-
-        return err;
-    }
-
-    template <typename T>
-    CHIP_ERROR GetCallback(T & info, Callback::CallbackDeque & queue, Callback::Cancelable ** callback)
-    {
-        Callback::Cancelable * ca = &queue;
-        while (ca != nullptr && ca->mNext != &queue)
-        {
-            if (*reinterpret_cast<T *>(ca->mNext->mInfoPtr) == info)
-            {
-                *callback = ca->mNext;
-                return CHIP_NO_ERROR;
-            }
-
-            ca = ca->mNext;
-        }
-
-        return CHIP_ERROR_KEY_NOT_FOUND;
-    }
-
-    Callback::CallbackDeque mResponsesSuccess;
-    Callback::CallbackDeque mResponsesFailure;
-    Callback::CallbackDeque mReports;
+    CHIPDeviceCallbackDeque<ResponseCallbackInfo> mResponsesSuccess;
+    CHIPDeviceCallbackDeque<ResponseCallbackInfo> mResponsesFailure;
+    CHIPDeviceCallbackDeque<ReportCallbackInfo> mReports;
 };
 
 } // namespace app

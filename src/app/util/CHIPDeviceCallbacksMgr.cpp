@@ -30,27 +30,7 @@
 #include <inttypes.h>
 
 namespace {
-struct ResponseCallbackInfo
-{
-    chip::NodeId nodeId;
-    uint8_t sequenceNumber;
 
-    bool operator==(ResponseCallbackInfo const & other) { return nodeId == other.nodeId && sequenceNumber == other.sequenceNumber; }
-};
-
-struct ReportCallbackInfo
-{
-    chip::NodeId nodeId;
-    chip::EndpointId endpointId;
-    chip::ClusterId clusterId;
-    chip::AttributeId attributeId;
-
-    bool operator==(ReportCallbackInfo const & other)
-    {
-        return nodeId == other.nodeId && endpointId == other.endpointId && clusterId == other.clusterId &&
-            attributeId == other.attributeId;
-    }
-};
 } // namespace
 
 namespace chip {
@@ -63,8 +43,14 @@ CHIP_ERROR CHIPDeviceCallbacksMgr::AddResponseCallback(NodeId nodeId, uint8_t se
     VerifyOrReturnError(onSuccessCallback != nullptr, CHIP_ERROR_INVALID_ARGUMENT);
     VerifyOrReturnError(onFailureCallback != nullptr, CHIP_ERROR_INVALID_ARGUMENT);
 
-    ResponseCallbackInfo info = { nodeId, sequenceNumber };
+    ResponseCallbackInfo info{ nodeId, sequenceNumber };
 
+    // If some callbacks have already been registered for the same ResponseCallbackInfo, it usually means that the response
+    // has not been received for a previous command with the same sequenceNumber. Cancel the previously registered callbacks.
+    mResponsesSuccess.CancelCallback(info);
+    mResponsesFailure.CancelCallback(info);
+
+#if 0
     onSuccessCallback->mInfoPtr = CHIPPlatformMemoryAlloc(sizeof(info));
     if (onSuccessCallback->mInfoPtr == nullptr)
     {
@@ -77,25 +63,18 @@ CHIP_ERROR CHIPDeviceCallbacksMgr::AddResponseCallback(NodeId nodeId, uint8_t se
         CHIPPlatformMemoryFree(onSuccessCallback->mInfoPtr);
         return CHIP_ERROR_NO_MEMORY;
     }
+#endif
 
-    memcpy(onSuccessCallback->mInfoPtr, &info, sizeof(info));
-    memcpy(onFailureCallback->mInfoPtr, &info, sizeof(info));
-
-    // If some callbacks have already been registered for the same ResponseCallbackInfo, it usually means that the response
-    // has not been received for a previous command with the same sequenceNumber. Cancel the previously registered callbacks.
-    CancelCallback(info, mResponsesSuccess);
-    CancelCallback(info, mResponsesFailure);
-
-    mResponsesSuccess.Enqueue(onSuccessCallback);
-    mResponsesFailure.Enqueue(onFailureCallback);
+    /* TODO CHECK ERROR HERE */ mResponsesSuccess.Enqueue(onSuccessCallback, info);
+    /* TODO CHECK ERROR HERE */ mResponsesFailure.Enqueue(onFailureCallback, info);
     return CHIP_NO_ERROR;
 }
 
 CHIP_ERROR CHIPDeviceCallbacksMgr::CancelResponseCallback(NodeId nodeId, uint8_t sequenceNumber)
 {
-    ResponseCallbackInfo info = { nodeId, sequenceNumber };
-    CancelCallback(info, mResponsesSuccess);
-    CancelCallback(info, mResponsesFailure);
+    ResponseCallbackInfo info{ nodeId, sequenceNumber };
+    mResponsesSuccess.CancelCallback(info);
+    mResponsesFailure.CancelCallback(info);
     return CHIP_NO_ERROR;
 }
 
@@ -103,13 +82,14 @@ CHIP_ERROR CHIPDeviceCallbacksMgr::GetResponseCallback(NodeId nodeId, uint8_t se
                                                        Callback::Cancelable ** onSuccessCallback,
                                                        Callback::Cancelable ** onFailureCallback)
 {
-    ResponseCallbackInfo info = { nodeId, sequenceNumber };
+    ResponseCallbackInfo info{ nodeId, sequenceNumber };
 
-    ReturnErrorOnFailure(GetCallback(info, mResponsesSuccess, onSuccessCallback));
-    CancelCallback(info, mResponsesSuccess);
+    ReturnErrorOnFailure(mResponsesSuccess.GetCallback(info, onSuccessCallback));
+    mResponsesSuccess.CancelCallback(info);
 
-    ReturnErrorOnFailure(GetCallback(info, mResponsesFailure, onFailureCallback));
-    CancelCallback(info, mResponsesFailure);
+    // TODO: WARNING: This leaks the callback if the above failed
+    ReturnErrorOnFailure(mResponsesFailure.GetCallback(info, onFailureCallback));
+    mResponsesFailure.CancelCallback(info);
 
     return CHIP_NO_ERROR;
 }
@@ -119,28 +99,21 @@ CHIP_ERROR CHIPDeviceCallbacksMgr::AddReportCallback(NodeId nodeId, EndpointId e
 {
     VerifyOrReturnError(onReportCallback != nullptr, CHIP_ERROR_INVALID_ARGUMENT);
 
-    ReportCallbackInfo info    = { nodeId, endpointId, clusterId, attributeId };
-    onReportCallback->mInfoPtr = CHIPPlatformMemoryAlloc(sizeof(info));
-    if (onReportCallback->mInfoPtr == nullptr)
-    {
-        return CHIP_ERROR_NO_MEMORY;
-    }
-
-    memcpy(onReportCallback->mInfoPtr, &info, sizeof(info));
+    ReportCallbackInfo info{ nodeId, endpointId, clusterId, attributeId };
 
     // If a callback has already been registered for the same ReportCallbackInfo, let's cancel it.
-    CancelCallback(info, mReports);
+    mReports.CancelCallback(info);
 
-    mReports.Enqueue(onReportCallback);
+    /* TODO CHECK ERROR HERE */ mReports.Enqueue(onReportCallback, info);
     return CHIP_NO_ERROR;
 }
 
 CHIP_ERROR CHIPDeviceCallbacksMgr::GetReportCallback(NodeId nodeId, EndpointId endpointId, ClusterId clusterId,
                                                      AttributeId attributeId, Callback::Cancelable ** onReportCallback)
 {
-    ReportCallbackInfo info = { nodeId, endpointId, clusterId, attributeId };
+    ReportCallbackInfo info{ nodeId, endpointId, clusterId, attributeId };
 
-    ReturnErrorOnFailure(GetCallback(info, mReports, onReportCallback));
+    ReturnErrorOnFailure(mReports.GetCallback(info, onReportCallback));
 
     return CHIP_NO_ERROR;
 }
