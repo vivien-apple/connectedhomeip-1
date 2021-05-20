@@ -196,8 +196,8 @@ function asChipUnderlyingType(label, type)
 
 // List of all cluster with generated functions
 var endpointClusterWithInit = [
-  'Air Pressure Measurement', 'Basic', 'Identify', 'Groups', 'Scenes', 'Occupancy Sensing', 'On/off', 'Level Control',
-  'Color Control', 'IAS Zone', 'Relative Humidity Measurement', 'Temperature Measurement'
+  'Air Pressure Measurement', 'Basic', 'Binary Input (Basic)', 'Identify', 'Groups', 'Scenes', 'Occupancy Sensing', 'On/off',
+  'Level Control', 'Color Control', 'IAS Zone', 'Relative Humidity Measurement', 'Temperature Measurement'
 ];
 var endpointClusterWithAttributeChanged = [ 'Identify', 'Door Lock' ];
 var endpointClusterWithPreAttribute     = [ 'IAS Zone' ];
@@ -221,7 +221,7 @@ function chip_endpoint_generated_functions()
   let alreadySetCluster = [];
   let ret               = '\\\n';
   this.clusterList.forEach((c) => {
-    let clusterName  = extract_cluster_name(c.comment);
+    let clusterName  = c.clusterName;
     let functionList = '';
     if (alreadySetCluster.includes(clusterName)) {
       // Only one array of Generated functions per cluster across all endpoints
