@@ -170,8 +170,7 @@ NS_ASSUME_NONNULL_BEGIN
  * Cluster Binary Input (Basic)
  *
  */
-@interface CHIPBinaryInput (Basic) : CHIPCluster
-
+@interface CHIPBinaryInputBasic : CHIPCluster
 
 - (void)readAttributeOutOfServiceWithResponseHandler:(ResponseHandler)responseHandler;
 - (void)writeAttributeOutOfServiceWithValue:(uint8_t)value responseHandler:(ResponseHandler)responseHandler;

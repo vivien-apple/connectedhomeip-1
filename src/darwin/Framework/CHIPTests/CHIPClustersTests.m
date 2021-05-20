@@ -979,18 +979,18 @@ CHIPDevice * GetPairedDevice(uint64_t deviceId)
     [self waitForExpectationsWithTimeout:kTimeoutInSeconds handler:nil];
 }
 
-- (void)testSendClusterBinaryInput(Basic)ReadAttributeOutOfServiceWithResponseHandler
+- (void)testSendClusterBinaryInputBasicReadAttributeOutOfServiceWithResponseHandler
 {
     XCTestExpectation * expectation =
-        [self expectationWithDescription:@"BinaryInput(Basic)ReadAttributeOutOfServiceWithResponseHandler"];
+        [self expectationWithDescription:@"BinaryInputBasicReadAttributeOutOfServiceWithResponseHandler"];
 
     CHIPDevice * device = GetPairedDevice(kDeviceId);
     dispatch_queue_t queue = dispatch_get_main_queue();
-    CHIPBinaryInput(Basic) * cluster = [[CHIPBinaryInput(Basic) alloc] initWithDevice:device endpoint:1 queue:queue];
+    CHIPBinaryInputBasic * cluster = [[CHIPBinaryInputBasic alloc] initWithDevice:device endpoint:1 queue:queue];
     XCTAssertNotNil(cluster);
 
     [cluster readAttributeOutOfServiceWithResponseHandler:^(NSError * err, NSDictionary * values) {
-        NSLog(@"BinaryInput(Basic) OutOfService Error: %@", err);
+        NSLog(@"BinaryInputBasic OutOfService Error: %@", err);
         XCTAssertEqual(err.code, 0);
         [expectation fulfill];
     }];
@@ -998,37 +998,37 @@ CHIPDevice * GetPairedDevice(uint64_t deviceId)
     [self waitForExpectationsWithTimeout:kTimeoutInSeconds handler:nil];
 }
 
-- (void)testSendClusterBinaryInput(Basic)WriteAttributeOutOfServiceWithValue
+- (void)testSendClusterBinaryInputBasicWriteAttributeOutOfServiceWithValue
 {
-    XCTestExpectation * expectation = [self expectationWithDescription:@"BinaryInput(Basic)WriteAttributeOutOfServiceWithValue"];
+    XCTestExpectation * expectation = [self expectationWithDescription:@"BinaryInputBasicWriteAttributeOutOfServiceWithValue"];
 
     CHIPDevice * device = GetPairedDevice(kDeviceId);
     dispatch_queue_t queue = dispatch_get_main_queue();
-    CHIPBinaryInput(Basic) * cluster = [[CHIPBinaryInput(Basic) alloc] initWithDevice:device endpoint:1 queue:queue];
+    CHIPBinaryInputBasic * cluster = [[CHIPBinaryInputBasic alloc] initWithDevice:device endpoint:1 queue:queue];
     XCTAssertNotNil(cluster);
 
     uint8_t value = 0x00;
     [cluster writeAttributeOutOfServiceWithValue:value
                                  responseHandler:^(NSError * err, NSDictionary * values) {
-                                     NSLog(@"BinaryInput(Basic) OutOfService Error: %@", err);
+                                     NSLog(@"BinaryInputBasic OutOfService Error: %@", err);
                                      XCTAssertEqual(err.code, 0);
                                      [expectation fulfill];
                                  }];
 
     [self waitForExpectationsWithTimeout:kTimeoutInSeconds handler:nil];
 }
-- (void)testSendClusterBinaryInput(Basic)ReadAttributePresentValueWithResponseHandler
+- (void)testSendClusterBinaryInputBasicReadAttributePresentValueWithResponseHandler
 {
     XCTestExpectation * expectation =
-        [self expectationWithDescription:@"BinaryInput(Basic)ReadAttributePresentValueWithResponseHandler"];
+        [self expectationWithDescription:@"BinaryInputBasicReadAttributePresentValueWithResponseHandler"];
 
     CHIPDevice * device = GetPairedDevice(kDeviceId);
     dispatch_queue_t queue = dispatch_get_main_queue();
-    CHIPBinaryInput(Basic) * cluster = [[CHIPBinaryInput(Basic) alloc] initWithDevice:device endpoint:1 queue:queue];
+    CHIPBinaryInputBasic * cluster = [[CHIPBinaryInputBasic alloc] initWithDevice:device endpoint:1 queue:queue];
     XCTAssertNotNil(cluster);
 
     [cluster readAttributePresentValueWithResponseHandler:^(NSError * err, NSDictionary * values) {
-        NSLog(@"BinaryInput(Basic) PresentValue Error: %@", err);
+        NSLog(@"BinaryInputBasic PresentValue Error: %@", err);
         XCTAssertEqual(err.code, 0);
         [expectation fulfill];
     }];
@@ -1036,37 +1036,37 @@ CHIPDevice * GetPairedDevice(uint64_t deviceId)
     [self waitForExpectationsWithTimeout:kTimeoutInSeconds handler:nil];
 }
 
-- (void)testSendClusterBinaryInput(Basic)WriteAttributePresentValueWithValue
+- (void)testSendClusterBinaryInputBasicWriteAttributePresentValueWithValue
 {
-    XCTestExpectation * expectation = [self expectationWithDescription:@"BinaryInput(Basic)WriteAttributePresentValueWithValue"];
+    XCTestExpectation * expectation = [self expectationWithDescription:@"BinaryInputBasicWriteAttributePresentValueWithValue"];
 
     CHIPDevice * device = GetPairedDevice(kDeviceId);
     dispatch_queue_t queue = dispatch_get_main_queue();
-    CHIPBinaryInput(Basic) * cluster = [[CHIPBinaryInput(Basic) alloc] initWithDevice:device endpoint:1 queue:queue];
+    CHIPBinaryInputBasic * cluster = [[CHIPBinaryInputBasic alloc] initWithDevice:device endpoint:1 queue:queue];
     XCTAssertNotNil(cluster);
 
     uint8_t value = 0;
     [cluster writeAttributePresentValueWithValue:value
                                  responseHandler:^(NSError * err, NSDictionary * values) {
-                                     NSLog(@"BinaryInput(Basic) PresentValue Error: %@", err);
+                                     NSLog(@"BinaryInputBasic PresentValue Error: %@", err);
                                      XCTAssertEqual(err.code, 0);
                                      [expectation fulfill];
                                  }];
 
     [self waitForExpectationsWithTimeout:kTimeoutInSeconds handler:nil];
 }
-- (void)testSendClusterBinaryInput(Basic)ReadAttributeStatusFlagsWithResponseHandler
+- (void)testSendClusterBinaryInputBasicReadAttributeStatusFlagsWithResponseHandler
 {
     XCTestExpectation * expectation =
-        [self expectationWithDescription:@"BinaryInput(Basic)ReadAttributeStatusFlagsWithResponseHandler"];
+        [self expectationWithDescription:@"BinaryInputBasicReadAttributeStatusFlagsWithResponseHandler"];
 
     CHIPDevice * device = GetPairedDevice(kDeviceId);
     dispatch_queue_t queue = dispatch_get_main_queue();
-    CHIPBinaryInput(Basic) * cluster = [[CHIPBinaryInput(Basic) alloc] initWithDevice:device endpoint:1 queue:queue];
+    CHIPBinaryInputBasic * cluster = [[CHIPBinaryInputBasic alloc] initWithDevice:device endpoint:1 queue:queue];
     XCTAssertNotNil(cluster);
 
     [cluster readAttributeStatusFlagsWithResponseHandler:^(NSError * err, NSDictionary * values) {
-        NSLog(@"BinaryInput(Basic) StatusFlags Error: %@", err);
+        NSLog(@"BinaryInputBasic StatusFlags Error: %@", err);
         XCTAssertEqual(err.code, 0);
         [expectation fulfill];
     }];
@@ -1074,18 +1074,18 @@ CHIPDevice * GetPairedDevice(uint64_t deviceId)
     [self waitForExpectationsWithTimeout:kTimeoutInSeconds handler:nil];
 }
 
-- (void)testSendClusterBinaryInput(Basic)ReadAttributeClusterRevisionWithResponseHandler
+- (void)testSendClusterBinaryInputBasicReadAttributeClusterRevisionWithResponseHandler
 {
     XCTestExpectation * expectation =
-        [self expectationWithDescription:@"BinaryInput(Basic)ReadAttributeClusterRevisionWithResponseHandler"];
+        [self expectationWithDescription:@"BinaryInputBasicReadAttributeClusterRevisionWithResponseHandler"];
 
     CHIPDevice * device = GetPairedDevice(kDeviceId);
     dispatch_queue_t queue = dispatch_get_main_queue();
-    CHIPBinaryInput(Basic) * cluster = [[CHIPBinaryInput(Basic) alloc] initWithDevice:device endpoint:1 queue:queue];
+    CHIPBinaryInputBasic * cluster = [[CHIPBinaryInputBasic alloc] initWithDevice:device endpoint:1 queue:queue];
     XCTAssertNotNil(cluster);
 
     [cluster readAttributeClusterRevisionWithResponseHandler:^(NSError * err, NSDictionary * values) {
-        NSLog(@"BinaryInput(Basic) ClusterRevision Error: %@", err);
+        NSLog(@"BinaryInputBasic ClusterRevision Error: %@", err);
         XCTAssertEqual(err.code, 0);
         [expectation fulfill];
     }];

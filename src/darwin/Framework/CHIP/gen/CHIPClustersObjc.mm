@@ -4835,11 +4835,11 @@ private:
 
 @end
 
-@interface CHIPBinaryInput (Basic)
-() @property(readonly) Controller::BinaryInput(Basic) Cluster cppCluster;
+@interface CHIPBinaryInputBasic ()
+@property (readonly) Controller::BinaryInputBasicCluster cppCluster;
 @end
 
-@implementation CHIPBinaryInput (Basic)
+@implementation CHIPBinaryInputBasic
 
 - (Controller::ClusterBase *)getCluster
 {

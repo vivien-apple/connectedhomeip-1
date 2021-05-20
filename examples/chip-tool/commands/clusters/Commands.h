@@ -955,7 +955,7 @@ static void OnTestClusterListStructOctetStringListAttributeResponse(void * conte
 | AudioOutput                                                         | 0x050B |
 | BarrierControl                                                      | 0x0103 |
 | Basic                                                               | 0x0028 |
-| BinaryInput(Basic)                                                  | 0x000F |
+| BinaryInputBasic                                                    | 0x000F |
 | Binding                                                             | 0xF000 |
 | ColorControl                                                        | 0x0300 |
 | ContentLaunch                                                       | 0x050A |
@@ -996,7 +996,7 @@ constexpr chip::ClusterId kApplicationLauncherClusterId         = 0x050C;
 constexpr chip::ClusterId kAudioOutputClusterId                 = 0x050B;
 constexpr chip::ClusterId kBarrierControlClusterId              = 0x0103;
 constexpr chip::ClusterId kBasicClusterId                       = 0x0028;
-constexpr chip::ClusterId kBinaryInput(Basic) ClusterId         = 0x000F;
+constexpr chip::ClusterId kBinaryInputBasicClusterId            = 0x000F;
 constexpr chip::ClusterId kBindingClusterId                     = 0xF000;
 constexpr chip::ClusterId kColorControlClusterId                = 0x0300;
 constexpr chip::ClusterId kContentLaunchClusterId               = 0x050A;
@@ -3118,7 +3118,7 @@ private:
 };
 
 /*----------------------------------------------------------------------------*\
-| Cluster BinaryInput(Basic)                                          | 0x000F |
+| Cluster BinaryInputBasic                                            | 0x000F |
 |------------------------------------------------------------------------------|
 | Commands:                                                           |        |
 |------------------------------------------------------------------------------|
@@ -3132,12 +3132,12 @@ private:
 /*
  * Discover Attributes
  */
-class DiscoverBinaryInput(Basic) Attributes : public ModelCommand
+class DiscoverBinaryInputBasicAttributes : public ModelCommand
 {
 public:
-    DiscoverBinaryInput(Basic) Attributes() : ModelCommand("discover") { ModelCommand::AddArguments(); }
+    DiscoverBinaryInputBasicAttributes() : ModelCommand("discover") { ModelCommand::AddArguments(); }
 
-    ~DiscoverBinaryInput(Basic) Attributes()
+    ~DiscoverBinaryInputBasicAttributes()
     {
         delete onSuccessCallback;
         delete onFailureCallback;
@@ -3147,7 +3147,7 @@ public:
     {
         ChipLogProgress(chipTool, "Sending cluster (0x0000) command (0x0C) on endpoint %" PRIu16, endpointId);
 
-        chip::Controller::BinaryInput(Basic) Cluster cluster;
+        chip::Controller::BinaryInputBasicCluster cluster;
         cluster.Associate(device, endpointId);
         return cluster.DiscoverAttributes(onSuccessCallback->Cancel(), onFailureCallback->Cancel());
     }
@@ -3162,16 +3162,16 @@ private:
 /*
  * Attribute OutOfService
  */
-class ReadBinaryInput(Basic) OutOfService : public ModelCommand
+class ReadBinaryInputBasicOutOfService : public ModelCommand
 {
 public:
-    ReadBinaryInput(Basic) OutOfService() : ModelCommand("read")
+    ReadBinaryInputBasicOutOfService() : ModelCommand("read")
     {
         AddArgument("attr-name", "out-of-service");
         ModelCommand::AddArguments();
     }
 
-    ~ReadBinaryInput(Basic) OutOfService()
+    ~ReadBinaryInputBasicOutOfService()
     {
         delete onSuccessCallback;
         delete onFailureCallback;
@@ -3181,7 +3181,7 @@ public:
     {
         ChipLogProgress(chipTool, "Sending cluster (0x000F) command (0x00) on endpoint %" PRIu16, endpointId);
 
-        chip::Controller::BinaryInput(Basic) Cluster cluster;
+        chip::Controller::BinaryInputBasicCluster cluster;
         cluster.Associate(device, endpointId);
         return cluster.ReadAttributeOutOfService(onSuccessCallback->Cancel(), onFailureCallback->Cancel());
     }
@@ -3193,17 +3193,17 @@ private:
         new chip::Callback::Callback<DefaultFailureCallback>(OnDefaultFailureResponse, this);
 };
 
-class WriteBinaryInput(Basic) OutOfService : public ModelCommand
+class WriteBinaryInputBasicOutOfService : public ModelCommand
 {
 public:
-    WriteBinaryInput(Basic) OutOfService() : ModelCommand("write")
+    WriteBinaryInputBasicOutOfService() : ModelCommand("write")
     {
         AddArgument("attr-name", "out-of-service");
         AddArgument("attr-value", 0, UINT8_MAX, &mValue);
         ModelCommand::AddArguments();
     }
 
-    ~WriteBinaryInput(Basic) OutOfService()
+    ~WriteBinaryInputBasicOutOfService()
     {
         delete onSuccessCallback;
         delete onFailureCallback;
@@ -3213,7 +3213,7 @@ public:
     {
         ChipLogProgress(chipTool, "Sending cluster (0x000F) command (0x01) on endpoint %" PRIu16, endpointId);
 
-        chip::Controller::BinaryInput(Basic) Cluster cluster;
+        chip::Controller::BinaryInputBasicCluster cluster;
         cluster.Associate(device, endpointId);
         return cluster.WriteAttributeOutOfService(onSuccessCallback->Cancel(), onFailureCallback->Cancel(), mValue);
     }
@@ -3229,16 +3229,16 @@ private:
 /*
  * Attribute PresentValue
  */
-class ReadBinaryInput(Basic) PresentValue : public ModelCommand
+class ReadBinaryInputBasicPresentValue : public ModelCommand
 {
 public:
-    ReadBinaryInput(Basic) PresentValue() : ModelCommand("read")
+    ReadBinaryInputBasicPresentValue() : ModelCommand("read")
     {
         AddArgument("attr-name", "present-value");
         ModelCommand::AddArguments();
     }
 
-    ~ReadBinaryInput(Basic) PresentValue()
+    ~ReadBinaryInputBasicPresentValue()
     {
         delete onSuccessCallback;
         delete onFailureCallback;
@@ -3248,7 +3248,7 @@ public:
     {
         ChipLogProgress(chipTool, "Sending cluster (0x000F) command (0x00) on endpoint %" PRIu16, endpointId);
 
-        chip::Controller::BinaryInput(Basic) Cluster cluster;
+        chip::Controller::BinaryInputBasicCluster cluster;
         cluster.Associate(device, endpointId);
         return cluster.ReadAttributePresentValue(onSuccessCallback->Cancel(), onFailureCallback->Cancel());
     }
@@ -3260,17 +3260,17 @@ private:
         new chip::Callback::Callback<DefaultFailureCallback>(OnDefaultFailureResponse, this);
 };
 
-class WriteBinaryInput(Basic) PresentValue : public ModelCommand
+class WriteBinaryInputBasicPresentValue : public ModelCommand
 {
 public:
-    WriteBinaryInput(Basic) PresentValue() : ModelCommand("write")
+    WriteBinaryInputBasicPresentValue() : ModelCommand("write")
     {
         AddArgument("attr-name", "present-value");
         AddArgument("attr-value", 0, UINT8_MAX, &mValue);
         ModelCommand::AddArguments();
     }
 
-    ~WriteBinaryInput(Basic) PresentValue()
+    ~WriteBinaryInputBasicPresentValue()
     {
         delete onSuccessCallback;
         delete onFailureCallback;
@@ -3280,7 +3280,7 @@ public:
     {
         ChipLogProgress(chipTool, "Sending cluster (0x000F) command (0x01) on endpoint %" PRIu16, endpointId);
 
-        chip::Controller::BinaryInput(Basic) Cluster cluster;
+        chip::Controller::BinaryInputBasicCluster cluster;
         cluster.Associate(device, endpointId);
         return cluster.WriteAttributePresentValue(onSuccessCallback->Cancel(), onFailureCallback->Cancel(), mValue);
     }
@@ -3293,10 +3293,10 @@ private:
     uint8_t mValue;
 };
 
-class ReportBinaryInput(Basic) PresentValue : public ModelCommand
+class ReportBinaryInputBasicPresentValue : public ModelCommand
 {
 public:
-    ReportBinaryInput(Basic) PresentValue() : ModelCommand("report")
+    ReportBinaryInputBasicPresentValue() : ModelCommand("report")
     {
         AddArgument("attr-name", "present-value");
         AddArgument("min-interval", 0, UINT16_MAX, &mMinInterval);
@@ -3304,7 +3304,7 @@ public:
         ModelCommand::AddArguments();
     }
 
-    ~ReportBinaryInput(Basic) PresentValue()
+    ~ReportBinaryInputBasicPresentValue()
     {
         delete onSuccessCallback;
         delete onFailureCallback;
@@ -3315,7 +3315,7 @@ public:
     {
         ChipLogProgress(chipTool, "Sending cluster (0x000F) command (0x06) on endpoint %" PRIu16, endpointId);
 
-        chip::Controller::BinaryInput(Basic) Cluster cluster;
+        chip::Controller::BinaryInputBasicCluster cluster;
         cluster.Associate(device, endpointId);
 
         CHIP_ERROR err = cluster.ReportAttributePresentValue(onReportCallback->Cancel());
@@ -3342,16 +3342,16 @@ private:
 /*
  * Attribute StatusFlags
  */
-class ReadBinaryInput(Basic) StatusFlags : public ModelCommand
+class ReadBinaryInputBasicStatusFlags : public ModelCommand
 {
 public:
-    ReadBinaryInput(Basic) StatusFlags() : ModelCommand("read")
+    ReadBinaryInputBasicStatusFlags() : ModelCommand("read")
     {
         AddArgument("attr-name", "status-flags");
         ModelCommand::AddArguments();
     }
 
-    ~ReadBinaryInput(Basic) StatusFlags()
+    ~ReadBinaryInputBasicStatusFlags()
     {
         delete onSuccessCallback;
         delete onFailureCallback;
@@ -3361,7 +3361,7 @@ public:
     {
         ChipLogProgress(chipTool, "Sending cluster (0x000F) command (0x00) on endpoint %" PRIu16, endpointId);
 
-        chip::Controller::BinaryInput(Basic) Cluster cluster;
+        chip::Controller::BinaryInputBasicCluster cluster;
         cluster.Associate(device, endpointId);
         return cluster.ReadAttributeStatusFlags(onSuccessCallback->Cancel(), onFailureCallback->Cancel());
     }
@@ -3373,10 +3373,10 @@ private:
         new chip::Callback::Callback<DefaultFailureCallback>(OnDefaultFailureResponse, this);
 };
 
-class ReportBinaryInput(Basic) StatusFlags : public ModelCommand
+class ReportBinaryInputBasicStatusFlags : public ModelCommand
 {
 public:
-    ReportBinaryInput(Basic) StatusFlags() : ModelCommand("report")
+    ReportBinaryInputBasicStatusFlags() : ModelCommand("report")
     {
         AddArgument("attr-name", "status-flags");
         AddArgument("min-interval", 0, UINT16_MAX, &mMinInterval);
@@ -3384,7 +3384,7 @@ public:
         ModelCommand::AddArguments();
     }
 
-    ~ReportBinaryInput(Basic) StatusFlags()
+    ~ReportBinaryInputBasicStatusFlags()
     {
         delete onSuccessCallback;
         delete onFailureCallback;
@@ -3395,7 +3395,7 @@ public:
     {
         ChipLogProgress(chipTool, "Sending cluster (0x000F) command (0x06) on endpoint %" PRIu16, endpointId);
 
-        chip::Controller::BinaryInput(Basic) Cluster cluster;
+        chip::Controller::BinaryInputBasicCluster cluster;
         cluster.Associate(device, endpointId);
 
         CHIP_ERROR err = cluster.ReportAttributeStatusFlags(onReportCallback->Cancel());
@@ -3422,16 +3422,16 @@ private:
 /*
  * Attribute ClusterRevision
  */
-class ReadBinaryInput(Basic) ClusterRevision : public ModelCommand
+class ReadBinaryInputBasicClusterRevision : public ModelCommand
 {
 public:
-    ReadBinaryInput(Basic) ClusterRevision() : ModelCommand("read")
+    ReadBinaryInputBasicClusterRevision() : ModelCommand("read")
     {
         AddArgument("attr-name", "cluster-revision");
         ModelCommand::AddArguments();
     }
 
-    ~ReadBinaryInput(Basic) ClusterRevision()
+    ~ReadBinaryInputBasicClusterRevision()
     {
         delete onSuccessCallback;
         delete onFailureCallback;
@@ -3441,7 +3441,7 @@ public:
     {
         ChipLogProgress(chipTool, "Sending cluster (0x000F) command (0x00) on endpoint %" PRIu16, endpointId);
 
-        chip::Controller::BinaryInput(Basic) Cluster cluster;
+        chip::Controller::BinaryInputBasicCluster cluster;
         cluster.Associate(device, endpointId);
         return cluster.ReadAttributeClusterRevision(onSuccessCallback->Cancel(), onFailureCallback->Cancel());
     }
@@ -17153,16 +17153,16 @@ void registerClusterBasic(Commands & commands)
 
     commands.Register(clusterName, clusterCommands);
 }
-void registerClusterBinaryInput(Basic)(Commands & commands)
+void registerClusterBinaryInputBasic(Commands & commands)
 {
-    const char * clusterName = "BinaryInput(Basic)";
+    const char * clusterName = "BinaryInputBasic";
 
     commands_list clusterCommands = {
-        make_unique<DiscoverBinaryInput(Basic) Attributes>(),  make_unique<ReadBinaryInput(Basic) OutOfService>(),
-        make_unique<WriteBinaryInput(Basic) OutOfService>(),   make_unique<ReadBinaryInput(Basic) PresentValue>(),
-        make_unique<WriteBinaryInput(Basic) PresentValue>(),   make_unique<ReportBinaryInput(Basic) PresentValue>(),
-        make_unique<ReadBinaryInput(Basic) StatusFlags>(),     make_unique<ReportBinaryInput(Basic) StatusFlags>(),
-        make_unique<ReadBinaryInput(Basic) ClusterRevision>(),
+        make_unique<DiscoverBinaryInputBasicAttributes>(),  make_unique<ReadBinaryInputBasicOutOfService>(),
+        make_unique<WriteBinaryInputBasicOutOfService>(),   make_unique<ReadBinaryInputBasicPresentValue>(),
+        make_unique<WriteBinaryInputBasicPresentValue>(),   make_unique<ReportBinaryInputBasicPresentValue>(),
+        make_unique<ReadBinaryInputBasicStatusFlags>(),     make_unique<ReportBinaryInputBasicStatusFlags>(),
+        make_unique<ReadBinaryInputBasicClusterRevision>(),
     };
 
     commands.Register(clusterName, clusterCommands);
@@ -17785,7 +17785,7 @@ void registerClusters(Commands & commands)
     registerClusterAudioOutput(commands);
     registerClusterBarrierControl(commands);
     registerClusterBasic(commands);
-    registerClusterBinaryInput(Basic)(commands);
+    registerClusterBinaryInputBasic(commands);
     registerClusterBinding(commands);
     registerClusterColorControl(commands);
     registerClusterContentLaunch(commands);

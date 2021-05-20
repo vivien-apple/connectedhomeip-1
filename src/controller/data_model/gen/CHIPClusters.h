@@ -34,7 +34,7 @@ constexpr ClusterId kApplicationLauncherClusterId         = 0x050C;
 constexpr ClusterId kAudioOutputClusterId                 = 0x050B;
 constexpr ClusterId kBarrierControlClusterId              = 0x0103;
 constexpr ClusterId kBasicClusterId                       = 0x0028;
-constexpr ClusterId kBinaryInput(Basic) ClusterId         = 0x000F;
+constexpr ClusterId kBinaryInputBasicClusterId            = 0x000F;
 constexpr ClusterId kBindingClusterId                     = 0xF000;
 constexpr ClusterId kColorControlClusterId                = 0x0300;
 constexpr ClusterId kContentLaunchClusterId               = 0x050A;
@@ -235,11 +235,11 @@ private:
     static constexpr CommandId kMfgSpecificPingCommandId = 0x00;
 };
 
-class DLL_EXPORT BinaryInput(Basic) Cluster : public ClusterBase
+class DLL_EXPORT BinaryInputBasicCluster : public ClusterBase
 {
 public:
-    BinaryInput(Basic) Cluster() : ClusterBase(kBinaryInput(Basic) ClusterId) {}
-    ~BinaryInput(Basic) Cluster() {}
+    BinaryInputBasicCluster() : ClusterBase(kBinaryInputBasicClusterId) {}
+    ~BinaryInputBasicCluster() {}
 
     // Cluster Attributes
     CHIP_ERROR DiscoverAttributes(Callback::Cancelable * onSuccessCallback, Callback::Cancelable * onFailureCallback);

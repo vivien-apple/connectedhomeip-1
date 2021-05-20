@@ -101,7 +101,7 @@
 
 // Use this macro to check if the client side of the Binary Input (Basic) cluster is included
 #define ZCL_USING_BINARY_INPUT_BASIC_CLUSTER_CLIENT
-#define EMBER_AF_PLUGIN_BINARY_INPUT_(_BASIC_) _CLIENT
+#define EMBER_AF_PLUGIN_BINARY_INPUT_BASIC_CLIENT
 
 // Use this macro to check if the client side of the Binding cluster is included
 #define ZCL_USING_BINDING_CLUSTER_CLIENT

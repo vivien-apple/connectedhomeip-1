@@ -102,7 +102,7 @@ void emberAfBasicClusterInitCallback(chip::EndpointId endpoint);
  *
  * @param endpoint    Endpoint that is being initialized
  */
-void emberAfBinaryInput(Basic) ClusterInitCallback(chip::EndpointId endpoint);
+void emberAfBinaryInputBasicClusterInitCallback(chip::EndpointId endpoint);
 
 /** @brief Binding Cluster Init
  *
@@ -857,7 +857,7 @@ void emberAfBasicClusterClientTickCallback(chip::EndpointId endpoint);
  *
  * @param endpoint    Endpoint that is being initialized
  */
-void emberAfBinaryInput(Basic) ClusterClientInitCallback(chip::EndpointId endpoint);
+void emberAfBinaryInputBasicClusterClientInitCallback(chip::EndpointId endpoint);
 
 /** @brief Binary Input (Basic) Cluster Client Attribute Changed
  *
@@ -866,7 +866,7 @@ void emberAfBinaryInput(Basic) ClusterClientInitCallback(chip::EndpointId endpoi
  * @param endpoint    Endpoint that is being initialized
  * @param attributeId Attribute that changed
  */
-void emberAfBinaryInput(Basic) ClusterClientAttributeChangedCallback(chip::EndpointId endpoint, chip::AttributeId attributeId);
+void emberAfBinaryInputBasicClusterClientAttributeChangedCallback(chip::EndpointId endpoint, chip::AttributeId attributeId);
 
 /** @brief Binary Input (Basic) Cluster Client Manufacturer Specific Attribute Changed
  *
@@ -876,9 +876,9 @@ void emberAfBinaryInput(Basic) ClusterClientAttributeChangedCallback(chip::Endpo
  * @param attributeId       Attribute that changed
  * @param manufacturerCode  Manufacturer Code of the attribute that changed
  */
-void emberAfBinaryInput(Basic)
-    ClusterClientManufacturerSpecificAttributeChangedCallback(chip::EndpointId endpoint, chip::AttributeId attributeId,
-                                                              uint16_t manufacturerCode);
+void emberAfBinaryInputBasicClusterClientManufacturerSpecificAttributeChangedCallback(chip::EndpointId endpoint,
+                                                                                      chip::AttributeId attributeId,
+                                                                                      uint16_t manufacturerCode);
 
 /** @brief Binary Input (Basic) Cluster Client Message Sent
  *
@@ -891,9 +891,9 @@ void emberAfBinaryInput(Basic)
  * @param message            The message that was sent
  * @param status             The status of the sent message
  */
-void emberAfBinaryInput(Basic)
-    ClusterClientMessageSentCallback(EmberOutgoingMessageType type, chip::MessageSendDestination destination,
-                                     EmberApsFrame * apsFrame, uint16_t msgLen, uint8_t * message, EmberStatus status);
+void emberAfBinaryInputBasicClusterClientMessageSentCallback(EmberOutgoingMessageType type,
+                                                             chip::MessageSendDestination destination, EmberApsFrame * apsFrame,
+                                                             uint16_t msgLen, uint8_t * message, EmberStatus status);
 
 /** @brief Binary Input (Basic) Cluster Client Pre Attribute Changed
  *
@@ -905,9 +905,10 @@ void emberAfBinaryInput(Basic)
  * @param size          Attribute size
  * @param value         Attribute value
  */
-EmberAfStatus emberAfBinaryInput(Basic)
-    ClusterClientPreAttributeChangedCallback(chip::EndpointId endpoint, chip::AttributeId attributeId,
-                                             EmberAfAttributeType attributeType, uint16_t size, uint8_t * value);
+EmberAfStatus emberAfBinaryInputBasicClusterClientPreAttributeChangedCallback(chip::EndpointId endpoint,
+                                                                              chip::AttributeId attributeId,
+                                                                              EmberAfAttributeType attributeType, uint16_t size,
+                                                                              uint8_t * value);
 
 /** @brief Binary Input (Basic) Cluster Client Tick
  *
@@ -915,7 +916,7 @@ EmberAfStatus emberAfBinaryInput(Basic)
  *
  * @param endpoint  Endpoint that is being served
  */
-void emberAfBinaryInput(Basic) ClusterClientTickCallback(chip::EndpointId endpoint);
+void emberAfBinaryInputBasicClusterClientTickCallback(chip::EndpointId endpoint);
 
 //
 // Binding Cluster client
