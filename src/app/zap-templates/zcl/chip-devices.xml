@@ -16,6 +16,28 @@ limitations under the License.
 -->
 <configurator>
   <deviceType>
+    <name>CHIP-Endpoint-0-Server</name>
+    <typeName>CHIP Endpoint 0 Server</typeName>
+    <domain>CHIP</domain>
+    <profileId editable="false">0x0103</profileId>
+    <deviceId editable="false">0xffff</deviceId>
+    <clusters lockOthers="true">
+      <include cluster="Basic" client="false" server="true" clientLocked="true" serverLocked="true">
+        <requireAttribute>VERSION</requireAttribute>
+        <requireAttribute>POWER_SOURCE</requireAttribute>
+      </include>
+      <include cluster="Operational Credentials" client="false" server="true" clientLocked="true" serverLocked="true"></include>
+      <include cluster="Trusted Root Certificates" client="false" server="true" clientLocked="true" serverLocked="true"></include>
+      <include cluster="Group Key Management" client="false" server="true" clientLocked="true" serverLocked="true"></include>
+      <include cluster="Descriptor" client="false" server="true" clientLocked="true" serverLocked="true"></include>
+      <include cluster="OTA Software Update Server" client="false" server="true" clientLocked="true" serverLocked="true"></include>
+      <include cluster="General Commissioning" client="false" server="true" clientLocked="true" serverLocked="true"></include>
+      <include cluster="Network Commissioning" client="false" server="true" clientLocked="true" serverLocked="true"></include>
+      <include cluster="Low Power" client="false" server="true" clientLocked="true" serverLocked="true"></include>
+    </clusters>
+  </deviceType>
+
+  <deviceType>
     <name>CHIP-All-Clusters-Server</name>
     <domain>CHIP</domain>
     <typeName>CHIP all-clusters-app server example</typeName>
