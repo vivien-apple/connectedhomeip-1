@@ -860,6 +860,1151 @@ private:
     }
 };
 
+class Test311 : public TestCommand
+{
+public:
+    Test311() : TestCommand("Test_3_1_1") {}
+
+    /////////// TestCommand Interface /////////
+    CHIP_ERROR NextTest() override
+    {
+        CHIP_ERROR err = CHIP_NO_ERROR;
+
+        if (mTestCount == mTestIndex)
+        {
+            ChipLogProgress(chipTool, "Test_3_1_1: Test complete");
+            SetCommandExitStatus(true);
+        }
+
+        switch (mTestIndex)
+        {
+        case 0:
+            err = TestSendClusterOnOffCommandReadAttribute_0();
+            break;
+        case 1:
+            err = TestSendClusterOnOffCommandReadAttribute_1();
+            break;
+        case 2:
+            err = TestSendClusterOnOffCommandReadAttribute_2();
+            break;
+        case 3:
+            err = TestSendClusterOnOffCommandReadAttribute_3();
+            break;
+        case 4:
+            err = TestSendClusterOnOffCommandReadAttribute_4();
+            break;
+        case 5:
+            err = TestSendClusterOnOffCommandReadAttribute_5();
+            break;
+        case 6:
+            err = TestSendClusterOnOffCommandReadAttribute_6();
+            break;
+        case 7:
+            err = TestSendClusterOnOffCommandReadAttribute_7();
+            break;
+        case 8:
+            err = TestSendClusterOnOffCommandReadAttribute_8();
+            break;
+        case 9:
+            err = TestSendClusterOnOffCommandReadAttribute_9();
+            break;
+        case 10:
+            err = TestSendClusterOnOffCommandReadAttribute_10();
+            break;
+        case 11:
+            err = TestSendClusterOnOffCommandReadAttribute_11();
+            break;
+        case 12:
+            err = TestSendClusterOnOffCommandReadAttribute_12();
+            break;
+        case 13:
+            err = TestSendClusterOnOffCommandReadAttribute_13();
+            break;
+        }
+        mTestIndex++;
+
+        if (CHIP_NO_ERROR != err)
+        {
+            ChipLogProgress(chipTool, "Test_3_1_1: %s", chip::ErrorStr(err));
+            SetCommandExitStatus(false);
+        }
+
+        return err;
+    }
+
+private:
+    uint16_t mTestIndex = 0;
+    uint16_t mTestCount = 14;
+
+    //
+    // Tests methods
+    //
+
+    // Test read the global attribute: ClusterRevision
+    typedef void (*SuccessCallback_0)(void * context, uint16_t clusterRevision);
+    chip::Callback::Callback<SuccessCallback_0> * mOnSuccessCallback_0      = nullptr;
+    chip::Callback::Callback<DefaultFailureCallback> * mOnFailureCallback_0 = nullptr;
+    bool mIsFailureExpected_0                                               = 0;
+
+    CHIP_ERROR TestSendClusterOnOffCommandReadAttribute_0()
+    {
+        ChipLogProgress(chipTool, "On/Off - read the global attribute: ClusterRevision: Sending command...");
+
+        mOnFailureCallback_0 = new chip::Callback::Callback<DefaultFailureCallback>(
+            OnTestSendClusterOnOffCommandReadAttribute_0_FailureResponse, this);
+        mOnSuccessCallback_0 =
+            new chip::Callback::Callback<SuccessCallback_0>(OnTestSendClusterOnOffCommandReadAttribute_0_SuccessResponse, this);
+
+        chip::Controller::OnOffCluster cluster;
+        cluster.Associate(mDevice, 1);
+
+        CHIP_ERROR err = CHIP_NO_ERROR;
+
+        err = cluster.ReadAttributeClusterRevision(mOnSuccessCallback_0->Cancel(), mOnFailureCallback_0->Cancel());
+
+        if (CHIP_NO_ERROR != err)
+        {
+            delete mOnFailureCallback_0;
+            delete mOnSuccessCallback_0;
+        }
+
+        return err;
+    }
+
+    static void OnTestSendClusterOnOffCommandReadAttribute_0_FailureResponse(void * context, uint8_t status)
+    {
+        ChipLogProgress(chipTool, "On/Off - read the global attribute: ClusterRevision: Failure Response");
+
+        Test311 * runner = reinterpret_cast<Test311 *>(context);
+
+        delete runner->mOnFailureCallback_0;
+        delete runner->mOnSuccessCallback_0;
+
+        if (runner->mIsFailureExpected_0 == false)
+        {
+            ChipLogError(chipTool, "Error: The test was expecting a success callback. Got failure callback");
+            runner->SetCommandExitStatus(false);
+            return;
+        }
+
+        runner->NextTest();
+    }
+
+    static void OnTestSendClusterOnOffCommandReadAttribute_0_SuccessResponse(void * context, uint16_t clusterRevision)
+    {
+        ChipLogProgress(chipTool, "On/Off - read the global attribute: ClusterRevision: Success Response");
+
+        Test311 * runner = reinterpret_cast<Test311 *>(context);
+
+        delete runner->mOnFailureCallback_0;
+        delete runner->mOnSuccessCallback_0;
+
+        if (runner->mIsFailureExpected_0 == true)
+        {
+            ChipLogError(chipTool, "Error: The test was expecting a failure callback. Got success callback");
+            runner->SetCommandExitStatus(false);
+            return;
+        }
+
+        if (clusterRevision != 2)
+        {
+            ChipLogError(chipTool, "Error: Value mismatch. Expected: '%s'", "2");
+            runner->SetCommandExitStatus(false);
+            return;
+        }
+
+        runner->NextTest();
+    }
+
+    // Test read the mandatory attribute: OnOff
+    typedef void (*SuccessCallback_1)(void * context, uint8_t onOff);
+    chip::Callback::Callback<SuccessCallback_1> * mOnSuccessCallback_1      = nullptr;
+    chip::Callback::Callback<DefaultFailureCallback> * mOnFailureCallback_1 = nullptr;
+    bool mIsFailureExpected_1                                               = 0;
+
+    CHIP_ERROR TestSendClusterOnOffCommandReadAttribute_1()
+    {
+        ChipLogProgress(chipTool, "On/Off - read the mandatory attribute: OnOff: Sending command...");
+
+        mOnFailureCallback_1 = new chip::Callback::Callback<DefaultFailureCallback>(
+            OnTestSendClusterOnOffCommandReadAttribute_1_FailureResponse, this);
+        mOnSuccessCallback_1 =
+            new chip::Callback::Callback<SuccessCallback_1>(OnTestSendClusterOnOffCommandReadAttribute_1_SuccessResponse, this);
+
+        chip::Controller::OnOffCluster cluster;
+        cluster.Associate(mDevice, 1);
+
+        CHIP_ERROR err = CHIP_NO_ERROR;
+
+        err = cluster.ReadAttributeOnOff(mOnSuccessCallback_1->Cancel(), mOnFailureCallback_1->Cancel());
+
+        if (CHIP_NO_ERROR != err)
+        {
+            delete mOnFailureCallback_1;
+            delete mOnSuccessCallback_1;
+        }
+
+        return err;
+    }
+
+    static void OnTestSendClusterOnOffCommandReadAttribute_1_FailureResponse(void * context, uint8_t status)
+    {
+        ChipLogProgress(chipTool, "On/Off - read the mandatory attribute: OnOff: Failure Response");
+
+        Test311 * runner = reinterpret_cast<Test311 *>(context);
+
+        delete runner->mOnFailureCallback_1;
+        delete runner->mOnSuccessCallback_1;
+
+        if (runner->mIsFailureExpected_1 == false)
+        {
+            ChipLogError(chipTool, "Error: The test was expecting a success callback. Got failure callback");
+            runner->SetCommandExitStatus(false);
+            return;
+        }
+
+        runner->NextTest();
+    }
+
+    static void OnTestSendClusterOnOffCommandReadAttribute_1_SuccessResponse(void * context, uint8_t onOff)
+    {
+        ChipLogProgress(chipTool, "On/Off - read the mandatory attribute: OnOff: Success Response");
+
+        Test311 * runner = reinterpret_cast<Test311 *>(context);
+
+        delete runner->mOnFailureCallback_1;
+        delete runner->mOnSuccessCallback_1;
+
+        if (runner->mIsFailureExpected_1 == true)
+        {
+            ChipLogError(chipTool, "Error: The test was expecting a failure callback. Got success callback");
+            runner->SetCommandExitStatus(false);
+            return;
+        }
+
+        if (onOff != 0)
+        {
+            ChipLogError(chipTool, "Error: Value mismatch. Expected: '%s'", "0");
+            runner->SetCommandExitStatus(false);
+            return;
+        }
+
+        runner->NextTest();
+    }
+
+    // Test read LT attribute: GlobalSceneControl
+    typedef void (*SuccessCallback_2)(void * context, uint8_t globalSceneControl);
+    chip::Callback::Callback<SuccessCallback_2> * mOnSuccessCallback_2      = nullptr;
+    chip::Callback::Callback<DefaultFailureCallback> * mOnFailureCallback_2 = nullptr;
+    bool mIsFailureExpected_2                                               = 0;
+
+    CHIP_ERROR TestSendClusterOnOffCommandReadAttribute_2()
+    {
+        ChipLogProgress(chipTool, "On/Off - read LT attribute: GlobalSceneControl: Sending command...");
+
+        mOnFailureCallback_2 = new chip::Callback::Callback<DefaultFailureCallback>(
+            OnTestSendClusterOnOffCommandReadAttribute_2_FailureResponse, this);
+        mOnSuccessCallback_2 =
+            new chip::Callback::Callback<SuccessCallback_2>(OnTestSendClusterOnOffCommandReadAttribute_2_SuccessResponse, this);
+
+        chip::Controller::OnOffCluster cluster;
+        cluster.Associate(mDevice, 1);
+
+        CHIP_ERROR err = CHIP_NO_ERROR;
+
+        err = cluster.ReadAttributeGlobalSceneControl(mOnSuccessCallback_2->Cancel(), mOnFailureCallback_2->Cancel());
+
+        if (CHIP_NO_ERROR != err)
+        {
+            delete mOnFailureCallback_2;
+            delete mOnSuccessCallback_2;
+        }
+
+        return err;
+    }
+
+    static void OnTestSendClusterOnOffCommandReadAttribute_2_FailureResponse(void * context, uint8_t status)
+    {
+        ChipLogProgress(chipTool, "On/Off - read LT attribute: GlobalSceneControl: Failure Response");
+
+        Test311 * runner = reinterpret_cast<Test311 *>(context);
+
+        delete runner->mOnFailureCallback_2;
+        delete runner->mOnSuccessCallback_2;
+
+        if (runner->mIsFailureExpected_2 == false)
+        {
+            ChipLogError(chipTool, "Error: The test was expecting a success callback. Got failure callback");
+            runner->SetCommandExitStatus(false);
+            return;
+        }
+
+        runner->NextTest();
+    }
+
+    static void OnTestSendClusterOnOffCommandReadAttribute_2_SuccessResponse(void * context, uint8_t globalSceneControl)
+    {
+        ChipLogProgress(chipTool, "On/Off - read LT attribute: GlobalSceneControl: Success Response");
+
+        Test311 * runner = reinterpret_cast<Test311 *>(context);
+
+        delete runner->mOnFailureCallback_2;
+        delete runner->mOnSuccessCallback_2;
+
+        if (runner->mIsFailureExpected_2 == true)
+        {
+            ChipLogError(chipTool, "Error: The test was expecting a failure callback. Got success callback");
+            runner->SetCommandExitStatus(false);
+            return;
+        }
+
+        if (globalSceneControl != 1)
+        {
+            ChipLogError(chipTool, "Error: Value mismatch. Expected: '%s'", "1");
+            runner->SetCommandExitStatus(false);
+            return;
+        }
+
+        runner->NextTest();
+    }
+
+    // Test read LT attribute: OnTime
+    typedef void (*SuccessCallback_3)(void * context, uint16_t onTime);
+    chip::Callback::Callback<SuccessCallback_3> * mOnSuccessCallback_3      = nullptr;
+    chip::Callback::Callback<DefaultFailureCallback> * mOnFailureCallback_3 = nullptr;
+    bool mIsFailureExpected_3                                               = 0;
+
+    CHIP_ERROR TestSendClusterOnOffCommandReadAttribute_3()
+    {
+        ChipLogProgress(chipTool, "On/Off - read LT attribute: OnTime: Sending command...");
+
+        mOnFailureCallback_3 = new chip::Callback::Callback<DefaultFailureCallback>(
+            OnTestSendClusterOnOffCommandReadAttribute_3_FailureResponse, this);
+        mOnSuccessCallback_3 =
+            new chip::Callback::Callback<SuccessCallback_3>(OnTestSendClusterOnOffCommandReadAttribute_3_SuccessResponse, this);
+
+        chip::Controller::OnOffCluster cluster;
+        cluster.Associate(mDevice, 1);
+
+        CHIP_ERROR err = CHIP_NO_ERROR;
+
+        err = cluster.ReadAttributeOnTime(mOnSuccessCallback_3->Cancel(), mOnFailureCallback_3->Cancel());
+
+        if (CHIP_NO_ERROR != err)
+        {
+            delete mOnFailureCallback_3;
+            delete mOnSuccessCallback_3;
+        }
+
+        return err;
+    }
+
+    static void OnTestSendClusterOnOffCommandReadAttribute_3_FailureResponse(void * context, uint8_t status)
+    {
+        ChipLogProgress(chipTool, "On/Off - read LT attribute: OnTime: Failure Response");
+
+        Test311 * runner = reinterpret_cast<Test311 *>(context);
+
+        delete runner->mOnFailureCallback_3;
+        delete runner->mOnSuccessCallback_3;
+
+        if (runner->mIsFailureExpected_3 == false)
+        {
+            ChipLogError(chipTool, "Error: The test was expecting a success callback. Got failure callback");
+            runner->SetCommandExitStatus(false);
+            return;
+        }
+
+        runner->NextTest();
+    }
+
+    static void OnTestSendClusterOnOffCommandReadAttribute_3_SuccessResponse(void * context, uint16_t onTime)
+    {
+        ChipLogProgress(chipTool, "On/Off - read LT attribute: OnTime: Success Response");
+
+        Test311 * runner = reinterpret_cast<Test311 *>(context);
+
+        delete runner->mOnFailureCallback_3;
+        delete runner->mOnSuccessCallback_3;
+
+        if (runner->mIsFailureExpected_3 == true)
+        {
+            ChipLogError(chipTool, "Error: The test was expecting a failure callback. Got success callback");
+            runner->SetCommandExitStatus(false);
+            return;
+        }
+
+        if (onTime != 0)
+        {
+            ChipLogError(chipTool, "Error: Value mismatch. Expected: '%s'", "0");
+            runner->SetCommandExitStatus(false);
+            return;
+        }
+
+        runner->NextTest();
+    }
+
+    // Test read LT attribute: OffWaitTime
+    typedef void (*SuccessCallback_4)(void * context, uint16_t offWaitTime);
+    chip::Callback::Callback<SuccessCallback_4> * mOnSuccessCallback_4      = nullptr;
+    chip::Callback::Callback<DefaultFailureCallback> * mOnFailureCallback_4 = nullptr;
+    bool mIsFailureExpected_4                                               = 0;
+
+    CHIP_ERROR TestSendClusterOnOffCommandReadAttribute_4()
+    {
+        ChipLogProgress(chipTool, "On/Off - read LT attribute: OffWaitTime: Sending command...");
+
+        mOnFailureCallback_4 = new chip::Callback::Callback<DefaultFailureCallback>(
+            OnTestSendClusterOnOffCommandReadAttribute_4_FailureResponse, this);
+        mOnSuccessCallback_4 =
+            new chip::Callback::Callback<SuccessCallback_4>(OnTestSendClusterOnOffCommandReadAttribute_4_SuccessResponse, this);
+
+        chip::Controller::OnOffCluster cluster;
+        cluster.Associate(mDevice, 1);
+
+        CHIP_ERROR err = CHIP_NO_ERROR;
+
+        err = cluster.ReadAttributeOffWaitTime(mOnSuccessCallback_4->Cancel(), mOnFailureCallback_4->Cancel());
+
+        if (CHIP_NO_ERROR != err)
+        {
+            delete mOnFailureCallback_4;
+            delete mOnSuccessCallback_4;
+        }
+
+        return err;
+    }
+
+    static void OnTestSendClusterOnOffCommandReadAttribute_4_FailureResponse(void * context, uint8_t status)
+    {
+        ChipLogProgress(chipTool, "On/Off - read LT attribute: OffWaitTime: Failure Response");
+
+        Test311 * runner = reinterpret_cast<Test311 *>(context);
+
+        delete runner->mOnFailureCallback_4;
+        delete runner->mOnSuccessCallback_4;
+
+        if (runner->mIsFailureExpected_4 == false)
+        {
+            ChipLogError(chipTool, "Error: The test was expecting a success callback. Got failure callback");
+            runner->SetCommandExitStatus(false);
+            return;
+        }
+
+        runner->NextTest();
+    }
+
+    static void OnTestSendClusterOnOffCommandReadAttribute_4_SuccessResponse(void * context, uint16_t offWaitTime)
+    {
+        ChipLogProgress(chipTool, "On/Off - read LT attribute: OffWaitTime: Success Response");
+
+        Test311 * runner = reinterpret_cast<Test311 *>(context);
+
+        delete runner->mOnFailureCallback_4;
+        delete runner->mOnSuccessCallback_4;
+
+        if (runner->mIsFailureExpected_4 == true)
+        {
+            ChipLogError(chipTool, "Error: The test was expecting a failure callback. Got success callback");
+            runner->SetCommandExitStatus(false);
+            return;
+        }
+
+        if (offWaitTime != 0)
+        {
+            ChipLogError(chipTool, "Error: Value mismatch. Expected: '%s'", "0");
+            runner->SetCommandExitStatus(false);
+            return;
+        }
+
+        runner->NextTest();
+    }
+
+    // Test read LT attribute: StartUpOnOff
+    typedef void (*SuccessCallback_5)(void * context, uint8_t startUpOnOff);
+    chip::Callback::Callback<SuccessCallback_5> * mOnSuccessCallback_5      = nullptr;
+    chip::Callback::Callback<DefaultFailureCallback> * mOnFailureCallback_5 = nullptr;
+    bool mIsFailureExpected_5                                               = 0;
+
+    CHIP_ERROR TestSendClusterOnOffCommandReadAttribute_5()
+    {
+        ChipLogProgress(chipTool, "On/Off - read LT attribute: StartUpOnOff: Sending command...");
+
+        mOnFailureCallback_5 = new chip::Callback::Callback<DefaultFailureCallback>(
+            OnTestSendClusterOnOffCommandReadAttribute_5_FailureResponse, this);
+        mOnSuccessCallback_5 =
+            new chip::Callback::Callback<SuccessCallback_5>(OnTestSendClusterOnOffCommandReadAttribute_5_SuccessResponse, this);
+
+        chip::Controller::OnOffCluster cluster;
+        cluster.Associate(mDevice, 1);
+
+        CHIP_ERROR err = CHIP_NO_ERROR;
+
+        err = cluster.ReadAttributeStartUpOnOff(mOnSuccessCallback_5->Cancel(), mOnFailureCallback_5->Cancel());
+
+        if (CHIP_NO_ERROR != err)
+        {
+            delete mOnFailureCallback_5;
+            delete mOnSuccessCallback_5;
+        }
+
+        return err;
+    }
+
+    static void OnTestSendClusterOnOffCommandReadAttribute_5_FailureResponse(void * context, uint8_t status)
+    {
+        ChipLogProgress(chipTool, "On/Off - read LT attribute: StartUpOnOff: Failure Response");
+
+        Test311 * runner = reinterpret_cast<Test311 *>(context);
+
+        delete runner->mOnFailureCallback_5;
+        delete runner->mOnSuccessCallback_5;
+
+        if (runner->mIsFailureExpected_5 == false)
+        {
+            ChipLogError(chipTool, "Error: The test was expecting a success callback. Got failure callback");
+            runner->SetCommandExitStatus(false);
+            return;
+        }
+
+        runner->NextTest();
+    }
+
+    static void OnTestSendClusterOnOffCommandReadAttribute_5_SuccessResponse(void * context, uint8_t startUpOnOff)
+    {
+        ChipLogProgress(chipTool, "On/Off - read LT attribute: StartUpOnOff: Success Response");
+
+        Test311 * runner = reinterpret_cast<Test311 *>(context);
+
+        delete runner->mOnFailureCallback_5;
+        delete runner->mOnSuccessCallback_5;
+
+        if (runner->mIsFailureExpected_5 == true)
+        {
+            ChipLogError(chipTool, "Error: The test was expecting a failure callback. Got success callback");
+            runner->SetCommandExitStatus(false);
+            return;
+        }
+
+        if (startUpOnOff != 0)
+        {
+            ChipLogError(chipTool, "Error: Value mismatch. Expected: '%s'", "0");
+            runner->SetCommandExitStatus(false);
+            return;
+        }
+
+        runner->NextTest();
+    }
+
+    // Test write the default value to LT attribute: GlobalSceneControl
+    typedef void (*SuccessCallback_6)(void * context, uint8_t globalSceneControl);
+    chip::Callback::Callback<SuccessCallback_6> * mOnSuccessCallback_6      = nullptr;
+    chip::Callback::Callback<DefaultFailureCallback> * mOnFailureCallback_6 = nullptr;
+    bool mIsFailureExpected_6                                               = 0;
+
+    CHIP_ERROR TestSendClusterOnOffCommandReadAttribute_6()
+    {
+        ChipLogProgress(chipTool, "On/Off - write the default value to LT attribute: GlobalSceneControl: Sending command...");
+
+        mOnFailureCallback_6 = new chip::Callback::Callback<DefaultFailureCallback>(
+            OnTestSendClusterOnOffCommandReadAttribute_6_FailureResponse, this);
+        mOnSuccessCallback_6 =
+            new chip::Callback::Callback<SuccessCallback_6>(OnTestSendClusterOnOffCommandReadAttribute_6_SuccessResponse, this);
+
+        chip::Controller::OnOffCluster cluster;
+        cluster.Associate(mDevice, 1);
+
+        CHIP_ERROR err = CHIP_NO_ERROR;
+
+        err = cluster.ReadAttributeGlobalSceneControl(mOnSuccessCallback_6->Cancel(), mOnFailureCallback_6->Cancel());
+
+        if (CHIP_NO_ERROR != err)
+        {
+            delete mOnFailureCallback_6;
+            delete mOnSuccessCallback_6;
+        }
+
+        return err;
+    }
+
+    static void OnTestSendClusterOnOffCommandReadAttribute_6_FailureResponse(void * context, uint8_t status)
+    {
+        ChipLogProgress(chipTool, "On/Off - write the default value to LT attribute: GlobalSceneControl: Failure Response");
+
+        Test311 * runner = reinterpret_cast<Test311 *>(context);
+
+        delete runner->mOnFailureCallback_6;
+        delete runner->mOnSuccessCallback_6;
+
+        if (runner->mIsFailureExpected_6 == false)
+        {
+            ChipLogError(chipTool, "Error: The test was expecting a success callback. Got failure callback");
+            runner->SetCommandExitStatus(false);
+            return;
+        }
+
+        runner->NextTest();
+    }
+
+    static void OnTestSendClusterOnOffCommandReadAttribute_6_SuccessResponse(void * context, uint8_t globalSceneControl)
+    {
+        ChipLogProgress(chipTool, "On/Off - write the default value to LT attribute: GlobalSceneControl: Success Response");
+
+        Test311 * runner = reinterpret_cast<Test311 *>(context);
+
+        delete runner->mOnFailureCallback_6;
+        delete runner->mOnSuccessCallback_6;
+
+        if (runner->mIsFailureExpected_6 == true)
+        {
+            ChipLogError(chipTool, "Error: The test was expecting a failure callback. Got success callback");
+            runner->SetCommandExitStatus(false);
+            return;
+        }
+
+        if (globalSceneControl != 1)
+        {
+            ChipLogError(chipTool, "Error: Value mismatch. Expected: '%s'", "1");
+            runner->SetCommandExitStatus(false);
+            return;
+        }
+
+        runner->NextTest();
+    }
+
+    // Test write the default value to LT attribute: OnTime
+    typedef void (*SuccessCallback_7)(void * context, uint16_t onTime);
+    chip::Callback::Callback<SuccessCallback_7> * mOnSuccessCallback_7      = nullptr;
+    chip::Callback::Callback<DefaultFailureCallback> * mOnFailureCallback_7 = nullptr;
+    bool mIsFailureExpected_7                                               = 0;
+
+    CHIP_ERROR TestSendClusterOnOffCommandReadAttribute_7()
+    {
+        ChipLogProgress(chipTool, "On/Off - write the default value to LT attribute: OnTime: Sending command...");
+
+        mOnFailureCallback_7 = new chip::Callback::Callback<DefaultFailureCallback>(
+            OnTestSendClusterOnOffCommandReadAttribute_7_FailureResponse, this);
+        mOnSuccessCallback_7 =
+            new chip::Callback::Callback<SuccessCallback_7>(OnTestSendClusterOnOffCommandReadAttribute_7_SuccessResponse, this);
+
+        chip::Controller::OnOffCluster cluster;
+        cluster.Associate(mDevice, 1);
+
+        CHIP_ERROR err = CHIP_NO_ERROR;
+
+        err = cluster.ReadAttributeOnTime(mOnSuccessCallback_7->Cancel(), mOnFailureCallback_7->Cancel());
+
+        if (CHIP_NO_ERROR != err)
+        {
+            delete mOnFailureCallback_7;
+            delete mOnSuccessCallback_7;
+        }
+
+        return err;
+    }
+
+    static void OnTestSendClusterOnOffCommandReadAttribute_7_FailureResponse(void * context, uint8_t status)
+    {
+        ChipLogProgress(chipTool, "On/Off - write the default value to LT attribute: OnTime: Failure Response");
+
+        Test311 * runner = reinterpret_cast<Test311 *>(context);
+
+        delete runner->mOnFailureCallback_7;
+        delete runner->mOnSuccessCallback_7;
+
+        if (runner->mIsFailureExpected_7 == false)
+        {
+            ChipLogError(chipTool, "Error: The test was expecting a success callback. Got failure callback");
+            runner->SetCommandExitStatus(false);
+            return;
+        }
+
+        runner->NextTest();
+    }
+
+    static void OnTestSendClusterOnOffCommandReadAttribute_7_SuccessResponse(void * context, uint16_t onTime)
+    {
+        ChipLogProgress(chipTool, "On/Off - write the default value to LT attribute: OnTime: Success Response");
+
+        Test311 * runner = reinterpret_cast<Test311 *>(context);
+
+        delete runner->mOnFailureCallback_7;
+        delete runner->mOnSuccessCallback_7;
+
+        if (runner->mIsFailureExpected_7 == true)
+        {
+            ChipLogError(chipTool, "Error: The test was expecting a failure callback. Got success callback");
+            runner->SetCommandExitStatus(false);
+            return;
+        }
+
+        if (onTime != 0)
+        {
+            ChipLogError(chipTool, "Error: Value mismatch. Expected: '%s'", "0");
+            runner->SetCommandExitStatus(false);
+            return;
+        }
+
+        runner->NextTest();
+    }
+
+    // Test write the default value to LT attribute: OffWaitTime
+    typedef void (*SuccessCallback_8)(void * context, uint16_t offWaitTime);
+    chip::Callback::Callback<SuccessCallback_8> * mOnSuccessCallback_8      = nullptr;
+    chip::Callback::Callback<DefaultFailureCallback> * mOnFailureCallback_8 = nullptr;
+    bool mIsFailureExpected_8                                               = 0;
+
+    CHIP_ERROR TestSendClusterOnOffCommandReadAttribute_8()
+    {
+        ChipLogProgress(chipTool, "On/Off - write the default value to LT attribute: OffWaitTime: Sending command...");
+
+        mOnFailureCallback_8 = new chip::Callback::Callback<DefaultFailureCallback>(
+            OnTestSendClusterOnOffCommandReadAttribute_8_FailureResponse, this);
+        mOnSuccessCallback_8 =
+            new chip::Callback::Callback<SuccessCallback_8>(OnTestSendClusterOnOffCommandReadAttribute_8_SuccessResponse, this);
+
+        chip::Controller::OnOffCluster cluster;
+        cluster.Associate(mDevice, 1);
+
+        CHIP_ERROR err = CHIP_NO_ERROR;
+
+        err = cluster.ReadAttributeOffWaitTime(mOnSuccessCallback_8->Cancel(), mOnFailureCallback_8->Cancel());
+
+        if (CHIP_NO_ERROR != err)
+        {
+            delete mOnFailureCallback_8;
+            delete mOnSuccessCallback_8;
+        }
+
+        return err;
+    }
+
+    static void OnTestSendClusterOnOffCommandReadAttribute_8_FailureResponse(void * context, uint8_t status)
+    {
+        ChipLogProgress(chipTool, "On/Off - write the default value to LT attribute: OffWaitTime: Failure Response");
+
+        Test311 * runner = reinterpret_cast<Test311 *>(context);
+
+        delete runner->mOnFailureCallback_8;
+        delete runner->mOnSuccessCallback_8;
+
+        if (runner->mIsFailureExpected_8 == false)
+        {
+            ChipLogError(chipTool, "Error: The test was expecting a success callback. Got failure callback");
+            runner->SetCommandExitStatus(false);
+            return;
+        }
+
+        runner->NextTest();
+    }
+
+    static void OnTestSendClusterOnOffCommandReadAttribute_8_SuccessResponse(void * context, uint16_t offWaitTime)
+    {
+        ChipLogProgress(chipTool, "On/Off - write the default value to LT attribute: OffWaitTime: Success Response");
+
+        Test311 * runner = reinterpret_cast<Test311 *>(context);
+
+        delete runner->mOnFailureCallback_8;
+        delete runner->mOnSuccessCallback_8;
+
+        if (runner->mIsFailureExpected_8 == true)
+        {
+            ChipLogError(chipTool, "Error: The test was expecting a failure callback. Got success callback");
+            runner->SetCommandExitStatus(false);
+            return;
+        }
+
+        if (offWaitTime != 0)
+        {
+            ChipLogError(chipTool, "Error: Value mismatch. Expected: '%s'", "0");
+            runner->SetCommandExitStatus(false);
+            return;
+        }
+
+        runner->NextTest();
+    }
+
+    // Test write the default value to LT attribute: StartUpOnOff
+    typedef void (*SuccessCallback_9)(void * context, uint8_t startUpOnOff);
+    chip::Callback::Callback<SuccessCallback_9> * mOnSuccessCallback_9      = nullptr;
+    chip::Callback::Callback<DefaultFailureCallback> * mOnFailureCallback_9 = nullptr;
+    bool mIsFailureExpected_9                                               = 0;
+
+    CHIP_ERROR TestSendClusterOnOffCommandReadAttribute_9()
+    {
+        ChipLogProgress(chipTool, "On/Off - write the default value to LT attribute: StartUpOnOff: Sending command...");
+
+        mOnFailureCallback_9 = new chip::Callback::Callback<DefaultFailureCallback>(
+            OnTestSendClusterOnOffCommandReadAttribute_9_FailureResponse, this);
+        mOnSuccessCallback_9 =
+            new chip::Callback::Callback<SuccessCallback_9>(OnTestSendClusterOnOffCommandReadAttribute_9_SuccessResponse, this);
+
+        chip::Controller::OnOffCluster cluster;
+        cluster.Associate(mDevice, 1);
+
+        CHIP_ERROR err = CHIP_NO_ERROR;
+
+        err = cluster.ReadAttributeStartUpOnOff(mOnSuccessCallback_9->Cancel(), mOnFailureCallback_9->Cancel());
+
+        if (CHIP_NO_ERROR != err)
+        {
+            delete mOnFailureCallback_9;
+            delete mOnSuccessCallback_9;
+        }
+
+        return err;
+    }
+
+    static void OnTestSendClusterOnOffCommandReadAttribute_9_FailureResponse(void * context, uint8_t status)
+    {
+        ChipLogProgress(chipTool, "On/Off - write the default value to LT attribute: StartUpOnOff: Failure Response");
+
+        Test311 * runner = reinterpret_cast<Test311 *>(context);
+
+        delete runner->mOnFailureCallback_9;
+        delete runner->mOnSuccessCallback_9;
+
+        if (runner->mIsFailureExpected_9 == false)
+        {
+            ChipLogError(chipTool, "Error: The test was expecting a success callback. Got failure callback");
+            runner->SetCommandExitStatus(false);
+            return;
+        }
+
+        runner->NextTest();
+    }
+
+    static void OnTestSendClusterOnOffCommandReadAttribute_9_SuccessResponse(void * context, uint8_t startUpOnOff)
+    {
+        ChipLogProgress(chipTool, "On/Off - write the default value to LT attribute: StartUpOnOff: Success Response");
+
+        Test311 * runner = reinterpret_cast<Test311 *>(context);
+
+        delete runner->mOnFailureCallback_9;
+        delete runner->mOnSuccessCallback_9;
+
+        if (runner->mIsFailureExpected_9 == true)
+        {
+            ChipLogError(chipTool, "Error: The test was expecting a failure callback. Got success callback");
+            runner->SetCommandExitStatus(false);
+            return;
+        }
+
+        if (startUpOnOff != 0)
+        {
+            ChipLogError(chipTool, "Error: Value mismatch. Expected: '%s'", "0");
+            runner->SetCommandExitStatus(false);
+            return;
+        }
+
+        runner->NextTest();
+    }
+
+    // Test reads back LT attribute: GlobalSceneControl
+    typedef void (*SuccessCallback_10)(void * context, uint8_t globalSceneControl);
+    chip::Callback::Callback<SuccessCallback_10> * mOnSuccessCallback_10     = nullptr;
+    chip::Callback::Callback<DefaultFailureCallback> * mOnFailureCallback_10 = nullptr;
+    bool mIsFailureExpected_10                                               = 0;
+
+    CHIP_ERROR TestSendClusterOnOffCommandReadAttribute_10()
+    {
+        ChipLogProgress(chipTool, "On/Off - reads back LT attribute: GlobalSceneControl: Sending command...");
+
+        mOnFailureCallback_10 = new chip::Callback::Callback<DefaultFailureCallback>(
+            OnTestSendClusterOnOffCommandReadAttribute_10_FailureResponse, this);
+        mOnSuccessCallback_10 =
+            new chip::Callback::Callback<SuccessCallback_10>(OnTestSendClusterOnOffCommandReadAttribute_10_SuccessResponse, this);
+
+        chip::Controller::OnOffCluster cluster;
+        cluster.Associate(mDevice, 1);
+
+        CHIP_ERROR err = CHIP_NO_ERROR;
+
+        err = cluster.ReadAttributeGlobalSceneControl(mOnSuccessCallback_10->Cancel(), mOnFailureCallback_10->Cancel());
+
+        if (CHIP_NO_ERROR != err)
+        {
+            delete mOnFailureCallback_10;
+            delete mOnSuccessCallback_10;
+        }
+
+        return err;
+    }
+
+    static void OnTestSendClusterOnOffCommandReadAttribute_10_FailureResponse(void * context, uint8_t status)
+    {
+        ChipLogProgress(chipTool, "On/Off - reads back LT attribute: GlobalSceneControl: Failure Response");
+
+        Test311 * runner = reinterpret_cast<Test311 *>(context);
+
+        delete runner->mOnFailureCallback_10;
+        delete runner->mOnSuccessCallback_10;
+
+        if (runner->mIsFailureExpected_10 == false)
+        {
+            ChipLogError(chipTool, "Error: The test was expecting a success callback. Got failure callback");
+            runner->SetCommandExitStatus(false);
+            return;
+        }
+
+        runner->NextTest();
+    }
+
+    static void OnTestSendClusterOnOffCommandReadAttribute_10_SuccessResponse(void * context, uint8_t globalSceneControl)
+    {
+        ChipLogProgress(chipTool, "On/Off - reads back LT attribute: GlobalSceneControl: Success Response");
+
+        Test311 * runner = reinterpret_cast<Test311 *>(context);
+
+        delete runner->mOnFailureCallback_10;
+        delete runner->mOnSuccessCallback_10;
+
+        if (runner->mIsFailureExpected_10 == true)
+        {
+            ChipLogError(chipTool, "Error: The test was expecting a failure callback. Got success callback");
+            runner->SetCommandExitStatus(false);
+            return;
+        }
+
+        if (globalSceneControl != 1)
+        {
+            ChipLogError(chipTool, "Error: Value mismatch. Expected: '%s'", "1");
+            runner->SetCommandExitStatus(false);
+            return;
+        }
+
+        runner->NextTest();
+    }
+
+    // Test reads back LT attribute: OnTime
+    typedef void (*SuccessCallback_11)(void * context, uint16_t onTime);
+    chip::Callback::Callback<SuccessCallback_11> * mOnSuccessCallback_11     = nullptr;
+    chip::Callback::Callback<DefaultFailureCallback> * mOnFailureCallback_11 = nullptr;
+    bool mIsFailureExpected_11                                               = 0;
+
+    CHIP_ERROR TestSendClusterOnOffCommandReadAttribute_11()
+    {
+        ChipLogProgress(chipTool, "On/Off - reads back LT attribute: OnTime: Sending command...");
+
+        mOnFailureCallback_11 = new chip::Callback::Callback<DefaultFailureCallback>(
+            OnTestSendClusterOnOffCommandReadAttribute_11_FailureResponse, this);
+        mOnSuccessCallback_11 =
+            new chip::Callback::Callback<SuccessCallback_11>(OnTestSendClusterOnOffCommandReadAttribute_11_SuccessResponse, this);
+
+        chip::Controller::OnOffCluster cluster;
+        cluster.Associate(mDevice, 1);
+
+        CHIP_ERROR err = CHIP_NO_ERROR;
+
+        err = cluster.ReadAttributeOnTime(mOnSuccessCallback_11->Cancel(), mOnFailureCallback_11->Cancel());
+
+        if (CHIP_NO_ERROR != err)
+        {
+            delete mOnFailureCallback_11;
+            delete mOnSuccessCallback_11;
+        }
+
+        return err;
+    }
+
+    static void OnTestSendClusterOnOffCommandReadAttribute_11_FailureResponse(void * context, uint8_t status)
+    {
+        ChipLogProgress(chipTool, "On/Off - reads back LT attribute: OnTime: Failure Response");
+
+        Test311 * runner = reinterpret_cast<Test311 *>(context);
+
+        delete runner->mOnFailureCallback_11;
+        delete runner->mOnSuccessCallback_11;
+
+        if (runner->mIsFailureExpected_11 == false)
+        {
+            ChipLogError(chipTool, "Error: The test was expecting a success callback. Got failure callback");
+            runner->SetCommandExitStatus(false);
+            return;
+        }
+
+        runner->NextTest();
+    }
+
+    static void OnTestSendClusterOnOffCommandReadAttribute_11_SuccessResponse(void * context, uint16_t onTime)
+    {
+        ChipLogProgress(chipTool, "On/Off - reads back LT attribute: OnTime: Success Response");
+
+        Test311 * runner = reinterpret_cast<Test311 *>(context);
+
+        delete runner->mOnFailureCallback_11;
+        delete runner->mOnSuccessCallback_11;
+
+        if (runner->mIsFailureExpected_11 == true)
+        {
+            ChipLogError(chipTool, "Error: The test was expecting a failure callback. Got success callback");
+            runner->SetCommandExitStatus(false);
+            return;
+        }
+
+        if (onTime != 0)
+        {
+            ChipLogError(chipTool, "Error: Value mismatch. Expected: '%s'", "0");
+            runner->SetCommandExitStatus(false);
+            return;
+        }
+
+        runner->NextTest();
+    }
+
+    // Test reads back LT attribute: OffWaitTime
+    typedef void (*SuccessCallback_12)(void * context, uint16_t offWaitTime);
+    chip::Callback::Callback<SuccessCallback_12> * mOnSuccessCallback_12     = nullptr;
+    chip::Callback::Callback<DefaultFailureCallback> * mOnFailureCallback_12 = nullptr;
+    bool mIsFailureExpected_12                                               = 0;
+
+    CHIP_ERROR TestSendClusterOnOffCommandReadAttribute_12()
+    {
+        ChipLogProgress(chipTool, "On/Off - reads back LT attribute: OffWaitTime: Sending command...");
+
+        mOnFailureCallback_12 = new chip::Callback::Callback<DefaultFailureCallback>(
+            OnTestSendClusterOnOffCommandReadAttribute_12_FailureResponse, this);
+        mOnSuccessCallback_12 =
+            new chip::Callback::Callback<SuccessCallback_12>(OnTestSendClusterOnOffCommandReadAttribute_12_SuccessResponse, this);
+
+        chip::Controller::OnOffCluster cluster;
+        cluster.Associate(mDevice, 1);
+
+        CHIP_ERROR err = CHIP_NO_ERROR;
+
+        err = cluster.ReadAttributeOffWaitTime(mOnSuccessCallback_12->Cancel(), mOnFailureCallback_12->Cancel());
+
+        if (CHIP_NO_ERROR != err)
+        {
+            delete mOnFailureCallback_12;
+            delete mOnSuccessCallback_12;
+        }
+
+        return err;
+    }
+
+    static void OnTestSendClusterOnOffCommandReadAttribute_12_FailureResponse(void * context, uint8_t status)
+    {
+        ChipLogProgress(chipTool, "On/Off - reads back LT attribute: OffWaitTime: Failure Response");
+
+        Test311 * runner = reinterpret_cast<Test311 *>(context);
+
+        delete runner->mOnFailureCallback_12;
+        delete runner->mOnSuccessCallback_12;
+
+        if (runner->mIsFailureExpected_12 == false)
+        {
+            ChipLogError(chipTool, "Error: The test was expecting a success callback. Got failure callback");
+            runner->SetCommandExitStatus(false);
+            return;
+        }
+
+        runner->NextTest();
+    }
+
+    static void OnTestSendClusterOnOffCommandReadAttribute_12_SuccessResponse(void * context, uint16_t offWaitTime)
+    {
+        ChipLogProgress(chipTool, "On/Off - reads back LT attribute: OffWaitTime: Success Response");
+
+        Test311 * runner = reinterpret_cast<Test311 *>(context);
+
+        delete runner->mOnFailureCallback_12;
+        delete runner->mOnSuccessCallback_12;
+
+        if (runner->mIsFailureExpected_12 == true)
+        {
+            ChipLogError(chipTool, "Error: The test was expecting a failure callback. Got success callback");
+            runner->SetCommandExitStatus(false);
+            return;
+        }
+
+        if (offWaitTime != 0)
+        {
+            ChipLogError(chipTool, "Error: Value mismatch. Expected: '%s'", "0");
+            runner->SetCommandExitStatus(false);
+            return;
+        }
+
+        runner->NextTest();
+    }
+
+    // Test reads back LT attribute: StartUpOnOff
+    typedef void (*SuccessCallback_13)(void * context, uint8_t startUpOnOff);
+    chip::Callback::Callback<SuccessCallback_13> * mOnSuccessCallback_13     = nullptr;
+    chip::Callback::Callback<DefaultFailureCallback> * mOnFailureCallback_13 = nullptr;
+    bool mIsFailureExpected_13                                               = 0;
+
+    CHIP_ERROR TestSendClusterOnOffCommandReadAttribute_13()
+    {
+        ChipLogProgress(chipTool, "On/Off - reads back LT attribute: StartUpOnOff: Sending command...");
+
+        mOnFailureCallback_13 = new chip::Callback::Callback<DefaultFailureCallback>(
+            OnTestSendClusterOnOffCommandReadAttribute_13_FailureResponse, this);
+        mOnSuccessCallback_13 =
+            new chip::Callback::Callback<SuccessCallback_13>(OnTestSendClusterOnOffCommandReadAttribute_13_SuccessResponse, this);
+
+        chip::Controller::OnOffCluster cluster;
+        cluster.Associate(mDevice, 1);
+
+        CHIP_ERROR err = CHIP_NO_ERROR;
+
+        err = cluster.ReadAttributeStartUpOnOff(mOnSuccessCallback_13->Cancel(), mOnFailureCallback_13->Cancel());
+
+        if (CHIP_NO_ERROR != err)
+        {
+            delete mOnFailureCallback_13;
+            delete mOnSuccessCallback_13;
+        }
+
+        return err;
+    }
+
+    static void OnTestSendClusterOnOffCommandReadAttribute_13_FailureResponse(void * context, uint8_t status)
+    {
+        ChipLogProgress(chipTool, "On/Off - reads back LT attribute: StartUpOnOff: Failure Response");
+
+        Test311 * runner = reinterpret_cast<Test311 *>(context);
+
+        delete runner->mOnFailureCallback_13;
+        delete runner->mOnSuccessCallback_13;
+
+        if (runner->mIsFailureExpected_13 == false)
+        {
+            ChipLogError(chipTool, "Error: The test was expecting a success callback. Got failure callback");
+            runner->SetCommandExitStatus(false);
+            return;
+        }
+
+        runner->NextTest();
+    }
+
+    static void OnTestSendClusterOnOffCommandReadAttribute_13_SuccessResponse(void * context, uint8_t startUpOnOff)
+    {
+        ChipLogProgress(chipTool, "On/Off - reads back LT attribute: StartUpOnOff: Success Response");
+
+        Test311 * runner = reinterpret_cast<Test311 *>(context);
+
+        delete runner->mOnFailureCallback_13;
+        delete runner->mOnSuccessCallback_13;
+
+        if (runner->mIsFailureExpected_13 == true)
+        {
+            ChipLogError(chipTool, "Error: The test was expecting a failure callback. Got success callback");
+            runner->SetCommandExitStatus(false);
+            return;
+        }
+
+        if (startUpOnOff != 0)
+        {
+            ChipLogError(chipTool, "Error: Value mismatch. Expected: '%s'", "0");
+            runner->SetCommandExitStatus(false);
+            return;
+        }
+
+        runner->NextTest();
+    }
+};
+
 void registerCommandsTests(Commands & commands)
 {
     const char * clusterName = "Tests";
@@ -867,6 +2012,7 @@ void registerCommandsTests(Commands & commands)
     commands_list clusterCommands = {
         make_unique<TestCluster>(),
         make_unique<OnOffCluster>(),
+        make_unique<Test311>(),
     };
 
     commands.Register(clusterName, clusterCommands);
