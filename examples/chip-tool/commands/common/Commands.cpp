@@ -80,14 +80,16 @@ exit:
     chip::DeviceLayer::PlatformMgr().StopEventLoopTask();
 #endif
 
-    //
-    // We can call DeviceController::Shutdown() safely without grabbing the stack lock
-    // since the CHIP thread and event queue have been stopped, preventing any thread
-    // races.
-    //
-    // TODO: This doesn't hold true on Darwin, issue #7557 tracks the problem.
-    //
-    mController.Shutdown();
+#if CONFIG_DEVICE_LAYER && CHIP_SYSTEM_CONFIG_USE_DISPATCH
+    dispatch_sync(chip::DeviceLayer::PlatformMgrImpl().GetWorkQueue(), ^{
+#endif
+        {
+            chip::DeviceLayer::StackLock lock;
+            mController.Shutdown();
+        }
+#if CONFIG_DEVICE_LAYER && CHIP_SYSTEM_CONFIG_USE_DISPATCH
+    });
+#endif
 
     return (err == CHIP_NO_ERROR) ? EXIT_SUCCESS : EXIT_FAILURE;
 }
