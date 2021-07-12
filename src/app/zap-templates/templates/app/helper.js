@@ -292,6 +292,11 @@ function asTypeLiteralSuffix(type)
   }
 }
 
+function asMEI(prefix, suffix)
+{
+  return cHelper.asHex((prefix << 16) + suffix, 8);
+}
+
 //
 // Module exports
 //
@@ -301,3 +306,4 @@ exports.asReadTypeLength                  = asReadTypeLength;
 exports.chip_endpoint_generated_functions = chip_endpoint_generated_functions
 exports.chip_endpoint_cluster_list        = chip_endpoint_cluster_list
 exports.asTypeLiteralSuffix               = asTypeLiteralSuffix;
+exports.asMEI                             = asMEI;
