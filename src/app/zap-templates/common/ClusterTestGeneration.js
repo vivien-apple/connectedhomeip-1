@@ -64,9 +64,8 @@ function setDefaultType(test)
   const type = test[kCommandName];
   switch (type) {
   case 'readAttribute':
-    test.isAttribute              = true;
-    test.isReadAttribute          = true;
-    test.useReadAttributeCallback = true;
+    test.isAttribute     = true;
+    test.isReadAttribute = true;
     break;
 
   case 'writeAttribute':
@@ -75,16 +74,14 @@ function setDefaultType(test)
     break;
 
   case 'subscribeAttribute':
-    test.isAttribute              = true;
-    test.isSubscribeAttribute     = true;
-    test.useReadAttributeCallback = true;
+    test.isAttribute          = true;
+    test.isSubscribeAttribute = true;
     break;
 
   case 'waitForReport':
-    test.isAttribute              = true;
-    test.isWaitForReport          = true;
-    test.useReadAttributeCallback = true;
-    test.noFailureCallback        = true;
+    test.isAttribute       = true;
+    test.isWaitForReport   = true;
+    test.noFailureCallback = true;
     break;
 
   default:
@@ -145,12 +142,16 @@ function setDefaultResponse(test)
     throwError(test, errorStr);
   }
 
-  if (test.isWriteAttribute && hasResponseValueOrConstraints) {
-    const errorStr = 'Attribute write test has a "value" or a "constraints" defined.';
-    throwError(test, errorStr);
+  if (!test.isAttribute) {
+    return;
   }
 
-  if (!test.useReadAttributeCallback) {
+  if (test.isWriteAttribute) {
+    if (hasResponseValueOrConstraints) {
+      const errorStr = 'Attribute write test has a "value" or a "constraints" defined.';
+      throwError(test, errorStr);
+    }
+
     return;
   }
 
