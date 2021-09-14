@@ -79,9 +79,8 @@ function setDefaultType(test)
     break;
 
   case 'waitForReport':
-    test.isAttribute       = true;
-    test.isWaitForReport   = true;
-    test.noFailureCallback = true;
+    test.isAttribute     = true;
+    test.isWaitForReport = true;
     break;
 
   default:

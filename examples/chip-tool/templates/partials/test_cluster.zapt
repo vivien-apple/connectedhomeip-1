@@ -56,9 +56,7 @@ class {{filename}}: public TestCommand
     // Test {{label}}
     using SuccessCallback_{{index}} = void (*)(void * context{{#chip_tests_item_response_parameters}}, {{#if isList}}uint16_t count, {{/if}}{{chipType}} {{#if isList}}* {{/if}}{{asLowerCamelCase name}}{{/chip_tests_item_response_parameters}});
     chip::Callback::Callback<SuccessCallback_{{index}}> mOnSuccessCallback_{{index}} { OnTestSendCluster{{asUpperCamelCase cluster}}Command{{asUpperCamelCase command}}_{{index}}_SuccessResponse, this };
-    {{#unless noFailureCallback}}
     chip::Callback::Callback<DefaultFailureCallback> mOnFailureCallback_{{index}} { OnTestSendCluster{{asUpperCamelCase cluster}}Command{{asUpperCamelCase command}}_{{index}}_FailureResponse, this };
-    {{/unless}}
     {{#if isSubscribeAttribute}}
     chip::Callback::Callback<DefaultSuccessCallback> mOnSubscriptionEstablishedCallback_{{index}} { SubscribeAttribute_{{ index }}_OnSubscriptionEstablishedCallback, this };
     {{/if}}
@@ -126,7 +124,6 @@ class {{filename}}: public TestCommand
     }
     {{/if}}
 
-    {{#unless noFailureCallback}}
     static void OnTestSendCluster{{asUpperCamelCase cluster}}Command{{asUpperCamelCase command}}_{{index}}_FailureResponse(void * context, uint8_t status)
     {
         ChipLogProgress(chipTool, "{{cluster}} - {{label}}: Failure Response");
@@ -148,7 +145,6 @@ class {{filename}}: public TestCommand
 
         runner->NextTest();
     }
-    {{/unless}}
 
     static void OnTestSendCluster{{asUpperCamelCase cluster}}Command{{asUpperCamelCase command}}_{{index}}_SuccessResponse(void * context {{#chip_tests_item_response_parameters}}, {{#if isList}}uint16_t count, {{/if}}{{chipType}} {{#if isList}}* {{/if}}{{asLowerCamelCase name}}{{/chip_tests_item_response_parameters}})
     {
