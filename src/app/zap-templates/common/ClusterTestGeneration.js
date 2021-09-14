@@ -64,10 +64,9 @@ function setDefaultType(test)
   const type = test[kCommandName];
   switch (type) {
   case 'readAttribute':
-    test.isAttribute                       = true;
-    test.isReadAttribute                   = true;
-    test.noCommandSpecificRequestArguments = true;
-    test.useReadAttributeCallback          = true;
+    test.isAttribute              = true;
+    test.isReadAttribute          = true;
+    test.useReadAttributeCallback = true;
     break;
 
   case 'writeAttribute':
@@ -76,18 +75,16 @@ function setDefaultType(test)
     break;
 
   case 'subscribeAttribute':
-    test.isAttribute                       = true;
-    test.isSubscribeAttribute              = true;
-    test.noCommandSpecificRequestArguments = true;
-    test.useReadAttributeCallback          = true;
+    test.isAttribute              = true;
+    test.isSubscribeAttribute     = true;
+    test.useReadAttributeCallback = true;
     break;
 
   case 'waitForReport':
-    test.isAttribute                       = true;
-    test.isWaitForReport                   = true;
-    test.useReadAttributeCallback          = true;
-    test.noCommandSpecificRequestArguments = true;
-    test.noFailureCallback                 = true;
+    test.isAttribute              = true;
+    test.isWaitForReport          = true;
+    test.useReadAttributeCallback = true;
+    test.noFailureCallback        = true;
     break;
 
   default:
@@ -325,6 +322,10 @@ function chip_tests_item_parameters(options)
   const commandValues = this.arguments.values;
 
   const promise = assertCommandOrAttribute(this).then(item => {
+    if (this.isAttribute && !this.isWriteAttribute) {
+      return [];
+    }
+
     const commandArgs = item.arguments;
     const commands    = commandArgs.map(commandArg => {
       commandArg = JSON.parse(JSON.stringify(commandArg));
