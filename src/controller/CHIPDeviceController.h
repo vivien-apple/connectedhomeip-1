@@ -60,6 +60,7 @@
 #endif
 #if CHIP_DEVICE_CONFIG_ENABLE_MDNS
 #include <controller/DeviceAddressUpdateDelegate.h>
+#include <controller/DeviceDiscoveryDelegate.h>
 #include <lib/mdns/Resolver.h>
 #endif
 
@@ -90,6 +91,7 @@ struct ControllerInitParams
     DeviceControllerInteractionModelDelegate * imDelegate = nullptr;
 #if CHIP_DEVICE_CONFIG_ENABLE_MDNS
     DeviceAddressUpdateDelegate * mDeviceAddressUpdateDelegate = nullptr;
+    DeviceDiscoveryDelegate * mDeviceDiscoveryDelegate         = nullptr;
 #endif
     OperationalCredentialsDelegate * operationalCredentialsDelegate = nullptr;
 
@@ -251,6 +253,7 @@ public:
 
 #if CHIP_DEVICE_CONFIG_ENABLE_MDNS
     void RegisterDeviceAddressUpdateDelegate(DeviceAddressUpdateDelegate * delegate) { mDeviceAddressUpdateDelegate = delegate; }
+    void RegisterDeviceDiscoveryDelegate(DeviceDiscoveryDelegate * delegate) { mDeviceDiscoveryDelegate = delegate; }
 #endif
 
     // ----- IO -----
