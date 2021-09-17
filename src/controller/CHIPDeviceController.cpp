@@ -735,7 +735,8 @@ DeviceCommissioner::DeviceCommissioner() :
     mNOCResponseCallback(OnOperationalCertificateAddResponse, this), mRootCertResponseCallback(OnRootCertSuccessResponse, this),
     mOnCSRFailureCallback(OnCSRFailureResponse, this), mOnCertFailureCallback(OnAddNOCFailureResponse, this),
     mOnRootCertFailureCallback(OnRootCertFailureResponse, this), mOnDeviceConnectedCallback(OnDeviceConnectedFn, this),
-    mOnDeviceConnectionFailureCallback(OnDeviceConnectionFailureFn, this), mDeviceNOCChainCallback(OnDeviceNOCChainGeneration, this)
+    mOnDeviceConnectionFailureCallback(OnDeviceConnectionFailureFn, this),
+    mDeviceNOCChainCallback(OnDeviceNOCChainGeneration, this), mSetUpCodeParser(this)
 {
     mPairingDelegate      = nullptr;
     mDeviceBeingPaired    = kNumMaxActiveDevices;
@@ -809,6 +810,11 @@ CHIP_ERROR DeviceCommissioner::Shutdown()
 
     DeviceController::Shutdown();
     return CHIP_NO_ERROR;
+}
+
+CHIP_ERROR DeviceCommissioner::PairDevice(NodeId remoteDeviceId, const char * setUpCode)
+{
+    return mSetUpCodeParser.PairDevice(remoteDeviceId, setUpCode);
 }
 
 CHIP_ERROR DeviceCommissioner::PairDevice(NodeId remoteDeviceId, RendezvousParameters & params)
