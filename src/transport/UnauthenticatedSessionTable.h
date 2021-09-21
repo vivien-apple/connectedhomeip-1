@@ -183,6 +183,17 @@ private:
             return false;
         case Transport::Type::kUdp:
         case Transport::Type::kTcp:
+            char addrStr_1[64];
+            char addrStr_2[64];
+            a1.GetIPAddress().ToString(addrStr_1, sizeof(addrStr_1));
+            a2.GetIPAddress().ToString(addrStr_2, sizeof(addrStr_2));
+            ChipLogError(chipTool, "Check IP: %s == %s", addrStr_1, addrStr_2);
+            ChipLogError(chipTool, "Check Port: %u == %u", a1.GetPort(), a2.GetPort());
+            ChipLogError(chipTool, "IsIPv6LinkLocal: %d", a1.GetIPAddress().IsIPv6LinkLocal());
+            if (a1.GetIPAddress().IsIPv6LinkLocal())
+            {
+                ChipLogError(chipTool, "Check Port: %u == %u", a1.GetInterface(), a2.GetInterface());
+            }
             return a1.GetIPAddress() == a2.GetIPAddress() && a1.GetPort() == a2.GetPort() &&
                 // Enforce interface equal-ness if the address is link-local, otherwise ignore interface
                 (a1.GetIPAddress().IsIPv6LinkLocal() ? a1.GetInterface() == a2.GetInterface() : true);
