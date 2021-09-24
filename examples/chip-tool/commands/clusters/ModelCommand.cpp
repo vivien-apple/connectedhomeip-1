@@ -34,16 +34,14 @@ void DispatchSingleClusterCommand(chip::ClusterId aClusterId, chip::CommandId aC
         "Default DispatchSingleClusterCommand is called, this should be replaced by actual dispatched for cluster commands");
 }
 
-CHIP_ERROR ModelCommand::Run()
+CHIP_ERROR ModelCommand::Run(NodeId remoteId)
 {
     CHIP_ERROR err = CHIP_NO_ERROR;
 
-    auto * ctx = GetExecContext();
-
-    err = ctx->commissioner->GetConnectedDevice(ctx->remoteId, &mOnDeviceConnectedCallback, &mOnDeviceConnectionFailureCallback);
+    err = mController.GetConnectedDevice(remoteId, &mOnDeviceConnectedCallback, &mOnDeviceConnectionFailureCallback);
     VerifyOrExit(err == CHIP_NO_ERROR,
                  ChipLogError(chipTool, "Failed in initiating connection to the device: %" PRIu64 ", error %" CHIP_ERROR_FORMAT,
-                              ctx->remoteId, err.Format()));
+                              remoteId, err.Format()));
 
 exit:
     return err;

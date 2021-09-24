@@ -21,18 +21,17 @@
 
 using namespace ::chip;
 
-CHIP_ERROR DiscoverCommissionablesCommand::Run()
+CHIP_ERROR DiscoverCommissionablesCommand::Run(NodeId remoteId)
 {
-    mCommissioner = GetExecContext()->commissioner;
     Mdns::DiscoveryFilter filter(Mdns::DiscoveryFilterType::kNone, (uint64_t) 0);
-    return mCommissioner->DiscoverCommissionableNodes(filter);
+    return mController.DiscoverCommissionableNodes(filter);
 }
 
 void DiscoverCommissionablesCommand::Shutdown()
 {
-    for (int i = 0; i < mCommissioner->GetMaxCommissionableNodesSupported(); ++i)
+    for (int i = 0; i < mController.GetMaxCommissionableNodesSupported(); ++i)
     {
-        const chip::Mdns::DiscoveredNodeData * dnsSdInfo = mCommissioner->GetDiscoveredDevice(i);
+        const chip::Mdns::DiscoveredNodeData * dnsSdInfo = mController.GetDiscoveredDevice(i);
         if (dnsSdInfo == nullptr)
         {
             continue;
