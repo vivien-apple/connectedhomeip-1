@@ -86,7 +86,6 @@ for j in "${iter_array[@]}"; do
     for i in "${test_array[@]}"; do
         echo "  ===== Running test: $i"
         echo "          * Starting cluster server"
-        rm -rf /tmp/chip_tool_config.ini
         # This part is a little complicated.  We want to
         # 1) Start chip-app in the background
         # 2) Pipe its output through tee so we can wait until it's ready for a
