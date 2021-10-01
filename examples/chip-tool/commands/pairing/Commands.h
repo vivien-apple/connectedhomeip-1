@@ -19,6 +19,7 @@
 #pragma once
 
 #include "PairingCommand.h"
+#include "PairingListCommand.h"
 
 class Unpair : public PairingCommand
 {
@@ -86,13 +87,17 @@ void registerCommandsPairing(Commands & commands)
 {
     const char * clusterName = "Pairing";
 
-    commands_list clusterCommands = {
-        make_unique<Unpair>(),        make_unique<PairBypass>(),
-        make_unique<PairQRCode>(),    make_unique<PairManualCode>(),
-        make_unique<PairBleWiFi>(),   make_unique<PairBleThread>(),
-        make_unique<PairSoftAP>(),    make_unique<Ethernet>(),
-        make_unique<PairOnNetwork>(), make_unique<OpenCommissioningWindow>(),
-    };
+    commands_list clusterCommands = { make_unique<Unpair>(),
+                                      make_unique<PairBypass>(),
+                                      make_unique<PairQRCode>(),
+                                      make_unique<PairManualCode>(),
+                                      make_unique<PairBleWiFi>(),
+                                      make_unique<PairBleThread>(),
+                                      make_unique<PairSoftAP>(),
+                                      make_unique<Ethernet>(),
+                                      make_unique<PairOnNetwork>(),
+                                      make_unique<OpenCommissioningWindow>(),
+                                      make_unique<PairingListCommand>() };
 
     commands.Register(clusterName, clusterCommands);
 }

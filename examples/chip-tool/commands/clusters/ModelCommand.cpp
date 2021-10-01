@@ -36,9 +36,9 @@ void DispatchSingleClusterCommand(chip::ClusterId aClusterId, chip::CommandId aC
 
 CHIP_ERROR ModelCommand::Run(NodeId remoteId)
 {
-    CHIP_ERROR err = CHIP_NO_ERROR;
+    ChipLogProgress(chipTool, "Sending command to node 0x%" PRIx64, remoteId);
 
-    err = mController.GetConnectedDevice(remoteId, &mOnDeviceConnectedCallback, &mOnDeviceConnectionFailureCallback);
+    CHIP_ERROR err = mController.GetConnectedDevice(remoteId, &mOnDeviceConnectedCallback, &mOnDeviceConnectionFailureCallback);
     VerifyOrExit(err == CHIP_NO_ERROR,
                  ChipLogError(chipTool, "Failed in initiating connection to the device: %" PRIu64 ", error %" CHIP_ERROR_FORMAT,
                               remoteId, err.Format()));
