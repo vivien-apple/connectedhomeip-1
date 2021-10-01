@@ -21,7 +21,7 @@
 
 using namespace ::chip;
 
-CHIP_ERROR DiscoverCommissionablesCommand::Run(NodeId remoteId)
+CHIP_ERROR DiscoverCommissionablesCommand::RunCommand()
 {
     Mdns::DiscoveryFilter filter(Mdns::DiscoveryFilterType::kNone, (uint64_t) 0);
     return mController.DiscoverCommissionableNodes(filter);

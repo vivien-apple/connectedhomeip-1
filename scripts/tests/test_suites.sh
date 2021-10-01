@@ -19,6 +19,7 @@
 set -e
 
 declare -i iterations=2
+declare -i node_id=0x12344321
 declare -i background_pid=0
 declare test_case_wrapper=()
 
@@ -120,9 +121,9 @@ for j in "${iter_array[@]}"; do
         # the data is there yet.
         background_pid="$(</tmp/pid)"
         echo "          * Pairing to device"
-        "${test_case_wrapper[@]}" out/debug/standalone/chip-tool pairing onnetwork 0 20202021 3840 ::1 5540
+        "${test_case_wrapper[@]}" out/debug/standalone/chip-tool pairing onnetwork "$node_id" 0 20202021 3840 ::1 5540
         echo "          * Starting test run: $i"
-        "${test_case_wrapper[@]}" out/debug/standalone/chip-tool tests "$i"
+        "${test_case_wrapper[@]}" out/debug/standalone/chip-tool tests "$i" "$node_id"
         # Prevent cleanup trying to kill a process we already killed.
         temp_background_pid=$background_pid
         background_pid=0

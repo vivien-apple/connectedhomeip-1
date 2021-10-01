@@ -26,7 +26,7 @@ public:
     DiscoverCommissionablesCommand() : CHIPCommand("commissionables") {}
 
     /////////// CHIPCommand Interface /////////
-    CHIP_ERROR Run(NodeId remoteId) override;
+    CHIP_ERROR RunCommand() override;
     uint16_t GetWaitDurationInSeconds() const override { return 3; }
     void Shutdown() override;
 };

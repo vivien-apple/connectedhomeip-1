@@ -28,10 +28,12 @@ public:
     TestCommand(const char * commandName) :
         CHIPCommand(commandName), mOnDeviceConnectedCallback(OnDeviceConnectedFn, this),
         mOnDeviceConnectionFailureCallback(OnDeviceConnectionFailureFn, this)
-    {}
+    {
+        AddArgument("node-id", 0, UINT64_MAX, &mNodeId);
+    }
 
     /////////// CHIPCommand Interface /////////
-    CHIP_ERROR Run(NodeId remoteId) override;
+    CHIP_ERROR RunCommand() override;
     uint16_t GetWaitDurationInSeconds() const override { return 30; }
 
     virtual void NextTest() = 0;
@@ -41,6 +43,7 @@ public:
 
 protected:
     ChipDevice * mDevice;
+    chip::NodeId mNodeId;
 
     static void OnDeviceConnectedFn(void * context, chip::Controller::Device * device);
     static void OnDeviceConnectionFailureFn(void * context, NodeId deviceId, CHIP_ERROR error);

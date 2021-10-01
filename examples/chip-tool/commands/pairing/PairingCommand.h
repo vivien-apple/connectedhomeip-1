@@ -59,6 +59,8 @@ public:
         mNetworkType(networkType), mRemoteAddr{ IPAddress::Any, INET_NULL_INTERFACEID },
         mOnDeviceConnectedCallback(OnDeviceConnectedFn, this), mOnDeviceConnectionFailureCallback(OnDeviceConnectionFailureFn, this)
     {
+        AddArgument("node-id", 0, UINT64_MAX, &mNodeId);
+
         switch (networkType)
         {
         case PairingNetworkType::None:
@@ -115,7 +117,7 @@ public:
     }
 
     /////////// CHIPCommand Interface /////////
-    CHIP_ERROR Run(NodeId remoteId) override;
+    CHIP_ERROR RunCommand() override;
     uint16_t GetWaitDurationInSeconds() const override { return 120; }
     void Shutdown() override;
 
@@ -156,7 +158,7 @@ private:
     const PairingMode mPairingMode;
     const PairingNetworkType mNetworkType;
     Command::AddressWithInterface mRemoteAddr;
-    NodeId mRemoteId;
+    NodeId mNodeId;
     uint16_t mRemotePort;
     uint64_t mFabricId;
     uint16_t mTimeout;
