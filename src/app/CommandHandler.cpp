@@ -28,6 +28,7 @@
 #include "InteractionModelEngine.h"
 #include "messaging/ExchangeContext.h"
 
+#include <app/util/MatterCallbacks.h>
 #include <lib/support/TypeTraits.h>
 #include <protocols/secure_channel/Constants.h>
 
@@ -126,7 +127,10 @@ CHIP_ERROR CommandHandler::ProcessCommandDataElement(CommandDataElement::Parser 
         ChipLogDetail(DataManagement,
                       "Received command for Endpoint=%" PRIu16 " Cluster=" ChipLogFormatMEI " Command=" ChipLogFormatMEI,
                       endpointId, ChipLogValueMEI(clusterId), ChipLogValueMEI(commandId));
-        DispatchSingleClusterCommand(ConcreteCommandPath(endpointId, clusterId, commandId), commandDataReader, this);
+        const ConcreteCommandPath concretePath(endpointId, clusterId, commandId);
+        SuccessOrExit(MatterPreCommandReceivedCallback(concretePath));
+        DispatchSingleClusterCommand(concretePath, commandDataReader, this);
+        MatterPostCommandReceivedCallback(concretePath);
     }
 
 exit:
@@ -195,3 +199,9 @@ CHIP_ERROR CommandHandler::PrepareResponse(const ConcreteCommandPath & aRequestC
 
 } // namespace app
 } // namespace chip
+
+CHIP_ERROR __attribute__((weak)) MatterPreCommandReceivedCallback(const chip::app::ConcreteCommandPath & commandPath)
+{
+    return CHIP_NO_ERROR;
+}
+void __attribute__((weak)) MatterPostCommandReceivedCallback(const chip::app::ConcreteCommandPath & commandPath) {}
