@@ -1,7 +1,6 @@
 /*
  *
  *    Copyright (c) 2021 Project CHIP Authors
- *    All rights reserved.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -16,21 +15,18 @@
  *    limitations under the License.
  */
 
-#include "AppMain.h"
-
-#include <lib/support/CodeUtils.h>
-
-#include "MatterCallbacks.h"
-
-int main(int argc, char * argv[])
+function getTests()
 {
-    VerifyOrDie(ChipLinuxAppInit(argc, argv) == 0);
-
-    // XXX Need to pass a parameter instead of an hardcoded string.
-    auto command = GetTestCommand("Test_FOO");
-    chip::DeviceLayer::PlatformMgr().AddEventHandler(OnPlatformEvent, reinterpret_cast<intptr_t>(command.get()));
-
-    ChipLinuxAppMainLoop();
-
-    return 0;
+  try {
+    const appTest = require('../linux/apps/' + process.env.TARGET_APP + '/tests.js');
+    return appTest.getTests();
+  } catch (e) {
+    console.info("No tests configuration has been found.");
+    return '';
+  }
 }
+
+//
+// Module exports
+//
+exports.getTests = getTests;

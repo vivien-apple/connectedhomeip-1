@@ -34,6 +34,7 @@ const { asUpperCamelCase }              = require(basePath + 'src/app/zap-templa
 const kClusterName       = 'cluster';
 const kEndpointName      = 'endpoint';
 const kCommandName       = 'command';
+const kWaitCommandName   = 'wait';
 const kIndexName         = 'index';
 const kValuesName        = 'values';
 const kConstraintsName   = 'constraints';
@@ -62,6 +63,39 @@ function setDefault(test, name, defaultValue)
 }
 
 function setDefaultType(test)
+{
+  if (kWaitCommandName in test) {
+    setDefaultTypeForWaitCommand(test);
+  } else {
+    setDefaultTypeForCommand(test);
+  }
+}
+
+function setDefaultTypeForWaitCommand(test)
+{
+  const type = test[kWaitCommandName];
+  switch (type) {
+  case 'readAttribute':
+    test.isAttribute     = true;
+    test.isReadAttribute = true;
+    break;
+  case 'writeAttribute':
+    test.isAttribute      = true;
+    test.isWriteAttribute = true;
+    break;
+  case 'subscribeAttribute':
+    test.isAttribute          = true;
+    test.isSubscribeAttribute = true;
+    break;
+  default:
+    test.isCommand = true;
+    break;
+  }
+
+  test.isWait = true;
+}
+
+function setDefaultTypeForCommand(test)
 {
   const type = test[kCommandName];
   switch (type) {
@@ -94,6 +128,8 @@ function setDefaultType(test)
     test.isCommand   = true;
     break;
   }
+
+  test.isWait = false;
 }
 
 function setDefaultArguments(test)
@@ -146,6 +182,11 @@ function setDefaultResponse(test)
         '      - name: "returnValue"\n' +
         '      - value: 7\n';
     throwError(test, errorStr);
+  }
+
+  // Step that waits for a particular event does not requires constraints nor expected values.
+  if (test.isWait) {
+    return;
   }
 
   if (!test.isAttribute) {
@@ -243,9 +284,7 @@ function parse(filename)
 
   // Filter disabled tests
   yaml.tests = yaml.tests.filter(test => !test.disabled);
-  yaml.tests.forEach((test, index) => {
-    setDefault(test, kIndexName, index);
-  });
+  yaml.tests.forEach((test, index) => { setDefault(test, kIndexName, index); });
 
   yaml.filename   = filename;
   yaml.totalTests = yaml.tests.length;
@@ -289,6 +328,17 @@ function getAttributes(clusterName)
   default:
     return Clusters.getServerAttributes(clusterName);
   }
+}
+
+async function assertClusters(tests)
+{
+  return getClusters().then(clusters => {
+    const clusterExists = tests.filter(test => clusters.find(cluster => cluster.name == test.cluster));
+    if (!clusterExists) {
+      const names = clusters.map(item => item.name);
+      printErrorAndExit(context, 'Missing cluster "' + step.cluster + '" in: \n\t* ' + names.join('\n\t* '));
+    }
+  })
 }
 
 function assertCommandOrAttribute(context)
@@ -348,7 +398,7 @@ function chip_tests(list, options)
   return templateUtil.collectBlocks(tests, options, this);
 }
 
-function chip_tests_items(options)
+async function chip_tests_items(options)
 {
   return templateUtil.collectBlocks(this.tests, options, this);
 }
@@ -397,8 +447,8 @@ function chip_tests_item_parameters(options)
       const expected = commandValues.find(value => value.name.toLowerCase() == commandArg.name.toLowerCase());
       if (!expected) {
         printErrorAndExit(this,
-            'Missing "' + commandArg.name + '" in arguments list: \n\t* '
-                + commandValues.map(command => command.name).join('\n\t* '));
+               'Missing "' + commandArg.name + '" in arguments list: \n\t* '
+                   + commandValues.map(command => command.name).join('\n\t* '));
       }
       // test_cluster_command_value is a recursive partial using #each. At some point the |global|
       // context is lost and it fails. Make sure to attach the global context as a property of the | value |
@@ -436,7 +486,7 @@ function chip_tests_item_parameters(options)
       commandArg.definedValue = attachGlobal(this.global, expected.value);
 
       return commandArg;
-    });
+       });
 
     return commands;
   });
