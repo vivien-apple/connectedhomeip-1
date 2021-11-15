@@ -5,16 +5,7 @@
 
 #import <Foundation/Foundation.h>
 
-/* Forward-declare all our structs, so we don't have to try to include
-   that header and deal with the resulting include path mess, because
-   the paths to our public headers are different depending on how
-   we're being compiled. */
-
 {{#zcl_clusters}}
-{{#zcl_structs}}
-@class CHIP{{asUpperCamelCase parent.name}}Cluster{{asUpperCamelCase name}};
-{{/zcl_structs}}
-
 {{#zcl_commands}}
 @interface CHIP{{asUpperCamelCase parent.name}}Cluster{{asUpperCamelCase name}}Payload : NSObject
 {{#zcl_command_arguments}}

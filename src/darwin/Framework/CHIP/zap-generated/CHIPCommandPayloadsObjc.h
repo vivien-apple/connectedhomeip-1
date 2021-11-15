@@ -21,11 +21,7 @@
 #define CHIP_COMMAND_PAYLOADS_H
 
 #import <Foundation/Foundation.h>
-
-/* Forward-declare all our structs, so we don't have to try to include
-   that header and deal with the resulting include path mess, because
-   the paths to our public headers are different depending on how
-   we're being compiled. */
+#import <CHIP/CHIPStructsObjc.h>
 
 @interface CHIPIdentifyClusterIdentifyPayload : NSObject
 @property (copy) NSNumber * _Nonnull IdentifyTime;
@@ -90,8 +86,6 @@
 @property (copy) NSNumber * _Nonnull GroupId;
 @property (copy) NSString * _Nonnull GroupName;
 @end
-
-@class CHIPScenesClusterSceneExtensionFieldSet;
 
 @interface CHIPScenesClusterAddScenePayload : NSObject
 @property (copy) NSNumber * _Nonnull GroupId;
@@ -322,10 +316,6 @@
 @interface CHIPAlarmsClusterResetAlarmLogPayload : NSObject
 @end
 
-@class CHIPPowerProfileClusterPowerProfileRecord;
-@class CHIPPowerProfileClusterScheduledPhase;
-@class CHIPPowerProfileClusterTransferredPhase;
-
 @interface CHIPPowerProfileClusterPowerProfileRequestPayload : NSObject
 @property (copy) NSNumber * _Nonnull PowerProfileId;
 @end
@@ -473,8 +463,6 @@
 @property (copy) NSNumber * _Nonnull WarningEvent;
 @end
 
-@class CHIPDescriptorClusterDeviceType;
-
 @interface CHIPPollControlClusterCheckInPayload : NSObject
 @end
 
@@ -493,9 +481,6 @@
 @interface CHIPPollControlClusterSetShortPollIntervalPayload : NSObject
 @property (copy) NSNumber * _Nonnull NewShortPollInterval;
 @end
-
-@class CHIPBridgedActionsClusterActionStruct;
-@class CHIPBridgedActionsClusterEndpointListStruct;
 
 @interface CHIPBridgedActionsClusterInstantActionPayload : NSObject
 @property (copy) NSNumber * _Nonnull ActionID;
@@ -618,8 +603,6 @@
 @property (copy) NSData * _Nullable MetadataForNode;
 @end
 
-@class CHIPGeneralCommissioningClusterBasicCommissioningInfoType;
-
 @interface CHIPGeneralCommissioningClusterArmFailSafePayload : NSObject
 @property (copy) NSNumber * _Nonnull ExpiryLengthSeconds;
 @property (copy) NSNumber * _Nonnull Breadcrumb;
@@ -650,9 +633,6 @@
 @property (copy) NSNumber * _Nonnull ErrorCode;
 @property (copy) NSString * _Nonnull DebugText;
 @end
-
-@class CHIPNetworkCommissioningClusterThreadInterfaceScanResult;
-@class CHIPNetworkCommissioningClusterWiFiInterfaceScanResult;
 
 @interface CHIPNetworkCommissioningClusterScanNetworksPayload : NSObject
 @property (copy) NSData * _Nonnull Ssid;
@@ -759,18 +739,8 @@
 @property (copy) NSNumber * _Nonnull TimeSinceBoot;
 @end
 
-@class CHIPGeneralDiagnosticsClusterNetworkInterfaceType;
-
-@class CHIPSoftwareDiagnosticsClusterSoftwareFault;
-@class CHIPSoftwareDiagnosticsClusterThreadMetrics;
-
 @interface CHIPSoftwareDiagnosticsClusterResetWatermarksPayload : NSObject
 @end
-
-@class CHIPThreadNetworkDiagnosticsClusterNeighborTable;
-@class CHIPThreadNetworkDiagnosticsClusterOperationalDatasetComponents;
-@class CHIPThreadNetworkDiagnosticsClusterRouteTable;
-@class CHIPThreadNetworkDiagnosticsClusterSecurityPolicy;
 
 @interface CHIPThreadNetworkDiagnosticsClusterResetCountsPayload : NSObject
 @end
@@ -808,9 +778,6 @@
 
 @interface CHIPAdministratorCommissioningClusterRevokeCommissioningPayload : NSObject
 @end
-
-@class CHIPOperationalCredentialsClusterFabricDescriptor;
-@class CHIPOperationalCredentialsClusterNOCStruct;
 
 @interface CHIPOperationalCredentialsClusterAttestationRequestPayload : NSObject
 @property (copy) NSData * _Nonnull AttestationNonce;
@@ -872,11 +839,6 @@
 @interface CHIPOperationalCredentialsClusterRemoveTrustedRootCertificatePayload : NSObject
 @property (copy) NSData * _Nonnull TrustedRootIdentifier;
 @end
-
-@class CHIPFixedLabelClusterLabelStruct;
-
-@class CHIPModeSelectClusterModeOptionStruct;
-@class CHIPModeSelectClusterSemanticTag;
 
 @interface CHIPModeSelectClusterChangeToModePayload : NSObject
 @property (copy) NSNumber * _Nonnull NewMode;
@@ -1414,8 +1376,6 @@
 @interface CHIPIasZoneClusterInitiateTestModeResponsePayload : NSObject
 @end
 
-@class CHIPIasAceClusterIasAceZoneStatusResult;
-
 @interface CHIPIasAceClusterArmPayload : NSObject
 @property (copy) NSNumber * _Nonnull ArmMode;
 @property (copy) NSString * _Nonnull ArmDisarmCode;
@@ -1535,9 +1495,6 @@
 @property (copy) NSNumber * _Nonnull SquawkInfo;
 @end
 
-@class CHIPTvChannelClusterTvChannelInfo;
-@class CHIPTvChannelClusterTvChannelLineupInfo;
-
 @interface CHIPTvChannelClusterChangeChannelPayload : NSObject
 @property (copy) NSString * _Nonnull Match;
 @end
@@ -1556,8 +1513,6 @@
 @property (copy) NSNumber * _Nonnull Count;
 @end
 
-@class CHIPTargetNavigatorClusterNavigateTargetTargetInfo;
-
 @interface CHIPTargetNavigatorClusterNavigateTargetPayload : NSObject
 @property (copy) NSNumber * _Nonnull Target;
 @property (copy) NSString * _Nonnull Data;
@@ -1567,8 +1522,6 @@
 @property (copy) NSNumber * _Nonnull Status;
 @property (copy) NSString * _Nonnull Data;
 @end
-
-@class CHIPMediaPlaybackClusterMediaPlaybackPosition;
 
 @interface CHIPMediaPlaybackClusterMediaPlayPayload : NSObject
 @end
@@ -1650,8 +1603,6 @@
 @property (copy) NSNumber * _Nonnull MediaPlaybackStatus;
 @end
 
-@class CHIPMediaInputClusterMediaInputInfo;
-
 @interface CHIPMediaInputClusterSelectInputPayload : NSObject
 @property (copy) NSNumber * _Nonnull Index;
 @end
@@ -1678,12 +1629,6 @@
 @property (copy) NSNumber * _Nonnull Status;
 @end
 
-@class CHIPContentLauncherClusterContentLaunchAdditionalInfo;
-@class CHIPContentLauncherClusterContentLaunchParamater;
-@class CHIPContentLauncherClusterContentLaunchBrandingInformation;
-@class CHIPContentLauncherClusterContentLaunchDimension;
-@class CHIPContentLauncherClusterContentLaunchStyleInformation;
-
 @interface CHIPContentLauncherClusterLaunchContentPayload : NSObject
 @property (copy) NSNumber * _Nonnull AutoPlay;
 @property (copy) NSString * _Nonnull Data;
@@ -1704,8 +1649,6 @@
 @property (copy) NSNumber * _Nonnull ContentLaunchStatus;
 @end
 
-@class CHIPAudioOutputClusterAudioOutputInfo;
-
 @interface CHIPAudioOutputClusterSelectOutputPayload : NSObject
 @property (copy) NSNumber * _Nonnull Index;
 @end
@@ -1714,8 +1657,6 @@
 @property (copy) NSNumber * _Nonnull Index;
 @property (copy) NSString * _Nonnull Name;
 @end
-
-@class CHIPApplicationLauncherClusterApplicationLauncherApp;
 
 @interface CHIPApplicationLauncherClusterLaunchAppPayload : NSObject
 @property (copy) NSString * _Nonnull Data;
@@ -1744,13 +1685,6 @@
 @property (copy) NSString * _Nonnull TempAccountIdentifier;
 @property (copy) NSString * _Nonnull SetupPIN;
 @end
-
-@class CHIPTestClusterClusterSimpleStruct;
-@class CHIPTestClusterClusterNullablesAndOptionalsStruct;
-@class CHIPTestClusterClusterNestedStruct;
-@class CHIPTestClusterClusterNestedStructList;
-@class CHIPTestClusterClusterDoubleNestedStructList;
-@class CHIPTestClusterClusterTestListStructOctet;
 
 @interface CHIPTestClusterClusterTestPayload : NSObject
 @end
@@ -2034,9 +1968,6 @@
 @property (copy) NSNumber * _Nonnull EndpointId;
 @property (copy) NSNumber * _Nonnull ClusterId;
 @end
-
-@class CHIPGroupKeyManagementClusterGroupKey;
-@class CHIPGroupKeyManagementClusterGroupState;
 
 @interface CHIPSampleMfgSpecificClusterClusterCommandOnePayload : NSObject
 @property (copy) NSNumber * _Nonnull ArgOne;
