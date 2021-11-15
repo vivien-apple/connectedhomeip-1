@@ -9,7 +9,7 @@
 {{#zcl_structs}}
 @interface CHIP{{asUpperCamelCase parent.name}}Cluster{{asUpperCamelCase name}} : NSObject
 {{#zcl_struct_items}}
-@property {{asObjectiveCType type parent.parent.name}} {{asUpperCamelCase label}};
+@property (copy) {{asObjectiveCType type parent.parent.name}} {{asUpperCamelCase label}};
 {{/zcl_struct_items}}
 @end
 

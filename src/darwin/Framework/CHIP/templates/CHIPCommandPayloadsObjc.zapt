@@ -18,7 +18,7 @@
 {{#zcl_commands}}
 @interface CHIP{{asUpperCamelCase parent.name}}Cluster{{asUpperCamelCase name}}Payload : NSObject
 {{#zcl_command_arguments}}
-@property {{asObjectiveCType type parent.parent.name}} {{asUpperCamelCase label}};
+@property (copy) {{asObjectiveCType type parent.parent.name}} {{asUpperCamelCase label}};
 {{/zcl_command_arguments}}
 @end
 

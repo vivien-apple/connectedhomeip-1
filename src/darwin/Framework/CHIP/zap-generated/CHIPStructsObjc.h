@@ -23,313 +23,313 @@
 #import <Foundation/Foundation.h>
 
 @interface CHIPScenesClusterSceneExtensionFieldSet : NSObject
-@property NSNumber * _Nonnull ClusterId;
-@property NSNumber * _Nonnull Length;
-@property NSNumber * _Nonnull Value;
+@property (copy) NSNumber * _Nonnull ClusterId;
+@property (copy) NSNumber * _Nonnull Length;
+@property (copy) NSNumber * _Nonnull Value;
 @end
 
 @interface CHIPPowerProfileClusterPowerProfileRecord : NSObject
-@property NSNumber * _Nonnull PowerProfileId;
-@property NSNumber * _Nonnull EnergyPhaseId;
-@property NSNumber * _Nonnull PowerProfileRemoteControl;
-@property NSNumber * _Nonnull PowerProfileState;
+@property (copy) NSNumber * _Nonnull PowerProfileId;
+@property (copy) NSNumber * _Nonnull EnergyPhaseId;
+@property (copy) NSNumber * _Nonnull PowerProfileRemoteControl;
+@property (copy) NSNumber * _Nonnull PowerProfileState;
 @end
 
 @interface CHIPPowerProfileClusterScheduledPhase : NSObject
-@property NSNumber * _Nonnull EnergyPhaseId;
-@property NSNumber * _Nonnull ScheduledTime;
+@property (copy) NSNumber * _Nonnull EnergyPhaseId;
+@property (copy) NSNumber * _Nonnull ScheduledTime;
 @end
 
 @interface CHIPPowerProfileClusterTransferredPhase : NSObject
-@property NSNumber * _Nonnull EnergyPhaseId;
-@property NSNumber * _Nonnull MacroPhaseId;
-@property NSNumber * _Nonnull ExpectedDuration;
-@property NSNumber * _Nonnull PeakPower;
-@property NSNumber * _Nonnull Energy;
-@property NSNumber * _Nonnull MaxActivationDelay;
+@property (copy) NSNumber * _Nonnull EnergyPhaseId;
+@property (copy) NSNumber * _Nonnull MacroPhaseId;
+@property (copy) NSNumber * _Nonnull ExpectedDuration;
+@property (copy) NSNumber * _Nonnull PeakPower;
+@property (copy) NSNumber * _Nonnull Energy;
+@property (copy) NSNumber * _Nonnull MaxActivationDelay;
 @end
 
 @interface CHIPDescriptorClusterDeviceType : NSObject
-@property NSNumber * _Nonnull Type;
-@property NSNumber * _Nonnull Revision;
+@property (copy) NSNumber * _Nonnull Type;
+@property (copy) NSNumber * _Nonnull Revision;
 @end
 
 @interface CHIPBridgedActionsClusterActionStruct : NSObject
-@property NSNumber * _Nonnull ActionID;
-@property NSString * _Nonnull Name;
-@property NSNumber * _Nonnull Type;
-@property NSNumber * _Nonnull EndpointListID;
-@property NSNumber * _Nonnull SupportedCommands;
-@property NSNumber * _Nonnull Status;
+@property (copy) NSNumber * _Nonnull ActionID;
+@property (copy) NSString * _Nonnull Name;
+@property (copy) NSNumber * _Nonnull Type;
+@property (copy) NSNumber * _Nonnull EndpointListID;
+@property (copy) NSNumber * _Nonnull SupportedCommands;
+@property (copy) NSNumber * _Nonnull Status;
 @end
 
 @interface CHIPBridgedActionsClusterEndpointListStruct : NSObject
-@property NSNumber * _Nonnull EndpointListID;
-@property NSString * _Nonnull Name;
-@property NSNumber * _Nonnull Type;
-@property NSData * _Nonnull Endpoints;
+@property (copy) NSNumber * _Nonnull EndpointListID;
+@property (copy) NSString * _Nonnull Name;
+@property (copy) NSNumber * _Nonnull Type;
+@property (copy) NSData * _Nonnull Endpoints;
 @end
 
 @interface CHIPGeneralCommissioningClusterBasicCommissioningInfoType : NSObject
-@property NSNumber * _Nonnull FailSafeExpiryLengthMs;
+@property (copy) NSNumber * _Nonnull FailSafeExpiryLengthMs;
 @end
 
 @interface CHIPNetworkCommissioningClusterThreadInterfaceScanResult : NSObject
-@property NSData * _Nonnull DiscoveryResponse;
+@property (copy) NSData * _Nonnull DiscoveryResponse;
 @end
 
 @interface CHIPNetworkCommissioningClusterWiFiInterfaceScanResult : NSObject
-@property NSNumber * _Nonnull Security;
-@property NSData * _Nonnull Ssid;
-@property NSData * _Nonnull Bssid;
-@property NSNumber * _Nonnull Channel;
-@property NSNumber * _Nonnull FrequencyBand;
+@property (copy) NSNumber * _Nonnull Security;
+@property (copy) NSData * _Nonnull Ssid;
+@property (copy) NSData * _Nonnull Bssid;
+@property (copy) NSNumber * _Nonnull Channel;
+@property (copy) NSNumber * _Nonnull FrequencyBand;
 @end
 
 @interface CHIPGeneralDiagnosticsClusterNetworkInterfaceType : NSObject
-@property NSString * _Nonnull Name;
-@property NSNumber * _Nonnull FabricConnected;
-@property NSNumber * _Nonnull OffPremiseServicesReachableIPv4;
-@property NSNumber * _Nonnull OffPremiseServicesReachableIPv6;
-@property NSData * _Nonnull HardwareAddress;
-@property NSNumber * _Nonnull Type;
+@property (copy) NSString * _Nonnull Name;
+@property (copy) NSNumber * _Nonnull FabricConnected;
+@property (copy) NSNumber * _Nonnull OffPremiseServicesReachableIPv4;
+@property (copy) NSNumber * _Nonnull OffPremiseServicesReachableIPv6;
+@property (copy) NSData * _Nonnull HardwareAddress;
+@property (copy) NSNumber * _Nonnull Type;
 @end
 
 @interface CHIPSoftwareDiagnosticsClusterSoftwareFault : NSObject
-@property NSNumber * _Nonnull Id;
-@property NSString * _Nonnull Name;
-@property NSData * _Nonnull FaultRecording;
+@property (copy) NSNumber * _Nonnull Id;
+@property (copy) NSString * _Nonnull Name;
+@property (copy) NSData * _Nonnull FaultRecording;
 @end
 
 @interface CHIPSoftwareDiagnosticsClusterThreadMetrics : NSObject
-@property NSNumber * _Nonnull Id;
-@property NSString * _Nonnull Name;
-@property NSNumber * _Nonnull StackFreeCurrent;
-@property NSNumber * _Nonnull StackFreeMinimum;
-@property NSNumber * _Nonnull StackSize;
+@property (copy) NSNumber * _Nonnull Id;
+@property (copy) NSString * _Nonnull Name;
+@property (copy) NSNumber * _Nonnull StackFreeCurrent;
+@property (copy) NSNumber * _Nonnull StackFreeMinimum;
+@property (copy) NSNumber * _Nonnull StackSize;
 @end
 
 @interface CHIPThreadNetworkDiagnosticsClusterNeighborTable : NSObject
-@property NSNumber * _Nonnull ExtAddress;
-@property NSNumber * _Nonnull Age;
-@property NSNumber * _Nonnull Rloc16;
-@property NSNumber * _Nonnull LinkFrameCounter;
-@property NSNumber * _Nonnull MleFrameCounter;
-@property NSNumber * _Nonnull Lqi;
-@property NSNumber * _Nonnull AverageRssi;
-@property NSNumber * _Nonnull LastRssi;
-@property NSNumber * _Nonnull FrameErrorRate;
-@property NSNumber * _Nonnull MessageErrorRate;
-@property NSNumber * _Nonnull RxOnWhenIdle;
-@property NSNumber * _Nonnull FullThreadDevice;
-@property NSNumber * _Nonnull FullNetworkData;
-@property NSNumber * _Nonnull IsChild;
+@property (copy) NSNumber * _Nonnull ExtAddress;
+@property (copy) NSNumber * _Nonnull Age;
+@property (copy) NSNumber * _Nonnull Rloc16;
+@property (copy) NSNumber * _Nonnull LinkFrameCounter;
+@property (copy) NSNumber * _Nonnull MleFrameCounter;
+@property (copy) NSNumber * _Nonnull Lqi;
+@property (copy) NSNumber * _Nonnull AverageRssi;
+@property (copy) NSNumber * _Nonnull LastRssi;
+@property (copy) NSNumber * _Nonnull FrameErrorRate;
+@property (copy) NSNumber * _Nonnull MessageErrorRate;
+@property (copy) NSNumber * _Nonnull RxOnWhenIdle;
+@property (copy) NSNumber * _Nonnull FullThreadDevice;
+@property (copy) NSNumber * _Nonnull FullNetworkData;
+@property (copy) NSNumber * _Nonnull IsChild;
 @end
 
 @interface CHIPThreadNetworkDiagnosticsClusterOperationalDatasetComponents : NSObject
-@property NSNumber * _Nonnull ActiveTimestampPresent;
-@property NSNumber * _Nonnull PendingTimestampPresent;
-@property NSNumber * _Nonnull MasterKeyPresent;
-@property NSNumber * _Nonnull NetworkNamePresent;
-@property NSNumber * _Nonnull ExtendedPanIdPresent;
-@property NSNumber * _Nonnull MeshLocalPrefixPresent;
-@property NSNumber * _Nonnull DelayPresent;
-@property NSNumber * _Nonnull PanIdPresent;
-@property NSNumber * _Nonnull ChannelPresent;
-@property NSNumber * _Nonnull PskcPresent;
-@property NSNumber * _Nonnull SecurityPolicyPresent;
-@property NSNumber * _Nonnull ChannelMaskPresent;
+@property (copy) NSNumber * _Nonnull ActiveTimestampPresent;
+@property (copy) NSNumber * _Nonnull PendingTimestampPresent;
+@property (copy) NSNumber * _Nonnull MasterKeyPresent;
+@property (copy) NSNumber * _Nonnull NetworkNamePresent;
+@property (copy) NSNumber * _Nonnull ExtendedPanIdPresent;
+@property (copy) NSNumber * _Nonnull MeshLocalPrefixPresent;
+@property (copy) NSNumber * _Nonnull DelayPresent;
+@property (copy) NSNumber * _Nonnull PanIdPresent;
+@property (copy) NSNumber * _Nonnull ChannelPresent;
+@property (copy) NSNumber * _Nonnull PskcPresent;
+@property (copy) NSNumber * _Nonnull SecurityPolicyPresent;
+@property (copy) NSNumber * _Nonnull ChannelMaskPresent;
 @end
 
 @interface CHIPThreadNetworkDiagnosticsClusterRouteTable : NSObject
-@property NSNumber * _Nonnull ExtAddress;
-@property NSNumber * _Nonnull Rloc16;
-@property NSNumber * _Nonnull RouterId;
-@property NSNumber * _Nonnull NextHop;
-@property NSNumber * _Nonnull PathCost;
-@property NSNumber * _Nonnull LQIIn;
-@property NSNumber * _Nonnull LQIOut;
-@property NSNumber * _Nonnull Age;
-@property NSNumber * _Nonnull Allocated;
-@property NSNumber * _Nonnull LinkEstablished;
+@property (copy) NSNumber * _Nonnull ExtAddress;
+@property (copy) NSNumber * _Nonnull Rloc16;
+@property (copy) NSNumber * _Nonnull RouterId;
+@property (copy) NSNumber * _Nonnull NextHop;
+@property (copy) NSNumber * _Nonnull PathCost;
+@property (copy) NSNumber * _Nonnull LQIIn;
+@property (copy) NSNumber * _Nonnull LQIOut;
+@property (copy) NSNumber * _Nonnull Age;
+@property (copy) NSNumber * _Nonnull Allocated;
+@property (copy) NSNumber * _Nonnull LinkEstablished;
 @end
 
 @interface CHIPThreadNetworkDiagnosticsClusterSecurityPolicy : NSObject
-@property NSNumber * _Nonnull RotationTime;
-@property NSNumber * _Nonnull Flags;
+@property (copy) NSNumber * _Nonnull RotationTime;
+@property (copy) NSNumber * _Nonnull Flags;
 @end
 
 @interface CHIPOperationalCredentialsClusterFabricDescriptor : NSObject
-@property NSNumber * _Nonnull FabricIndex;
-@property NSData * _Nonnull RootPublicKey;
-@property NSNumber * _Nonnull VendorId;
-@property NSNumber * _Nonnull FabricId;
-@property NSNumber * _Nonnull NodeId;
-@property NSString * _Nonnull Label;
+@property (copy) NSNumber * _Nonnull FabricIndex;
+@property (copy) NSData * _Nonnull RootPublicKey;
+@property (copy) NSNumber * _Nonnull VendorId;
+@property (copy) NSNumber * _Nonnull FabricId;
+@property (copy) NSNumber * _Nonnull NodeId;
+@property (copy) NSString * _Nonnull Label;
 @end
 
 @interface CHIPOperationalCredentialsClusterNOCStruct : NSObject
-@property NSNumber * _Nonnull FabricIndex;
-@property NSData * _Nonnull Noc;
+@property (copy) NSNumber * _Nonnull FabricIndex;
+@property (copy) NSData * _Nonnull Noc;
 @end
 
 @interface CHIPFixedLabelClusterLabelStruct : NSObject
-@property NSString * _Nonnull Label;
-@property NSString * _Nonnull Value;
+@property (copy) NSString * _Nonnull Label;
+@property (copy) NSString * _Nonnull Value;
 @end
 
 @interface CHIPModeSelectClusterModeOptionStruct : NSObject
-@property NSString * _Nonnull Label;
-@property NSNumber * _Nonnull Mode;
-@property NSNumber * _Nonnull SemanticTag;
+@property (copy) NSString * _Nonnull Label;
+@property (copy) NSNumber * _Nonnull Mode;
+@property (copy) NSNumber * _Nonnull SemanticTag;
 @end
 
 @interface CHIPModeSelectClusterSemanticTag : NSObject
-@property NSNumber * _Nonnull MfgCode;
-@property NSNumber * _Nonnull Value;
+@property (copy) NSNumber * _Nonnull MfgCode;
+@property (copy) NSNumber * _Nonnull Value;
 @end
 
 @interface CHIPIasAceClusterIasAceZoneStatusResult : NSObject
-@property NSNumber * _Nonnull ZoneId;
-@property NSNumber * _Nonnull ZoneStatus;
+@property (copy) NSNumber * _Nonnull ZoneId;
+@property (copy) NSNumber * _Nonnull ZoneStatus;
 @end
 
 @interface CHIPTvChannelClusterTvChannelInfo : NSObject
-@property NSNumber * _Nonnull MajorNumber;
-@property NSNumber * _Nonnull MinorNumber;
-@property NSString * _Nonnull Name;
-@property NSString * _Nonnull CallSign;
-@property NSString * _Nonnull AffiliateCallSign;
+@property (copy) NSNumber * _Nonnull MajorNumber;
+@property (copy) NSNumber * _Nonnull MinorNumber;
+@property (copy) NSString * _Nonnull Name;
+@property (copy) NSString * _Nonnull CallSign;
+@property (copy) NSString * _Nonnull AffiliateCallSign;
 @end
 
 @interface CHIPTvChannelClusterTvChannelLineupInfo : NSObject
-@property NSString * _Nonnull OperatorName;
-@property NSString * _Nonnull LineupName;
-@property NSString * _Nonnull PostalCode;
-@property NSNumber * _Nonnull LineupInfoType;
+@property (copy) NSString * _Nonnull OperatorName;
+@property (copy) NSString * _Nonnull LineupName;
+@property (copy) NSString * _Nonnull PostalCode;
+@property (copy) NSNumber * _Nonnull LineupInfoType;
 @end
 
 @interface CHIPTargetNavigatorClusterNavigateTargetTargetInfo : NSObject
-@property NSNumber * _Nonnull Identifier;
-@property NSString * _Nonnull Name;
+@property (copy) NSNumber * _Nonnull Identifier;
+@property (copy) NSString * _Nonnull Name;
 @end
 
 @interface CHIPMediaPlaybackClusterMediaPlaybackPosition : NSObject
-@property NSNumber * _Nonnull UpdatedAt;
-@property NSNumber * _Nonnull Position;
+@property (copy) NSNumber * _Nonnull UpdatedAt;
+@property (copy) NSNumber * _Nonnull Position;
 @end
 
 @interface CHIPMediaInputClusterMediaInputInfo : NSObject
-@property NSNumber * _Nonnull Index;
-@property NSNumber * _Nonnull InputType;
-@property NSString * _Nonnull Name;
-@property NSString * _Nonnull Description;
+@property (copy) NSNumber * _Nonnull Index;
+@property (copy) NSNumber * _Nonnull InputType;
+@property (copy) NSString * _Nonnull Name;
+@property (copy) NSString * _Nonnull Description;
 @end
 
 @interface CHIPContentLauncherClusterContentLaunchAdditionalInfo : NSObject
-@property NSString * _Nonnull Name;
-@property NSString * _Nonnull Value;
+@property (copy) NSString * _Nonnull Name;
+@property (copy) NSString * _Nonnull Value;
 @end
 
 @interface CHIPContentLauncherClusterContentLaunchParamater : NSObject
-@property NSNumber * _Nonnull Type;
-@property NSString * _Nonnull Value;
-@property NSArray * _Nonnull ExternalIDList;
+@property (copy) NSNumber * _Nonnull Type;
+@property (copy) NSString * _Nonnull Value;
+@property (copy) NSArray * _Nonnull ExternalIDList;
 @end
 
 @interface CHIPContentLauncherClusterContentLaunchBrandingInformation : NSObject
-@property NSString * _Nonnull ProviderName;
-@property NSNumber * _Nonnull Background;
-@property NSNumber * _Nonnull Logo;
-@property NSNumber * _Nonnull ProgressBar;
-@property NSNumber * _Nonnull Splash;
-@property NSNumber * _Nonnull WaterMark;
+@property (copy) NSString * _Nonnull ProviderName;
+@property (copy) NSNumber * _Nonnull Background;
+@property (copy) NSNumber * _Nonnull Logo;
+@property (copy) NSNumber * _Nonnull ProgressBar;
+@property (copy) NSNumber * _Nonnull Splash;
+@property (copy) NSNumber * _Nonnull WaterMark;
 @end
 
 @interface CHIPContentLauncherClusterContentLaunchDimension : NSObject
-@property NSString * _Nonnull Width;
-@property NSString * _Nonnull Height;
-@property NSNumber * _Nonnull Metric;
+@property (copy) NSString * _Nonnull Width;
+@property (copy) NSString * _Nonnull Height;
+@property (copy) NSNumber * _Nonnull Metric;
 @end
 
 @interface CHIPContentLauncherClusterContentLaunchStyleInformation : NSObject
-@property NSString * _Nonnull ImageUrl;
-@property NSString * _Nonnull Color;
-@property NSNumber * _Nonnull Size;
+@property (copy) NSString * _Nonnull ImageUrl;
+@property (copy) NSString * _Nonnull Color;
+@property (copy) NSNumber * _Nonnull Size;
 @end
 
 @interface CHIPAudioOutputClusterAudioOutputInfo : NSObject
-@property NSNumber * _Nonnull Index;
-@property NSNumber * _Nonnull OutputType;
-@property NSString * _Nonnull Name;
+@property (copy) NSNumber * _Nonnull Index;
+@property (copy) NSNumber * _Nonnull OutputType;
+@property (copy) NSString * _Nonnull Name;
 @end
 
 @interface CHIPApplicationLauncherClusterApplicationLauncherApp : NSObject
-@property NSNumber * _Nonnull CatalogVendorId;
-@property NSString * _Nonnull ApplicationId;
+@property (copy) NSNumber * _Nonnull CatalogVendorId;
+@property (copy) NSString * _Nonnull ApplicationId;
 @end
 
 @interface CHIPTestClusterClusterSimpleStruct : NSObject
-@property NSNumber * _Nonnull A;
-@property NSNumber * _Nonnull B;
-@property NSNumber * _Nonnull C;
-@property NSData * _Nonnull D;
-@property NSString * _Nonnull E;
-@property NSNumber * _Nonnull F;
+@property (copy) NSNumber * _Nonnull A;
+@property (copy) NSNumber * _Nonnull B;
+@property (copy) NSNumber * _Nonnull C;
+@property (copy) NSData * _Nonnull D;
+@property (copy) NSString * _Nonnull E;
+@property (copy) NSNumber * _Nonnull F;
 @end
 
 @interface CHIPTestClusterClusterNullablesAndOptionalsStruct : NSObject
-@property NSNumber * _Nullable NullableInt;
-@property NSNumber * _Nullable OptionalInt;
-@property NSNumber * _Nullable NullableOptionalInt;
-@property NSString * _Nullable NullableString;
-@property NSString * _Nullable OptionalString;
-@property NSString * _Nullable NullableOptionalString;
-@property CHIPTestClusterClusterSimpleStruct * _Nullable NullableStruct;
-@property CHIPTestClusterClusterSimpleStruct * _Nullable OptionalStruct;
-@property CHIPTestClusterClusterSimpleStruct * _Nullable NullableOptionalStruct;
-@property NSArray * _Nullable NullableList;
-@property NSArray * _Nullable OptionalList;
-@property NSArray * _Nullable NullableOptionalList;
+@property (copy) NSNumber * _Nullable NullableInt;
+@property (copy) NSNumber * _Nullable OptionalInt;
+@property (copy) NSNumber * _Nullable NullableOptionalInt;
+@property (copy) NSString * _Nullable NullableString;
+@property (copy) NSString * _Nullable OptionalString;
+@property (copy) NSString * _Nullable NullableOptionalString;
+@property (copy) CHIPTestClusterClusterSimpleStruct * _Nullable NullableStruct;
+@property (copy) CHIPTestClusterClusterSimpleStruct * _Nullable OptionalStruct;
+@property (copy) CHIPTestClusterClusterSimpleStruct * _Nullable NullableOptionalStruct;
+@property (copy) NSArray * _Nullable NullableList;
+@property (copy) NSArray * _Nullable OptionalList;
+@property (copy) NSArray * _Nullable NullableOptionalList;
 @end
 
 @interface CHIPTestClusterClusterNestedStruct : NSObject
-@property NSNumber * _Nonnull A;
-@property NSNumber * _Nonnull B;
-@property CHIPTestClusterClusterSimpleStruct * _Nonnull C;
+@property (copy) NSNumber * _Nonnull A;
+@property (copy) NSNumber * _Nonnull B;
+@property (copy) CHIPTestClusterClusterSimpleStruct * _Nonnull C;
 @end
 
 @interface CHIPTestClusterClusterNestedStructList : NSObject
-@property NSNumber * _Nonnull A;
-@property NSNumber * _Nonnull B;
-@property CHIPTestClusterClusterSimpleStruct * _Nonnull C;
-@property NSArray * _Nonnull D;
-@property NSArray * _Nonnull E;
-@property NSArray * _Nonnull F;
-@property NSArray * _Nonnull G;
+@property (copy) NSNumber * _Nonnull A;
+@property (copy) NSNumber * _Nonnull B;
+@property (copy) CHIPTestClusterClusterSimpleStruct * _Nonnull C;
+@property (copy) NSArray * _Nonnull D;
+@property (copy) NSArray * _Nonnull E;
+@property (copy) NSArray * _Nonnull F;
+@property (copy) NSArray * _Nonnull G;
 @end
 
 @interface CHIPTestClusterClusterDoubleNestedStructList : NSObject
-@property NSArray * _Nonnull A;
+@property (copy) NSArray * _Nonnull A;
 @end
 
 @interface CHIPTestClusterClusterTestListStructOctet : NSObject
-@property NSNumber * _Nonnull FabricIndex;
-@property NSData * _Nonnull OperationalCert;
+@property (copy) NSNumber * _Nonnull FabricIndex;
+@property (copy) NSData * _Nonnull OperationalCert;
 @end
 
 @interface CHIPGroupKeyManagementClusterGroupKey : NSObject
-@property NSNumber * _Nonnull VendorId;
-@property NSNumber * _Nonnull GroupKeyIndex;
-@property NSData * _Nonnull GroupKeyRoot;
-@property NSNumber * _Nonnull GroupKeyEpochStartTime;
-@property NSNumber * _Nonnull GroupKeySecurityPolicy;
+@property (copy) NSNumber * _Nonnull VendorId;
+@property (copy) NSNumber * _Nonnull GroupKeyIndex;
+@property (copy) NSData * _Nonnull GroupKeyRoot;
+@property (copy) NSNumber * _Nonnull GroupKeyEpochStartTime;
+@property (copy) NSNumber * _Nonnull GroupKeySecurityPolicy;
 @end
 
 @interface CHIPGroupKeyManagementClusterGroupState : NSObject
-@property NSNumber * _Nonnull VendorId;
-@property NSNumber * _Nonnull VendorGroupId;
-@property NSNumber * _Nonnull GroupKeySetIndex;
+@property (copy) NSNumber * _Nonnull VendorId;
+@property (copy) NSNumber * _Nonnull VendorGroupId;
+@property (copy) NSNumber * _Nonnull GroupKeySetIndex;
 @end
 
 #endif /* CHIP_STRUCTS_H */
