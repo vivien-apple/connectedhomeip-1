@@ -77,7 +77,7 @@ jobs:
             - name: Build chip-tool
               timeout-minutes: 5
               run: |
-                  scripts/examples/gn_build_example.sh examples/chip-tool out/debug/standalone/ is_tsan=${USE_TSAN} config_use_separate_eventloop=${USE_SEPARATE_EVENTLOOP}
+                  scripts/examples/gn_build_example.sh examples/chip-tool out/debug/standalone/ is_tsan=${USE_TSAN} config_use_separate_eventloop=${USE_SEPARATE_EVENTLOOP} chip_mdns=\"platform\"
             - name: Copy objdir
               run: |
                   # The idea is to not upload our objdir unless builds have
