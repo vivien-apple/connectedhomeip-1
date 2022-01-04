@@ -103,9 +103,16 @@ bool emberAfGeneralCommissioningClusterArmFailSafeCallback(app::CommandHandler *
                                                            const Commands::ArmFailSafe::DecodableType & commandData)
 {
     auto expiryLengthSeconds = System::Clock::Seconds16(commandData.expiryLengthSeconds);
+    if (CHIP_NO_ERROR != DeviceLayer::DeviceControlServer::DeviceControlSvr().ArmFailSafe(expiryLengthSeconds))
+    {
+        return emberAfSendImmediateDefaultResponse(EMBER_ZCL_STATUS_FAILURE);
+    }
 
-    CHIP_ERROR err = DeviceLayer::DeviceControlServer::DeviceControlSvr().ArmFailSafe(expiryLengthSeconds);
-    emberAfSendImmediateDefaultResponse(err == CHIP_NO_ERROR ? EMBER_ZCL_STATUS_SUCCESS : EMBER_ZCL_STATUS_FAILURE);
+    Commands::ArmFailSafeResponse::Type response;
+    if (CHIP_NO_ERROR != commandObj->AddResponseData(commandPath, response))
+    {
+        return emberAfSendImmediateDefaultResponse(EMBER_ZCL_STATUS_FAILURE);
+    }
 
     return true;
 }
@@ -123,8 +130,16 @@ bool emberAfGeneralCommissioningClusterCommissioningCompleteCallback(
     DeviceLayer::DeviceControlServer::DeviceControlSvr().SetFabricIndex(handle.GetFabricIndex());
     DeviceLayer::DeviceControlServer::DeviceControlSvr().SetPeerNodeId(handle.GetPeerNodeId());
 
-    CHIP_ERROR err = DeviceLayer::DeviceControlServer::DeviceControlSvr().CommissioningComplete();
-    emberAfSendImmediateDefaultResponse(err == CHIP_NO_ERROR ? EMBER_ZCL_STATUS_SUCCESS : EMBER_ZCL_STATUS_FAILURE);
+    if (CHIP_NO_ERROR != DeviceLayer::DeviceControlServer::DeviceControlSvr().CommissioningComplete())
+    {
+        return emberAfSendImmediateDefaultResponse(EMBER_ZCL_STATUS_FAILURE);
+    }
+
+    Commands::CommissioningCompleteResponse::Type response;
+    if (CHIP_NO_ERROR != commandObj->AddResponseData(commandPath, response))
+    {
+        return emberAfSendImmediateDefaultResponse(EMBER_ZCL_STATUS_FAILURE);
+    }
 
     return true;
 }
@@ -137,9 +152,17 @@ bool emberAfGeneralCommissioningClusterSetRegulatoryConfigCallback(app::CommandH
     auto & countryCode = commandData.countryCode;
     auto & breadcrumb  = commandData.breadcrumb;
 
-    CHIP_ERROR err = DeviceLayer::DeviceControlServer::DeviceControlSvr().SetRegulatoryConfig(location, countryCode, breadcrumb);
+    if (CHIP_NO_ERROR !=
+        DeviceLayer::DeviceControlServer::DeviceControlSvr().SetRegulatoryConfig(location, countryCode, breadcrumb))
+    {
+        return emberAfSendImmediateDefaultResponse(EMBER_ZCL_STATUS_FAILURE);
+    }
 
-    emberAfSendImmediateDefaultResponse(err == CHIP_NO_ERROR ? EMBER_ZCL_STATUS_SUCCESS : EMBER_ZCL_STATUS_FAILURE);
+    Commands::SetRegulatoryConfigResponse::Type response;
+    if (CHIP_NO_ERROR != commandObj->AddResponseData(commandPath, response))
+    {
+        return emberAfSendImmediateDefaultResponse(EMBER_ZCL_STATUS_FAILURE);
+    }
 
     return true;
 }

@@ -137,7 +137,6 @@ class ChipDeviceController(object):
             self._ChipStack.commissioningCompleteEvent.set()
             self._ChipStack.commissioningEventRes = err
 
-        im.InitIMDelegate()
         ClusterCommand.Init(self)
         ClusterAttribute.Init()
 

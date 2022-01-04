@@ -89,14 +89,6 @@ using namespace chip::System;
 using namespace chip::Transport;
 using namespace chip::Credentials;
 
-// For some applications those does not implement IMDelegate, the DeviceControllerInteractionModelDelegate will dispatch the
-// response to IMDefaultResponseCallback CHIPClientCallbacks, for the applications those implemented IMDelegate, this function will
-// not be used.
-bool __attribute__((weak)) IMDefaultResponseCallback(const chip::app::CommandSender * commandObj, EmberAfStatus status)
-{
-    return false;
-}
-
 namespace chip {
 namespace Controller {
 
@@ -107,9 +99,7 @@ using namespace chip::Protocols::UserDirectedCommissioning;
 
 constexpr uint32_t kSessionEstablishmentTimeout = 40 * kMillisecondsPerSecond;
 
-DeviceController::DeviceController() :
-    mOpenPairingSuccessCallback(OnOpenPairingWindowSuccessResponse, this),
-    mOpenPairingFailureCallback(OnOpenPairingWindowFailureResponse, this)
+DeviceController::DeviceController()
 {
     mState                    = State::NotInitialized;
     mStorageDelegate          = nullptr;
@@ -153,7 +143,6 @@ CHIP_ERROR DeviceController::Init(ControllerInitParams params)
         .idAllocator    = &mIDAllocator,
         .fabricTable    = params.systemState->Fabrics(),
         .clientPool     = &mCASEClientPool,
-        .imDelegate     = params.systemState->IMDelegate(),
         .mrpLocalConfig = Optional<ReliableMessageProtocolConfig>::Value(mMRPConfig),
     };
 
@@ -366,7 +355,7 @@ void DeviceController::OnPIDReadResponse(void * context, uint16_t value)
 
     if (controller->OpenCommissioningWindowInternal() != CHIP_NO_ERROR)
     {
-        OnOpenPairingWindowFailureResponse(context, 0);
+        OnOpenPairingWindowFailureResponse(context, EMBER_ZCL_STATUS_SUCCESS);
     }
 }
 
@@ -383,7 +372,7 @@ void DeviceController::OnVIDReadResponse(void * context, uint16_t value)
     if (device == nullptr)
     {
         ChipLogError(Controller, "Could not find device for opening commissioning window");
-        OnOpenPairingWindowFailureResponse(context, 0);
+        OnOpenPairingWindowFailureResponse(context, EMBER_ZCL_STATUS_SUCCESS);
         return;
     }
 
@@ -395,7 +384,7 @@ void DeviceController::OnVIDReadResponse(void * context, uint16_t value)
                                                                                      OnVIDPIDReadFailureResponse) != CHIP_NO_ERROR)
     {
         ChipLogError(Controller, "Could not read PID for opening commissioning window");
-        OnOpenPairingWindowFailureResponse(context, 0);
+        OnOpenPairingWindowFailureResponse(context, EMBER_ZCL_STATUS_SUCCESS);
     }
 }
 
@@ -405,7 +394,7 @@ void DeviceController::OnVIDPIDReadFailureResponse(void * context, EmberAfStatus
     OnOpenPairingWindowFailureResponse(context, status);
 }
 
-void DeviceController::OnOpenPairingWindowSuccessResponse(void * context)
+void DeviceController::OnOpenPairingWindowSuccessResponse(void * context, const chip::app::DataModel::NullObjectType & data)
 {
     ChipLogProgress(Controller, "Successfully opened pairing window on the device");
     DeviceController * controller = static_cast<DeviceController *>(context);
@@ -417,14 +406,14 @@ void DeviceController::OnOpenPairingWindowSuccessResponse(void * context)
     }
 }
 
-void DeviceController::OnOpenPairingWindowFailureResponse(void * context, uint8_t status)
+void DeviceController::OnOpenPairingWindowFailureResponse(void * context, EmberAfStatus status)
 {
-    ChipLogError(Controller, "Failed to open pairing window on the device. Status %d", status);
+    ChipLogError(Controller, "Failed to open pairing window on the device. Status %d", (int) status);
     DeviceController * controller = static_cast<DeviceController *>(context);
     if (controller->mCommissioningWindowCallback != nullptr)
     {
         CHIP_ERROR error = CHIP_ERROR_INVALID_PASE_PARAMETER;
-        if (status == EmberAfStatusCode::EMBER_ZCL_STATUS_CODE_BUSY)
+        if (static_cast<EmberAfStatusCode>(status) == EmberAfStatusCode::EMBER_ZCL_STATUS_CODE_BUSY)
         {
             error = CHIP_ERROR_ANOTHER_COMMISSIONING_IN_PROGRESS;
         }
@@ -504,8 +493,8 @@ CHIP_ERROR DeviceController::OpenCommissioningWindowInternal()
     chip::Controller::AdministratorCommissioningCluster cluster;
     cluster.Associate(device, kAdministratorCommissioningClusterEndpoint);
 
-    Callback::Cancelable * successCallback = mOpenPairingSuccessCallback.Cancel();
-    Callback::Cancelable * failureCallback = mOpenPairingFailureCallback.Cancel();
+    chip::app::Clusters::AdministratorCommissioning::Commands::OpenCommissioningWindow::Type request;
+    request.commissioningTimeout = mCommissioningWindowTimeout;
 
     if (mCommissioningWindowOption != CommissioningWindowOption::kOriginalSetupCode)
     {
@@ -522,9 +511,14 @@ CHIP_ERROR DeviceController::OpenCommissioningWindowInternal()
         memcpy(serializedVerifier, verifier.mW0, kSpake2p_WS_Length);
         memcpy(&serializedVerifier[kSpake2p_WS_Length], verifier.mL, kSpake2p_WS_Length);
 
-        ReturnErrorOnFailure(cluster.OpenCommissioningWindow(
-            successCallback, failureCallback, mCommissioningWindowTimeout, ByteSpan(serializedVerifier, sizeof(serializedVerifier)),
-            mSetupPayload.discriminator, mCommissioningWindowIteration, salt, mPAKEVerifierID++));
+        request.PAKEVerifier  = ByteSpan(serializedVerifier, sizeof(serializedVerifier));
+        request.discriminator = mSetupPayload.discriminator;
+        request.iterations    = mCommissioningWindowIteration;
+        request.salt          = salt;
+        request.passcodeID    = mPAKEVerifierID++;
+
+        ReturnErrorOnFailure(
+            cluster.InvokeCommand(request, this, OnOpenPairingWindowSuccessResponse, OnOpenPairingWindowFailureResponse));
 
         char payloadBuffer[QRCodeBasicSetupPayloadGenerator::kMaxQRCodeBase38RepresentationLength];
 
@@ -538,7 +532,8 @@ CHIP_ERROR DeviceController::OpenCommissioningWindowInternal()
     }
     else
     {
-        ReturnErrorOnFailure(cluster.OpenBasicCommissioningWindow(successCallback, failureCallback, mCommissioningWindowTimeout));
+        ReturnErrorOnFailure(
+            cluster.InvokeCommand(request, this, OnOpenPairingWindowSuccessResponse, OnOpenPairingWindowFailureResponse));
     }
 
     return CHIP_NO_ERROR;
@@ -598,17 +593,10 @@ ControllerDeviceInitParams DeviceController::GetControllerDeviceInitParams()
         .storageDelegate    = mStorageDelegate,
         .idAllocator        = &mIDAllocator,
         .fabricsTable       = mSystemState->Fabrics(),
-        .imDelegate         = mSystemState->IMDelegate(),
     };
 }
 
 DeviceCommissioner::DeviceCommissioner() :
-    mSuccess(BasicSuccess, this), mFailure(BasicFailure, this), mCertificateChainResponseCallback(OnCertificateChainResponse, this),
-    mAttestationResponseCallback(OnAttestationResponse, this), mOpCSRResponseCallback(OnOperationalCertificateSigningRequest, this),
-    mNOCResponseCallback(OnOperationalCertificateAddResponse, this), mRootCertResponseCallback(OnRootCertSuccessResponse, this),
-    mOnCertificateChainFailureCallback(OnCertificateChainFailureResponse, this),
-    mOnAttestationFailureCallback(OnAttestationFailureResponse, this), mOnCSRFailureCallback(OnCSRFailureResponse, this),
-    mOnCertFailureCallback(OnAddNOCFailureResponse, this), mOnRootCertFailureCallback(OnRootCertFailureResponse, this),
     mOnDeviceConnectedCallback(OnDeviceConnectedFn, this), mOnDeviceConnectionFailureCallback(OnDeviceConnectionFailureFn, this),
     mDeviceNOCChainCallback(OnDeviceNOCChainGeneration, this), mSetUpCodePairer(this), mAutoCommissioner(this)
 {
@@ -1043,33 +1031,20 @@ CHIP_ERROR DeviceCommissioner::SendCertificateChainRequestCommand(CommissioneeDe
 
     mCertificateTypeBeingRequested = certificateType;
 
-    Callback::Cancelable * successCallback = mCertificateChainResponseCallback.Cancel();
-    Callback::Cancelable * failureCallback = mOnCertificateChainFailureCallback.Cancel();
-
-    ReturnErrorOnFailure(cluster.CertificateChainRequest(successCallback, failureCallback, certificateType));
+    chip::app::Clusters::OperationalCredentials::Commands::CertificateChainRequest::Type request;
+    request.certificateType = certificateType;
+    ReturnErrorOnFailure(cluster.InvokeCommand(request, this, OnCertificateChainResponseSuccess, OnDefaultFailure));
     ChipLogDetail(Controller, "Sent Certificate Chain request, waiting for the DAC Certificate");
     return CHIP_NO_ERROR;
 }
 
-void DeviceCommissioner::OnCertificateChainFailureResponse(void * context, uint8_t status)
-{
-    ChipLogProgress(Controller, "Device failed to receive the Certificate Chain request Response: 0x%02x", status);
-    DeviceCommissioner * commissioner = reinterpret_cast<DeviceCommissioner *>(context);
-    commissioner->mCertificateChainResponseCallback.Cancel();
-    commissioner->mOnCertificateChainFailureCallback.Cancel();
-    // TODO: Map error status to correct error code
-    commissioner->OnSessionEstablishmentError(CHIP_ERROR_INTERNAL);
-}
-
-void DeviceCommissioner::OnCertificateChainResponse(void * context, ByteSpan certificate)
+void DeviceCommissioner::OnCertificateChainResponseSuccess(
+    void * context, const chip::app::Clusters::OperationalCredentials::Commands::CertificateChainResponse::DecodableType & data)
 {
     ChipLogProgress(Controller, "Received certificate chain from the device");
     DeviceCommissioner * commissioner = reinterpret_cast<DeviceCommissioner *>(context);
 
-    commissioner->mCertificateChainResponseCallback.Cancel();
-    commissioner->mOnCertificateChainFailureCallback.Cancel();
-
-    if (commissioner->ProcessCertificateChain(certificate) != CHIP_NO_ERROR)
+    if (commissioner->ProcessCertificateChain(data.certificate) != CHIP_NO_ERROR)
     {
         // Handle error, and notify session failure to the commissioner application.
         ChipLogError(Controller, "Failed to process the certificate chain request");
@@ -1128,33 +1103,20 @@ CHIP_ERROR DeviceCommissioner::SendAttestationRequestCommand(CommissioneeDeviceP
     chip::Controller::OperationalCredentialsCluster cluster;
     cluster.Associate(device, 0);
 
-    Callback::Cancelable * successCallback = mAttestationResponseCallback.Cancel();
-    Callback::Cancelable * failureCallback = mOnAttestationFailureCallback.Cancel();
+    app::Clusters::OperationalCredentials::Commands::AttestationRequest::Type request;
+    request.attestationNonce = attestationNonce;
+    ReturnErrorOnFailure(cluster.InvokeCommand(request, this, OnAttestationResponseSuccess, OnDefaultFailure));
 
-    ReturnErrorOnFailure(cluster.AttestationRequest(successCallback, failureCallback, attestationNonce));
     ChipLogDetail(Controller, "Sent Attestation request, waiting for the Attestation Information");
     return CHIP_NO_ERROR;
 }
 
-void DeviceCommissioner::OnAttestationFailureResponse(void * context, uint8_t status)
-{
-    ChipLogProgress(Controller, "Device failed to receive the Attestation Information Response: 0x%02x", status);
-    DeviceCommissioner * commissioner = reinterpret_cast<DeviceCommissioner *>(context);
-    commissioner->mAttestationResponseCallback.Cancel();
-    commissioner->mOnAttestationFailureCallback.Cancel();
-    // TODO: Map error status to correct error code
-    commissioner->OnSessionEstablishmentError(CHIP_ERROR_INTERNAL);
-}
-
-void DeviceCommissioner::OnAttestationResponse(void * context, chip::ByteSpan attestationElements, chip::ByteSpan signature)
+void DeviceCommissioner::OnAttestationResponseSuccess(
+    void * context, const chip::app::Clusters::OperationalCredentials::Commands::AttestationResponse::DecodableType & data)
 {
     ChipLogProgress(Controller, "Received Attestation Information from the device");
     DeviceCommissioner * commissioner = reinterpret_cast<DeviceCommissioner *>(context);
-
-    commissioner->mAttestationResponseCallback.Cancel();
-    commissioner->mOnAttestationFailureCallback.Cancel();
-
-    commissioner->HandleAttestationResult(commissioner->ValidateAttestationInfo(attestationElements, signature));
+    commissioner->HandleAttestationResult(commissioner->ValidateAttestationInfo(data.attestationElements, data.signature));
 }
 
 CHIP_ERROR DeviceCommissioner::ValidateAttestationInfo(const ByteSpan & attestationElements, const ByteSpan & signature)
@@ -1234,40 +1196,26 @@ CHIP_ERROR DeviceCommissioner::SendOperationalCertificateSigningRequestCommand(C
     chip::Controller::OperationalCredentialsCluster cluster;
     cluster.Associate(device, 0);
 
-    Callback::Cancelable * successCallback = mOpCSRResponseCallback.Cancel();
-    Callback::Cancelable * failureCallback = mOnCSRFailureCallback.Cancel();
-
     uint8_t csrNonceBuf[kOpCSRNonceLength];
     MutableByteSpan csrNonce(csrNonceBuf);
     ReturnErrorOnFailure(mOperationalCredentialsDelegate->ObtainCsrNonce(csrNonce));
     ReturnErrorOnFailure(device->SetCSRNonce(csrNonce));
 
-    ReturnErrorOnFailure(cluster.OpCSRRequest(successCallback, failureCallback, device->GetCSRNonce()));
+    chip::app::Clusters::OperationalCredentials::Commands::OpCSRRequest::Type request;
+    request.CSRNonce = device->GetCSRNonce();
+    ReturnErrorOnFailure(cluster.InvokeCommand(request, this, OnOpCSRResponseSuccess, OnDefaultFailure));
 
     ChipLogDetail(Controller, "Sent OpCSR request, waiting for the CSR");
     return CHIP_NO_ERROR;
 }
 
-void DeviceCommissioner::OnCSRFailureResponse(void * context, uint8_t status)
-{
-    ChipLogProgress(Controller, "Device failed to receive the CSR request Response: 0x%02x", status);
-    DeviceCommissioner * commissioner = static_cast<DeviceCommissioner *>(context);
-    commissioner->mOpCSRResponseCallback.Cancel();
-    commissioner->mOnCSRFailureCallback.Cancel();
-    // TODO: Map error status to correct error code
-    commissioner->OnSessionEstablishmentError(CHIP_ERROR_INTERNAL);
-}
-
-void DeviceCommissioner::OnOperationalCertificateSigningRequest(void * context, ByteSpan NOCSRElements,
-                                                                ByteSpan AttestationSignature)
+void DeviceCommissioner::OnOpCSRResponseSuccess(
+    void * context, const chip::app::Clusters::OperationalCredentials::Commands::OpCSRResponse::DecodableType & data)
 {
     ChipLogProgress(Controller, "Received certificate signing request from the device");
     DeviceCommissioner * commissioner = static_cast<DeviceCommissioner *>(context);
 
-    commissioner->mOpCSRResponseCallback.Cancel();
-    commissioner->mOnCSRFailureCallback.Cancel();
-
-    if (commissioner->ProcessOpCSR(NOCSRElements, AttestationSignature) != CHIP_NO_ERROR)
+    if (commissioner->ProcessOpCSR(data.NOCSRElements, data.attestationSignature) != CHIP_NO_ERROR)
     {
         // Handle error, and notify session failure to the commissioner application.
         ChipLogError(Controller, "Failed to process the certificate signing request");
@@ -1375,11 +1323,13 @@ CHIP_ERROR DeviceCommissioner::SendOperationalCertificate(CommissioneeDeviceProx
     chip::Controller::OperationalCredentialsCluster cluster;
     cluster.Associate(device, 0);
 
-    Callback::Cancelable * successCallback = mNOCResponseCallback.Cancel();
-    Callback::Cancelable * failureCallback = mOnCertFailureCallback.Cancel();
-
-    ReturnErrorOnFailure(cluster.AddNOC(successCallback, failureCallback, nocCertBuf, icaCertBuf, ByteSpan(nullptr, 0),
-                                        mLocalId.GetNodeId(), mVendorId));
+    app::Clusters::OperationalCredentials::Commands::AddNOC::Type request;
+    request.NOCValue      = nocCertBuf;
+    request.ICACValue     = MakeOptional(icaCertBuf);
+    request.IPKValue      = ByteSpan(nullptr, 0);
+    request.caseAdminNode = mLocalId.GetNodeId();
+    request.adminVendorId = mVendorId;
+    ReturnErrorOnFailure(cluster.InvokeCommand(request, this, OnOperationalCredentialsNOCResponseSuccess, OnDefaultFailure));
 
     ChipLogProgress(Controller, "Sent operational certificate to the device");
 
@@ -1413,38 +1363,24 @@ CHIP_ERROR DeviceCommissioner::ConvertFromNodeOperationalCertStatus(uint8_t err)
     return CHIP_ERROR_CERT_LOAD_FAILED;
 }
 
-void DeviceCommissioner::OnAddNOCFailureResponse(void * context, uint8_t status)
+void DeviceCommissioner::OnOperationalCredentialsNOCResponseSuccess(
+    void * context, const chip::app::Clusters::OperationalCredentials::Commands::NOCResponse::DecodableType & data)
 {
-    ChipLogProgress(Controller, "Device failed to receive the operational certificate Response: 0x%02x", status);
-    DeviceCommissioner * commissioner = static_cast<DeviceCommissioner *>(context);
-    commissioner->mOpCSRResponseCallback.Cancel();
-    commissioner->mOnCertFailureCallback.Cancel();
-    // TODO: Map error status to correct error code
-    commissioner->OnSessionEstablishmentError(CHIP_ERROR_INTERNAL);
-}
+    ChipLogProgress(Controller, "Device returned status %d on receiving the NOC", data.statusCode);
 
-void DeviceCommissioner::OnOperationalCertificateAddResponse(void * context, uint8_t StatusCode, uint8_t FabricIndex,
-                                                             CharSpan DebugText)
-{
-    ChipLogProgress(Controller, "Device returned status %d on receiving the NOC", StatusCode);
     DeviceCommissioner * commissioner = static_cast<DeviceCommissioner *>(context);
 
     CHIP_ERROR err                   = CHIP_NO_ERROR;
     CommissioneeDeviceProxy * device = nullptr;
 
     VerifyOrExit(commissioner->mState == State::Initialized, err = CHIP_ERROR_INCORRECT_STATE);
-
-    commissioner->mOpCSRResponseCallback.Cancel();
-    commissioner->mOnCertFailureCallback.Cancel();
-
     VerifyOrExit(commissioner->mDeviceBeingCommissioned != nullptr, err = CHIP_ERROR_INCORRECT_STATE);
 
-    err = ConvertFromNodeOperationalCertStatus(StatusCode);
+    err = ConvertFromNodeOperationalCertStatus(data.statusCode);
     SuccessOrExit(err);
 
     device = commissioner->mDeviceBeingCommissioned;
-
-    err = commissioner->OnOperationalCredentialsProvisioningCompletion(device);
+    err    = commissioner->OnOperationalCredentialsProvisioningCompletion(device);
 
 exit:
     if (err != CHIP_NO_ERROR)
@@ -1463,17 +1399,16 @@ CHIP_ERROR DeviceCommissioner::SendTrustedRootCertificate(CommissioneeDeviceProx
     chip::Controller::OperationalCredentialsCluster cluster;
     cluster.Associate(device, 0);
 
-    Callback::Cancelable * successCallback = mRootCertResponseCallback.Cancel();
-    Callback::Cancelable * failureCallback = mOnRootCertFailureCallback.Cancel();
-
-    ReturnErrorOnFailure(cluster.AddTrustedRootCertificate(successCallback, failureCallback, rcac));
+    app::Clusters::OperationalCredentials::Commands::AddTrustedRootCertificate::Type request;
+    request.rootCertificate = rcac;
+    ReturnErrorOnFailure(cluster.InvokeCommand(request, this, OnRootCertSuccessResponse, OnDefaultFailure));
 
     ChipLogProgress(Controller, "Sent root certificate to the device");
 
     return CHIP_NO_ERROR;
 }
 
-void DeviceCommissioner::OnRootCertSuccessResponse(void * context)
+void DeviceCommissioner::OnRootCertSuccessResponse(void * context, const chip::app::DataModel::NullObjectType & data)
 {
     ChipLogProgress(Controller, "Device confirmed that it has received the root certificate");
     DeviceCommissioner * commissioner = static_cast<DeviceCommissioner *>(context);
@@ -1482,9 +1417,6 @@ void DeviceCommissioner::OnRootCertSuccessResponse(void * context)
     CommissioneeDeviceProxy * device = nullptr;
 
     VerifyOrExit(commissioner->mState == State::Initialized, err = CHIP_ERROR_INCORRECT_STATE);
-
-    commissioner->mRootCertResponseCallback.Cancel();
-    commissioner->mOnRootCertFailureCallback.Cancel();
 
     VerifyOrExit(commissioner->mDeviceBeingCommissioned != nullptr, err = CHIP_ERROR_INCORRECT_STATE);
 
@@ -1499,16 +1431,6 @@ exit:
     {
         commissioner->OnSessionEstablishmentError(err);
     }
-}
-
-void DeviceCommissioner::OnRootCertFailureResponse(void * context, uint8_t status)
-{
-    ChipLogProgress(Controller, "Device failed to receive the root certificate Response: 0x%02x", status);
-    DeviceCommissioner * commissioner = static_cast<DeviceCommissioner *>(context);
-    commissioner->mRootCertResponseCallback.Cancel();
-    commissioner->mOnRootCertFailureCallback.Cancel();
-    // TODO: Map error status to correct error code
-    commissioner->OnSessionEstablishmentError(CHIP_ERROR_INTERNAL);
 }
 
 CHIP_ERROR DeviceCommissioner::OnOperationalCredentialsProvisioningCompletion(CommissioneeDeviceProxy * device)
@@ -1627,6 +1549,63 @@ void BasicSuccess(void * context, uint16_t val)
     commissioner->CommissioningStageComplete(CHIP_NO_ERROR);
 }
 
+static void OnDefaultSuccess(void * context)
+{
+    DeviceCommissioner * commissioner = static_cast<DeviceCommissioner *>(context);
+    commissioner->CommissioningStageComplete(CHIP_NO_ERROR);
+}
+
+static void OnNetworkCommissioningConnectNetworkResponseSuccess(
+    void * context, const chip::app::Clusters::NetworkCommissioning::Commands::ConnectNetworkResponse::DecodableType & data)
+{
+    ChipLogProgress(Controller, "Received ConnectNetwork response");
+    OnDefaultSuccess(context);
+}
+
+static void OnNetworkCommissioningNetworkConfigResponseSuccess(
+    void * context, const chip::app::Clusters::NetworkCommissioning::Commands::NetworkConfigResponse::DecodableType & data)
+{
+    ChipLogProgress(Controller, "Received NetworkConfig response");
+    OnDefaultSuccess(context);
+}
+
+static void OnGeneralCommissioningArmFailSafeResponseSuccess(
+    void * context, const chip::app::Clusters::GeneralCommissioning::Commands::ArmFailSafeResponse::DecodableType & data)
+{
+    ChipLogProgress(Controller, "Received ArmFailSafe response");
+    OnDefaultSuccess(context);
+}
+
+static void OnGeneralCommissioningSetRegulatoryConfigResponseSuccess(
+    void * context, const chip::app::Clusters::GeneralCommissioning::Commands::SetRegulatoryConfigResponse::DecodableType & data)
+{
+    ChipLogProgress(Controller, "Received SetRegulatoryConfig response");
+    OnDefaultSuccess(context);
+}
+
+static void OnGeneralCommissioningCommissioningCompleteResponseSuccess(
+    void * context, const chip::app::Clusters::GeneralCommissioning::Commands::CommissioningCompleteResponse::DecodableType & data)
+{
+    ChipLogProgress(Controller, "Received CommissioningComplete response");
+    OnDefaultSuccess(context);
+}
+
+/*
+static void OnDefaultSuccess(void * context, const chip::app::DataModel::NullObjectType & data)
+{
+    ChipLogProgress(Controller, "Received success response");
+    DeviceCommissioner * commissioner = static_cast<DeviceCommissioner *>(context);
+    commissioner->CommissioningStageComplete(CHIP_NO_ERROR);
+}
+*/
+
+void DeviceCommissioner::OnDefaultFailure(void * context, EmberAfStatus status)
+{
+    ChipLogProgress(Controller, "Received failure response %d\n", (int) status);
+    DeviceCommissioner * commissioner = static_cast<DeviceCommissioner *>(context);
+    commissioner->OnSessionEstablishmentError(static_cast<CHIP_ERROR>(status));
+}
+
 void BasicFailure(void * context, uint8_t status)
 {
     ChipLogProgress(Controller, "Received failure response %d\n", (int) status);
@@ -1740,9 +1719,12 @@ void DeviceCommissioner::PerformCommissioningStep(DeviceProxy * proxy, Commissio
         GeneralCommissioningCluster genCom;
         // TODO: should get the endpoint information from the descriptor cluster.
         genCom.Associate(proxy, 0);
-        // TODO(cecille): Make this a parameter
-        uint16_t commissioningExpirySeconds = 60;
-        genCom.ArmFailSafe(mSuccess.Cancel(), mFailure.Cancel(), commissioningExpirySeconds, breadcrumb, kCommandTimeoutMs);
+
+        app::Clusters::GeneralCommissioning::Commands::ArmFailSafe::Type request;
+        request.expiryLengthSeconds = 60; // TODO(cecille): Make this a parameter
+        request.breadcrumb          = breadcrumb;
+        request.timeoutMs           = kCommandTimeoutMs;
+        genCom.InvokeCommand(request, this, OnGeneralCommissioningArmFailSafeResponseSuccess, OnDefaultFailure);
     }
     break;
     case CommissioningStage::kConfigRegulatory: {
@@ -1783,8 +1765,13 @@ void DeviceCommissioner::PerformCommissioningStep(DeviceProxy * proxy, Commissio
 
         GeneralCommissioningCluster genCom;
         genCom.Associate(proxy, 0);
-        genCom.SetRegulatoryConfig(mSuccess.Cancel(), mFailure.Cancel(), regulatoryLocation, countryCode, breadcrumb,
-                                   kCommandTimeoutMs);
+
+        app::Clusters::GeneralCommissioning::Commands::SetRegulatoryConfig::Type request;
+        request.location    = static_cast<EmberAfRegulatoryLocationType>(regulatoryLocation);
+        request.countryCode = countryCode;
+        request.breadcrumb  = breadcrumb;
+        request.timeoutMs   = kCommandTimeoutMs;
+        genCom.InvokeCommand(request, this, OnGeneralCommissioningSetRegulatoryConfigResponseSuccess, OnDefaultFailure);
     }
     break;
     case CommissioningStage::kDeviceAttestation: {
@@ -1834,8 +1821,12 @@ void DeviceCommissioner::PerformCommissioningStep(DeviceProxy * proxy, Commissio
         ChipLogProgress(Controller, "Adding wifi network");
         NetworkCommissioningCluster netCom;
         netCom.Associate(proxy, 0);
-        netCom.AddOrUpdateWiFiNetwork(mSuccess.Cancel(), mFailure.Cancel(), params.GetWifiCredentials().Value().ssid,
-                                      params.GetWifiCredentials().Value().credentials, breadcrumb);
+
+        app::Clusters::NetworkCommissioning::Commands::AddOrUpdateWiFiNetwork::Type request;
+        request.ssid        = params.GetWifiCredentials().Value().ssid;
+        request.credentials = params.GetWifiCredentials().Value().credentials;
+        request.breadcrumb  = breadcrumb;
+        netCom.InvokeCommand(request, this, OnNetworkCommissioningNetworkConfigResponseSuccess, OnDefaultFailure);
     }
     break;
     case CommissioningStage::kThreadNetworkSetup: {
@@ -1849,8 +1840,11 @@ void DeviceCommissioner::PerformCommissioningStep(DeviceProxy * proxy, Commissio
         ChipLogProgress(Controller, "Adding thread network");
         NetworkCommissioningCluster netCom;
         netCom.Associate(proxy, 0);
-        netCom.AddOrUpdateThreadNetwork(mSuccess.Cancel(), mFailure.Cancel(), params.GetThreadOperationalDataset().Value(),
-                                        breadcrumb);
+
+        app::Clusters::NetworkCommissioning::Commands::AddOrUpdateThreadNetwork::Type request;
+        request.operationalDataset = params.GetThreadOperationalDataset().Value();
+        request.breadcrumb         = breadcrumb;
+        netCom.InvokeCommand(request, this, OnNetworkCommissioningNetworkConfigResponseSuccess, OnDefaultFailure);
     }
     break;
     case CommissioningStage::kWifiNetworkEnable: {
@@ -1864,7 +1858,11 @@ void DeviceCommissioner::PerformCommissioningStep(DeviceProxy * proxy, Commissio
         ChipLogProgress(Controller, "Enabling wifi network");
         NetworkCommissioningCluster netCom;
         netCom.Associate(proxy, 0);
-        netCom.ConnectNetwork(mSuccess.Cancel(), mFailure.Cancel(), params.GetWifiCredentials().Value().ssid, breadcrumb);
+
+        app::Clusters::NetworkCommissioning::Commands::ConnectNetwork::Type request;
+        request.networkID  = params.GetWifiCredentials().Value().ssid;
+        request.breadcrumb = breadcrumb;
+        netCom.InvokeCommand(request, this, OnNetworkCommissioningConnectNetworkResponseSuccess, OnDefaultFailure);
     }
     break;
     case CommissioningStage::kThreadNetworkEnable: {
@@ -1883,7 +1881,11 @@ void DeviceCommissioner::PerformCommissioningStep(DeviceProxy * proxy, Commissio
         ChipLogProgress(Controller, "Enabling thread network");
         NetworkCommissioningCluster netCom;
         netCom.Associate(proxy, 0);
-        netCom.ConnectNetwork(mSuccess.Cancel(), mFailure.Cancel(), extendedPanId, breadcrumb);
+
+        app::Clusters::NetworkCommissioning::Commands::ConnectNetwork::Type request;
+        request.networkID  = extendedPanId;
+        request.breadcrumb = breadcrumb;
+        netCom.InvokeCommand(request, this, OnNetworkCommissioningConnectNetworkResponseSuccess, OnDefaultFailure);
     }
     break;
     case CommissioningStage::kFindOperational: {
@@ -1894,7 +1896,9 @@ void DeviceCommissioner::PerformCommissioningStep(DeviceProxy * proxy, Commissio
         ChipLogProgress(Controller, "Calling commissioning complete");
         GeneralCommissioningCluster genCom;
         genCom.Associate(proxy, 0);
-        genCom.CommissioningComplete(mSuccess.Cancel(), mFailure.Cancel());
+
+        chip::app::Clusters::GeneralCommissioning::Commands::CommissioningComplete::Type request;
+        genCom.InvokeCommand(request, this, OnGeneralCommissioningCommissioningCompleteResponseSuccess, OnDefaultFailure);
     }
     break;
     case CommissioningStage::kCleanup:

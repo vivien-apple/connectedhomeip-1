@@ -227,7 +227,6 @@ ChipError::StorageType pychip_DeviceController_NewDeviceController(chip::Control
 
     FactoryInitParams factoryParams;
     factoryParams.fabricStorage = &sFabricStorage;
-    factoryParams.imDelegate    = &PythonInteractionModelDelegate::Instance();
 
     SetupParams initParams;
     initParams.storageDelegate                = &sStorageDelegate;

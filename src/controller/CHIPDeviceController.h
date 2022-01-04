@@ -30,7 +30,6 @@
 
 #include <app/CASEClientPool.h>
 #include <app/CASESessionManager.h>
-#include <app/DeviceControllerInteractionModelDelegate.h>
 #include <app/InteractionModelDelegate.h>
 #include <app/OperationalDeviceProxy.h>
 #include <app/OperationalDeviceProxyPool.h>
@@ -393,9 +392,6 @@ protected:
 private:
     void ReleaseOperationalDevice(OperationalDeviceProxy * device);
 
-    Callback::Callback<DefaultSuccessCallback> mOpenPairingSuccessCallback;
-    Callback::Callback<DefaultFailureCallback> mOpenPairingFailureCallback;
-
     static void OnPIDReadResponse(void * context, uint16_t value);
     static void OnVIDReadResponse(void * context, uint16_t value);
     static void OnVIDPIDReadFailureResponse(void * context, EmberAfStatus status);
@@ -415,8 +411,8 @@ private:
 
     CommissioningWindowOption mCommissioningWindowOption;
 
-    static void OnOpenPairingWindowSuccessResponse(void * context);
-    static void OnOpenPairingWindowFailureResponse(void * context, uint8_t status);
+    static void OnOpenPairingWindowSuccessResponse(void * context, const chip::app::DataModel::NullObjectType & data);
+    static void OnOpenPairingWindowFailureResponse(void * context, EmberAfStatus status);
 
     CHIP_ERROR ProcessControllerNOCChain(const ControllerInitParams & params);
     uint16_t mPAKEVerifierID = 1;
@@ -720,13 +716,7 @@ private:
        */
     CHIP_ERROR OnOperationalCredentialsProvisioningCompletion(CommissioneeDeviceProxy * device);
 
-    /* Callback when the previously sent CSR request results in failure */
-    static void OnCSRFailureResponse(void * context, uint8_t status);
-
-    static void OnCertificateChainFailureResponse(void * context, uint8_t status);
     static void OnCertificateChainResponse(void * context, ByteSpan certificate);
-
-    static void OnAttestationFailureResponse(void * context, uint8_t status);
     static void OnAttestationResponse(void * context, chip::ByteSpan attestationElements, chip::ByteSpan signature);
 
     /**
@@ -740,15 +730,20 @@ private:
      */
     static void OnOperationalCertificateSigningRequest(void * context, ByteSpan NOCSRElements, ByteSpan AttestationSignature);
 
-    /* Callback when adding operational certs to device results in failure */
-    static void OnAddNOCFailureResponse(void * context, uint8_t status);
     /* Callback when the device confirms that it has added the operational certificates */
     static void OnOperationalCertificateAddResponse(void * context, uint8_t StatusCode, uint8_t FabricIndex, CharSpan DebugText);
 
     /* Callback when the device confirms that it has added the root certificate */
     static void OnRootCertSuccessResponse(void * context);
-    /* Callback called when adding root cert to device results in failure */
-    static void OnRootCertFailureResponse(void * context, uint8_t status);
+    static void OnRootCertSuccessResponse(void * context, const chip::app::DataModel::NullObjectType & data);
+    static void OnAttestationResponseSuccess(
+        void * context, const chip::app::Clusters::OperationalCredentials::Commands::AttestationResponse::DecodableType & data);
+    static void OnCertificateChainResponseSuccess(
+        void * context,
+        const chip::app::Clusters::OperationalCredentials::Commands::CertificateChainResponse::DecodableType & data);
+    static void
+    OnOpCSRResponseSuccess(void * context,
+                           const chip::app::Clusters::OperationalCredentials::Commands::OpCSRResponse::DecodableType & data);
 
     static void OnDeviceConnectedFn(void * context, OperationalDeviceProxy * device);
     static void OnDeviceConnectionFailureFn(void * context, PeerId peerId, CHIP_ERROR error);
@@ -788,26 +783,17 @@ private:
     void ReleaseCommissioneeDevice(CommissioneeDeviceProxy * device);
 
     // Cluster callbacks for advancing commissioning flows
-    Callback::Callback<BasicSuccessCallback> mSuccess;
-    Callback::Callback<BasicFailureCallback> mFailure;
+
+    static void OnDefaultFailure(void * context, EmberAfStatus status);
+    static void OnOperationalCredentialsNOCResponseSuccess(
+        void * context, const chip::app::Clusters::OperationalCredentials::Commands::NOCResponse::DecodableType & data);
 
     static CHIP_ERROR ConvertFromNodeOperationalCertStatus(uint8_t err);
 
-    Callback::Callback<OperationalCredentialsClusterCertificateChainResponseCallback> mCertificateChainResponseCallback;
-    Callback::Callback<OperationalCredentialsClusterAttestationResponseCallback> mAttestationResponseCallback;
-    Callback::Callback<OperationalCredentialsClusterOpCSRResponseCallback> mOpCSRResponseCallback;
-    Callback::Callback<OperationalCredentialsClusterNOCResponseCallback> mNOCResponseCallback;
-    Callback::Callback<DefaultSuccessCallback> mRootCertResponseCallback;
-    Callback::Callback<DefaultFailureCallback> mOnCertificateChainFailureCallback;
-    Callback::Callback<DefaultFailureCallback> mOnAttestationFailureCallback;
-    Callback::Callback<DefaultFailureCallback> mOnCSRFailureCallback;
-    Callback::Callback<DefaultFailureCallback> mOnCertFailureCallback;
-    Callback::Callback<DefaultFailureCallback> mOnRootCertFailureCallback;
-
     Callback::Callback<OnDeviceConnected> mOnDeviceConnectedCallback;
     Callback::Callback<OnDeviceConnectionFailure> mOnDeviceConnectionFailureCallback;
-
     Callback::Callback<OnNOCChainGeneration> mDeviceNOCChainCallback;
+
     SetUpCodePairer mSetUpCodePairer;
     AutoCommissioner mAutoCommissioner;
     CommissioningDelegate * mCommissioningDelegate = nullptr;

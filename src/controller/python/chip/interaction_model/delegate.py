@@ -94,17 +94,6 @@ class AttributeWriteResult:
     path: AttributePath
     status: int
 
-
-# typedef void (*PythonInteractionModelDelegate_OnCommandResponseStatusCodeReceivedFunct)(uint64_t commandSenderPtr,
-#                                                                                         void * commandStatusBuf);
-# typedef void (*PythonInteractionModelDelegate_OnCommandResponseProtocolErrorFunct)(uint64_t commandSenderPtr, uint8_t commandIndex);
-# typedef void (*PythonInteractionModelDelegate_OnCommandResponseFunct)(uint64_t commandSenderPtr, uint32_t error);
-_OnCommandResponseStatusCodeReceivedFunct = CFUNCTYPE(
-    None, c_uint64, c_void_p, c_uint32)
-_OnCommandResponseProtocolErrorFunct = CFUNCTYPE(None, c_uint64, c_uint8)
-_OnCommandResponseFunct = CFUNCTYPE(None, c_uint64, c_uint32)
-_OnWriteResponseStatusFunct = CFUNCTYPE(None, c_void_p, c_uint32)
-
 _commandStatusDict = dict()
 _commandIndexStatusDict = dict()
 _commandStatusLock = threading.RLock()
@@ -137,72 +126,6 @@ def _SetCommandStatus(commandHandle: int, val):
     with _commandStatusLock:
         _commandStatusDict[commandHandle] = val
         _commandStatusCV.notify_all()
-
-
-def _SetCommandIndexStatus(commandHandle: int, commandIndex: int, status):
-    with _commandStatusLock:
-        indexDict = _commandIndexStatusDict.get(commandHandle, {})
-        indexDict[commandIndex] = status
-        _commandIndexStatusDict[commandHandle] = indexDict
-
-
-@ _OnCommandResponseStatusCodeReceivedFunct
-def _OnCommandResponseStatusCodeReceived(commandHandle: int, IMCommandStatusBuf, IMCommandStatusBufLen):
-    status = IMCommandStatus.parse(ctypes.string_at(
-        IMCommandStatusBuf, IMCommandStatusBufLen))
-    _SetCommandIndexStatus(PLACEHOLDER_COMMAND_HANDLE,
-                           status["CommandIndex"], status)
-
-
-@ _OnCommandResponseProtocolErrorFunct
-def _OnCommandResponseProtocolError(commandHandle: int, errorcode: int):
-    pass
-
-
-@ _OnCommandResponseFunct
-def _OnCommandResponse(commandHandle: int, errorcode: int):
-    _SetCommandStatus(PLACEHOLDER_COMMAND_HANDLE, errorcode)
-
-
-@_OnWriteResponseStatusFunct
-def _OnWriteResponseStatus(IMAttributeWriteResult, IMAttributeWriteResultLen):
-    status = IMWriteStatus.parse(ctypes.string_at(
-        IMAttributeWriteResult, IMAttributeWriteResultLen))
-
-    appId = status["AppIdentifier"]
-    if appId < 256:
-        # For all attribute write requests using CHIPCluster API, appId is filled by CHIPDevice, and should be smaller than 256 (UINT8_MAX).
-        appId = DEFAULT_ATTRIBUTEWRITE_APPID
-
-    with _writeStatusDictLock:
-        _writeStatusDict[appId] = AttributeWriteResult(AttributePath(
-            status["NodeId"], status["EndpointId"], status["ClusterId"], status["AttributeId"]), status["Status"])
-
-
-def InitIMDelegate():
-    handle = chip.native.GetLibraryHandle()
-    if not handle.pychip_InteractionModelDelegate_SetCommandResponseStatusCallback.argtypes:
-        setter = chip.native.NativeLibraryHandleMethodArguments(handle)
-        setter.Set("pychip_InteractionModelDelegate_SetCommandResponseStatusCallback", None, [
-                   _OnCommandResponseStatusCodeReceivedFunct])
-        setter.Set("pychip_InteractionModelDelegate_SetCommandResponseProtocolErrorCallback", None, [
-                   _OnCommandResponseProtocolErrorFunct])
-        setter.Set("pychip_InteractionModelDelegate_SetCommandResponseErrorCallback", None, [
-                   _OnCommandResponseFunct])
-        setter.Set("pychip_InteractionModel_GetCommandSenderHandle",
-                   c_uint32, [ctypes.POINTER(c_uint64)])
-        setter.Set("pychip_InteractionModelDelegate_SetOnWriteResponseStatusCallback", None, [
-                   _OnWriteResponseStatusFunct])
-
-        handle.pychip_InteractionModelDelegate_SetCommandResponseStatusCallback(
-            _OnCommandResponseStatusCodeReceived)
-        handle.pychip_InteractionModelDelegate_SetCommandResponseProtocolErrorCallback(
-            _OnCommandResponseProtocolError)
-        handle.pychip_InteractionModelDelegate_SetCommandResponseErrorCallback(
-            _OnCommandResponse)
-        handle.pychip_InteractionModelDelegate_SetOnWriteResponseStatusCallback(
-            _OnWriteResponseStatus)
-
 
 def ClearCommandStatus(commandHandle: int):
     """
