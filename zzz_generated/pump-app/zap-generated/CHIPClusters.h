@@ -21,11 +21,8 @@
 #pragma once
 
 #include <app-common/zap-generated/ids/Clusters.h>
-#include <app-common/zap-generated/ids/Commands.h>
 
 #include <controller/CHIPCluster.h>
-#include <lib/core/CHIPCallback.h>
-#include <lib/support/Span.h>
 
 namespace chip {
 namespace Controller {

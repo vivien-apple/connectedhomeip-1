@@ -21,11 +21,8 @@
 #pragma once
 
 #include <app-common/zap-generated/ids/Clusters.h>
-#include <app-common/zap-generated/ids/Commands.h>
 
 #include <controller/CHIPCluster.h>
-#include <lib/core/CHIPCallback.h>
-#include <lib/support/Span.h>
 
 namespace chip {
 namespace Controller {
@@ -42,23 +39,6 @@ class DLL_EXPORT LevelControlCluster : public ClusterBase
 public:
     LevelControlCluster() : ClusterBase(app::Clusters::LevelControl::Id) {}
     ~LevelControlCluster() {}
-
-    // Cluster Commands
-    CHIP_ERROR Move(Callback::Cancelable * onSuccessCallback, Callback::Cancelable * onFailureCallback, uint8_t moveMode,
-                    uint8_t rate, uint8_t optionMask, uint8_t optionOverride);
-    CHIP_ERROR MoveToLevel(Callback::Cancelable * onSuccessCallback, Callback::Cancelable * onFailureCallback, uint8_t level,
-                           uint16_t transitionTime, uint8_t optionMask, uint8_t optionOverride);
-    CHIP_ERROR MoveToLevelWithOnOff(Callback::Cancelable * onSuccessCallback, Callback::Cancelable * onFailureCallback,
-                                    uint8_t level, uint16_t transitionTime);
-    CHIP_ERROR MoveWithOnOff(Callback::Cancelable * onSuccessCallback, Callback::Cancelable * onFailureCallback, uint8_t moveMode,
-                             uint8_t rate);
-    CHIP_ERROR Step(Callback::Cancelable * onSuccessCallback, Callback::Cancelable * onFailureCallback, uint8_t stepMode,
-                    uint8_t stepSize, uint16_t transitionTime, uint8_t optionMask, uint8_t optionOverride);
-    CHIP_ERROR StepWithOnOff(Callback::Cancelable * onSuccessCallback, Callback::Cancelable * onFailureCallback, uint8_t stepMode,
-                             uint8_t stepSize, uint16_t transitionTime);
-    CHIP_ERROR Stop(Callback::Cancelable * onSuccessCallback, Callback::Cancelable * onFailureCallback, uint8_t optionMask,
-                    uint8_t optionOverride);
-    CHIP_ERROR StopWithOnOff(Callback::Cancelable * onSuccessCallback, Callback::Cancelable * onFailureCallback);
 };
 
 class DLL_EXPORT OnOffCluster : public ClusterBase
@@ -66,11 +46,6 @@ class DLL_EXPORT OnOffCluster : public ClusterBase
 public:
     OnOffCluster() : ClusterBase(app::Clusters::OnOff::Id) {}
     ~OnOffCluster() {}
-
-    // Cluster Commands
-    CHIP_ERROR Off(Callback::Cancelable * onSuccessCallback, Callback::Cancelable * onFailureCallback);
-    CHIP_ERROR On(Callback::Cancelable * onSuccessCallback, Callback::Cancelable * onFailureCallback);
-    CHIP_ERROR Toggle(Callback::Cancelable * onSuccessCallback, Callback::Cancelable * onFailureCallback);
 };
 
 class DLL_EXPORT PressureMeasurementCluster : public ClusterBase

@@ -641,24 +641,5 @@ void DispatchSingleClusterCommand(const ConcreteCommandPath & aCommandPath, TLV:
     Compatibility::ResetEmberAfObjects();
 }
 
-void DispatchSingleClusterResponseCommand(const ConcreteCommandPath & aCommandPath, TLV::TLVReader & aReader,
-                                          CommandSender * apCommandObj)
-{
-    Compatibility::SetupEmberAfCommandSender(apCommandObj, aCommandPath);
-
-    TLV::TLVType dataTlvType;
-    SuccessOrExit(aReader.EnterContainer(dataTlvType));
-    switch (aCommandPath.mClusterId)
-    {
-    default:
-        ChipLogError(Zcl, "Unknown cluster " ChipLogFormatMEI, ChipLogValueMEI(aCommandPath.mClusterId));
-        break;
-    }
-
-exit:
-    aReader.ExitContainer(dataTlvType);
-    Compatibility::ResetEmberAfObjects();
-}
-
 } // namespace app
 } // namespace chip
