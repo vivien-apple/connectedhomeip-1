@@ -13,10 +13,8 @@ include(${prj_root}/GCC-RELEASE/project_hp/asdk/includepath.cmake)
 list(
     APPEND ${list_chip_main_sources}
 
-    ${chip_dir}/zzz_generated/lighting-app/zap-generated/CHIPClientCallbacks.cpp
     ${chip_dir}/zzz_generated/lighting-app/zap-generated/callback-stub.cpp
     ${chip_dir}/zzz_generated/lighting-app/zap-generated/IMClusterCommandHandler.cpp
-    ${chip_dir}/zzz_generated/lighting-app/zap-generated/CHIPClusters.cpp
 
     ${chip_dir}/examples/lighting-app/lighting-common/color_format/color_format.cpp
 

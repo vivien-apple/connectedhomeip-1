@@ -54,7 +54,7 @@ endfunction()
 #                   supported by the application.
 #
 function(chip_configure_data_model APP_TARGET)
-    cmake_parse_arguments(ARG "INCLUDE_CLIENT_CALLBACKS;INCLUDE_SERVER" "ZAP_FILE;GEN_DIR" "" ${ARGN})
+    cmake_parse_arguments(ARG "INCLUDE_SERVER" "ZAP_FILE;GEN_DIR" "" ${ARGN})
 
     if (ARG_INCLUDE_SERVER)
         target_sources(${APP_TARGET} PRIVATE
