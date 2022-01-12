@@ -23,6 +23,7 @@ import threading
 from enum import Enum, auto
 from dataclasses import dataclass
 from random import randrange
+from xmlrpc.server import SimpleXMLRPCServer
 
 TEST_NODE_ID = '0x12344321'
 
@@ -77,6 +78,73 @@ class ExecutionCapture:
                               )
         logging.error('================ CAPTURED LOG END ====================')
 
+class Accessory:
+    def __init__(self, runner, command):
+        self.process = None
+        self.runner  = runner
+        self.command = command
+        self.discriminator = str(randrange(1, 4096))
+        self.rebooting = False
+
+        self.__startXMLRPCServer()
+        self.start()
+
+    def start(self):
+        process, outpipe, errpipe = self.__startServer(self.runner, self.command, self.discriminator);
+        self.__waitForServerReady(outpipe)
+        self.__updateSetUpCode(outpipe)
+        self.process = process
+
+        return True
+
+    def stop(self):
+        self.process.kill()
+        return True
+
+    def reboot(self):
+        self.process.kill()
+        self.rebooting = True
+        self.start()
+        self.rebooting = False 
+        return True
+
+    def poll(self):
+        if self.rebooting:
+          return None
+        return self.process.poll()
+
+    def __startServer(self, runner, command, discriminator):
+        logging.debug(
+            'Executing application under test with discriminator %s.' % discriminator)
+        app_cmd = command + ['--discriminator', str(discriminator)]
+        return runner.RunSubprocess(app_cmd, name='APP ', wait=False)
+
+    def __waitForServerReady(self,outpipe):
+        logging.debug('Waiting for server to listen.')
+        start_time = time.time()
+        server_is_listening = outpipe.CapturedLogContains("Server Listening")
+        while not server_is_listening:
+            if time.time() - start_time > 10:
+                raise Exception('Timeout for server listening')
+            time.sleep(0.1)
+            server_is_listening = outpipe.CapturedLogContains("Server Listening")
+        logging.debug('Server is listening. Can proceed.')
+
+
+    def __updateSetUpCode(self, outpipe):
+        qrLine = outpipe.FindLastMatchingLine('.*SetupQRCode: *\\[(.*)]')
+        if not qrLine:
+            raise Exception("Unable to find QR code")
+        self.setupCode = qrLine.group(1)
+
+    def __startXMLRPCServer(self):
+        server = SimpleXMLRPCServer(('localhost', 8000), logRequests=True)
+
+        server.register_function(self.start, 'start')
+        server.register_function(self.stop, 'stop')
+        server.register_function(self.reboot, 'reboot')
+
+        #threading.Thread(target=server.serve_forever).start()
 
 @dataclass
 class TestDefinition:
@@ -86,7 +154,6 @@ class TestDefinition:
 
     def Run(self, runner, paths: ApplicationPaths):
         """Executes the given test case using the provided runner for execution."""
-        app_process = None
         runner.capture_delegate = ExecutionCapture()
 
         try:
@@ -106,36 +173,17 @@ class TestDefinition:
             if os.path.exists('/tmp/chip_kvs'):
                 os.unlink('/tmp/chip_kvs')
 
-            discriminator = str(randrange(1, 4096))
-            logging.debug(
-                'Executing application under test with discriminator %s.' % discriminator)
-            app_process, outpipe, errpipe = runner.RunSubprocess(
-                app_cmd + ['--discriminator', discriminator], name='APP ', wait=False)
+            accessory = Accessory(runner, app_cmd)
 
-            logging.debug('Waiting for server to listen.')
-            start_time = time.time()
-            server_is_listening = outpipe.CapturedLogContains(
-                "Server Listening")
-            while not server_is_listening:
-                if time.time() - start_time > 10:
-                    raise Exception('Timeout for server listening')
-                time.sleep(0.1)
-                server_is_listening = outpipe.CapturedLogContains(
-                    "Server Listening")
-            logging.debug('Server is listening. Can proceed.')
-            qrLine = outpipe.FindLastMatchingLine('.*SetupQRCode: *\\[(.*)]')
-            if not qrLine:
-                raise Exception("Unable to find QR code")
-
-            runner.RunSubprocess(tool_cmd + ['pairing', 'qrcode', TEST_NODE_ID, qrLine.group(1)],
-                                 name='PAIR', dependencies=[app_process])
+            runner.RunSubprocess(tool_cmd + ['pairing', 'qrcode', TEST_NODE_ID, accessory.setupCode],
+                                 name='PAIR', dependencies=[accessory])
 
             runner.RunSubprocess(tool_cmd + ['tests', self.run_name, TEST_NODE_ID],
-                                 name='TEST', dependencies=[app_process])
+                                 name='TEST', dependencies=[accessory])
         except:
             logging.error("!!!!!!!!!!!!!!!!!!!! ERROR !!!!!!!!!!!!!!!!!!!!!!")
             runner.capture_delegate.LogContents()
             raise
         finally:
-            if app_process:
-                app_process.kill()
+            if accessory.process:
+                accessory.process.kill()
