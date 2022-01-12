@@ -201,6 +201,19 @@ protected:
         return true;
     }
 
+    template <typename T>
+    bool CheckConstraintMinValue(const char * itemName, const chip::System::Clock::Milliseconds32 & current, T expected)
+    {
+        if (current.count() < expected)
+        {
+            Exit(std::string(itemName) + " value < minValue: " + std::to_string(current.count()) + " < " +
+                 std::to_string(expected));
+            return false;
+        }
+
+        return true;
+    }
+
     template <typename T, typename U>
     bool CheckConstraintMinValue(const char * itemName, const chip::app::DataModel::Nullable<T> & current, U expected)
     {
@@ -217,6 +230,19 @@ protected:
         if (current > expected)
         {
             Exit(std::string(itemName) + " value > maxValue: " + std::to_string(current) + " > " + std::to_string(expected));
+            return false;
+        }
+
+        return true;
+    }
+
+    template <typename T>
+    bool CheckConstraintMaxValue(const char * itemName, const chip::System::Clock::Milliseconds32 & current, T expected)
+    {
+        if (current.count() > expected)
+        {
+            Exit(std::string(itemName) + " value > maxValue: " + std::to_string(current.count()) + " > " +
+                 std::to_string(expected));
             return false;
         }
 
