@@ -190,6 +190,7 @@ function getTests()
     'TestClusterComplexTypes',
     'TestConstraints',
     'TestDelayCommands',
+    'TestEvents',
     'TestLogCommands',
     'TestSaveAs',
     'TestConfigVariables',
