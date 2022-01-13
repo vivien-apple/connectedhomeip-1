@@ -141,6 +141,7 @@ public:
         printf("TestClusterComplexTypes\n");
         printf("TestConstraints\n");
         printf("TestDelayCommands\n");
+        printf("TestEvents\n");
         printf("TestLogCommands\n");
         printf("TestSaveAs\n");
         printf("TestConfigVariables\n");
@@ -56673,6 +56674,167 @@ private:
     }
 };
 
+class TestEvents : public TestCommand
+{
+public:
+    TestEvents() : TestCommand("TestEvents"), mTestIndex(0)
+    {
+        AddArgument("cluster", &mCluster);
+        AddArgument("endpoint", 0, UINT16_MAX, &mEndpoint);
+    }
+
+    /////////// TestCommand Interface /////////
+    void NextTest() override
+    {
+        CHIP_ERROR err = CHIP_NO_ERROR;
+
+        if (0 == mTestIndex)
+        {
+            ChipLogProgress(chipTool, " **** Test Start: TestEvents\n");
+        }
+
+        if (mTestCount == mTestIndex)
+        {
+            ChipLogProgress(chipTool, " **** Test Complete: TestEvents\n");
+            SetCommandExitStatus(CHIP_NO_ERROR);
+            return;
+        }
+
+        Wait();
+
+        // Ensure we increment mTestIndex before we start running the relevant
+        // command.  That way if we lose the timeslice after we send the message
+        // but before our function call returns, we won't end up with an
+        // incorrect mTestIndex value observed when we get the response.
+        switch (mTestIndex++)
+        {
+        case 0:
+            ChipLogProgress(chipTool, " ***** Test Step 0 : Wait for the commissioned device to be retrieved\n");
+            err = TestWaitForTheCommissionedDeviceToBeRetrieved_0();
+            break;
+        case 1:
+            ChipLogProgress(chipTool, " ***** Test Step 1 : Generate an event on the accessory\n");
+            err = TestGenerateAnEventOnTheAccessory_1();
+            break;
+        case 2:
+            ChipLogProgress(chipTool, " ***** Test Step 2 : Read the event back\n");
+            err = TestReadTheEventBack_2();
+            break;
+        case 3:
+            ChipLogProgress(chipTool, " ***** Test Step 3 : Generate a second event on the accessory\n");
+            err = TestGenerateASecondEventOnTheAccessory_3();
+            break;
+        }
+
+        if (CHIP_NO_ERROR != err)
+        {
+            ChipLogError(chipTool, " ***** Test Failure: %s\n", chip::ErrorStr(err));
+            SetCommandExitStatus(err);
+        }
+    }
+
+private:
+    std::atomic_uint16_t mTestIndex;
+    const uint16_t mTestCount = 4;
+
+    chip::Optional<chip::CharSpan> mCluster;
+    chip::Optional<chip::EndpointId> mEndpoint;
+
+    static void OnFailureCallback_2(void * context, EmberAfStatus status)
+    {
+        (static_cast<TestEvents *>(context))->OnFailureResponse_2(status);
+    }
+
+    static void OnSuccessCallback_2(void * context, chip::app::Clusters::TestCluster::Events::TestEvent::DecodableType testEvent)
+    {
+        (static_cast<TestEvents *>(context))->OnSuccessResponse_2(testEvent);
+    }
+
+    //
+    // Tests methods
+    //
+
+    CHIP_ERROR TestWaitForTheCommissionedDeviceToBeRetrieved_0()
+    {
+        SetIdentity(kIdentityAlpha);
+        return WaitForCommissionee();
+    }
+
+    CHIP_ERROR TestGenerateAnEventOnTheAccessory_1()
+    {
+        const chip::EndpointId endpoint = mEndpoint.HasValue() ? mEndpoint.Value() : 1;
+        using RequestType               = chip::app::Clusters::TestCluster::Commands::TestEmitTestEventRequest::Type;
+
+        RequestType request;
+        request.arg1 = 1;
+        request.arg2 = static_cast<chip::app::Clusters::TestCluster::SimpleEnum>(2);
+        request.arg3 = true;
+
+        auto success = [](void * context, const typename RequestType::ResponseType & data) {
+            (static_cast<TestEvents *>(context))->OnSuccessResponse_1(data.value);
+        };
+
+        auto failure = [](void * context, EmberAfStatus status) {
+            (static_cast<TestEvents *>(context))->OnFailureResponse_1(status);
+        };
+
+        ReturnErrorOnFailure(chip::Controller::InvokeCommand(mDevices[kIdentityAlpha], this, success, failure, endpoint, request));
+        return CHIP_NO_ERROR;
+    }
+
+    void OnFailureResponse_1(EmberAfStatus status) { ThrowFailureResponse(); }
+
+    void OnSuccessResponse_1(uint64_t value) { NextTest(); }
+
+    CHIP_ERROR TestReadTheEventBack_2()
+    {
+        const chip::EndpointId endpoint = mEndpoint.HasValue() ? mEndpoint.Value() : 1;
+        chip::Controller::TestClusterClusterTest cluster;
+        cluster.Associate(mDevices[kIdentityAlpha], endpoint);
+
+        ReturnErrorOnFailure(cluster.ReadEvent<chip::app::Clusters::TestCluster::Events::TestEvent::DecodableType>(
+            this, OnSuccessCallback_2, OnFailureCallback_2));
+        return CHIP_NO_ERROR;
+    }
+
+    void OnFailureResponse_2(EmberAfStatus status) { ThrowFailureResponse(); }
+
+    void OnSuccessResponse_2(chip::app::Clusters::TestCluster::Events::TestEvent::DecodableType testEvent)
+    {
+        VerifyOrReturn(CheckValue("testEvent.arg1", testEvent.arg1, 1));
+        VerifyOrReturn(CheckValue("testEvent.arg2", testEvent.arg2, 2));
+        VerifyOrReturn(CheckValue("testEvent.arg3", testEvent.arg3, true));
+
+        NextTest();
+    }
+
+    CHIP_ERROR TestGenerateASecondEventOnTheAccessory_3()
+    {
+        const chip::EndpointId endpoint = mEndpoint.HasValue() ? mEndpoint.Value() : 1;
+        using RequestType               = chip::app::Clusters::TestCluster::Commands::TestEmitTestEventRequest::Type;
+
+        RequestType request;
+        request.arg1 = 3;
+        request.arg2 = static_cast<chip::app::Clusters::TestCluster::SimpleEnum>(4);
+        request.arg3 = false;
+
+        auto success = [](void * context, const typename RequestType::ResponseType & data) {
+            (static_cast<TestEvents *>(context))->OnSuccessResponse_3(data.value);
+        };
+
+        auto failure = [](void * context, EmberAfStatus status) {
+            (static_cast<TestEvents *>(context))->OnFailureResponse_3(status);
+        };
+
+        ReturnErrorOnFailure(chip::Controller::InvokeCommand(mDevices[kIdentityAlpha], this, success, failure, endpoint, request));
+        return CHIP_NO_ERROR;
+    }
+
+    void OnFailureResponse_3(EmberAfStatus status) { ThrowFailureResponse(); }
+
+    void OnSuccessResponse_3(uint64_t value) { NextTest(); }
+};
+
 class TestLogCommands : public TestCommand
 {
 public:
@@ -62940,6 +63102,7 @@ void registerCommandsTests(Commands & commands)
         make_unique<TestClusterComplexTypes>(),
         make_unique<TestConstraints>(),
         make_unique<TestDelayCommands>(),
+        make_unique<TestEvents>(),
         make_unique<TestLogCommands>(),
         make_unique<TestSaveAs>(),
         make_unique<TestConfigVariables>(),
