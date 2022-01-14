@@ -36,10 +36,48 @@ CHIP_ERROR LogValue(const char * label, size_t indent, {{zapTypeToDecodableClust
 {{/zcl_structs}}
 {{/zcl_clusters}}
 
+void LogAttributePath(const chip::app::ConcreteDataAttributePath & path)
+{
+    ChipLogProgress(chipTool, "Endpoint: %" PRIu16 " Cluster: " ChipLogFormatMEI " Attribute " ChipLogFormatMEI, path.mEndpointId,
+                    ChipLogValueMEI(path.mClusterId), ChipLogValueMEI(path.mAttributeId));
+}
+
+void LogEventPath(const chip::app::ConcreteEventPath & path)
+{
+    ChipLogProgress(chipTool, "Endpoint: %" PRIu16 " Cluster: " ChipLogFormatMEI " Event " ChipLogFormatMEI, path.mEndpointId,
+                    ChipLogValueMEI(path.mClusterId), ChipLogValueMEI(path.mEventId));
+}
+
+void LogEventHeader(const chip::app::EventHeader & header)
+{
+    LogEventPath(header.mPath);
+
+    ChipLogProgress(chipTool, "\t Event number: %" PRIu64, header.mEventNumber);
+
+    if (header.mPriorityLevel == chip::app::PriorityLevel::Info)
+    {
+        ChipLogProgress(chipTool, "\t Priority: Info");
+    }
+    else if (header.mPriorityLevel == chip::app::PriorityLevel::Critical)
+    {
+        ChipLogProgress(chipTool, "\t Priority: Critical");
+    }
+    else if (header.mPriorityLevel == chip::app::PriorityLevel::Debug)
+    {
+        ChipLogProgress(chipTool, "\t Priority: Debug");
+    }
+    else
+    {
+        ChipLogProgress(chipTool, "\t Priority: Unknown");
+    }
+
+    ChipLogProgress(chipTool, "\t Timestamp: %" PRIu64, header.mTimestamp.mValue);
+}
+
 {{#zcl_clusters}}
 {{#zcl_events}}
 {{#unless has_more_than_one_cluster}}
-CHIP_ERROR LogValue(const char * label, size_t indent, chip::app::Clusters::{{asUpperCamelCase parent.name}}::Events::{{asUpperCamelCase name}}::DecodableType value);
+CHIP_ERROR LogValue(const char * label, size_t indent, {{zapTypeToDecodableClusterObjectType name ns=parent.name isArgument=true forceNotOptional=true}} value);
 {{/unless}}
 {{/zcl_events}}
 {{/zcl_clusters}}
@@ -190,11 +228,6 @@ CHIP_ERROR LogValue(const char * label, size_t indent, const chip::Optional<T> &
 #pragma GCC diagnostic pop
 } // anonymous namespace
 
-static void OnDefaultSuccessResponseWithoutExit(void * context)
-{
-    ChipLogProgress(chipTool, "Default Success Response");
-}
-
 static void OnDefaultSuccessResponse(void * context)
 {
     ChipLogProgress(chipTool, "Default Success Response");
@@ -217,7 +250,7 @@ static void OnDefaultSuccess(void * context, const chip::app::DataModel::NullObj
 };
 
 template <typename T>
-static void OnGeneralAttributeEventResponse(void * context, const char * label, T value)
+static void OnGeneralAttributeResponse(void * context, const char * label, T value)
 {
     CHIP_ERROR err = LogValue(label, 0, value);
 
@@ -278,9 +311,9 @@ public:
         ModelCommand::AddArguments();
     }
 
-    CHIP_ERROR SendCommand(ChipDevice * device, uint8_t endpointId) override
+    CHIP_ERROR SendCommand(ChipDevice * device, chip::EndpointId endpointId) override
     {
-        ChipLogProgress(chipTool, "Sending cluster ({{asHex parent.code 8}}) command ({{asHex code 8}}) on endpoint %" PRIu8, endpointId);
+        ChipLogProgress(chipTool, "Sending cluster ({{asHex parent.code 8}}) command ({{asHex code 8}}) on endpoint %" PRIu16, endpointId);
 
         {{#chip_cluster_command_non_expanded_arguments}}
         {{#if isArray}}
@@ -297,6 +330,82 @@ private:
 };
 
 {{/chip_cluster_commands}}
+
+/*
+ * Event Wildcard
+ */
+class ReadEvent{{asUpperCamelCase name}}Wildcard: public ModelCommand
+{
+public:
+    ReadEvent{{asUpperCamelCase name}}Wildcard(): ModelCommand("read-event")
+    {
+        AddArgument("event-name", "0xffffffff");
+        ModelCommand::AddArguments();
+    }
+
+    ~ReadEvent{{asUpperCamelCase name}}Wildcard()
+    {
+    }
+
+    CHIP_ERROR SendCommand(ChipDevice * device, chip::EndpointId endpointId) override
+    {
+        return ReadEvent(device, endpointId, {{asHex code 8}}, chip::kInvalidEventId);
+    }
+
+    CHIP_ERROR OnEventData(const chip::app::EventHeader & header, chip::TLV::TLVReader * data) override
+    {
+        LogEventHeader(header);
+        // TODO: Generate a method that log the value based on the content of the data 
+        return CHIP_NO_ERROR;
+    }
+};
+
+class ReportEvent{{asUpperCamelCase name}}Wildcard: public ModelCommand
+{
+public:
+    ReportEvent{{asUpperCamelCase name}}Wildcard(): ModelCommand("report-event")
+    {
+        AddArgument("event-name", "0xffffffff");
+        AddArgument("min-interval", 0, UINT16_MAX, &mMinInterval);
+        AddArgument("max-interval", 0, UINT16_MAX, &mMaxInterval);
+        AddArgument("wait", 0, 1, &mWait);
+        ModelCommand::AddArguments();
+    }
+
+    ~ReportEvent{{asUpperCamelCase name}}Wildcard()
+    {
+    }
+
+    CHIP_ERROR SendCommand(ChipDevice * device, chip::EndpointId endpointId) override
+    {
+        return SubscribeEvent(device, endpointId, {{asHex code 8}}, chip::kInvalidEventId, mMinInterval, mMaxInterval);
+    }
+
+    chip::System::Clock::Timeout GetWaitDuration() const override
+    {
+        return chip::System::Clock::Seconds16(mWait ? UINT16_MAX : 10);
+    }
+
+    CHIP_ERROR OnEventData(const chip::app::EventHeader & header, chip::TLV::TLVReader * data) override
+    {
+        LogEventHeader(header);
+        // TODO: Generate a method that log the value based on the content of the data 
+        return CHIP_NO_ERROR;
+    }
+
+    void OnEventSubscription() override
+    {
+        if (!mWait)
+        {
+            SetCommandExitStatus(CHIP_NO_ERROR);
+        }
+    }
+
+private:
+    uint16_t mMinInterval;
+    uint16_t mMaxInterval;
+    bool mWait;
+};
 
 {{#chip_server_cluster_events}}
 /*
@@ -315,20 +424,17 @@ public:
     {
     }
 
-    CHIP_ERROR SendCommand(ChipDevice * device, uint8_t endpointId) override
+    CHIP_ERROR SendCommand(ChipDevice * device, chip::EndpointId endpointId) override
     {
-        ChipLogProgress(chipTool, "Sending cluster ({{asHex parent.code 4}}) ReadEvent on endpoint %" PRIu8, endpointId);
-
-        chip::Controller::{{asUpperCamelCase parent.name}}Cluster cluster;
-        cluster.Associate(device, endpointId);
-        return cluster.ReadEvent<chip::app::Clusters::{{asUpperCamelCase parent.name}}::Events::{{asUpperCamelCase name}}::DecodableType>(this,
-          OnEventResponse,
-          OnDefaultFailure);
+        return ReadEvent(device, endpointId, {{asHex parent.code 8}}, {{asHex code 8}});
     }
 
-    static void OnEventResponse(void * context, chip::app::Clusters::{{asUpperCamelCase parent.name}}::Events::{{asUpperCamelCase name}}::DecodableType value)
+    CHIP_ERROR OnEventData(const chip::app::EventHeader & header, chip::TLV::TLVReader * data) override
     {
-        OnGeneralAttributeEventResponse(context, "{{asUpperCamelCase parent.name}}.{{asUpperCamelCase name}} response", value);
+        LogEventHeader(header);
+        {{zapTypeToDecodableClusterObjectType name ns=parent.name}} value;
+        ReturnErrorOnFailure(chip::app::DataModel::Decode(*data, value));
+        return LogValue("{{asUpperCamelCase parent.name}}.{{asUpperCamelCase name}} report", 0, value);
     }
 };
 
@@ -348,20 +454,9 @@ public:
     {
     }
 
-    CHIP_ERROR SendCommand(ChipDevice * device, uint8_t endpointId) override
+    CHIP_ERROR SendCommand(ChipDevice * device, chip::EndpointId endpointId) override
     {
-        ChipLogProgress(chipTool, "Sending cluster ({{asHex parent.code 4}}) ReportEvent on endpoint %" PRIu8, endpointId);
-
-        chip::Controller::{{asUpperCamelCase parent.name}}Cluster cluster;
-        cluster.Associate(device, endpointId);
-
-        auto subscriptionEstablishedCallback = mWait ? OnDefaultSuccessResponseWithoutExit : OnDefaultSuccessResponse;
-        return cluster.SubscribeEvent<chip::app::Clusters::{{asUpperCamelCase parent.name}}::Events::{{asUpperCamelCase name}}::DecodableType>(this,
-          OnValueReport,
-          OnDefaultFailure,
-          mMinInterval,
-          mMaxInterval,
-          subscriptionEstablishedCallback);
+        return SubscribeEvent(device, endpointId, {{asHex parent.code 8}}, {{asHex code 8}}, mMinInterval, mMaxInterval);
     }
 
     chip::System::Clock::Timeout GetWaitDuration() const override
@@ -369,9 +464,20 @@ public:
         return chip::System::Clock::Seconds16(mWait ? UINT16_MAX : 10);
     }
 
-    static void OnValueReport(void * context, chip::app::Clusters::{{asUpperCamelCase parent.name}}::Events::{{asUpperCamelCase name}}::DecodableType value)
+    CHIP_ERROR OnEventData(const chip::app::EventHeader & header, chip::TLV::TLVReader * data) override
     {
-       LogValue("{{asUpperCamelCase parent.name}}.{{asUpperCamelCase name}} report", 0, value);
+        LogEventHeader(header);
+        {{zapTypeToDecodableClusterObjectType name ns=parent.name}} value;
+        ReturnErrorOnFailure(chip::app::DataModel::Decode(*data, value));
+        return LogValue("{{asUpperCamelCase parent.name}}.{{asUpperCamelCase name}} report", 0, value);
+    }
+
+    void OnEventSubscription() override
+    {
+        if (!mWait)
+        {
+            SetCommandExitStatus(CHIP_NO_ERROR);
+        }
     }
 
 private:
@@ -380,6 +486,82 @@ private:
     bool mWait;
 };
 {{/chip_server_cluster_events}}
+
+/*
+ * Attribute wildcard
+ */
+class Read{{asUpperCamelCase name}}Wildcard: public ModelCommand
+{
+public:
+    Read{{asUpperCamelCase name}}Wildcard(): ModelCommand("read")
+    {
+        AddArgument("attr-name", "0xffffffff");
+        ModelCommand::AddArguments();
+    }
+
+    ~Read{{asUpperCamelCase name}}Wildcard()
+    {
+    }
+
+    CHIP_ERROR SendCommand(ChipDevice * device, chip::EndpointId endpointId) override
+    {
+        return ReadAttribute(device, endpointId, {{asHex code 8}}, chip::kInvalidAttributeId);
+    }
+
+    CHIP_ERROR OnAttributeData(const chip::app::ConcreteDataAttributePath & path, chip::TLV::TLVReader * data) override
+    {
+        LogAttributePath(path);
+        // TODO: Generate a method that Log the value based on the content of the ConcreteDataAttributePath
+        return CHIP_NO_ERROR;
+    }
+};
+
+class Report{{asUpperCamelCase name}}Wildcard: public ModelCommand
+{
+public:
+    Report{{asUpperCamelCase name}}Wildcard(): ModelCommand("report")
+    {
+        AddArgument("attr-name", "0xffffffff");
+        AddArgument("min-interval", 0, UINT16_MAX, &mMinInterval);
+        AddArgument("max-interval", 0, UINT16_MAX, &mMaxInterval);
+        AddArgument("wait", 0, 1, &mWait);
+        ModelCommand::AddArguments();
+    }
+
+    ~Report{{asUpperCamelCase name}}Wildcard()
+    {
+    }
+
+    CHIP_ERROR SendCommand(ChipDevice * device, chip::EndpointId endpointId) override
+    {
+        return SubscribeAttribute(device, endpointId, {{asHex code 8}}, chip::kInvalidAttributeId, mMinInterval, mMaxInterval);
+    }
+
+    chip::System::Clock::Timeout GetWaitDuration() const override
+    {
+        return chip::System::Clock::Seconds16(mWait ? UINT16_MAX : 10);
+    }
+
+    CHIP_ERROR OnAttributeData(const chip::app::ConcreteDataAttributePath & path, chip::TLV::TLVReader * data) override
+    {
+        LogAttributePath(path);
+        // TODO: Generate a method that Log the value based on the content of the ConcreteDataAttributePath
+        return CHIP_NO_ERROR;
+    }
+
+    void OnAttributeSubscription() override
+    {
+        if (!mWait)
+        {
+            SetCommandExitStatus(CHIP_NO_ERROR);
+        }
+    }
+
+private:
+    uint16_t mMinInterval;
+    uint16_t mMaxInterval;
+    bool mWait;
+};
 
 {{#chip_server_cluster_attributes}}
 {{! TODO: Various types (floats, structs) not supported here. }}
@@ -400,20 +582,17 @@ public:
     {
     }
 
-    CHIP_ERROR SendCommand(ChipDevice * device, uint8_t endpointId) override
+    CHIP_ERROR SendCommand(ChipDevice * device, chip::EndpointId endpointId) override
     {
-        ChipLogProgress(chipTool, "Sending cluster ({{asHex parent.code 4}}) ReadAttribute on endpoint %" PRIu8, endpointId);
-
-        chip::Controller::{{asUpperCamelCase parent.name}}Cluster cluster;
-        cluster.Associate(device, endpointId);
-        return cluster.ReadAttribute<chip::app::Clusters::{{asUpperCamelCase parent.name}}::Attributes::{{asUpperCamelCase name}}::TypeInfo>(this,
-          OnAttributeResponse,
-          OnDefaultFailure);
+        return ReadAttribute(device, endpointId, {{asHex parent.code 8}}, {{asHex code 8}});
     }
 
-    static void OnAttributeResponse(void * context, {{zapTypeToDecodableClusterObjectType type ns=parent.name isArgument=true}} value)
+    CHIP_ERROR OnAttributeData(const chip::app::ConcreteDataAttributePath & path, chip::TLV::TLVReader * data) override
     {
-        OnGeneralAttributeEventResponse(context, "{{asUpperCamelCase parent.name}}.{{asUpperCamelCase name}} response", value);
+        LogAttributePath(path);
+        {{zapTypeToDecodableClusterObjectType type ns=parent.name}} value;
+        ReturnErrorOnFailure(chip::app::DataModel::Decode(*data, value));
+        return LogValue("{{asUpperCamelCase parent.name}}.{{asUpperCamelCase name}} report", 0, value);
     }
 };
 
@@ -443,13 +622,9 @@ public:
     {
     }
 
-    CHIP_ERROR SendCommand(ChipDevice * device, uint8_t endpointId) override
+    CHIP_ERROR SendCommand(ChipDevice * device, chip::EndpointId endpointId) override
     {
-        ChipLogProgress(chipTool, "Sending cluster ({{asHex parent.code 4}}) WriteAttribute on endpoint %" PRIu8, endpointId);
-
-        chip::Controller::{{asUpperCamelCase parent.name}}Cluster cluster;
-        cluster.Associate(device, endpointId);
-        return cluster.WriteAttribute<chip::app::Clusters::{{asUpperCamelCase parent.name}}::Attributes::{{asUpperCamelCase name}}::TypeInfo>(mValue, this, OnDefaultSuccessResponse, OnDefaultFailure, mTimedInteractionTimeoutMs);
+        return WriteAttribute(device, endpointId, {{asHex parent.code 8}}, {{asHex code 8}}, mValue);
     }
 
 private:
@@ -475,15 +650,9 @@ public:
     {
     }
 
-    CHIP_ERROR SendCommand(ChipDevice * device, uint8_t endpointId) override
+    CHIP_ERROR SendCommand(ChipDevice * device, chip::EndpointId endpointId) override
     {
-        ChipLogProgress(chipTool, "Sending cluster ({{asHex parent.code 4}}) ReportAttribute on endpoint %" PRIu8, endpointId);
-
-        chip::Controller::{{asUpperCamelCase parent.name}}Cluster cluster;
-        cluster.Associate(device, endpointId);
-
-        auto subscriptionEstablishedCallback = mWait ? OnDefaultSuccessResponseWithoutExit : OnDefaultSuccessResponse;
-        return cluster.SubscribeAttribute<chip::app::Clusters::{{asUpperCamelCase parent.name}}::Attributes::{{asUpperCamelCase name}}::TypeInfo>(this, OnValueReport, OnDefaultFailure, mMinInterval, mMaxInterval, subscriptionEstablishedCallback);
+        return SubscribeAttribute(device, endpointId, {{asHex parent.code 8}}, {{asHex code 8}}, mMinInterval, mMaxInterval);
     }
 
     chip::System::Clock::Timeout GetWaitDuration() const override
@@ -491,9 +660,20 @@ public:
         return chip::System::Clock::Seconds16(mWait ? UINT16_MAX : 10);
     }
 
-    static void OnValueReport(void * context, {{zapTypeToDecodableClusterObjectType type ns=parent.name isArgument=true}} value)
+    CHIP_ERROR OnAttributeData(const chip::app::ConcreteDataAttributePath & path, chip::TLV::TLVReader * data) override
     {
-       LogValue("{{asUpperCamelCase parent.name}}.{{asUpperCamelCase name}} report", 0, value);
+        LogAttributePath(path);
+        {{zapTypeToDecodableClusterObjectType type ns=parent.name}} value;
+        ReturnErrorOnFailure(chip::app::DataModel::Decode(*data, value));
+        return LogValue("{{asUpperCamelCase parent.name}}.{{asUpperCamelCase name}} report", 0, value);
+    }
+
+    void OnAttributeSubscription() override
+    {
+        if (!mWait)
+        {
+            SetCommandExitStatus(CHIP_NO_ERROR);
+        }
     }
 
 private:
@@ -507,6 +687,155 @@ private:
 {{/chip_server_cluster_attributes}}
 {{/chip_client_clusters}}
 
+/*
+ * Event Wildcard
+ */
+class ReadEventWildcard: public ModelCommand
+{
+public:
+    ReadEventWildcard(): ModelCommand("read-event")
+    {
+        AddArgument("attr-name", "0xffffffff");
+        ModelCommand::AddArguments();
+    }
+
+    ~ReadEventWildcard()
+    {
+    }
+
+    CHIP_ERROR SendCommand(ChipDevice * device, chip::EndpointId endpointId) override
+    {
+        return ReadEvent(device, endpointId, chip::kInvalidClusterId, chip::kInvalidEventId);
+    }
+
+    CHIP_ERROR OnEventData(const chip::app::EventHeader & header, chip::TLV::TLVReader * data) override
+    {
+        LogEventHeader(header);
+        // TODO: Generate a method that log the value based on the content of the data 
+        return CHIP_NO_ERROR;
+    }
+};
+
+class ReportEventWildcard: public ModelCommand
+{
+public:
+    ReportEventWildcard(): ModelCommand("report-event")
+    {
+        AddArgument("attr-name", "0xffffffff");
+        AddArgument("min-interval", 0, UINT16_MAX, &mMinInterval);
+        AddArgument("max-interval", 0, UINT16_MAX, &mMaxInterval);
+        AddArgument("wait", 0, 1, &mWait);
+        ModelCommand::AddArguments();
+    }
+
+    ~ReportEventWildcard()
+    {
+    }
+
+    CHIP_ERROR SendCommand(ChipDevice * device, chip::EndpointId endpointId) override
+    {
+        return SubscribeEvent(device, endpointId, chip::kInvalidClusterId, chip::kInvalidEventId, mMinInterval, mMaxInterval);
+    }
+
+    chip::System::Clock::Timeout GetWaitDuration() const override
+    {
+        return chip::System::Clock::Seconds16(mWait ? UINT16_MAX : 10);
+    }
+
+    CHIP_ERROR OnEventData(const chip::app::EventHeader & header, chip::TLV::TLVReader * data) override
+    {
+        LogEventHeader(header);
+        // TODO: Generate a method that log the value based on the content of the data 
+        return CHIP_NO_ERROR;
+    }
+
+    void OnEventSubscription() override
+    {
+        if (!mWait)
+        {
+            SetCommandExitStatus(CHIP_NO_ERROR);
+        }
+    }
+
+private:
+    uint16_t mMinInterval;
+    uint16_t mMaxInterval;
+    bool mWait;
+};
+
+class ReadWildcard: public ModelCommand
+{
+public:
+    ReadWildcard(): ModelCommand("read")
+    {
+        AddArgument("attr-name", "0xffffffff");
+        ModelCommand::AddArguments();
+    }
+
+    ~ReadWildcard()
+    {
+    }
+
+    CHIP_ERROR SendCommand(ChipDevice * device, chip::EndpointId endpointId) override
+    {
+        return ReadAttribute(device, endpointId, chip::kInvalidClusterId, chip::kInvalidAttributeId);
+    }
+
+    CHIP_ERROR OnAttributeData(const chip::app::ConcreteDataAttributePath & path, chip::TLV::TLVReader * data) override
+    {
+        LogAttributePath(path);
+        // TODO: Generate a method that Log the value based on the content of the ConcreteDataAttributePath
+        return CHIP_NO_ERROR;
+    }
+};
+
+class ReportWildcard: public ModelCommand
+{
+public:
+    ReportWildcard(): ModelCommand("report")
+    {
+        AddArgument("attr-name", "0xffffffff");
+        AddArgument("min-interval", 0, UINT16_MAX, &mMinInterval);
+        AddArgument("max-interval", 0, UINT16_MAX, &mMaxInterval);
+        AddArgument("wait", 0, 1, &mWait);
+        ModelCommand::AddArguments();
+    }
+
+    ~ReportWildcard()
+    {
+    }
+
+    CHIP_ERROR SendCommand(ChipDevice * device, chip::EndpointId endpointId) override
+    {
+        return SubscribeAttribute(device, endpointId, chip::kInvalidClusterId, chip::kInvalidAttributeId, mMinInterval, mMaxInterval);
+    }
+
+    chip::System::Clock::Timeout GetWaitDuration() const override
+    {
+        return chip::System::Clock::Seconds16(mWait ? UINT16_MAX : 10);
+    }
+
+    CHIP_ERROR OnAttributeData(const chip::app::ConcreteDataAttributePath & path, chip::TLV::TLVReader * data) override
+    {
+        LogAttributePath(path);
+        // TODO: Generate a method that Log the value based on the content of the ConcreteDataAttributePath
+        return CHIP_NO_ERROR;
+    }
+
+    void OnAttributeSubscription() override
+    {
+        if (!mWait)
+        {
+            SetCommandExitStatus(CHIP_NO_ERROR);
+        }
+    }
+
+private:
+    uint16_t mMinInterval;
+    uint16_t mMaxInterval;
+    bool mWait;
+};
+
 /*----------------------------------------------------------------------------*\
 | Register all Clusters commands                                               |
 \*----------------------------------------------------------------------------*/
@@ -519,6 +848,8 @@ void registerCluster{{asUpperCamelCase name}}(Commands & commands)
         {{#chip_cluster_commands}}
         make_unique<{{asUpperCamelCase clusterName}}{{asUpperCamelCase name}}>(), //
         {{/chip_cluster_commands}}
+        make_unique<Read{{asUpperCamelCase name}}Wildcard>(), //
+        make_unique<Report{{asUpperCamelCase name}}Wildcard>(), //
         {{#chip_server_cluster_attributes}}
         {{! TODO: Various types (floats, structs) not supported here. }}
         {{#unless (isStrEqual chipCallback.name "Unsupported")}}
@@ -537,6 +868,8 @@ void registerCluster{{asUpperCamelCase name}}(Commands & commands)
         {{/if}}
         {{/unless}}
         {{/chip_server_cluster_attributes}}
+        make_unique<ReadEvent{{asUpperCamelCase name}}Wildcard>(), //
+        make_unique<ReportEvent{{asUpperCamelCase name}}Wildcard>(), //
         {{#chip_server_cluster_events}}
         make_unique<Read{{asUpperCamelCase parent.name}}{{asUpperCamelCase name}}>(), //
         make_unique<Report{{asUpperCamelCase parent.name}}{{asUpperCamelCase name}}>(), //
@@ -547,8 +880,23 @@ void registerCluster{{asUpperCamelCase name}}(Commands & commands)
 }
 {{/chip_client_clusters}}
 
+void registerClusterWildcard(Commands & commands)
+{
+    const char * clusterName = "0xffffffff";
+
+    commands_list clusterCommands = {
+        make_unique<ReadWildcard>(), //
+        make_unique<ReportWildcard>(), //
+        make_unique<ReadEventWildcard>(), //
+        make_unique<ReportEventWildcard>(), //
+    };
+
+    commands.Register(clusterName, clusterCommands);
+}
+
 void registerClusters(Commands & commands)
 {
+    registerClusterWildcard(commands);
 {{#chip_client_clusters}}
     registerCluster{{asUpperCamelCase name}}(commands);
 {{/chip_client_clusters}}

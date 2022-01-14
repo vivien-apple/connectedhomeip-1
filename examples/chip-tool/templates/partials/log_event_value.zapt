@@ -1,4 +1,4 @@
-CHIP_ERROR LogValue(const char * label, size_t indent, chip::app::Clusters::{{asUpperCamelCase parent.name}}::Events::{{asUpperCamelCase name}}::DecodableType value)
+CHIP_ERROR LogValue(const char * label, size_t indent, {{zapTypeToDecodableClusterObjectType name ns=parent.name isArgument=true forceNotOptional=true}} value)
 {
   ChipLogProgress(chipTool, "%s%s: {", IndentStr(indent).c_str(), label);
 {{#zcl_event_fields}}
