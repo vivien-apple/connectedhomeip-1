@@ -1090,8 +1090,8 @@ server cluster EthernetNetworkDiagnostics = 55 {
 }
 
 server cluster FixedLabel = 64 {
-  attribute(readonly) LabelStruct labelList[] = 0;
-  attribute(readonly) int16u clusterRevision = 65533;
+  attribute(readonly, reportable) LabelStruct labelList[] = 0;
+  attribute(readonly, reportable) int16u clusterRevision = 65533;
 }
 
 server cluster FlowMeasurement = 1028 {
@@ -1808,7 +1808,7 @@ server cluster NetworkCommissioning = 49 {
   attribute(readonly) NetworkCommissioningStatus lastNetworkingStatus = 5;
   attribute(readonly) octet_string lastNetworkID = 6;
   attribute(readonly) int32u lastConnectErrorValue = 7;
-  attribute(readonly, reportable) bitmap32 featureMap = 65532;
+  attribute(readonly) bitmap32 featureMap = 65532;
   attribute(readonly, reportable) int16u clusterRevision = 65533;
 
   request struct AddOrUpdateThreadNetworkRequest {
@@ -2390,7 +2390,7 @@ server cluster SoftwareDiagnostics = 52 {
   }
 
   info event SoftwareFault = 0 {
-    SoftwareFault softwareFault = 0;
+    SoftwareFaultStruct softwareFault = 0;
   }
 
   attribute(readonly, reportable) ThreadMetrics threadMetrics[] = 0;
