@@ -8274,12 +8274,12 @@ void registerClusterAccessControl(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
+        make_unique<ReadAttribute>(Id),
         make_unique<ReadAttribute>(Id, "Acl", Attributes::Acl::Id),                         //
         make_unique<ReadAttribute>(Id, "Extension", Attributes::Extension::Id),             //
         make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),     //
         make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id), //
-        make_unique<ReportAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
+        make_unique<ReportAttribute>(Id),
         make_unique<ReportAttribute>(Id, "Acl", Attributes::Acl::Id),             //
         make_unique<ReportAttribute>(Id, "Extension", Attributes::Extension::Id), //
     };
@@ -8302,11 +8302,9 @@ void registerClusterAccountLogin(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),     //
-        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id), //
-        make_unique<ReportAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReportAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id), //
+        make_unique<ReadAttribute>(Id), make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),         //
+        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                                     //
+        make_unique<ReportAttribute>(Id), make_unique<ReportAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id), //
     };
 
     commands.Register(clusterName, clusterCommands);
@@ -8327,14 +8325,12 @@ void registerClusterAdministratorCommissioning(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReadAttribute>(Id, "WindowStatus", Attributes::WindowStatus::Id),         //
-        make_unique<ReadAttribute>(Id, "AdminFabricIndex", Attributes::AdminFabricIndex::Id), //
-        make_unique<ReadAttribute>(Id, "AdminVendorId", Attributes::AdminVendorId::Id),       //
-        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),       //
-        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),   //
-        make_unique<ReportAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReportAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id), //
+        make_unique<ReadAttribute>(Id), make_unique<ReadAttribute>(Id, "WindowStatus", Attributes::WindowStatus::Id),           //
+        make_unique<ReadAttribute>(Id, "AdminFabricIndex", Attributes::AdminFabricIndex::Id),                                   //
+        make_unique<ReadAttribute>(Id, "AdminVendorId", Attributes::AdminVendorId::Id),                                         //
+        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),                                         //
+        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                                     //
+        make_unique<ReportAttribute>(Id), make_unique<ReportAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id), //
     };
 
     commands.Register(clusterName, clusterCommands);
@@ -8349,7 +8345,7 @@ void registerClusterApplicationBasic(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
+        make_unique<ReadAttribute>(Id),
         make_unique<ReadAttribute>(Id, "VendorName", Attributes::VendorName::Id),                 //
         make_unique<ReadAttribute>(Id, "VendorId", Attributes::VendorId::Id),                     //
         make_unique<ReadAttribute>(Id, "ApplicationName", Attributes::ApplicationName::Id),       //
@@ -8360,7 +8356,7 @@ void registerClusterApplicationBasic(Commands & commands)
         make_unique<ReadAttribute>(Id, "AllowedVendorList", Attributes::AllowedVendorList::Id),   //
         make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),           //
         make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),       //
-        make_unique<ReportAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
+        make_unique<ReportAttribute>(Id),
         make_unique<ReportAttribute>(Id, "VendorName", Attributes::VendorName::Id),                 //
         make_unique<ReportAttribute>(Id, "VendorId", Attributes::VendorId::Id),                     //
         make_unique<ReportAttribute>(Id, "ApplicationName", Attributes::ApplicationName::Id),       //
@@ -8388,11 +8384,11 @@ void registerClusterApplicationLauncher(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
+        make_unique<ReadAttribute>(Id),
         make_unique<ReadAttribute>(Id, "ApplicationLauncherList", Attributes::ApplicationLauncherList::Id), //
         make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),                     //
         make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                 //
-        make_unique<ReportAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
+        make_unique<ReportAttribute>(Id),
         make_unique<ReportAttribute>(Id, "ApplicationLauncherList", Attributes::ApplicationLauncherList::Id), //
         make_unique<ReportAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                 //
     };
@@ -8414,15 +8410,13 @@ void registerClusterAudioOutput(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReadAttribute>(Id, "AudioOutputList", Attributes::AudioOutputList::Id),       //
-        make_unique<ReadAttribute>(Id, "CurrentAudioOutput", Attributes::CurrentAudioOutput::Id), //
-        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),           //
-        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),       //
-        make_unique<ReportAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReportAttribute>(Id, "AudioOutputList", Attributes::AudioOutputList::Id),       //
-        make_unique<ReportAttribute>(Id, "CurrentAudioOutput", Attributes::CurrentAudioOutput::Id), //
-        make_unique<ReportAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),       //
+        make_unique<ReadAttribute>(Id), make_unique<ReadAttribute>(Id, "AudioOutputList", Attributes::AudioOutputList::Id),     //
+        make_unique<ReadAttribute>(Id, "CurrentAudioOutput", Attributes::CurrentAudioOutput::Id),                               //
+        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),                                         //
+        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                                     //
+        make_unique<ReportAttribute>(Id), make_unique<ReportAttribute>(Id, "AudioOutputList", Attributes::AudioOutputList::Id), //
+        make_unique<ReportAttribute>(Id, "CurrentAudioOutput", Attributes::CurrentAudioOutput::Id),                             //
+        make_unique<ReportAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                                   //
     };
 
     commands.Register(clusterName, clusterCommands);
@@ -8442,14 +8436,13 @@ void registerClusterBarrierControl(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReadAttribute>(Id, "BarrierMovingState", Attributes::BarrierMovingState::Id),   //
-        make_unique<ReadAttribute>(Id, "BarrierSafetyStatus", Attributes::BarrierSafetyStatus::Id), //
-        make_unique<ReadAttribute>(Id, "BarrierCapabilities", Attributes::BarrierCapabilities::Id), //
-        make_unique<ReadAttribute>(Id, "BarrierPosition", Attributes::BarrierPosition::Id),         //
-        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),             //
-        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),         //
-        make_unique<ReportAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
+        make_unique<ReadAttribute>(Id), make_unique<ReadAttribute>(Id, "BarrierMovingState", Attributes::BarrierMovingState::Id), //
+        make_unique<ReadAttribute>(Id, "BarrierSafetyStatus", Attributes::BarrierSafetyStatus::Id),                               //
+        make_unique<ReadAttribute>(Id, "BarrierCapabilities", Attributes::BarrierCapabilities::Id),                               //
+        make_unique<ReadAttribute>(Id, "BarrierPosition", Attributes::BarrierPosition::Id),                                       //
+        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),                                           //
+        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                                       //
+        make_unique<ReportAttribute>(Id),
         make_unique<ReportAttribute>(Id, "BarrierMovingState", Attributes::BarrierMovingState::Id),   //
         make_unique<ReportAttribute>(Id, "BarrierSafetyStatus", Attributes::BarrierSafetyStatus::Id), //
         make_unique<ReportAttribute>(Id, "BarrierCapabilities", Attributes::BarrierCapabilities::Id), //
@@ -8473,7 +8466,7 @@ void registerClusterBasic(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
+        make_unique<ReadAttribute>(Id),
         make_unique<ReadAttribute>(Id, "InteractionModelVersion", Attributes::InteractionModelVersion::Id), //
         make_unique<ReadAttribute>(Id, "VendorName", Attributes::VendorName::Id),                           //
         make_unique<ReadAttribute>(Id, "VendorID", Attributes::VendorID::Id),                               //
@@ -8498,7 +8491,7 @@ void registerClusterBasic(Commands & commands)
         make_unique<WriteBasicNodeLabel>(),                                                                 //
         make_unique<WriteBasicLocation>(),                                                                  //
         make_unique<WriteBasicLocalConfigDisabled>(),                                                       //
-        make_unique<ReportAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
+        make_unique<ReportAttribute>(Id),
         make_unique<ReportAttribute>(Id, "InteractionModelVersion", Attributes::InteractionModelVersion::Id), //
         make_unique<ReportAttribute>(Id, "VendorName", Attributes::VendorName::Id),                           //
         make_unique<ReportAttribute>(Id, "VendorID", Attributes::VendorID::Id),                               //
@@ -8521,16 +8514,14 @@ void registerClusterBasic(Commands & commands)
         //
         // Events
         //
-        make_unique<ReadEvent>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReadEvent>(Id, "StartUp", Events::StartUp::Id),                   //
-        make_unique<ReadEvent>(Id, "ShutDown", Events::ShutDown::Id),                 //
-        make_unique<ReadEvent>(Id, "Leave", Events::Leave::Id),                       //
-        make_unique<ReadEvent>(Id, "ReachableChanged", Events::ReachableChanged::Id), //
-        make_unique<ReportEvent>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReportEvent>(Id, "StartUp", Events::StartUp::Id),                   //
-        make_unique<ReportEvent>(Id, "ShutDown", Events::ShutDown::Id),                 //
-        make_unique<ReportEvent>(Id, "Leave", Events::Leave::Id),                       //
-        make_unique<ReportEvent>(Id, "ReachableChanged", Events::ReachableChanged::Id), //
+        make_unique<ReadEvent>(Id), make_unique<ReadEvent>(Id, "StartUp", Events::StartUp::Id),     //
+        make_unique<ReadEvent>(Id, "ShutDown", Events::ShutDown::Id),                               //
+        make_unique<ReadEvent>(Id, "Leave", Events::Leave::Id),                                     //
+        make_unique<ReadEvent>(Id, "ReachableChanged", Events::ReachableChanged::Id),               //
+        make_unique<ReportEvent>(Id), make_unique<ReportEvent>(Id, "StartUp", Events::StartUp::Id), //
+        make_unique<ReportEvent>(Id, "ShutDown", Events::ShutDown::Id),                             //
+        make_unique<ReportEvent>(Id, "Leave", Events::Leave::Id),                                   //
+        make_unique<ReportEvent>(Id, "ReachableChanged", Events::ReachableChanged::Id),             //
     };
 
     commands.Register(clusterName, clusterCommands);
@@ -8545,7 +8536,7 @@ void registerClusterBinaryInputBasic(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
+        make_unique<ReadAttribute>(Id),
         make_unique<ReadAttribute>(Id, "OutOfService", Attributes::OutOfService::Id),       //
         make_unique<ReadAttribute>(Id, "PresentValue", Attributes::PresentValue::Id),       //
         make_unique<ReadAttribute>(Id, "StatusFlags", Attributes::StatusFlags::Id),         //
@@ -8553,7 +8544,7 @@ void registerClusterBinaryInputBasic(Commands & commands)
         make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id), //
         make_unique<WriteBinaryInputBasicOutOfService>(),                                   //
         make_unique<WriteBinaryInputBasicPresentValue>(),                                   //
-        make_unique<ReportAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
+        make_unique<ReportAttribute>(Id),
         make_unique<ReportAttribute>(Id, "OutOfService", Attributes::OutOfService::Id),       //
         make_unique<ReportAttribute>(Id, "PresentValue", Attributes::PresentValue::Id),       //
         make_unique<ReportAttribute>(Id, "StatusFlags", Attributes::StatusFlags::Id),         //
@@ -8577,11 +8568,9 @@ void registerClusterBinding(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),     //
-        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id), //
-        make_unique<ReportAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReportAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id), //
+        make_unique<ReadAttribute>(Id), make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),         //
+        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                                     //
+        make_unique<ReportAttribute>(Id), make_unique<ReportAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id), //
     };
 
     commands.Register(clusterName, clusterCommands);
@@ -8596,20 +8585,16 @@ void registerClusterBooleanState(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReadAttribute>(Id, "StateValue", Attributes::StateValue::Id),           //
-        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),     //
-        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id), //
-        make_unique<ReportAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReportAttribute>(Id, "StateValue", Attributes::StateValue::Id),           //
-        make_unique<ReportAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id), //
+        make_unique<ReadAttribute>(Id), make_unique<ReadAttribute>(Id, "StateValue", Attributes::StateValue::Id),     //
+        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),                               //
+        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                           //
+        make_unique<ReportAttribute>(Id), make_unique<ReportAttribute>(Id, "StateValue", Attributes::StateValue::Id), //
+        make_unique<ReportAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                         //
         //
         // Events
         //
-        make_unique<ReadEvent>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReadEvent>(Id, "StateChange", Events::StateChange::Id), //
-        make_unique<ReportEvent>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReportEvent>(Id, "StateChange", Events::StateChange::Id), //
+        make_unique<ReadEvent>(Id), make_unique<ReadEvent>(Id, "StateChange", Events::StateChange::Id),     //
+        make_unique<ReportEvent>(Id), make_unique<ReportEvent>(Id, "StateChange", Events::StateChange::Id), //
     };
 
     commands.Register(clusterName, clusterCommands);
@@ -8639,26 +8624,22 @@ void registerClusterBridgedActions(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReadAttribute>(Id, "ActionList", Attributes::ActionList::Id),           //
-        make_unique<ReadAttribute>(Id, "EndpointList", Attributes::EndpointList::Id),       //
-        make_unique<ReadAttribute>(Id, "SetupUrl", Attributes::SetupUrl::Id),               //
-        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),     //
-        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id), //
-        make_unique<ReportAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReportAttribute>(Id, "ActionList", Attributes::ActionList::Id),           //
-        make_unique<ReportAttribute>(Id, "EndpointList", Attributes::EndpointList::Id),       //
-        make_unique<ReportAttribute>(Id, "SetupUrl", Attributes::SetupUrl::Id),               //
-        make_unique<ReportAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id), //
+        make_unique<ReadAttribute>(Id), make_unique<ReadAttribute>(Id, "ActionList", Attributes::ActionList::Id),     //
+        make_unique<ReadAttribute>(Id, "EndpointList", Attributes::EndpointList::Id),                                 //
+        make_unique<ReadAttribute>(Id, "SetupUrl", Attributes::SetupUrl::Id),                                         //
+        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),                               //
+        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                           //
+        make_unique<ReportAttribute>(Id), make_unique<ReportAttribute>(Id, "ActionList", Attributes::ActionList::Id), //
+        make_unique<ReportAttribute>(Id, "EndpointList", Attributes::EndpointList::Id),                               //
+        make_unique<ReportAttribute>(Id, "SetupUrl", Attributes::SetupUrl::Id),                                       //
+        make_unique<ReportAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                         //
         //
         // Events
         //
-        make_unique<ReadEvent>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReadEvent>(Id, "StateChanged", Events::StateChanged::Id), //
-        make_unique<ReadEvent>(Id, "ActionFailed", Events::ActionFailed::Id), //
-        make_unique<ReportEvent>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReportEvent>(Id, "StateChanged", Events::StateChanged::Id), //
-        make_unique<ReportEvent>(Id, "ActionFailed", Events::ActionFailed::Id), //
+        make_unique<ReadEvent>(Id), make_unique<ReadEvent>(Id, "StateChanged", Events::StateChanged::Id),     //
+        make_unique<ReadEvent>(Id, "ActionFailed", Events::ActionFailed::Id),                                 //
+        make_unique<ReportEvent>(Id), make_unique<ReportEvent>(Id, "StateChanged", Events::StateChanged::Id), //
+        make_unique<ReportEvent>(Id, "ActionFailed", Events::ActionFailed::Id),                               //
     };
 
     commands.Register(clusterName, clusterCommands);
@@ -8673,10 +8654,10 @@ void registerClusterBridgedDeviceBasic(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
+        make_unique<ReadAttribute>(Id),
         make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),     //
         make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id), //
-        make_unique<ReportAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
+        make_unique<ReportAttribute>(Id),
         make_unique<ReportAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id), //
     };
 
@@ -8698,13 +8679,11 @@ void registerClusterChannel(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReadAttribute>(Id, "ChannelList", Attributes::ChannelList::Id),         //
-        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),     //
-        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id), //
-        make_unique<ReportAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReportAttribute>(Id, "ChannelList", Attributes::ChannelList::Id),         //
-        make_unique<ReportAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id), //
+        make_unique<ReadAttribute>(Id), make_unique<ReadAttribute>(Id, "ChannelList", Attributes::ChannelList::Id),     //
+        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),                                 //
+        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                             //
+        make_unique<ReportAttribute>(Id), make_unique<ReportAttribute>(Id, "ChannelList", Attributes::ChannelList::Id), //
+        make_unique<ReportAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                           //
     };
 
     commands.Register(clusterName, clusterCommands);
@@ -8741,76 +8720,74 @@ void registerClusterColorControl(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReadAttribute>(Id, "CurrentHue", Attributes::CurrentHue::Id),                                           //
-        make_unique<ReadAttribute>(Id, "CurrentSaturation", Attributes::CurrentSaturation::Id),                             //
-        make_unique<ReadAttribute>(Id, "RemainingTime", Attributes::RemainingTime::Id),                                     //
-        make_unique<ReadAttribute>(Id, "CurrentX", Attributes::CurrentX::Id),                                               //
-        make_unique<ReadAttribute>(Id, "CurrentY", Attributes::CurrentY::Id),                                               //
-        make_unique<ReadAttribute>(Id, "DriftCompensation", Attributes::DriftCompensation::Id),                             //
-        make_unique<ReadAttribute>(Id, "CompensationText", Attributes::CompensationText::Id),                               //
-        make_unique<ReadAttribute>(Id, "ColorTemperature", Attributes::ColorTemperature::Id),                               //
-        make_unique<ReadAttribute>(Id, "ColorMode", Attributes::ColorMode::Id),                                             //
-        make_unique<ReadAttribute>(Id, "ColorControlOptions", Attributes::ColorControlOptions::Id),                         //
-        make_unique<ReadAttribute>(Id, "NumberOfPrimaries", Attributes::NumberOfPrimaries::Id),                             //
-        make_unique<ReadAttribute>(Id, "Primary1X", Attributes::Primary1X::Id),                                             //
-        make_unique<ReadAttribute>(Id, "Primary1Y", Attributes::Primary1Y::Id),                                             //
-        make_unique<ReadAttribute>(Id, "Primary1Intensity", Attributes::Primary1Intensity::Id),                             //
-        make_unique<ReadAttribute>(Id, "Primary2X", Attributes::Primary2X::Id),                                             //
-        make_unique<ReadAttribute>(Id, "Primary2Y", Attributes::Primary2Y::Id),                                             //
-        make_unique<ReadAttribute>(Id, "Primary2Intensity", Attributes::Primary2Intensity::Id),                             //
-        make_unique<ReadAttribute>(Id, "Primary3X", Attributes::Primary3X::Id),                                             //
-        make_unique<ReadAttribute>(Id, "Primary3Y", Attributes::Primary3Y::Id),                                             //
-        make_unique<ReadAttribute>(Id, "Primary3Intensity", Attributes::Primary3Intensity::Id),                             //
-        make_unique<ReadAttribute>(Id, "Primary4X", Attributes::Primary4X::Id),                                             //
-        make_unique<ReadAttribute>(Id, "Primary4Y", Attributes::Primary4Y::Id),                                             //
-        make_unique<ReadAttribute>(Id, "Primary4Intensity", Attributes::Primary4Intensity::Id),                             //
-        make_unique<ReadAttribute>(Id, "Primary5X", Attributes::Primary5X::Id),                                             //
-        make_unique<ReadAttribute>(Id, "Primary5Y", Attributes::Primary5Y::Id),                                             //
-        make_unique<ReadAttribute>(Id, "Primary5Intensity", Attributes::Primary5Intensity::Id),                             //
-        make_unique<ReadAttribute>(Id, "Primary6X", Attributes::Primary6X::Id),                                             //
-        make_unique<ReadAttribute>(Id, "Primary6Y", Attributes::Primary6Y::Id),                                             //
-        make_unique<ReadAttribute>(Id, "Primary6Intensity", Attributes::Primary6Intensity::Id),                             //
-        make_unique<ReadAttribute>(Id, "WhitePointX", Attributes::WhitePointX::Id),                                         //
-        make_unique<ReadAttribute>(Id, "WhitePointY", Attributes::WhitePointY::Id),                                         //
-        make_unique<ReadAttribute>(Id, "ColorPointRX", Attributes::ColorPointRX::Id),                                       //
-        make_unique<ReadAttribute>(Id, "ColorPointRY", Attributes::ColorPointRY::Id),                                       //
-        make_unique<ReadAttribute>(Id, "ColorPointRIntensity", Attributes::ColorPointRIntensity::Id),                       //
-        make_unique<ReadAttribute>(Id, "ColorPointGX", Attributes::ColorPointGX::Id),                                       //
-        make_unique<ReadAttribute>(Id, "ColorPointGY", Attributes::ColorPointGY::Id),                                       //
-        make_unique<ReadAttribute>(Id, "ColorPointGIntensity", Attributes::ColorPointGIntensity::Id),                       //
-        make_unique<ReadAttribute>(Id, "ColorPointBX", Attributes::ColorPointBX::Id),                                       //
-        make_unique<ReadAttribute>(Id, "ColorPointBY", Attributes::ColorPointBY::Id),                                       //
-        make_unique<ReadAttribute>(Id, "ColorPointBIntensity", Attributes::ColorPointBIntensity::Id),                       //
-        make_unique<ReadAttribute>(Id, "EnhancedCurrentHue", Attributes::EnhancedCurrentHue::Id),                           //
-        make_unique<ReadAttribute>(Id, "EnhancedColorMode", Attributes::EnhancedColorMode::Id),                             //
-        make_unique<ReadAttribute>(Id, "ColorLoopActive", Attributes::ColorLoopActive::Id),                                 //
-        make_unique<ReadAttribute>(Id, "ColorLoopDirection", Attributes::ColorLoopDirection::Id),                           //
-        make_unique<ReadAttribute>(Id, "ColorLoopTime", Attributes::ColorLoopTime::Id),                                     //
-        make_unique<ReadAttribute>(Id, "ColorLoopStartEnhancedHue", Attributes::ColorLoopStartEnhancedHue::Id),             //
-        make_unique<ReadAttribute>(Id, "ColorLoopStoredEnhancedHue", Attributes::ColorLoopStoredEnhancedHue::Id),           //
-        make_unique<ReadAttribute>(Id, "ColorCapabilities", Attributes::ColorCapabilities::Id),                             //
-        make_unique<ReadAttribute>(Id, "ColorTempPhysicalMin", Attributes::ColorTempPhysicalMin::Id),                       //
-        make_unique<ReadAttribute>(Id, "ColorTempPhysicalMax", Attributes::ColorTempPhysicalMax::Id),                       //
-        make_unique<ReadAttribute>(Id, "CoupleColorTempToLevelMinMireds", Attributes::CoupleColorTempToLevelMinMireds::Id), //
-        make_unique<ReadAttribute>(Id, "StartUpColorTemperatureMireds", Attributes::StartUpColorTemperatureMireds::Id),     //
-        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),                                     //
-        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                                 //
-        make_unique<WriteColorControlColorControlOptions>(),                                                                //
-        make_unique<WriteColorControlWhitePointX>(),                                                                        //
-        make_unique<WriteColorControlWhitePointY>(),                                                                        //
-        make_unique<WriteColorControlColorPointRX>(),                                                                       //
-        make_unique<WriteColorControlColorPointRY>(),                                                                       //
-        make_unique<WriteColorControlColorPointRIntensity>(),                                                               //
-        make_unique<WriteColorControlColorPointGX>(),                                                                       //
-        make_unique<WriteColorControlColorPointGY>(),                                                                       //
-        make_unique<WriteColorControlColorPointGIntensity>(),                                                               //
-        make_unique<WriteColorControlColorPointBX>(),                                                                       //
-        make_unique<WriteColorControlColorPointBY>(),                                                                       //
-        make_unique<WriteColorControlColorPointBIntensity>(),                                                               //
-        make_unique<WriteColorControlStartUpColorTemperatureMireds>(),                                                      //
-        make_unique<ReportAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReportAttribute>(Id, "CurrentHue", Attributes::CurrentHue::Id),                                           //
+        make_unique<ReadAttribute>(Id), make_unique<ReadAttribute>(Id, "CurrentHue", Attributes::CurrentHue::Id),             //
+        make_unique<ReadAttribute>(Id, "CurrentSaturation", Attributes::CurrentSaturation::Id),                               //
+        make_unique<ReadAttribute>(Id, "RemainingTime", Attributes::RemainingTime::Id),                                       //
+        make_unique<ReadAttribute>(Id, "CurrentX", Attributes::CurrentX::Id),                                                 //
+        make_unique<ReadAttribute>(Id, "CurrentY", Attributes::CurrentY::Id),                                                 //
+        make_unique<ReadAttribute>(Id, "DriftCompensation", Attributes::DriftCompensation::Id),                               //
+        make_unique<ReadAttribute>(Id, "CompensationText", Attributes::CompensationText::Id),                                 //
+        make_unique<ReadAttribute>(Id, "ColorTemperature", Attributes::ColorTemperature::Id),                                 //
+        make_unique<ReadAttribute>(Id, "ColorMode", Attributes::ColorMode::Id),                                               //
+        make_unique<ReadAttribute>(Id, "ColorControlOptions", Attributes::ColorControlOptions::Id),                           //
+        make_unique<ReadAttribute>(Id, "NumberOfPrimaries", Attributes::NumberOfPrimaries::Id),                               //
+        make_unique<ReadAttribute>(Id, "Primary1X", Attributes::Primary1X::Id),                                               //
+        make_unique<ReadAttribute>(Id, "Primary1Y", Attributes::Primary1Y::Id),                                               //
+        make_unique<ReadAttribute>(Id, "Primary1Intensity", Attributes::Primary1Intensity::Id),                               //
+        make_unique<ReadAttribute>(Id, "Primary2X", Attributes::Primary2X::Id),                                               //
+        make_unique<ReadAttribute>(Id, "Primary2Y", Attributes::Primary2Y::Id),                                               //
+        make_unique<ReadAttribute>(Id, "Primary2Intensity", Attributes::Primary2Intensity::Id),                               //
+        make_unique<ReadAttribute>(Id, "Primary3X", Attributes::Primary3X::Id),                                               //
+        make_unique<ReadAttribute>(Id, "Primary3Y", Attributes::Primary3Y::Id),                                               //
+        make_unique<ReadAttribute>(Id, "Primary3Intensity", Attributes::Primary3Intensity::Id),                               //
+        make_unique<ReadAttribute>(Id, "Primary4X", Attributes::Primary4X::Id),                                               //
+        make_unique<ReadAttribute>(Id, "Primary4Y", Attributes::Primary4Y::Id),                                               //
+        make_unique<ReadAttribute>(Id, "Primary4Intensity", Attributes::Primary4Intensity::Id),                               //
+        make_unique<ReadAttribute>(Id, "Primary5X", Attributes::Primary5X::Id),                                               //
+        make_unique<ReadAttribute>(Id, "Primary5Y", Attributes::Primary5Y::Id),                                               //
+        make_unique<ReadAttribute>(Id, "Primary5Intensity", Attributes::Primary5Intensity::Id),                               //
+        make_unique<ReadAttribute>(Id, "Primary6X", Attributes::Primary6X::Id),                                               //
+        make_unique<ReadAttribute>(Id, "Primary6Y", Attributes::Primary6Y::Id),                                               //
+        make_unique<ReadAttribute>(Id, "Primary6Intensity", Attributes::Primary6Intensity::Id),                               //
+        make_unique<ReadAttribute>(Id, "WhitePointX", Attributes::WhitePointX::Id),                                           //
+        make_unique<ReadAttribute>(Id, "WhitePointY", Attributes::WhitePointY::Id),                                           //
+        make_unique<ReadAttribute>(Id, "ColorPointRX", Attributes::ColorPointRX::Id),                                         //
+        make_unique<ReadAttribute>(Id, "ColorPointRY", Attributes::ColorPointRY::Id),                                         //
+        make_unique<ReadAttribute>(Id, "ColorPointRIntensity", Attributes::ColorPointRIntensity::Id),                         //
+        make_unique<ReadAttribute>(Id, "ColorPointGX", Attributes::ColorPointGX::Id),                                         //
+        make_unique<ReadAttribute>(Id, "ColorPointGY", Attributes::ColorPointGY::Id),                                         //
+        make_unique<ReadAttribute>(Id, "ColorPointGIntensity", Attributes::ColorPointGIntensity::Id),                         //
+        make_unique<ReadAttribute>(Id, "ColorPointBX", Attributes::ColorPointBX::Id),                                         //
+        make_unique<ReadAttribute>(Id, "ColorPointBY", Attributes::ColorPointBY::Id),                                         //
+        make_unique<ReadAttribute>(Id, "ColorPointBIntensity", Attributes::ColorPointBIntensity::Id),                         //
+        make_unique<ReadAttribute>(Id, "EnhancedCurrentHue", Attributes::EnhancedCurrentHue::Id),                             //
+        make_unique<ReadAttribute>(Id, "EnhancedColorMode", Attributes::EnhancedColorMode::Id),                               //
+        make_unique<ReadAttribute>(Id, "ColorLoopActive", Attributes::ColorLoopActive::Id),                                   //
+        make_unique<ReadAttribute>(Id, "ColorLoopDirection", Attributes::ColorLoopDirection::Id),                             //
+        make_unique<ReadAttribute>(Id, "ColorLoopTime", Attributes::ColorLoopTime::Id),                                       //
+        make_unique<ReadAttribute>(Id, "ColorLoopStartEnhancedHue", Attributes::ColorLoopStartEnhancedHue::Id),               //
+        make_unique<ReadAttribute>(Id, "ColorLoopStoredEnhancedHue", Attributes::ColorLoopStoredEnhancedHue::Id),             //
+        make_unique<ReadAttribute>(Id, "ColorCapabilities", Attributes::ColorCapabilities::Id),                               //
+        make_unique<ReadAttribute>(Id, "ColorTempPhysicalMin", Attributes::ColorTempPhysicalMin::Id),                         //
+        make_unique<ReadAttribute>(Id, "ColorTempPhysicalMax", Attributes::ColorTempPhysicalMax::Id),                         //
+        make_unique<ReadAttribute>(Id, "CoupleColorTempToLevelMinMireds", Attributes::CoupleColorTempToLevelMinMireds::Id),   //
+        make_unique<ReadAttribute>(Id, "StartUpColorTemperatureMireds", Attributes::StartUpColorTemperatureMireds::Id),       //
+        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),                                       //
+        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                                   //
+        make_unique<WriteColorControlColorControlOptions>(),                                                                  //
+        make_unique<WriteColorControlWhitePointX>(),                                                                          //
+        make_unique<WriteColorControlWhitePointY>(),                                                                          //
+        make_unique<WriteColorControlColorPointRX>(),                                                                         //
+        make_unique<WriteColorControlColorPointRY>(),                                                                         //
+        make_unique<WriteColorControlColorPointRIntensity>(),                                                                 //
+        make_unique<WriteColorControlColorPointGX>(),                                                                         //
+        make_unique<WriteColorControlColorPointGY>(),                                                                         //
+        make_unique<WriteColorControlColorPointGIntensity>(),                                                                 //
+        make_unique<WriteColorControlColorPointBX>(),                                                                         //
+        make_unique<WriteColorControlColorPointBY>(),                                                                         //
+        make_unique<WriteColorControlColorPointBIntensity>(),                                                                 //
+        make_unique<WriteColorControlStartUpColorTemperatureMireds>(),                                                        //
+        make_unique<ReportAttribute>(Id), make_unique<ReportAttribute>(Id, "CurrentHue", Attributes::CurrentHue::Id),         //
         make_unique<ReportAttribute>(Id, "CurrentSaturation", Attributes::CurrentSaturation::Id),                             //
         make_unique<ReportAttribute>(Id, "RemainingTime", Attributes::RemainingTime::Id),                                     //
         make_unique<ReportAttribute>(Id, "CurrentX", Attributes::CurrentX::Id),                                               //
@@ -8882,16 +8859,14 @@ void registerClusterContentLauncher(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReadAttribute>(Id, "AcceptHeaderList", Attributes::AcceptHeaderList::Id),                       //
-        make_unique<ReadAttribute>(Id, "SupportedStreamingProtocols", Attributes::SupportedStreamingProtocols::Id), //
-        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),                             //
-        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                         //
-        make_unique<WriteContentLauncherSupportedStreamingProtocols>(),                                             //
-        make_unique<ReportAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReportAttribute>(Id, "AcceptHeaderList", Attributes::AcceptHeaderList::Id),                       //
-        make_unique<ReportAttribute>(Id, "SupportedStreamingProtocols", Attributes::SupportedStreamingProtocols::Id), //
-        make_unique<ReportAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                         //
+        make_unique<ReadAttribute>(Id), make_unique<ReadAttribute>(Id, "AcceptHeaderList", Attributes::AcceptHeaderList::Id),     //
+        make_unique<ReadAttribute>(Id, "SupportedStreamingProtocols", Attributes::SupportedStreamingProtocols::Id),               //
+        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),                                           //
+        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                                       //
+        make_unique<WriteContentLauncherSupportedStreamingProtocols>(),                                                           //
+        make_unique<ReportAttribute>(Id), make_unique<ReportAttribute>(Id, "AcceptHeaderList", Attributes::AcceptHeaderList::Id), //
+        make_unique<ReportAttribute>(Id, "SupportedStreamingProtocols", Attributes::SupportedStreamingProtocols::Id),             //
+        make_unique<ReportAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                                     //
     };
 
     commands.Register(clusterName, clusterCommands);
@@ -8906,14 +8881,14 @@ void registerClusterDescriptor(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
+        make_unique<ReadAttribute>(Id),
         make_unique<ReadAttribute>(Id, "DeviceList", Attributes::DeviceList::Id),           //
         make_unique<ReadAttribute>(Id, "ServerList", Attributes::ServerList::Id),           //
         make_unique<ReadAttribute>(Id, "ClientList", Attributes::ClientList::Id),           //
         make_unique<ReadAttribute>(Id, "PartsList", Attributes::PartsList::Id),             //
         make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),     //
         make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id), //
-        make_unique<ReportAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
+        make_unique<ReportAttribute>(Id),
         make_unique<ReportAttribute>(Id, "DeviceList", Attributes::DeviceList::Id),           //
         make_unique<ReportAttribute>(Id, "ServerList", Attributes::ServerList::Id),           //
         make_unique<ReportAttribute>(Id, "ClientList", Attributes::ClientList::Id),           //
@@ -8937,8 +8912,7 @@ void registerClusterDiagnosticLogs(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id), //
+        make_unique<ReadAttribute>(Id), make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id), //
     };
 
     commands.Register(clusterName, clusterCommands);
@@ -8964,8 +8938,7 @@ void registerClusterDoorLock(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReadAttribute>(Id, "LockState", Attributes::LockState::Id),                                     //
+        make_unique<ReadAttribute>(Id), make_unique<ReadAttribute>(Id, "LockState", Attributes::LockState::Id),     //
         make_unique<ReadAttribute>(Id, "LockType", Attributes::LockType::Id),                                       //
         make_unique<ReadAttribute>(Id, "ActuatorEnabled", Attributes::ActuatorEnabled::Id),                         //
         make_unique<ReadAttribute>(Id, "DoorState", Attributes::DoorState::Id),                                     //
@@ -8990,34 +8963,31 @@ void registerClusterDoorLock(Commands & commands)
         make_unique<WriteDoorLockEnableOneTouchLocking>(),                                                          //
         make_unique<WriteDoorLockEnablePrivacyModeButton>(),                                                        //
         make_unique<WriteDoorLockWrongCodeEntryLimit>(),                                                            //
-        make_unique<ReportAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReportAttribute>(Id, "LockState", Attributes::LockState::Id),                             //
-        make_unique<ReportAttribute>(Id, "LockType", Attributes::LockType::Id),                               //
-        make_unique<ReportAttribute>(Id, "ActuatorEnabled", Attributes::ActuatorEnabled::Id),                 //
-        make_unique<ReportAttribute>(Id, "DoorState", Attributes::DoorState::Id),                             //
-        make_unique<ReportAttribute>(Id, "Language", Attributes::Language::Id),                               //
-        make_unique<ReportAttribute>(Id, "AutoRelockTime", Attributes::AutoRelockTime::Id),                   //
-        make_unique<ReportAttribute>(Id, "SoundVolume", Attributes::SoundVolume::Id),                         //
-        make_unique<ReportAttribute>(Id, "OperatingMode", Attributes::OperatingMode::Id),                     //
-        make_unique<ReportAttribute>(Id, "EnableOneTouchLocking", Attributes::EnableOneTouchLocking::Id),     //
-        make_unique<ReportAttribute>(Id, "EnablePrivacyModeButton", Attributes::EnablePrivacyModeButton::Id), //
-        make_unique<ReportAttribute>(Id, "WrongCodeEntryLimit", Attributes::WrongCodeEntryLimit::Id),         //
-        make_unique<ReportAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                 //
+        make_unique<ReportAttribute>(Id), make_unique<ReportAttribute>(Id, "LockState", Attributes::LockState::Id), //
+        make_unique<ReportAttribute>(Id, "LockType", Attributes::LockType::Id),                                     //
+        make_unique<ReportAttribute>(Id, "ActuatorEnabled", Attributes::ActuatorEnabled::Id),                       //
+        make_unique<ReportAttribute>(Id, "DoorState", Attributes::DoorState::Id),                                   //
+        make_unique<ReportAttribute>(Id, "Language", Attributes::Language::Id),                                     //
+        make_unique<ReportAttribute>(Id, "AutoRelockTime", Attributes::AutoRelockTime::Id),                         //
+        make_unique<ReportAttribute>(Id, "SoundVolume", Attributes::SoundVolume::Id),                               //
+        make_unique<ReportAttribute>(Id, "OperatingMode", Attributes::OperatingMode::Id),                           //
+        make_unique<ReportAttribute>(Id, "EnableOneTouchLocking", Attributes::EnableOneTouchLocking::Id),           //
+        make_unique<ReportAttribute>(Id, "EnablePrivacyModeButton", Attributes::EnablePrivacyModeButton::Id),       //
+        make_unique<ReportAttribute>(Id, "WrongCodeEntryLimit", Attributes::WrongCodeEntryLimit::Id),               //
+        make_unique<ReportAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                       //
         //
         // Events
         //
-        make_unique<ReadEvent>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReadEvent>(Id, "DoorLockAlarm", Events::DoorLockAlarm::Id),           //
-        make_unique<ReadEvent>(Id, "DoorStateChange", Events::DoorStateChange::Id),       //
-        make_unique<ReadEvent>(Id, "LockOperation", Events::LockOperation::Id),           //
-        make_unique<ReadEvent>(Id, "LockOperationError", Events::LockOperationError::Id), //
-        make_unique<ReadEvent>(Id, "LockUserChange", Events::LockUserChange::Id),         //
-        make_unique<ReportEvent>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReportEvent>(Id, "DoorLockAlarm", Events::DoorLockAlarm::Id),           //
-        make_unique<ReportEvent>(Id, "DoorStateChange", Events::DoorStateChange::Id),       //
-        make_unique<ReportEvent>(Id, "LockOperation", Events::LockOperation::Id),           //
-        make_unique<ReportEvent>(Id, "LockOperationError", Events::LockOperationError::Id), //
-        make_unique<ReportEvent>(Id, "LockUserChange", Events::LockUserChange::Id),         //
+        make_unique<ReadEvent>(Id), make_unique<ReadEvent>(Id, "DoorLockAlarm", Events::DoorLockAlarm::Id),     //
+        make_unique<ReadEvent>(Id, "DoorStateChange", Events::DoorStateChange::Id),                             //
+        make_unique<ReadEvent>(Id, "LockOperation", Events::LockOperation::Id),                                 //
+        make_unique<ReadEvent>(Id, "LockOperationError", Events::LockOperationError::Id),                       //
+        make_unique<ReadEvent>(Id, "LockUserChange", Events::LockUserChange::Id),                               //
+        make_unique<ReportEvent>(Id), make_unique<ReportEvent>(Id, "DoorLockAlarm", Events::DoorLockAlarm::Id), //
+        make_unique<ReportEvent>(Id, "DoorStateChange", Events::DoorStateChange::Id),                           //
+        make_unique<ReportEvent>(Id, "LockOperation", Events::LockOperation::Id),                               //
+        make_unique<ReportEvent>(Id, "LockOperationError", Events::LockOperationError::Id),                     //
+        make_unique<ReportEvent>(Id, "LockUserChange", Events::LockUserChange::Id),                             //
     };
 
     commands.Register(clusterName, clusterCommands);
@@ -9032,7 +9002,7 @@ void registerClusterElectricalMeasurement(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
+        make_unique<ReadAttribute>(Id),
         make_unique<ReadAttribute>(Id, "MeasurementType", Attributes::MeasurementType::Id),   //
         make_unique<ReadAttribute>(Id, "TotalActivePower", Attributes::TotalActivePower::Id), //
         make_unique<ReadAttribute>(Id, "RmsVoltage", Attributes::RmsVoltage::Id),             //
@@ -9046,7 +9016,7 @@ void registerClusterElectricalMeasurement(Commands & commands)
         make_unique<ReadAttribute>(Id, "ActivePowerMax", Attributes::ActivePowerMax::Id),     //
         make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),       //
         make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),   //
-        make_unique<ReportAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
+        make_unique<ReportAttribute>(Id),
         make_unique<ReportAttribute>(Id, "MeasurementType", Attributes::MeasurementType::Id),   //
         make_unique<ReportAttribute>(Id, "TotalActivePower", Attributes::TotalActivePower::Id), //
         make_unique<ReportAttribute>(Id, "RmsVoltage", Attributes::RmsVoltage::Id),             //
@@ -9077,30 +9047,28 @@ void registerClusterEthernetNetworkDiagnostics(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReadAttribute>(Id, "PHYRate", Attributes::PHYRate::Id),                 //
-        make_unique<ReadAttribute>(Id, "FullDuplex", Attributes::FullDuplex::Id),           //
-        make_unique<ReadAttribute>(Id, "PacketRxCount", Attributes::PacketRxCount::Id),     //
-        make_unique<ReadAttribute>(Id, "PacketTxCount", Attributes::PacketTxCount::Id),     //
-        make_unique<ReadAttribute>(Id, "TxErrCount", Attributes::TxErrCount::Id),           //
-        make_unique<ReadAttribute>(Id, "CollisionCount", Attributes::CollisionCount::Id),   //
-        make_unique<ReadAttribute>(Id, "OverrunCount", Attributes::OverrunCount::Id),       //
-        make_unique<ReadAttribute>(Id, "CarrierDetect", Attributes::CarrierDetect::Id),     //
-        make_unique<ReadAttribute>(Id, "TimeSinceReset", Attributes::TimeSinceReset::Id),   //
-        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),     //
-        make_unique<ReadAttribute>(Id, "FeatureMap", Attributes::FeatureMap::Id),           //
-        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id), //
-        make_unique<ReportAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReportAttribute>(Id, "PHYRate", Attributes::PHYRate::Id),                 //
-        make_unique<ReportAttribute>(Id, "FullDuplex", Attributes::FullDuplex::Id),           //
-        make_unique<ReportAttribute>(Id, "PacketRxCount", Attributes::PacketRxCount::Id),     //
-        make_unique<ReportAttribute>(Id, "PacketTxCount", Attributes::PacketTxCount::Id),     //
-        make_unique<ReportAttribute>(Id, "TxErrCount", Attributes::TxErrCount::Id),           //
-        make_unique<ReportAttribute>(Id, "CollisionCount", Attributes::CollisionCount::Id),   //
-        make_unique<ReportAttribute>(Id, "OverrunCount", Attributes::OverrunCount::Id),       //
-        make_unique<ReportAttribute>(Id, "CarrierDetect", Attributes::CarrierDetect::Id),     //
-        make_unique<ReportAttribute>(Id, "TimeSinceReset", Attributes::TimeSinceReset::Id),   //
-        make_unique<ReportAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id), //
+        make_unique<ReadAttribute>(Id), make_unique<ReadAttribute>(Id, "PHYRate", Attributes::PHYRate::Id),     //
+        make_unique<ReadAttribute>(Id, "FullDuplex", Attributes::FullDuplex::Id),                               //
+        make_unique<ReadAttribute>(Id, "PacketRxCount", Attributes::PacketRxCount::Id),                         //
+        make_unique<ReadAttribute>(Id, "PacketTxCount", Attributes::PacketTxCount::Id),                         //
+        make_unique<ReadAttribute>(Id, "TxErrCount", Attributes::TxErrCount::Id),                               //
+        make_unique<ReadAttribute>(Id, "CollisionCount", Attributes::CollisionCount::Id),                       //
+        make_unique<ReadAttribute>(Id, "OverrunCount", Attributes::OverrunCount::Id),                           //
+        make_unique<ReadAttribute>(Id, "CarrierDetect", Attributes::CarrierDetect::Id),                         //
+        make_unique<ReadAttribute>(Id, "TimeSinceReset", Attributes::TimeSinceReset::Id),                       //
+        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),                         //
+        make_unique<ReadAttribute>(Id, "FeatureMap", Attributes::FeatureMap::Id),                               //
+        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                     //
+        make_unique<ReportAttribute>(Id), make_unique<ReportAttribute>(Id, "PHYRate", Attributes::PHYRate::Id), //
+        make_unique<ReportAttribute>(Id, "FullDuplex", Attributes::FullDuplex::Id),                             //
+        make_unique<ReportAttribute>(Id, "PacketRxCount", Attributes::PacketRxCount::Id),                       //
+        make_unique<ReportAttribute>(Id, "PacketTxCount", Attributes::PacketTxCount::Id),                       //
+        make_unique<ReportAttribute>(Id, "TxErrCount", Attributes::TxErrCount::Id),                             //
+        make_unique<ReportAttribute>(Id, "CollisionCount", Attributes::CollisionCount::Id),                     //
+        make_unique<ReportAttribute>(Id, "OverrunCount", Attributes::OverrunCount::Id),                         //
+        make_unique<ReportAttribute>(Id, "CarrierDetect", Attributes::CarrierDetect::Id),                       //
+        make_unique<ReportAttribute>(Id, "TimeSinceReset", Attributes::TimeSinceReset::Id),                     //
+        make_unique<ReportAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                   //
     };
 
     commands.Register(clusterName, clusterCommands);
@@ -9115,11 +9083,11 @@ void registerClusterFixedLabel(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
+        make_unique<ReadAttribute>(Id),
         make_unique<ReadAttribute>(Id, "LabelList", Attributes::LabelList::Id),             //
         make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),     //
         make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id), //
-        make_unique<ReportAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
+        make_unique<ReportAttribute>(Id),
         make_unique<ReportAttribute>(Id, "LabelList", Attributes::LabelList::Id),             //
         make_unique<ReportAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id), //
     };
@@ -9136,14 +9104,14 @@ void registerClusterFlowMeasurement(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
+        make_unique<ReadAttribute>(Id),
         make_unique<ReadAttribute>(Id, "MeasuredValue", Attributes::MeasuredValue::Id),       //
         make_unique<ReadAttribute>(Id, "MinMeasuredValue", Attributes::MinMeasuredValue::Id), //
         make_unique<ReadAttribute>(Id, "MaxMeasuredValue", Attributes::MaxMeasuredValue::Id), //
         make_unique<ReadAttribute>(Id, "Tolerance", Attributes::Tolerance::Id),               //
         make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),       //
         make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),   //
-        make_unique<ReportAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
+        make_unique<ReportAttribute>(Id),
         make_unique<ReportAttribute>(Id, "MeasuredValue", Attributes::MeasuredValue::Id),       //
         make_unique<ReportAttribute>(Id, "MinMeasuredValue", Attributes::MinMeasuredValue::Id), //
         make_unique<ReportAttribute>(Id, "MaxMeasuredValue", Attributes::MaxMeasuredValue::Id), //
@@ -9169,18 +9137,16 @@ void registerClusterGeneralCommissioning(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReadAttribute>(Id, "Breadcrumb", Attributes::Breadcrumb::Id),                                 //
-        make_unique<ReadAttribute>(Id, "BasicCommissioningInfoList", Attributes::BasicCommissioningInfoList::Id), //
-        make_unique<ReadAttribute>(Id, "RegulatoryConfig", Attributes::RegulatoryConfig::Id),                     //
-        make_unique<ReadAttribute>(Id, "LocationCapability", Attributes::LocationCapability::Id),                 //
-        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),                           //
-        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                       //
-        make_unique<WriteGeneralCommissioningBreadcrumb>(),                                                       //
-        make_unique<ReportAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReportAttribute>(Id, "Breadcrumb", Attributes::Breadcrumb::Id),                                 //
-        make_unique<ReportAttribute>(Id, "BasicCommissioningInfoList", Attributes::BasicCommissioningInfoList::Id), //
-        make_unique<ReportAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                       //
+        make_unique<ReadAttribute>(Id), make_unique<ReadAttribute>(Id, "Breadcrumb", Attributes::Breadcrumb::Id),     //
+        make_unique<ReadAttribute>(Id, "BasicCommissioningInfoList", Attributes::BasicCommissioningInfoList::Id),     //
+        make_unique<ReadAttribute>(Id, "RegulatoryConfig", Attributes::RegulatoryConfig::Id),                         //
+        make_unique<ReadAttribute>(Id, "LocationCapability", Attributes::LocationCapability::Id),                     //
+        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),                               //
+        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                           //
+        make_unique<WriteGeneralCommissioningBreadcrumb>(),                                                           //
+        make_unique<ReportAttribute>(Id), make_unique<ReportAttribute>(Id, "Breadcrumb", Attributes::Breadcrumb::Id), //
+        make_unique<ReportAttribute>(Id, "BasicCommissioningInfoList", Attributes::BasicCommissioningInfoList::Id),   //
+        make_unique<ReportAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                         //
     };
 
     commands.Register(clusterName, clusterCommands);
@@ -9195,18 +9161,17 @@ void registerClusterGeneralDiagnostics(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReadAttribute>(Id, "NetworkInterfaces", Attributes::NetworkInterfaces::Id),         //
-        make_unique<ReadAttribute>(Id, "RebootCount", Attributes::RebootCount::Id),                     //
-        make_unique<ReadAttribute>(Id, "UpTime", Attributes::UpTime::Id),                               //
-        make_unique<ReadAttribute>(Id, "TotalOperationalHours", Attributes::TotalOperationalHours::Id), //
-        make_unique<ReadAttribute>(Id, "BootReasons", Attributes::BootReasons::Id),                     //
-        make_unique<ReadAttribute>(Id, "ActiveHardwareFaults", Attributes::ActiveHardwareFaults::Id),   //
-        make_unique<ReadAttribute>(Id, "ActiveRadioFaults", Attributes::ActiveRadioFaults::Id),         //
-        make_unique<ReadAttribute>(Id, "ActiveNetworkFaults", Attributes::ActiveNetworkFaults::Id),     //
-        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),                 //
-        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),             //
-        make_unique<ReportAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
+        make_unique<ReadAttribute>(Id), make_unique<ReadAttribute>(Id, "NetworkInterfaces", Attributes::NetworkInterfaces::Id), //
+        make_unique<ReadAttribute>(Id, "RebootCount", Attributes::RebootCount::Id),                                             //
+        make_unique<ReadAttribute>(Id, "UpTime", Attributes::UpTime::Id),                                                       //
+        make_unique<ReadAttribute>(Id, "TotalOperationalHours", Attributes::TotalOperationalHours::Id),                         //
+        make_unique<ReadAttribute>(Id, "BootReasons", Attributes::BootReasons::Id),                                             //
+        make_unique<ReadAttribute>(Id, "ActiveHardwareFaults", Attributes::ActiveHardwareFaults::Id),                           //
+        make_unique<ReadAttribute>(Id, "ActiveRadioFaults", Attributes::ActiveRadioFaults::Id),                                 //
+        make_unique<ReadAttribute>(Id, "ActiveNetworkFaults", Attributes::ActiveNetworkFaults::Id),                             //
+        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),                                         //
+        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                                     //
+        make_unique<ReportAttribute>(Id),
         make_unique<ReportAttribute>(Id, "NetworkInterfaces", Attributes::NetworkInterfaces::Id),         //
         make_unique<ReportAttribute>(Id, "RebootCount", Attributes::RebootCount::Id),                     //
         make_unique<ReportAttribute>(Id, "UpTime", Attributes::UpTime::Id),                               //
@@ -9219,16 +9184,14 @@ void registerClusterGeneralDiagnostics(Commands & commands)
         //
         // Events
         //
-        make_unique<ReadEvent>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReadEvent>(Id, "HardwareFaultChange", Events::HardwareFaultChange::Id), //
-        make_unique<ReadEvent>(Id, "RadioFaultChange", Events::RadioFaultChange::Id),       //
-        make_unique<ReadEvent>(Id, "NetworkFaultChange", Events::NetworkFaultChange::Id),   //
-        make_unique<ReadEvent>(Id, "BootReason", Events::BootReason::Id),                   //
-        make_unique<ReportEvent>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReportEvent>(Id, "HardwareFaultChange", Events::HardwareFaultChange::Id), //
-        make_unique<ReportEvent>(Id, "RadioFaultChange", Events::RadioFaultChange::Id),       //
-        make_unique<ReportEvent>(Id, "NetworkFaultChange", Events::NetworkFaultChange::Id),   //
-        make_unique<ReportEvent>(Id, "BootReason", Events::BootReason::Id),                   //
+        make_unique<ReadEvent>(Id), make_unique<ReadEvent>(Id, "HardwareFaultChange", Events::HardwareFaultChange::Id),     //
+        make_unique<ReadEvent>(Id, "RadioFaultChange", Events::RadioFaultChange::Id),                                       //
+        make_unique<ReadEvent>(Id, "NetworkFaultChange", Events::NetworkFaultChange::Id),                                   //
+        make_unique<ReadEvent>(Id, "BootReason", Events::BootReason::Id),                                                   //
+        make_unique<ReportEvent>(Id), make_unique<ReportEvent>(Id, "HardwareFaultChange", Events::HardwareFaultChange::Id), //
+        make_unique<ReportEvent>(Id, "RadioFaultChange", Events::RadioFaultChange::Id),                                     //
+        make_unique<ReportEvent>(Id, "NetworkFaultChange", Events::NetworkFaultChange::Id),                                 //
+        make_unique<ReportEvent>(Id, "BootReason", Events::BootReason::Id),                                                 //
     };
 
     commands.Register(clusterName, clusterCommands);
@@ -9250,17 +9213,15 @@ void registerClusterGroupKeyManagement(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReadAttribute>(Id, "GroupKeyMap", Attributes::GroupKeyMap::Id),                     //
-        make_unique<ReadAttribute>(Id, "GroupTable", Attributes::GroupTable::Id),                       //
-        make_unique<ReadAttribute>(Id, "MaxGroupsPerFabric", Attributes::MaxGroupsPerFabric::Id),       //
-        make_unique<ReadAttribute>(Id, "MaxGroupKeysPerFabric", Attributes::MaxGroupKeysPerFabric::Id), //
-        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),                 //
-        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),             //
-        make_unique<ReportAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReportAttribute>(Id, "GroupKeyMap", Attributes::GroupKeyMap::Id),         //
-        make_unique<ReportAttribute>(Id, "GroupTable", Attributes::GroupTable::Id),           //
-        make_unique<ReportAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id), //
+        make_unique<ReadAttribute>(Id), make_unique<ReadAttribute>(Id, "GroupKeyMap", Attributes::GroupKeyMap::Id),     //
+        make_unique<ReadAttribute>(Id, "GroupTable", Attributes::GroupTable::Id),                                       //
+        make_unique<ReadAttribute>(Id, "MaxGroupsPerFabric", Attributes::MaxGroupsPerFabric::Id),                       //
+        make_unique<ReadAttribute>(Id, "MaxGroupKeysPerFabric", Attributes::MaxGroupKeysPerFabric::Id),                 //
+        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),                                 //
+        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                             //
+        make_unique<ReportAttribute>(Id), make_unique<ReportAttribute>(Id, "GroupKeyMap", Attributes::GroupKeyMap::Id), //
+        make_unique<ReportAttribute>(Id, "GroupTable", Attributes::GroupTable::Id),                                     //
+        make_unique<ReportAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                           //
     };
 
     commands.Register(clusterName, clusterCommands);
@@ -9284,13 +9245,11 @@ void registerClusterGroups(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReadAttribute>(Id, "NameSupport", Attributes::NameSupport::Id),         //
-        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),     //
-        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id), //
-        make_unique<ReportAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReportAttribute>(Id, "NameSupport", Attributes::NameSupport::Id),         //
-        make_unique<ReportAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id), //
+        make_unique<ReadAttribute>(Id), make_unique<ReadAttribute>(Id, "NameSupport", Attributes::NameSupport::Id),     //
+        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),                                 //
+        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                             //
+        make_unique<ReportAttribute>(Id), make_unique<ReportAttribute>(Id, "NameSupport", Attributes::NameSupport::Id), //
+        make_unique<ReportAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                           //
     };
 
     commands.Register(clusterName, clusterCommands);
@@ -9311,16 +9270,14 @@ void registerClusterIdentify(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReadAttribute>(Id, "IdentifyTime", Attributes::IdentifyTime::Id),       //
-        make_unique<ReadAttribute>(Id, "IdentifyType", Attributes::IdentifyType::Id),       //
-        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),     //
-        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id), //
-        make_unique<WriteIdentifyIdentifyTime>(),                                           //
-        make_unique<ReportAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReportAttribute>(Id, "IdentifyTime", Attributes::IdentifyTime::Id),       //
-        make_unique<ReportAttribute>(Id, "IdentifyType", Attributes::IdentifyType::Id),       //
-        make_unique<ReportAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id), //
+        make_unique<ReadAttribute>(Id), make_unique<ReadAttribute>(Id, "IdentifyTime", Attributes::IdentifyTime::Id),     //
+        make_unique<ReadAttribute>(Id, "IdentifyType", Attributes::IdentifyType::Id),                                     //
+        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),                                   //
+        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                               //
+        make_unique<WriteIdentifyIdentifyTime>(),                                                                         //
+        make_unique<ReportAttribute>(Id), make_unique<ReportAttribute>(Id, "IdentifyTime", Attributes::IdentifyTime::Id), //
+        make_unique<ReportAttribute>(Id, "IdentifyType", Attributes::IdentifyType::Id),                                   //
+        make_unique<ReportAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                             //
     };
 
     commands.Register(clusterName, clusterCommands);
@@ -9335,7 +9292,7 @@ void registerClusterIlluminanceMeasurement(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
+        make_unique<ReadAttribute>(Id),
         make_unique<ReadAttribute>(Id, "MeasuredValue", Attributes::MeasuredValue::Id),       //
         make_unique<ReadAttribute>(Id, "MinMeasuredValue", Attributes::MinMeasuredValue::Id), //
         make_unique<ReadAttribute>(Id, "MaxMeasuredValue", Attributes::MaxMeasuredValue::Id), //
@@ -9343,7 +9300,7 @@ void registerClusterIlluminanceMeasurement(Commands & commands)
         make_unique<ReadAttribute>(Id, "LightSensorType", Attributes::LightSensorType::Id),   //
         make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),       //
         make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),   //
-        make_unique<ReportAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
+        make_unique<ReportAttribute>(Id),
         make_unique<ReportAttribute>(Id, "MeasuredValue", Attributes::MeasuredValue::Id),       //
         make_unique<ReportAttribute>(Id, "MinMeasuredValue", Attributes::MinMeasuredValue::Id), //
         make_unique<ReportAttribute>(Id, "MaxMeasuredValue", Attributes::MaxMeasuredValue::Id), //
@@ -9368,11 +9325,9 @@ void registerClusterKeypadInput(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),     //
-        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id), //
-        make_unique<ReportAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReportAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id), //
+        make_unique<ReadAttribute>(Id), make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),         //
+        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                                     //
+        make_unique<ReportAttribute>(Id), make_unique<ReportAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id), //
     };
 
     commands.Register(clusterName, clusterCommands);
@@ -9398,47 +9353,45 @@ void registerClusterLevelControl(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReadAttribute>(Id, "CurrentLevel", Attributes::CurrentLevel::Id),               //
-        make_unique<ReadAttribute>(Id, "RemainingTime", Attributes::RemainingTime::Id),             //
-        make_unique<ReadAttribute>(Id, "MinLevel", Attributes::MinLevel::Id),                       //
-        make_unique<ReadAttribute>(Id, "MaxLevel", Attributes::MaxLevel::Id),                       //
-        make_unique<ReadAttribute>(Id, "CurrentFrequency", Attributes::CurrentFrequency::Id),       //
-        make_unique<ReadAttribute>(Id, "MinFrequency", Attributes::MinFrequency::Id),               //
-        make_unique<ReadAttribute>(Id, "MaxFrequency", Attributes::MaxFrequency::Id),               //
-        make_unique<ReadAttribute>(Id, "Options", Attributes::Options::Id),                         //
-        make_unique<ReadAttribute>(Id, "OnOffTransitionTime", Attributes::OnOffTransitionTime::Id), //
-        make_unique<ReadAttribute>(Id, "OnLevel", Attributes::OnLevel::Id),                         //
-        make_unique<ReadAttribute>(Id, "OnTransitionTime", Attributes::OnTransitionTime::Id),       //
-        make_unique<ReadAttribute>(Id, "OffTransitionTime", Attributes::OffTransitionTime::Id),     //
-        make_unique<ReadAttribute>(Id, "DefaultMoveRate", Attributes::DefaultMoveRate::Id),         //
-        make_unique<ReadAttribute>(Id, "StartUpCurrentLevel", Attributes::StartUpCurrentLevel::Id), //
-        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),             //
-        make_unique<ReadAttribute>(Id, "FeatureMap", Attributes::FeatureMap::Id),                   //
-        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),         //
-        make_unique<WriteLevelControlOptions>(),                                                    //
-        make_unique<WriteLevelControlOnOffTransitionTime>(),                                        //
-        make_unique<WriteLevelControlOnLevel>(),                                                    //
-        make_unique<WriteLevelControlOnTransitionTime>(),                                           //
-        make_unique<WriteLevelControlOffTransitionTime>(),                                          //
-        make_unique<WriteLevelControlDefaultMoveRate>(),                                            //
-        make_unique<WriteLevelControlStartUpCurrentLevel>(),                                        //
-        make_unique<ReportAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReportAttribute>(Id, "CurrentLevel", Attributes::CurrentLevel::Id),               //
-        make_unique<ReportAttribute>(Id, "RemainingTime", Attributes::RemainingTime::Id),             //
-        make_unique<ReportAttribute>(Id, "MinLevel", Attributes::MinLevel::Id),                       //
-        make_unique<ReportAttribute>(Id, "MaxLevel", Attributes::MaxLevel::Id),                       //
-        make_unique<ReportAttribute>(Id, "CurrentFrequency", Attributes::CurrentFrequency::Id),       //
-        make_unique<ReportAttribute>(Id, "MinFrequency", Attributes::MinFrequency::Id),               //
-        make_unique<ReportAttribute>(Id, "MaxFrequency", Attributes::MaxFrequency::Id),               //
-        make_unique<ReportAttribute>(Id, "Options", Attributes::Options::Id),                         //
-        make_unique<ReportAttribute>(Id, "OnOffTransitionTime", Attributes::OnOffTransitionTime::Id), //
-        make_unique<ReportAttribute>(Id, "OnLevel", Attributes::OnLevel::Id),                         //
-        make_unique<ReportAttribute>(Id, "OnTransitionTime", Attributes::OnTransitionTime::Id),       //
-        make_unique<ReportAttribute>(Id, "OffTransitionTime", Attributes::OffTransitionTime::Id),     //
-        make_unique<ReportAttribute>(Id, "DefaultMoveRate", Attributes::DefaultMoveRate::Id),         //
-        make_unique<ReportAttribute>(Id, "StartUpCurrentLevel", Attributes::StartUpCurrentLevel::Id), //
-        make_unique<ReportAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),         //
+        make_unique<ReadAttribute>(Id), make_unique<ReadAttribute>(Id, "CurrentLevel", Attributes::CurrentLevel::Id),     //
+        make_unique<ReadAttribute>(Id, "RemainingTime", Attributes::RemainingTime::Id),                                   //
+        make_unique<ReadAttribute>(Id, "MinLevel", Attributes::MinLevel::Id),                                             //
+        make_unique<ReadAttribute>(Id, "MaxLevel", Attributes::MaxLevel::Id),                                             //
+        make_unique<ReadAttribute>(Id, "CurrentFrequency", Attributes::CurrentFrequency::Id),                             //
+        make_unique<ReadAttribute>(Id, "MinFrequency", Attributes::MinFrequency::Id),                                     //
+        make_unique<ReadAttribute>(Id, "MaxFrequency", Attributes::MaxFrequency::Id),                                     //
+        make_unique<ReadAttribute>(Id, "Options", Attributes::Options::Id),                                               //
+        make_unique<ReadAttribute>(Id, "OnOffTransitionTime", Attributes::OnOffTransitionTime::Id),                       //
+        make_unique<ReadAttribute>(Id, "OnLevel", Attributes::OnLevel::Id),                                               //
+        make_unique<ReadAttribute>(Id, "OnTransitionTime", Attributes::OnTransitionTime::Id),                             //
+        make_unique<ReadAttribute>(Id, "OffTransitionTime", Attributes::OffTransitionTime::Id),                           //
+        make_unique<ReadAttribute>(Id, "DefaultMoveRate", Attributes::DefaultMoveRate::Id),                               //
+        make_unique<ReadAttribute>(Id, "StartUpCurrentLevel", Attributes::StartUpCurrentLevel::Id),                       //
+        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),                                   //
+        make_unique<ReadAttribute>(Id, "FeatureMap", Attributes::FeatureMap::Id),                                         //
+        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                               //
+        make_unique<WriteLevelControlOptions>(),                                                                          //
+        make_unique<WriteLevelControlOnOffTransitionTime>(),                                                              //
+        make_unique<WriteLevelControlOnLevel>(),                                                                          //
+        make_unique<WriteLevelControlOnTransitionTime>(),                                                                 //
+        make_unique<WriteLevelControlOffTransitionTime>(),                                                                //
+        make_unique<WriteLevelControlDefaultMoveRate>(),                                                                  //
+        make_unique<WriteLevelControlStartUpCurrentLevel>(),                                                              //
+        make_unique<ReportAttribute>(Id), make_unique<ReportAttribute>(Id, "CurrentLevel", Attributes::CurrentLevel::Id), //
+        make_unique<ReportAttribute>(Id, "RemainingTime", Attributes::RemainingTime::Id),                                 //
+        make_unique<ReportAttribute>(Id, "MinLevel", Attributes::MinLevel::Id),                                           //
+        make_unique<ReportAttribute>(Id, "MaxLevel", Attributes::MaxLevel::Id),                                           //
+        make_unique<ReportAttribute>(Id, "CurrentFrequency", Attributes::CurrentFrequency::Id),                           //
+        make_unique<ReportAttribute>(Id, "MinFrequency", Attributes::MinFrequency::Id),                                   //
+        make_unique<ReportAttribute>(Id, "MaxFrequency", Attributes::MaxFrequency::Id),                                   //
+        make_unique<ReportAttribute>(Id, "Options", Attributes::Options::Id),                                             //
+        make_unique<ReportAttribute>(Id, "OnOffTransitionTime", Attributes::OnOffTransitionTime::Id),                     //
+        make_unique<ReportAttribute>(Id, "OnLevel", Attributes::OnLevel::Id),                                             //
+        make_unique<ReportAttribute>(Id, "OnTransitionTime", Attributes::OnTransitionTime::Id),                           //
+        make_unique<ReportAttribute>(Id, "OffTransitionTime", Attributes::OffTransitionTime::Id),                         //
+        make_unique<ReportAttribute>(Id, "DefaultMoveRate", Attributes::DefaultMoveRate::Id),                             //
+        make_unique<ReportAttribute>(Id, "StartUpCurrentLevel", Attributes::StartUpCurrentLevel::Id),                     //
+        make_unique<ReportAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                             //
     };
 
     commands.Register(clusterName, clusterCommands);
@@ -9453,10 +9406,9 @@ void registerClusterLocalizationConfiguration(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReadAttribute>(Id, "ActiveLocale", Attributes::ActiveLocale::Id),         //
-        make_unique<ReadAttribute>(Id, "SupportedLocales", Attributes::SupportedLocales::Id), //
-        make_unique<WriteLocalizationConfigurationActiveLocale>(),                            //
+        make_unique<ReadAttribute>(Id), make_unique<ReadAttribute>(Id, "ActiveLocale", Attributes::ActiveLocale::Id), //
+        make_unique<ReadAttribute>(Id, "SupportedLocales", Attributes::SupportedLocales::Id),                         //
+        make_unique<WriteLocalizationConfigurationActiveLocale>(),                                                    //
     };
 
     commands.Register(clusterName, clusterCommands);
@@ -9475,11 +9427,9 @@ void registerClusterLowPower(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),     //
-        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id), //
-        make_unique<ReportAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReportAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id), //
+        make_unique<ReadAttribute>(Id), make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),         //
+        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                                     //
+        make_unique<ReportAttribute>(Id), make_unique<ReportAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id), //
     };
 
     commands.Register(clusterName, clusterCommands);
@@ -9501,15 +9451,13 @@ void registerClusterMediaInput(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReadAttribute>(Id, "MediaInputList", Attributes::MediaInputList::Id),       //
-        make_unique<ReadAttribute>(Id, "CurrentMediaInput", Attributes::CurrentMediaInput::Id), //
-        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),         //
-        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),     //
-        make_unique<ReportAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReportAttribute>(Id, "MediaInputList", Attributes::MediaInputList::Id),       //
-        make_unique<ReportAttribute>(Id, "CurrentMediaInput", Attributes::CurrentMediaInput::Id), //
-        make_unique<ReportAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),     //
+        make_unique<ReadAttribute>(Id), make_unique<ReadAttribute>(Id, "MediaInputList", Attributes::MediaInputList::Id),     //
+        make_unique<ReadAttribute>(Id, "CurrentMediaInput", Attributes::CurrentMediaInput::Id),                               //
+        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),                                       //
+        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                                   //
+        make_unique<ReportAttribute>(Id), make_unique<ReportAttribute>(Id, "MediaInputList", Attributes::MediaInputList::Id), //
+        make_unique<ReportAttribute>(Id, "CurrentMediaInput", Attributes::CurrentMediaInput::Id),                             //
+        make_unique<ReportAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                                 //
     };
 
     commands.Register(clusterName, clusterCommands);
@@ -9538,22 +9486,20 @@ void registerClusterMediaPlayback(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReadAttribute>(Id, "PlaybackState", Attributes::PlaybackState::Id),     //
-        make_unique<ReadAttribute>(Id, "StartTime", Attributes::StartTime::Id),             //
-        make_unique<ReadAttribute>(Id, "Duration", Attributes::Duration::Id),               //
-        make_unique<ReadAttribute>(Id, "PlaybackSpeed", Attributes::PlaybackSpeed::Id),     //
-        make_unique<ReadAttribute>(Id, "SeekRangeEnd", Attributes::SeekRangeEnd::Id),       //
-        make_unique<ReadAttribute>(Id, "SeekRangeStart", Attributes::SeekRangeStart::Id),   //
-        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),     //
-        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id), //
-        make_unique<ReportAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReportAttribute>(Id, "PlaybackState", Attributes::PlaybackState::Id),     //
-        make_unique<ReportAttribute>(Id, "StartTime", Attributes::StartTime::Id),             //
-        make_unique<ReportAttribute>(Id, "Duration", Attributes::Duration::Id),               //
-        make_unique<ReportAttribute>(Id, "SeekRangeEnd", Attributes::SeekRangeEnd::Id),       //
-        make_unique<ReportAttribute>(Id, "SeekRangeStart", Attributes::SeekRangeStart::Id),   //
-        make_unique<ReportAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id), //
+        make_unique<ReadAttribute>(Id), make_unique<ReadAttribute>(Id, "PlaybackState", Attributes::PlaybackState::Id),     //
+        make_unique<ReadAttribute>(Id, "StartTime", Attributes::StartTime::Id),                                             //
+        make_unique<ReadAttribute>(Id, "Duration", Attributes::Duration::Id),                                               //
+        make_unique<ReadAttribute>(Id, "PlaybackSpeed", Attributes::PlaybackSpeed::Id),                                     //
+        make_unique<ReadAttribute>(Id, "SeekRangeEnd", Attributes::SeekRangeEnd::Id),                                       //
+        make_unique<ReadAttribute>(Id, "SeekRangeStart", Attributes::SeekRangeStart::Id),                                   //
+        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),                                     //
+        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                                 //
+        make_unique<ReportAttribute>(Id), make_unique<ReportAttribute>(Id, "PlaybackState", Attributes::PlaybackState::Id), //
+        make_unique<ReportAttribute>(Id, "StartTime", Attributes::StartTime::Id),                                           //
+        make_unique<ReportAttribute>(Id, "Duration", Attributes::Duration::Id),                                             //
+        make_unique<ReportAttribute>(Id, "SeekRangeEnd", Attributes::SeekRangeEnd::Id),                                     //
+        make_unique<ReportAttribute>(Id, "SeekRangeStart", Attributes::SeekRangeStart::Id),                                 //
+        make_unique<ReportAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                               //
     };
 
     commands.Register(clusterName, clusterCommands);
@@ -9572,22 +9518,20 @@ void registerClusterModeSelect(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReadAttribute>(Id, "CurrentMode", Attributes::CurrentMode::Id),         //
-        make_unique<ReadAttribute>(Id, "SupportedModes", Attributes::SupportedModes::Id),   //
-        make_unique<ReadAttribute>(Id, "OnMode", Attributes::OnMode::Id),                   //
-        make_unique<ReadAttribute>(Id, "StartUpMode", Attributes::StartUpMode::Id),         //
-        make_unique<ReadAttribute>(Id, "Description", Attributes::Description::Id),         //
-        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),     //
-        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id), //
-        make_unique<WriteModeSelectOnMode>(),                                               //
-        make_unique<ReportAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReportAttribute>(Id, "CurrentMode", Attributes::CurrentMode::Id),         //
-        make_unique<ReportAttribute>(Id, "SupportedModes", Attributes::SupportedModes::Id),   //
-        make_unique<ReportAttribute>(Id, "OnMode", Attributes::OnMode::Id),                   //
-        make_unique<ReportAttribute>(Id, "StartUpMode", Attributes::StartUpMode::Id),         //
-        make_unique<ReportAttribute>(Id, "Description", Attributes::Description::Id),         //
-        make_unique<ReportAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id), //
+        make_unique<ReadAttribute>(Id), make_unique<ReadAttribute>(Id, "CurrentMode", Attributes::CurrentMode::Id),     //
+        make_unique<ReadAttribute>(Id, "SupportedModes", Attributes::SupportedModes::Id),                               //
+        make_unique<ReadAttribute>(Id, "OnMode", Attributes::OnMode::Id),                                               //
+        make_unique<ReadAttribute>(Id, "StartUpMode", Attributes::StartUpMode::Id),                                     //
+        make_unique<ReadAttribute>(Id, "Description", Attributes::Description::Id),                                     //
+        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),                                 //
+        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                             //
+        make_unique<WriteModeSelectOnMode>(),                                                                           //
+        make_unique<ReportAttribute>(Id), make_unique<ReportAttribute>(Id, "CurrentMode", Attributes::CurrentMode::Id), //
+        make_unique<ReportAttribute>(Id, "SupportedModes", Attributes::SupportedModes::Id),                             //
+        make_unique<ReportAttribute>(Id, "OnMode", Attributes::OnMode::Id),                                             //
+        make_unique<ReportAttribute>(Id, "StartUpMode", Attributes::StartUpMode::Id),                                   //
+        make_unique<ReportAttribute>(Id, "Description", Attributes::Description::Id),                                   //
+        make_unique<ReportAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                           //
     };
 
     commands.Register(clusterName, clusterCommands);
@@ -9611,21 +9555,19 @@ void registerClusterNetworkCommissioning(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReadAttribute>(Id, "MaxNetworks", Attributes::MaxNetworks::Id),                     //
-        make_unique<ReadAttribute>(Id, "Networks", Attributes::Networks::Id),                           //
-        make_unique<ReadAttribute>(Id, "ScanMaxTimeSeconds", Attributes::ScanMaxTimeSeconds::Id),       //
-        make_unique<ReadAttribute>(Id, "ConnectMaxTimeSeconds", Attributes::ConnectMaxTimeSeconds::Id), //
-        make_unique<ReadAttribute>(Id, "InterfaceEnabled", Attributes::InterfaceEnabled::Id),           //
-        make_unique<ReadAttribute>(Id, "LastNetworkingStatus", Attributes::LastNetworkingStatus::Id),   //
-        make_unique<ReadAttribute>(Id, "LastNetworkID", Attributes::LastNetworkID::Id),                 //
-        make_unique<ReadAttribute>(Id, "LastConnectErrorValue", Attributes::LastConnectErrorValue::Id), //
-        make_unique<ReadAttribute>(Id, "FeatureMap", Attributes::FeatureMap::Id),                       //
-        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),             //
-        make_unique<WriteNetworkCommissioningInterfaceEnabled>(),                                       //
-        make_unique<ReportAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReportAttribute>(Id, "FeatureMap", Attributes::FeatureMap::Id),           //
-        make_unique<ReportAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id), //
+        make_unique<ReadAttribute>(Id), make_unique<ReadAttribute>(Id, "MaxNetworks", Attributes::MaxNetworks::Id),   //
+        make_unique<ReadAttribute>(Id, "Networks", Attributes::Networks::Id),                                         //
+        make_unique<ReadAttribute>(Id, "ScanMaxTimeSeconds", Attributes::ScanMaxTimeSeconds::Id),                     //
+        make_unique<ReadAttribute>(Id, "ConnectMaxTimeSeconds", Attributes::ConnectMaxTimeSeconds::Id),               //
+        make_unique<ReadAttribute>(Id, "InterfaceEnabled", Attributes::InterfaceEnabled::Id),                         //
+        make_unique<ReadAttribute>(Id, "LastNetworkingStatus", Attributes::LastNetworkingStatus::Id),                 //
+        make_unique<ReadAttribute>(Id, "LastNetworkID", Attributes::LastNetworkID::Id),                               //
+        make_unique<ReadAttribute>(Id, "LastConnectErrorValue", Attributes::LastConnectErrorValue::Id),               //
+        make_unique<ReadAttribute>(Id, "FeatureMap", Attributes::FeatureMap::Id),                                     //
+        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                           //
+        make_unique<WriteNetworkCommissioningInterfaceEnabled>(),                                                     //
+        make_unique<ReportAttribute>(Id), make_unique<ReportAttribute>(Id, "FeatureMap", Attributes::FeatureMap::Id), //
+        make_unique<ReportAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                         //
     };
 
     commands.Register(clusterName, clusterCommands);
@@ -9646,11 +9588,9 @@ void registerClusterOtaSoftwareUpdateProvider(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),     //
-        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id), //
-        make_unique<ReportAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReportAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id), //
+        make_unique<ReadAttribute>(Id), make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),         //
+        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                                     //
+        make_unique<ReportAttribute>(Id), make_unique<ReportAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id), //
     };
 
     commands.Register(clusterName, clusterCommands);
@@ -9669,14 +9609,14 @@ void registerClusterOtaSoftwareUpdateRequestor(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
+        make_unique<ReadAttribute>(Id),
         make_unique<ReadAttribute>(Id, "DefaultOtaProviders", Attributes::DefaultOtaProviders::Id), //
         make_unique<ReadAttribute>(Id, "UpdatePossible", Attributes::UpdatePossible::Id),           //
         make_unique<ReadAttribute>(Id, "UpdateState", Attributes::UpdateState::Id),                 //
         make_unique<ReadAttribute>(Id, "UpdateStateProgress", Attributes::UpdateStateProgress::Id), //
         make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),             //
         make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),         //
-        make_unique<ReportAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
+        make_unique<ReportAttribute>(Id),
         make_unique<ReportAttribute>(Id, "DefaultOtaProviders", Attributes::DefaultOtaProviders::Id), //
         make_unique<ReportAttribute>(Id, "UpdatePossible", Attributes::UpdatePossible::Id),           //
         make_unique<ReportAttribute>(Id, "UpdateState", Attributes::UpdateState::Id),                 //
@@ -9685,14 +9625,12 @@ void registerClusterOtaSoftwareUpdateRequestor(Commands & commands)
         //
         // Events
         //
-        make_unique<ReadEvent>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReadEvent>(Id, "StateTransition", Events::StateTransition::Id), //
-        make_unique<ReadEvent>(Id, "VersionApplied", Events::VersionApplied::Id),   //
-        make_unique<ReadEvent>(Id, "DownloadError", Events::DownloadError::Id),     //
-        make_unique<ReportEvent>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReportEvent>(Id, "StateTransition", Events::StateTransition::Id), //
-        make_unique<ReportEvent>(Id, "VersionApplied", Events::VersionApplied::Id),   //
-        make_unique<ReportEvent>(Id, "DownloadError", Events::DownloadError::Id),     //
+        make_unique<ReadEvent>(Id), make_unique<ReadEvent>(Id, "StateTransition", Events::StateTransition::Id),     //
+        make_unique<ReadEvent>(Id, "VersionApplied", Events::VersionApplied::Id),                                   //
+        make_unique<ReadEvent>(Id, "DownloadError", Events::DownloadError::Id),                                     //
+        make_unique<ReportEvent>(Id), make_unique<ReportEvent>(Id, "StateTransition", Events::StateTransition::Id), //
+        make_unique<ReportEvent>(Id, "VersionApplied", Events::VersionApplied::Id),                                 //
+        make_unique<ReportEvent>(Id, "DownloadError", Events::DownloadError::Id),                                   //
     };
 
     commands.Register(clusterName, clusterCommands);
@@ -9707,13 +9645,13 @@ void registerClusterOccupancySensing(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
+        make_unique<ReadAttribute>(Id),
         make_unique<ReadAttribute>(Id, "Occupancy", Attributes::Occupancy::Id),                                 //
         make_unique<ReadAttribute>(Id, "OccupancySensorType", Attributes::OccupancySensorType::Id),             //
         make_unique<ReadAttribute>(Id, "OccupancySensorTypeBitmap", Attributes::OccupancySensorTypeBitmap::Id), //
         make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),                         //
         make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                     //
-        make_unique<ReportAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
+        make_unique<ReportAttribute>(Id),
         make_unique<ReportAttribute>(Id, "Occupancy", Attributes::Occupancy::Id),                                 //
         make_unique<ReportAttribute>(Id, "OccupancySensorType", Attributes::OccupancySensorType::Id),             //
         make_unique<ReportAttribute>(Id, "OccupancySensorTypeBitmap", Attributes::OccupancySensorTypeBitmap::Id), //
@@ -9741,26 +9679,24 @@ void registerClusterOnOff(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReadAttribute>(Id, "OnOff", Attributes::OnOff::Id),                           //
-        make_unique<ReadAttribute>(Id, "GlobalSceneControl", Attributes::GlobalSceneControl::Id), //
-        make_unique<ReadAttribute>(Id, "OnTime", Attributes::OnTime::Id),                         //
-        make_unique<ReadAttribute>(Id, "OffWaitTime", Attributes::OffWaitTime::Id),               //
-        make_unique<ReadAttribute>(Id, "StartUpOnOff", Attributes::StartUpOnOff::Id),             //
-        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),           //
-        make_unique<ReadAttribute>(Id, "FeatureMap", Attributes::FeatureMap::Id),                 //
-        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),       //
-        make_unique<WriteOnOffOnTime>(),                                                          //
-        make_unique<WriteOnOffOffWaitTime>(),                                                     //
-        make_unique<WriteOnOffStartUpOnOff>(),                                                    //
-        make_unique<ReportAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReportAttribute>(Id, "OnOff", Attributes::OnOff::Id),                           //
-        make_unique<ReportAttribute>(Id, "GlobalSceneControl", Attributes::GlobalSceneControl::Id), //
-        make_unique<ReportAttribute>(Id, "OnTime", Attributes::OnTime::Id),                         //
-        make_unique<ReportAttribute>(Id, "OffWaitTime", Attributes::OffWaitTime::Id),               //
-        make_unique<ReportAttribute>(Id, "StartUpOnOff", Attributes::StartUpOnOff::Id),             //
-        make_unique<ReportAttribute>(Id, "FeatureMap", Attributes::FeatureMap::Id),                 //
-        make_unique<ReportAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),       //
+        make_unique<ReadAttribute>(Id), make_unique<ReadAttribute>(Id, "OnOff", Attributes::OnOff::Id),     //
+        make_unique<ReadAttribute>(Id, "GlobalSceneControl", Attributes::GlobalSceneControl::Id),           //
+        make_unique<ReadAttribute>(Id, "OnTime", Attributes::OnTime::Id),                                   //
+        make_unique<ReadAttribute>(Id, "OffWaitTime", Attributes::OffWaitTime::Id),                         //
+        make_unique<ReadAttribute>(Id, "StartUpOnOff", Attributes::StartUpOnOff::Id),                       //
+        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),                     //
+        make_unique<ReadAttribute>(Id, "FeatureMap", Attributes::FeatureMap::Id),                           //
+        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                 //
+        make_unique<WriteOnOffOnTime>(),                                                                    //
+        make_unique<WriteOnOffOffWaitTime>(),                                                               //
+        make_unique<WriteOnOffStartUpOnOff>(),                                                              //
+        make_unique<ReportAttribute>(Id), make_unique<ReportAttribute>(Id, "OnOff", Attributes::OnOff::Id), //
+        make_unique<ReportAttribute>(Id, "GlobalSceneControl", Attributes::GlobalSceneControl::Id),         //
+        make_unique<ReportAttribute>(Id, "OnTime", Attributes::OnTime::Id),                                 //
+        make_unique<ReportAttribute>(Id, "OffWaitTime", Attributes::OffWaitTime::Id),                       //
+        make_unique<ReportAttribute>(Id, "StartUpOnOff", Attributes::StartUpOnOff::Id),                     //
+        make_unique<ReportAttribute>(Id, "FeatureMap", Attributes::FeatureMap::Id),                         //
+        make_unique<ReportAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),               //
     };
 
     commands.Register(clusterName, clusterCommands);
@@ -9775,13 +9711,13 @@ void registerClusterOnOffSwitchConfiguration(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
+        make_unique<ReadAttribute>(Id),
         make_unique<ReadAttribute>(Id, "SwitchType", Attributes::SwitchType::Id),           //
         make_unique<ReadAttribute>(Id, "SwitchActions", Attributes::SwitchActions::Id),     //
         make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),     //
         make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id), //
         make_unique<WriteOnOffSwitchConfigurationSwitchActions>(),                          //
-        make_unique<ReportAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
+        make_unique<ReportAttribute>(Id),
         make_unique<ReportAttribute>(Id, "SwitchType", Attributes::SwitchType::Id),           //
         make_unique<ReportAttribute>(Id, "SwitchActions", Attributes::SwitchActions::Id),     //
         make_unique<ReportAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id), //
@@ -9811,21 +9747,19 @@ void registerClusterOperationalCredentials(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReadAttribute>(Id, "FabricsList", Attributes::FabricsList::Id),                         //
-        make_unique<ReadAttribute>(Id, "SupportedFabrics", Attributes::SupportedFabrics::Id),               //
-        make_unique<ReadAttribute>(Id, "CommissionedFabrics", Attributes::CommissionedFabrics::Id),         //
-        make_unique<ReadAttribute>(Id, "TrustedRootCertificates", Attributes::TrustedRootCertificates::Id), //
-        make_unique<ReadAttribute>(Id, "CurrentFabricIndex", Attributes::CurrentFabricIndex::Id),           //
-        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),                     //
-        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                 //
-        make_unique<ReportAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReportAttribute>(Id, "FabricsList", Attributes::FabricsList::Id),                         //
-        make_unique<ReportAttribute>(Id, "SupportedFabrics", Attributes::SupportedFabrics::Id),               //
-        make_unique<ReportAttribute>(Id, "CommissionedFabrics", Attributes::CommissionedFabrics::Id),         //
-        make_unique<ReportAttribute>(Id, "TrustedRootCertificates", Attributes::TrustedRootCertificates::Id), //
-        make_unique<ReportAttribute>(Id, "CurrentFabricIndex", Attributes::CurrentFabricIndex::Id),           //
-        make_unique<ReportAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                 //
+        make_unique<ReadAttribute>(Id), make_unique<ReadAttribute>(Id, "FabricsList", Attributes::FabricsList::Id),     //
+        make_unique<ReadAttribute>(Id, "SupportedFabrics", Attributes::SupportedFabrics::Id),                           //
+        make_unique<ReadAttribute>(Id, "CommissionedFabrics", Attributes::CommissionedFabrics::Id),                     //
+        make_unique<ReadAttribute>(Id, "TrustedRootCertificates", Attributes::TrustedRootCertificates::Id),             //
+        make_unique<ReadAttribute>(Id, "CurrentFabricIndex", Attributes::CurrentFabricIndex::Id),                       //
+        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),                                 //
+        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                             //
+        make_unique<ReportAttribute>(Id), make_unique<ReportAttribute>(Id, "FabricsList", Attributes::FabricsList::Id), //
+        make_unique<ReportAttribute>(Id, "SupportedFabrics", Attributes::SupportedFabrics::Id),                         //
+        make_unique<ReportAttribute>(Id, "CommissionedFabrics", Attributes::CommissionedFabrics::Id),                   //
+        make_unique<ReportAttribute>(Id, "TrustedRootCertificates", Attributes::TrustedRootCertificates::Id),           //
+        make_unique<ReportAttribute>(Id, "CurrentFabricIndex", Attributes::CurrentFabricIndex::Id),                     //
+        make_unique<ReportAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                           //
     };
 
     commands.Register(clusterName, clusterCommands);
@@ -9840,7 +9774,7 @@ void registerClusterPowerSource(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
+        make_unique<ReadAttribute>(Id),
         make_unique<ReadAttribute>(Id, "Status", Attributes::Status::Id),                                   //
         make_unique<ReadAttribute>(Id, "Order", Attributes::Order::Id),                                     //
         make_unique<ReadAttribute>(Id, "Description", Attributes::Description::Id),                         //
@@ -9853,7 +9787,7 @@ void registerClusterPowerSource(Commands & commands)
         make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),                     //
         make_unique<ReadAttribute>(Id, "FeatureMap", Attributes::FeatureMap::Id),                           //
         make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                 //
-        make_unique<ReportAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
+        make_unique<ReportAttribute>(Id),
         make_unique<ReportAttribute>(Id, "Status", Attributes::Status::Id),                                   //
         make_unique<ReportAttribute>(Id, "Order", Attributes::Order::Id),                                     //
         make_unique<ReportAttribute>(Id, "Description", Attributes::Description::Id),                         //
@@ -9879,10 +9813,9 @@ void registerClusterPowerSourceConfiguration(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReadAttribute>(Id, "Sources", Attributes::Sources::Id),                 //
-        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),     //
-        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id), //
+        make_unique<ReadAttribute>(Id), make_unique<ReadAttribute>(Id, "Sources", Attributes::Sources::Id), //
+        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),                     //
+        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                 //
     };
 
     commands.Register(clusterName, clusterCommands);
@@ -9897,13 +9830,13 @@ void registerClusterPressureMeasurement(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
+        make_unique<ReadAttribute>(Id),
         make_unique<ReadAttribute>(Id, "MeasuredValue", Attributes::MeasuredValue::Id),       //
         make_unique<ReadAttribute>(Id, "MinMeasuredValue", Attributes::MinMeasuredValue::Id), //
         make_unique<ReadAttribute>(Id, "MaxMeasuredValue", Attributes::MaxMeasuredValue::Id), //
         make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),       //
         make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),   //
-        make_unique<ReportAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
+        make_unique<ReportAttribute>(Id),
         make_unique<ReportAttribute>(Id, "MeasuredValue", Attributes::MeasuredValue::Id),       //
         make_unique<ReportAttribute>(Id, "MinMeasuredValue", Attributes::MinMeasuredValue::Id), //
         make_unique<ReportAttribute>(Id, "MaxMeasuredValue", Attributes::MaxMeasuredValue::Id), //
@@ -9922,104 +9855,100 @@ void registerClusterPumpConfigurationAndControl(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReadAttribute>(Id, "MaxPressure", Attributes::MaxPressure::Id),                       //
-        make_unique<ReadAttribute>(Id, "MaxSpeed", Attributes::MaxSpeed::Id),                             //
-        make_unique<ReadAttribute>(Id, "MaxFlow", Attributes::MaxFlow::Id),                               //
-        make_unique<ReadAttribute>(Id, "MinConstPressure", Attributes::MinConstPressure::Id),             //
-        make_unique<ReadAttribute>(Id, "MaxConstPressure", Attributes::MaxConstPressure::Id),             //
-        make_unique<ReadAttribute>(Id, "MinCompPressure", Attributes::MinCompPressure::Id),               //
-        make_unique<ReadAttribute>(Id, "MaxCompPressure", Attributes::MaxCompPressure::Id),               //
-        make_unique<ReadAttribute>(Id, "MinConstSpeed", Attributes::MinConstSpeed::Id),                   //
-        make_unique<ReadAttribute>(Id, "MaxConstSpeed", Attributes::MaxConstSpeed::Id),                   //
-        make_unique<ReadAttribute>(Id, "MinConstFlow", Attributes::MinConstFlow::Id),                     //
-        make_unique<ReadAttribute>(Id, "MaxConstFlow", Attributes::MaxConstFlow::Id),                     //
-        make_unique<ReadAttribute>(Id, "MinConstTemp", Attributes::MinConstTemp::Id),                     //
-        make_unique<ReadAttribute>(Id, "MaxConstTemp", Attributes::MaxConstTemp::Id),                     //
-        make_unique<ReadAttribute>(Id, "PumpStatus", Attributes::PumpStatus::Id),                         //
-        make_unique<ReadAttribute>(Id, "EffectiveOperationMode", Attributes::EffectiveOperationMode::Id), //
-        make_unique<ReadAttribute>(Id, "EffectiveControlMode", Attributes::EffectiveControlMode::Id),     //
-        make_unique<ReadAttribute>(Id, "Capacity", Attributes::Capacity::Id),                             //
-        make_unique<ReadAttribute>(Id, "Speed", Attributes::Speed::Id),                                   //
-        make_unique<ReadAttribute>(Id, "LifetimeRunningHours", Attributes::LifetimeRunningHours::Id),     //
-        make_unique<ReadAttribute>(Id, "Power", Attributes::Power::Id),                                   //
-        make_unique<ReadAttribute>(Id, "LifetimeEnergyConsumed", Attributes::LifetimeEnergyConsumed::Id), //
-        make_unique<ReadAttribute>(Id, "OperationMode", Attributes::OperationMode::Id),                   //
-        make_unique<ReadAttribute>(Id, "ControlMode", Attributes::ControlMode::Id),                       //
-        make_unique<ReadAttribute>(Id, "AlarmMask", Attributes::AlarmMask::Id),                           //
-        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),                   //
-        make_unique<ReadAttribute>(Id, "FeatureMap", Attributes::FeatureMap::Id),                         //
-        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),               //
-        make_unique<WritePumpConfigurationAndControlLifetimeRunningHours>(),                              //
-        make_unique<WritePumpConfigurationAndControlLifetimeEnergyConsumed>(),                            //
-        make_unique<WritePumpConfigurationAndControlOperationMode>(),                                     //
-        make_unique<WritePumpConfigurationAndControlControlMode>(),                                       //
-        make_unique<ReportAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReportAttribute>(Id, "MaxPressure", Attributes::MaxPressure::Id),                       //
-        make_unique<ReportAttribute>(Id, "MaxSpeed", Attributes::MaxSpeed::Id),                             //
-        make_unique<ReportAttribute>(Id, "MaxFlow", Attributes::MaxFlow::Id),                               //
-        make_unique<ReportAttribute>(Id, "MinConstPressure", Attributes::MinConstPressure::Id),             //
-        make_unique<ReportAttribute>(Id, "MaxConstPressure", Attributes::MaxConstPressure::Id),             //
-        make_unique<ReportAttribute>(Id, "MinCompPressure", Attributes::MinCompPressure::Id),               //
-        make_unique<ReportAttribute>(Id, "MaxCompPressure", Attributes::MaxCompPressure::Id),               //
-        make_unique<ReportAttribute>(Id, "MinConstSpeed", Attributes::MinConstSpeed::Id),                   //
-        make_unique<ReportAttribute>(Id, "MaxConstSpeed", Attributes::MaxConstSpeed::Id),                   //
-        make_unique<ReportAttribute>(Id, "MinConstFlow", Attributes::MinConstFlow::Id),                     //
-        make_unique<ReportAttribute>(Id, "MaxConstFlow", Attributes::MaxConstFlow::Id),                     //
-        make_unique<ReportAttribute>(Id, "MinConstTemp", Attributes::MinConstTemp::Id),                     //
-        make_unique<ReportAttribute>(Id, "MaxConstTemp", Attributes::MaxConstTemp::Id),                     //
-        make_unique<ReportAttribute>(Id, "PumpStatus", Attributes::PumpStatus::Id),                         //
-        make_unique<ReportAttribute>(Id, "EffectiveOperationMode", Attributes::EffectiveOperationMode::Id), //
-        make_unique<ReportAttribute>(Id, "EffectiveControlMode", Attributes::EffectiveControlMode::Id),     //
-        make_unique<ReportAttribute>(Id, "Capacity", Attributes::Capacity::Id),                             //
-        make_unique<ReportAttribute>(Id, "Speed", Attributes::Speed::Id),                                   //
-        make_unique<ReportAttribute>(Id, "LifetimeRunningHours", Attributes::LifetimeRunningHours::Id),     //
-        make_unique<ReportAttribute>(Id, "Power", Attributes::Power::Id),                                   //
-        make_unique<ReportAttribute>(Id, "LifetimeEnergyConsumed", Attributes::LifetimeEnergyConsumed::Id), //
-        make_unique<ReportAttribute>(Id, "OperationMode", Attributes::OperationMode::Id),                   //
-        make_unique<ReportAttribute>(Id, "ControlMode", Attributes::ControlMode::Id),                       //
-        make_unique<ReportAttribute>(Id, "AlarmMask", Attributes::AlarmMask::Id),                           //
-        make_unique<ReportAttribute>(Id, "FeatureMap", Attributes::FeatureMap::Id),                         //
-        make_unique<ReportAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),               //
+        make_unique<ReadAttribute>(Id), make_unique<ReadAttribute>(Id, "MaxPressure", Attributes::MaxPressure::Id),     //
+        make_unique<ReadAttribute>(Id, "MaxSpeed", Attributes::MaxSpeed::Id),                                           //
+        make_unique<ReadAttribute>(Id, "MaxFlow", Attributes::MaxFlow::Id),                                             //
+        make_unique<ReadAttribute>(Id, "MinConstPressure", Attributes::MinConstPressure::Id),                           //
+        make_unique<ReadAttribute>(Id, "MaxConstPressure", Attributes::MaxConstPressure::Id),                           //
+        make_unique<ReadAttribute>(Id, "MinCompPressure", Attributes::MinCompPressure::Id),                             //
+        make_unique<ReadAttribute>(Id, "MaxCompPressure", Attributes::MaxCompPressure::Id),                             //
+        make_unique<ReadAttribute>(Id, "MinConstSpeed", Attributes::MinConstSpeed::Id),                                 //
+        make_unique<ReadAttribute>(Id, "MaxConstSpeed", Attributes::MaxConstSpeed::Id),                                 //
+        make_unique<ReadAttribute>(Id, "MinConstFlow", Attributes::MinConstFlow::Id),                                   //
+        make_unique<ReadAttribute>(Id, "MaxConstFlow", Attributes::MaxConstFlow::Id),                                   //
+        make_unique<ReadAttribute>(Id, "MinConstTemp", Attributes::MinConstTemp::Id),                                   //
+        make_unique<ReadAttribute>(Id, "MaxConstTemp", Attributes::MaxConstTemp::Id),                                   //
+        make_unique<ReadAttribute>(Id, "PumpStatus", Attributes::PumpStatus::Id),                                       //
+        make_unique<ReadAttribute>(Id, "EffectiveOperationMode", Attributes::EffectiveOperationMode::Id),               //
+        make_unique<ReadAttribute>(Id, "EffectiveControlMode", Attributes::EffectiveControlMode::Id),                   //
+        make_unique<ReadAttribute>(Id, "Capacity", Attributes::Capacity::Id),                                           //
+        make_unique<ReadAttribute>(Id, "Speed", Attributes::Speed::Id),                                                 //
+        make_unique<ReadAttribute>(Id, "LifetimeRunningHours", Attributes::LifetimeRunningHours::Id),                   //
+        make_unique<ReadAttribute>(Id, "Power", Attributes::Power::Id),                                                 //
+        make_unique<ReadAttribute>(Id, "LifetimeEnergyConsumed", Attributes::LifetimeEnergyConsumed::Id),               //
+        make_unique<ReadAttribute>(Id, "OperationMode", Attributes::OperationMode::Id),                                 //
+        make_unique<ReadAttribute>(Id, "ControlMode", Attributes::ControlMode::Id),                                     //
+        make_unique<ReadAttribute>(Id, "AlarmMask", Attributes::AlarmMask::Id),                                         //
+        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),                                 //
+        make_unique<ReadAttribute>(Id, "FeatureMap", Attributes::FeatureMap::Id),                                       //
+        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                             //
+        make_unique<WritePumpConfigurationAndControlLifetimeRunningHours>(),                                            //
+        make_unique<WritePumpConfigurationAndControlLifetimeEnergyConsumed>(),                                          //
+        make_unique<WritePumpConfigurationAndControlOperationMode>(),                                                   //
+        make_unique<WritePumpConfigurationAndControlControlMode>(),                                                     //
+        make_unique<ReportAttribute>(Id), make_unique<ReportAttribute>(Id, "MaxPressure", Attributes::MaxPressure::Id), //
+        make_unique<ReportAttribute>(Id, "MaxSpeed", Attributes::MaxSpeed::Id),                                         //
+        make_unique<ReportAttribute>(Id, "MaxFlow", Attributes::MaxFlow::Id),                                           //
+        make_unique<ReportAttribute>(Id, "MinConstPressure", Attributes::MinConstPressure::Id),                         //
+        make_unique<ReportAttribute>(Id, "MaxConstPressure", Attributes::MaxConstPressure::Id),                         //
+        make_unique<ReportAttribute>(Id, "MinCompPressure", Attributes::MinCompPressure::Id),                           //
+        make_unique<ReportAttribute>(Id, "MaxCompPressure", Attributes::MaxCompPressure::Id),                           //
+        make_unique<ReportAttribute>(Id, "MinConstSpeed", Attributes::MinConstSpeed::Id),                               //
+        make_unique<ReportAttribute>(Id, "MaxConstSpeed", Attributes::MaxConstSpeed::Id),                               //
+        make_unique<ReportAttribute>(Id, "MinConstFlow", Attributes::MinConstFlow::Id),                                 //
+        make_unique<ReportAttribute>(Id, "MaxConstFlow", Attributes::MaxConstFlow::Id),                                 //
+        make_unique<ReportAttribute>(Id, "MinConstTemp", Attributes::MinConstTemp::Id),                                 //
+        make_unique<ReportAttribute>(Id, "MaxConstTemp", Attributes::MaxConstTemp::Id),                                 //
+        make_unique<ReportAttribute>(Id, "PumpStatus", Attributes::PumpStatus::Id),                                     //
+        make_unique<ReportAttribute>(Id, "EffectiveOperationMode", Attributes::EffectiveOperationMode::Id),             //
+        make_unique<ReportAttribute>(Id, "EffectiveControlMode", Attributes::EffectiveControlMode::Id),                 //
+        make_unique<ReportAttribute>(Id, "Capacity", Attributes::Capacity::Id),                                         //
+        make_unique<ReportAttribute>(Id, "Speed", Attributes::Speed::Id),                                               //
+        make_unique<ReportAttribute>(Id, "LifetimeRunningHours", Attributes::LifetimeRunningHours::Id),                 //
+        make_unique<ReportAttribute>(Id, "Power", Attributes::Power::Id),                                               //
+        make_unique<ReportAttribute>(Id, "LifetimeEnergyConsumed", Attributes::LifetimeEnergyConsumed::Id),             //
+        make_unique<ReportAttribute>(Id, "OperationMode", Attributes::OperationMode::Id),                               //
+        make_unique<ReportAttribute>(Id, "ControlMode", Attributes::ControlMode::Id),                                   //
+        make_unique<ReportAttribute>(Id, "AlarmMask", Attributes::AlarmMask::Id),                                       //
+        make_unique<ReportAttribute>(Id, "FeatureMap", Attributes::FeatureMap::Id),                                     //
+        make_unique<ReportAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                           //
         //
         // Events
         //
-        make_unique<ReadEvent>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReadEvent>(Id, "SupplyVoltageLow", Events::SupplyVoltageLow::Id),                   //
-        make_unique<ReadEvent>(Id, "SupplyVoltageHigh", Events::SupplyVoltageHigh::Id),                 //
-        make_unique<ReadEvent>(Id, "PowerMissingPhase", Events::PowerMissingPhase::Id),                 //
-        make_unique<ReadEvent>(Id, "SystemPressureLow", Events::SystemPressureLow::Id),                 //
-        make_unique<ReadEvent>(Id, "SystemPressureHigh", Events::SystemPressureHigh::Id),               //
-        make_unique<ReadEvent>(Id, "DryRunning", Events::DryRunning::Id),                               //
-        make_unique<ReadEvent>(Id, "MotorTemperatureHigh", Events::MotorTemperatureHigh::Id),           //
-        make_unique<ReadEvent>(Id, "PumpMotorFatalFailure", Events::PumpMotorFatalFailure::Id),         //
-        make_unique<ReadEvent>(Id, "ElectronicTemperatureHigh", Events::ElectronicTemperatureHigh::Id), //
-        make_unique<ReadEvent>(Id, "PumpBlocked", Events::PumpBlocked::Id),                             //
-        make_unique<ReadEvent>(Id, "SensorFailure", Events::SensorFailure::Id),                         //
-        make_unique<ReadEvent>(Id, "ElectronicNonFatalFailure", Events::ElectronicNonFatalFailure::Id), //
-        make_unique<ReadEvent>(Id, "ElectronicFatalFailure", Events::ElectronicFatalFailure::Id),       //
-        make_unique<ReadEvent>(Id, "GeneralFault", Events::GeneralFault::Id),                           //
-        make_unique<ReadEvent>(Id, "Leakage", Events::Leakage::Id),                                     //
-        make_unique<ReadEvent>(Id, "AirDetection", Events::AirDetection::Id),                           //
-        make_unique<ReadEvent>(Id, "TurbineOperation", Events::TurbineOperation::Id),                   //
-        make_unique<ReportEvent>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReportEvent>(Id, "SupplyVoltageLow", Events::SupplyVoltageLow::Id),                   //
-        make_unique<ReportEvent>(Id, "SupplyVoltageHigh", Events::SupplyVoltageHigh::Id),                 //
-        make_unique<ReportEvent>(Id, "PowerMissingPhase", Events::PowerMissingPhase::Id),                 //
-        make_unique<ReportEvent>(Id, "SystemPressureLow", Events::SystemPressureLow::Id),                 //
-        make_unique<ReportEvent>(Id, "SystemPressureHigh", Events::SystemPressureHigh::Id),               //
-        make_unique<ReportEvent>(Id, "DryRunning", Events::DryRunning::Id),                               //
-        make_unique<ReportEvent>(Id, "MotorTemperatureHigh", Events::MotorTemperatureHigh::Id),           //
-        make_unique<ReportEvent>(Id, "PumpMotorFatalFailure", Events::PumpMotorFatalFailure::Id),         //
-        make_unique<ReportEvent>(Id, "ElectronicTemperatureHigh", Events::ElectronicTemperatureHigh::Id), //
-        make_unique<ReportEvent>(Id, "PumpBlocked", Events::PumpBlocked::Id),                             //
-        make_unique<ReportEvent>(Id, "SensorFailure", Events::SensorFailure::Id),                         //
-        make_unique<ReportEvent>(Id, "ElectronicNonFatalFailure", Events::ElectronicNonFatalFailure::Id), //
-        make_unique<ReportEvent>(Id, "ElectronicFatalFailure", Events::ElectronicFatalFailure::Id),       //
-        make_unique<ReportEvent>(Id, "GeneralFault", Events::GeneralFault::Id),                           //
-        make_unique<ReportEvent>(Id, "Leakage", Events::Leakage::Id),                                     //
-        make_unique<ReportEvent>(Id, "AirDetection", Events::AirDetection::Id),                           //
-        make_unique<ReportEvent>(Id, "TurbineOperation", Events::TurbineOperation::Id),                   //
+        make_unique<ReadEvent>(Id), make_unique<ReadEvent>(Id, "SupplyVoltageLow", Events::SupplyVoltageLow::Id),     //
+        make_unique<ReadEvent>(Id, "SupplyVoltageHigh", Events::SupplyVoltageHigh::Id),                               //
+        make_unique<ReadEvent>(Id, "PowerMissingPhase", Events::PowerMissingPhase::Id),                               //
+        make_unique<ReadEvent>(Id, "SystemPressureLow", Events::SystemPressureLow::Id),                               //
+        make_unique<ReadEvent>(Id, "SystemPressureHigh", Events::SystemPressureHigh::Id),                             //
+        make_unique<ReadEvent>(Id, "DryRunning", Events::DryRunning::Id),                                             //
+        make_unique<ReadEvent>(Id, "MotorTemperatureHigh", Events::MotorTemperatureHigh::Id),                         //
+        make_unique<ReadEvent>(Id, "PumpMotorFatalFailure", Events::PumpMotorFatalFailure::Id),                       //
+        make_unique<ReadEvent>(Id, "ElectronicTemperatureHigh", Events::ElectronicTemperatureHigh::Id),               //
+        make_unique<ReadEvent>(Id, "PumpBlocked", Events::PumpBlocked::Id),                                           //
+        make_unique<ReadEvent>(Id, "SensorFailure", Events::SensorFailure::Id),                                       //
+        make_unique<ReadEvent>(Id, "ElectronicNonFatalFailure", Events::ElectronicNonFatalFailure::Id),               //
+        make_unique<ReadEvent>(Id, "ElectronicFatalFailure", Events::ElectronicFatalFailure::Id),                     //
+        make_unique<ReadEvent>(Id, "GeneralFault", Events::GeneralFault::Id),                                         //
+        make_unique<ReadEvent>(Id, "Leakage", Events::Leakage::Id),                                                   //
+        make_unique<ReadEvent>(Id, "AirDetection", Events::AirDetection::Id),                                         //
+        make_unique<ReadEvent>(Id, "TurbineOperation", Events::TurbineOperation::Id),                                 //
+        make_unique<ReportEvent>(Id), make_unique<ReportEvent>(Id, "SupplyVoltageLow", Events::SupplyVoltageLow::Id), //
+        make_unique<ReportEvent>(Id, "SupplyVoltageHigh", Events::SupplyVoltageHigh::Id),                             //
+        make_unique<ReportEvent>(Id, "PowerMissingPhase", Events::PowerMissingPhase::Id),                             //
+        make_unique<ReportEvent>(Id, "SystemPressureLow", Events::SystemPressureLow::Id),                             //
+        make_unique<ReportEvent>(Id, "SystemPressureHigh", Events::SystemPressureHigh::Id),                           //
+        make_unique<ReportEvent>(Id, "DryRunning", Events::DryRunning::Id),                                           //
+        make_unique<ReportEvent>(Id, "MotorTemperatureHigh", Events::MotorTemperatureHigh::Id),                       //
+        make_unique<ReportEvent>(Id, "PumpMotorFatalFailure", Events::PumpMotorFatalFailure::Id),                     //
+        make_unique<ReportEvent>(Id, "ElectronicTemperatureHigh", Events::ElectronicTemperatureHigh::Id),             //
+        make_unique<ReportEvent>(Id, "PumpBlocked", Events::PumpBlocked::Id),                                         //
+        make_unique<ReportEvent>(Id, "SensorFailure", Events::SensorFailure::Id),                                     //
+        make_unique<ReportEvent>(Id, "ElectronicNonFatalFailure", Events::ElectronicNonFatalFailure::Id),             //
+        make_unique<ReportEvent>(Id, "ElectronicFatalFailure", Events::ElectronicFatalFailure::Id),                   //
+        make_unique<ReportEvent>(Id, "GeneralFault", Events::GeneralFault::Id),                                       //
+        make_unique<ReportEvent>(Id, "Leakage", Events::Leakage::Id),                                                 //
+        make_unique<ReportEvent>(Id, "AirDetection", Events::AirDetection::Id),                                       //
+        make_unique<ReportEvent>(Id, "TurbineOperation", Events::TurbineOperation::Id),                               //
     };
 
     commands.Register(clusterName, clusterCommands);
@@ -10034,14 +9963,14 @@ void registerClusterRelativeHumidityMeasurement(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
+        make_unique<ReadAttribute>(Id),
         make_unique<ReadAttribute>(Id, "MeasuredValue", Attributes::MeasuredValue::Id),       //
         make_unique<ReadAttribute>(Id, "MinMeasuredValue", Attributes::MinMeasuredValue::Id), //
         make_unique<ReadAttribute>(Id, "MaxMeasuredValue", Attributes::MaxMeasuredValue::Id), //
         make_unique<ReadAttribute>(Id, "Tolerance", Attributes::Tolerance::Id),               //
         make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),       //
         make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),   //
-        make_unique<ReportAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
+        make_unique<ReportAttribute>(Id),
         make_unique<ReportAttribute>(Id, "MeasuredValue", Attributes::MeasuredValue::Id),       //
         make_unique<ReportAttribute>(Id, "MinMeasuredValue", Attributes::MinMeasuredValue::Id), //
         make_unique<ReportAttribute>(Id, "MaxMeasuredValue", Attributes::MaxMeasuredValue::Id), //
@@ -10071,21 +10000,19 @@ void registerClusterScenes(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReadAttribute>(Id, "SceneCount", Attributes::SceneCount::Id),           //
-        make_unique<ReadAttribute>(Id, "CurrentScene", Attributes::CurrentScene::Id),       //
-        make_unique<ReadAttribute>(Id, "CurrentGroup", Attributes::CurrentGroup::Id),       //
-        make_unique<ReadAttribute>(Id, "SceneValid", Attributes::SceneValid::Id),           //
-        make_unique<ReadAttribute>(Id, "NameSupport", Attributes::NameSupport::Id),         //
-        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),     //
-        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id), //
-        make_unique<ReportAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReportAttribute>(Id, "SceneCount", Attributes::SceneCount::Id),           //
-        make_unique<ReportAttribute>(Id, "CurrentScene", Attributes::CurrentScene::Id),       //
-        make_unique<ReportAttribute>(Id, "CurrentGroup", Attributes::CurrentGroup::Id),       //
-        make_unique<ReportAttribute>(Id, "SceneValid", Attributes::SceneValid::Id),           //
-        make_unique<ReportAttribute>(Id, "NameSupport", Attributes::NameSupport::Id),         //
-        make_unique<ReportAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id), //
+        make_unique<ReadAttribute>(Id), make_unique<ReadAttribute>(Id, "SceneCount", Attributes::SceneCount::Id),     //
+        make_unique<ReadAttribute>(Id, "CurrentScene", Attributes::CurrentScene::Id),                                 //
+        make_unique<ReadAttribute>(Id, "CurrentGroup", Attributes::CurrentGroup::Id),                                 //
+        make_unique<ReadAttribute>(Id, "SceneValid", Attributes::SceneValid::Id),                                     //
+        make_unique<ReadAttribute>(Id, "NameSupport", Attributes::NameSupport::Id),                                   //
+        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),                               //
+        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                           //
+        make_unique<ReportAttribute>(Id), make_unique<ReportAttribute>(Id, "SceneCount", Attributes::SceneCount::Id), //
+        make_unique<ReportAttribute>(Id, "CurrentScene", Attributes::CurrentScene::Id),                               //
+        make_unique<ReportAttribute>(Id, "CurrentGroup", Attributes::CurrentGroup::Id),                               //
+        make_unique<ReportAttribute>(Id, "SceneValid", Attributes::SceneValid::Id),                                   //
+        make_unique<ReportAttribute>(Id, "NameSupport", Attributes::NameSupport::Id),                                 //
+        make_unique<ReportAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                         //
     };
 
     commands.Register(clusterName, clusterCommands);
@@ -10104,27 +10031,23 @@ void registerClusterSoftwareDiagnostics(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReadAttribute>(Id, "ThreadMetrics", Attributes::ThreadMetrics::Id),                       //
-        make_unique<ReadAttribute>(Id, "CurrentHeapFree", Attributes::CurrentHeapFree::Id),                   //
-        make_unique<ReadAttribute>(Id, "CurrentHeapUsed", Attributes::CurrentHeapUsed::Id),                   //
-        make_unique<ReadAttribute>(Id, "CurrentHeapHighWatermark", Attributes::CurrentHeapHighWatermark::Id), //
-        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),                       //
-        make_unique<ReadAttribute>(Id, "FeatureMap", Attributes::FeatureMap::Id),                             //
-        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                   //
-        make_unique<ReportAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReportAttribute>(Id, "ThreadMetrics", Attributes::ThreadMetrics::Id),                       //
-        make_unique<ReportAttribute>(Id, "CurrentHeapFree", Attributes::CurrentHeapFree::Id),                   //
-        make_unique<ReportAttribute>(Id, "CurrentHeapUsed", Attributes::CurrentHeapUsed::Id),                   //
-        make_unique<ReportAttribute>(Id, "CurrentHeapHighWatermark", Attributes::CurrentHeapHighWatermark::Id), //
-        make_unique<ReportAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                   //
+        make_unique<ReadAttribute>(Id), make_unique<ReadAttribute>(Id, "ThreadMetrics", Attributes::ThreadMetrics::Id),     //
+        make_unique<ReadAttribute>(Id, "CurrentHeapFree", Attributes::CurrentHeapFree::Id),                                 //
+        make_unique<ReadAttribute>(Id, "CurrentHeapUsed", Attributes::CurrentHeapUsed::Id),                                 //
+        make_unique<ReadAttribute>(Id, "CurrentHeapHighWatermark", Attributes::CurrentHeapHighWatermark::Id),               //
+        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),                                     //
+        make_unique<ReadAttribute>(Id, "FeatureMap", Attributes::FeatureMap::Id),                                           //
+        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                                 //
+        make_unique<ReportAttribute>(Id), make_unique<ReportAttribute>(Id, "ThreadMetrics", Attributes::ThreadMetrics::Id), //
+        make_unique<ReportAttribute>(Id, "CurrentHeapFree", Attributes::CurrentHeapFree::Id),                               //
+        make_unique<ReportAttribute>(Id, "CurrentHeapUsed", Attributes::CurrentHeapUsed::Id),                               //
+        make_unique<ReportAttribute>(Id, "CurrentHeapHighWatermark", Attributes::CurrentHeapHighWatermark::Id),             //
+        make_unique<ReportAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                               //
         //
         // Events
         //
-        make_unique<ReadEvent>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReadEvent>(Id, "SoftwareFault", Events::SoftwareFault::Id), //
-        make_unique<ReportEvent>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReportEvent>(Id, "SoftwareFault", Events::SoftwareFault::Id), //
+        make_unique<ReadEvent>(Id), make_unique<ReadEvent>(Id, "SoftwareFault", Events::SoftwareFault::Id),     //
+        make_unique<ReportEvent>(Id), make_unique<ReportEvent>(Id, "SoftwareFault", Events::SoftwareFault::Id), //
     };
 
     commands.Register(clusterName, clusterCommands);
@@ -10139,14 +10062,13 @@ void registerClusterSwitch(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReadAttribute>(Id, "NumberOfPositions", Attributes::NumberOfPositions::Id), //
-        make_unique<ReadAttribute>(Id, "CurrentPosition", Attributes::CurrentPosition::Id),     //
-        make_unique<ReadAttribute>(Id, "MultiPressMax", Attributes::MultiPressMax::Id),         //
-        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),         //
-        make_unique<ReadAttribute>(Id, "FeatureMap", Attributes::FeatureMap::Id),               //
-        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),     //
-        make_unique<ReportAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
+        make_unique<ReadAttribute>(Id), make_unique<ReadAttribute>(Id, "NumberOfPositions", Attributes::NumberOfPositions::Id), //
+        make_unique<ReadAttribute>(Id, "CurrentPosition", Attributes::CurrentPosition::Id),                                     //
+        make_unique<ReadAttribute>(Id, "MultiPressMax", Attributes::MultiPressMax::Id),                                         //
+        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),                                         //
+        make_unique<ReadAttribute>(Id, "FeatureMap", Attributes::FeatureMap::Id),                                               //
+        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                                     //
+        make_unique<ReportAttribute>(Id),
         make_unique<ReportAttribute>(Id, "NumberOfPositions", Attributes::NumberOfPositions::Id), //
         make_unique<ReportAttribute>(Id, "CurrentPosition", Attributes::CurrentPosition::Id),     //
         make_unique<ReportAttribute>(Id, "MultiPressMax", Attributes::MultiPressMax::Id),         //
@@ -10155,22 +10077,20 @@ void registerClusterSwitch(Commands & commands)
         //
         // Events
         //
-        make_unique<ReadEvent>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReadEvent>(Id, "SwitchLatched", Events::SwitchLatched::Id),           //
-        make_unique<ReadEvent>(Id, "InitialPress", Events::InitialPress::Id),             //
-        make_unique<ReadEvent>(Id, "LongPress", Events::LongPress::Id),                   //
-        make_unique<ReadEvent>(Id, "ShortRelease", Events::ShortRelease::Id),             //
-        make_unique<ReadEvent>(Id, "LongRelease", Events::LongRelease::Id),               //
-        make_unique<ReadEvent>(Id, "MultiPressOngoing", Events::MultiPressOngoing::Id),   //
-        make_unique<ReadEvent>(Id, "MultiPressComplete", Events::MultiPressComplete::Id), //
-        make_unique<ReportEvent>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReportEvent>(Id, "SwitchLatched", Events::SwitchLatched::Id),           //
-        make_unique<ReportEvent>(Id, "InitialPress", Events::InitialPress::Id),             //
-        make_unique<ReportEvent>(Id, "LongPress", Events::LongPress::Id),                   //
-        make_unique<ReportEvent>(Id, "ShortRelease", Events::ShortRelease::Id),             //
-        make_unique<ReportEvent>(Id, "LongRelease", Events::LongRelease::Id),               //
-        make_unique<ReportEvent>(Id, "MultiPressOngoing", Events::MultiPressOngoing::Id),   //
-        make_unique<ReportEvent>(Id, "MultiPressComplete", Events::MultiPressComplete::Id), //
+        make_unique<ReadEvent>(Id), make_unique<ReadEvent>(Id, "SwitchLatched", Events::SwitchLatched::Id),     //
+        make_unique<ReadEvent>(Id, "InitialPress", Events::InitialPress::Id),                                   //
+        make_unique<ReadEvent>(Id, "LongPress", Events::LongPress::Id),                                         //
+        make_unique<ReadEvent>(Id, "ShortRelease", Events::ShortRelease::Id),                                   //
+        make_unique<ReadEvent>(Id, "LongRelease", Events::LongRelease::Id),                                     //
+        make_unique<ReadEvent>(Id, "MultiPressOngoing", Events::MultiPressOngoing::Id),                         //
+        make_unique<ReadEvent>(Id, "MultiPressComplete", Events::MultiPressComplete::Id),                       //
+        make_unique<ReportEvent>(Id), make_unique<ReportEvent>(Id, "SwitchLatched", Events::SwitchLatched::Id), //
+        make_unique<ReportEvent>(Id, "InitialPress", Events::InitialPress::Id),                                 //
+        make_unique<ReportEvent>(Id, "LongPress", Events::LongPress::Id),                                       //
+        make_unique<ReportEvent>(Id, "ShortRelease", Events::ShortRelease::Id),                                 //
+        make_unique<ReportEvent>(Id, "LongRelease", Events::LongRelease::Id),                                   //
+        make_unique<ReportEvent>(Id, "MultiPressOngoing", Events::MultiPressOngoing::Id),                       //
+        make_unique<ReportEvent>(Id, "MultiPressComplete", Events::MultiPressComplete::Id),                     //
     };
 
     commands.Register(clusterName, clusterCommands);
@@ -10189,12 +10109,12 @@ void registerClusterTargetNavigator(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
+        make_unique<ReadAttribute>(Id),
         make_unique<ReadAttribute>(Id, "TargetNavigatorList", Attributes::TargetNavigatorList::Id),       //
         make_unique<ReadAttribute>(Id, "CurrentNavigatorTarget", Attributes::CurrentNavigatorTarget::Id), //
         make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),                   //
         make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),               //
-        make_unique<ReportAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
+        make_unique<ReportAttribute>(Id),
         make_unique<ReportAttribute>(Id, "TargetNavigatorList", Attributes::TargetNavigatorList::Id),       //
         make_unique<ReportAttribute>(Id, "CurrentNavigatorTarget", Attributes::CurrentNavigatorTarget::Id), //
         make_unique<ReportAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),               //
@@ -10212,14 +10132,14 @@ void registerClusterTemperatureMeasurement(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
+        make_unique<ReadAttribute>(Id),
         make_unique<ReadAttribute>(Id, "MeasuredValue", Attributes::MeasuredValue::Id),       //
         make_unique<ReadAttribute>(Id, "MinMeasuredValue", Attributes::MinMeasuredValue::Id), //
         make_unique<ReadAttribute>(Id, "MaxMeasuredValue", Attributes::MaxMeasuredValue::Id), //
         make_unique<ReadAttribute>(Id, "Tolerance", Attributes::Tolerance::Id),               //
         make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),       //
         make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),   //
-        make_unique<ReportAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
+        make_unique<ReportAttribute>(Id),
         make_unique<ReportAttribute>(Id, "MeasuredValue", Attributes::MeasuredValue::Id),       //
         make_unique<ReportAttribute>(Id, "MinMeasuredValue", Attributes::MinMeasuredValue::Id), //
         make_unique<ReportAttribute>(Id, "MaxMeasuredValue", Attributes::MaxMeasuredValue::Id), //
@@ -10260,160 +10180,158 @@ void registerClusterTestCluster(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReadAttribute>(Id, "Boolean", Attributes::Boolean::Id),                                                 //
-        make_unique<ReadAttribute>(Id, "Bitmap8", Attributes::Bitmap8::Id),                                                 //
-        make_unique<ReadAttribute>(Id, "Bitmap16", Attributes::Bitmap16::Id),                                               //
-        make_unique<ReadAttribute>(Id, "Bitmap32", Attributes::Bitmap32::Id),                                               //
-        make_unique<ReadAttribute>(Id, "Bitmap64", Attributes::Bitmap64::Id),                                               //
-        make_unique<ReadAttribute>(Id, "Int8u", Attributes::Int8u::Id),                                                     //
-        make_unique<ReadAttribute>(Id, "Int16u", Attributes::Int16u::Id),                                                   //
-        make_unique<ReadAttribute>(Id, "Int24u", Attributes::Int24u::Id),                                                   //
-        make_unique<ReadAttribute>(Id, "Int32u", Attributes::Int32u::Id),                                                   //
-        make_unique<ReadAttribute>(Id, "Int40u", Attributes::Int40u::Id),                                                   //
-        make_unique<ReadAttribute>(Id, "Int48u", Attributes::Int48u::Id),                                                   //
-        make_unique<ReadAttribute>(Id, "Int56u", Attributes::Int56u::Id),                                                   //
-        make_unique<ReadAttribute>(Id, "Int64u", Attributes::Int64u::Id),                                                   //
-        make_unique<ReadAttribute>(Id, "Int8s", Attributes::Int8s::Id),                                                     //
-        make_unique<ReadAttribute>(Id, "Int16s", Attributes::Int16s::Id),                                                   //
-        make_unique<ReadAttribute>(Id, "Int24s", Attributes::Int24s::Id),                                                   //
-        make_unique<ReadAttribute>(Id, "Int32s", Attributes::Int32s::Id),                                                   //
-        make_unique<ReadAttribute>(Id, "Int40s", Attributes::Int40s::Id),                                                   //
-        make_unique<ReadAttribute>(Id, "Int48s", Attributes::Int48s::Id),                                                   //
-        make_unique<ReadAttribute>(Id, "Int56s", Attributes::Int56s::Id),                                                   //
-        make_unique<ReadAttribute>(Id, "Int64s", Attributes::Int64s::Id),                                                   //
-        make_unique<ReadAttribute>(Id, "Enum8", Attributes::Enum8::Id),                                                     //
-        make_unique<ReadAttribute>(Id, "Enum16", Attributes::Enum16::Id),                                                   //
-        make_unique<ReadAttribute>(Id, "FloatSingle", Attributes::FloatSingle::Id),                                         //
-        make_unique<ReadAttribute>(Id, "FloatDouble", Attributes::FloatDouble::Id),                                         //
-        make_unique<ReadAttribute>(Id, "OctetString", Attributes::OctetString::Id),                                         //
-        make_unique<ReadAttribute>(Id, "ListInt8u", Attributes::ListInt8u::Id),                                             //
-        make_unique<ReadAttribute>(Id, "ListOctetString", Attributes::ListOctetString::Id),                                 //
-        make_unique<ReadAttribute>(Id, "ListStructOctetString", Attributes::ListStructOctetString::Id),                     //
-        make_unique<ReadAttribute>(Id, "LongOctetString", Attributes::LongOctetString::Id),                                 //
-        make_unique<ReadAttribute>(Id, "CharString", Attributes::CharString::Id),                                           //
-        make_unique<ReadAttribute>(Id, "LongCharString", Attributes::LongCharString::Id),                                   //
-        make_unique<ReadAttribute>(Id, "EpochUs", Attributes::EpochUs::Id),                                                 //
-        make_unique<ReadAttribute>(Id, "EpochS", Attributes::EpochS::Id),                                                   //
-        make_unique<ReadAttribute>(Id, "VendorId", Attributes::VendorId::Id),                                               //
-        make_unique<ReadAttribute>(Id, "ListNullablesAndOptionalsStruct", Attributes::ListNullablesAndOptionalsStruct::Id), //
-        make_unique<ReadAttribute>(Id, "EnumAttr", Attributes::EnumAttr::Id),                                               //
-        make_unique<ReadAttribute>(Id, "StructAttr", Attributes::StructAttr::Id),                                           //
-        make_unique<ReadAttribute>(Id, "RangeRestrictedInt8u", Attributes::RangeRestrictedInt8u::Id),                       //
-        make_unique<ReadAttribute>(Id, "RangeRestrictedInt8s", Attributes::RangeRestrictedInt8s::Id),                       //
-        make_unique<ReadAttribute>(Id, "RangeRestrictedInt16u", Attributes::RangeRestrictedInt16u::Id),                     //
-        make_unique<ReadAttribute>(Id, "RangeRestrictedInt16s", Attributes::RangeRestrictedInt16s::Id),                     //
-        make_unique<ReadAttribute>(Id, "ListLongOctetString", Attributes::ListLongOctetString::Id),                         //
-        make_unique<ReadAttribute>(Id, "TimedWriteBoolean", Attributes::TimedWriteBoolean::Id),                             //
-        make_unique<ReadAttribute>(Id, "Unsupported", Attributes::Unsupported::Id),                                         //
-        make_unique<ReadAttribute>(Id, "NullableBoolean", Attributes::NullableBoolean::Id),                                 //
-        make_unique<ReadAttribute>(Id, "NullableBitmap8", Attributes::NullableBitmap8::Id),                                 //
-        make_unique<ReadAttribute>(Id, "NullableBitmap16", Attributes::NullableBitmap16::Id),                               //
-        make_unique<ReadAttribute>(Id, "NullableBitmap32", Attributes::NullableBitmap32::Id),                               //
-        make_unique<ReadAttribute>(Id, "NullableBitmap64", Attributes::NullableBitmap64::Id),                               //
-        make_unique<ReadAttribute>(Id, "NullableInt8u", Attributes::NullableInt8u::Id),                                     //
-        make_unique<ReadAttribute>(Id, "NullableInt16u", Attributes::NullableInt16u::Id),                                   //
-        make_unique<ReadAttribute>(Id, "NullableInt24u", Attributes::NullableInt24u::Id),                                   //
-        make_unique<ReadAttribute>(Id, "NullableInt32u", Attributes::NullableInt32u::Id),                                   //
-        make_unique<ReadAttribute>(Id, "NullableInt40u", Attributes::NullableInt40u::Id),                                   //
-        make_unique<ReadAttribute>(Id, "NullableInt48u", Attributes::NullableInt48u::Id),                                   //
-        make_unique<ReadAttribute>(Id, "NullableInt56u", Attributes::NullableInt56u::Id),                                   //
-        make_unique<ReadAttribute>(Id, "NullableInt64u", Attributes::NullableInt64u::Id),                                   //
-        make_unique<ReadAttribute>(Id, "NullableInt8s", Attributes::NullableInt8s::Id),                                     //
-        make_unique<ReadAttribute>(Id, "NullableInt16s", Attributes::NullableInt16s::Id),                                   //
-        make_unique<ReadAttribute>(Id, "NullableInt24s", Attributes::NullableInt24s::Id),                                   //
-        make_unique<ReadAttribute>(Id, "NullableInt32s", Attributes::NullableInt32s::Id),                                   //
-        make_unique<ReadAttribute>(Id, "NullableInt40s", Attributes::NullableInt40s::Id),                                   //
-        make_unique<ReadAttribute>(Id, "NullableInt48s", Attributes::NullableInt48s::Id),                                   //
-        make_unique<ReadAttribute>(Id, "NullableInt56s", Attributes::NullableInt56s::Id),                                   //
-        make_unique<ReadAttribute>(Id, "NullableInt64s", Attributes::NullableInt64s::Id),                                   //
-        make_unique<ReadAttribute>(Id, "NullableEnum8", Attributes::NullableEnum8::Id),                                     //
-        make_unique<ReadAttribute>(Id, "NullableEnum16", Attributes::NullableEnum16::Id),                                   //
-        make_unique<ReadAttribute>(Id, "NullableFloatSingle", Attributes::NullableFloatSingle::Id),                         //
-        make_unique<ReadAttribute>(Id, "NullableFloatDouble", Attributes::NullableFloatDouble::Id),                         //
-        make_unique<ReadAttribute>(Id, "NullableOctetString", Attributes::NullableOctetString::Id),                         //
-        make_unique<ReadAttribute>(Id, "NullableCharString", Attributes::NullableCharString::Id),                           //
-        make_unique<ReadAttribute>(Id, "NullableEnumAttr", Attributes::NullableEnumAttr::Id),                               //
-        make_unique<ReadAttribute>(Id, "NullableStruct", Attributes::NullableStruct::Id),                                   //
-        make_unique<ReadAttribute>(Id, "NullableRangeRestrictedInt8u", Attributes::NullableRangeRestrictedInt8u::Id),       //
-        make_unique<ReadAttribute>(Id, "NullableRangeRestrictedInt8s", Attributes::NullableRangeRestrictedInt8s::Id),       //
-        make_unique<ReadAttribute>(Id, "NullableRangeRestrictedInt16u", Attributes::NullableRangeRestrictedInt16u::Id),     //
-        make_unique<ReadAttribute>(Id, "NullableRangeRestrictedInt16s", Attributes::NullableRangeRestrictedInt16s::Id),     //
-        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),                                     //
-        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                                 //
-        make_unique<WriteTestClusterBoolean>(),                                                                             //
-        make_unique<WriteTestClusterBitmap8>(),                                                                             //
-        make_unique<WriteTestClusterBitmap16>(),                                                                            //
-        make_unique<WriteTestClusterBitmap32>(),                                                                            //
-        make_unique<WriteTestClusterBitmap64>(),                                                                            //
-        make_unique<WriteTestClusterInt8u>(),                                                                               //
-        make_unique<WriteTestClusterInt16u>(),                                                                              //
-        make_unique<WriteTestClusterInt24u>(),                                                                              //
-        make_unique<WriteTestClusterInt32u>(),                                                                              //
-        make_unique<WriteTestClusterInt40u>(),                                                                              //
-        make_unique<WriteTestClusterInt48u>(),                                                                              //
-        make_unique<WriteTestClusterInt56u>(),                                                                              //
-        make_unique<WriteTestClusterInt64u>(),                                                                              //
-        make_unique<WriteTestClusterInt8s>(),                                                                               //
-        make_unique<WriteTestClusterInt16s>(),                                                                              //
-        make_unique<WriteTestClusterInt24s>(),                                                                              //
-        make_unique<WriteTestClusterInt32s>(),                                                                              //
-        make_unique<WriteTestClusterInt40s>(),                                                                              //
-        make_unique<WriteTestClusterInt48s>(),                                                                              //
-        make_unique<WriteTestClusterInt56s>(),                                                                              //
-        make_unique<WriteTestClusterInt64s>(),                                                                              //
-        make_unique<WriteTestClusterEnum8>(),                                                                               //
-        make_unique<WriteTestClusterEnum16>(),                                                                              //
-        make_unique<WriteTestClusterFloatSingle>(),                                                                         //
-        make_unique<WriteTestClusterFloatDouble>(),                                                                         //
-        make_unique<WriteTestClusterOctetString>(),                                                                         //
-        make_unique<WriteTestClusterLongOctetString>(),                                                                     //
-        make_unique<WriteTestClusterCharString>(),                                                                          //
-        make_unique<WriteTestClusterLongCharString>(),                                                                      //
-        make_unique<WriteTestClusterEpochUs>(),                                                                             //
-        make_unique<WriteTestClusterEpochS>(),                                                                              //
-        make_unique<WriteTestClusterVendorId>(),                                                                            //
-        make_unique<WriteTestClusterEnumAttr>(),                                                                            //
-        make_unique<WriteTestClusterRangeRestrictedInt8u>(),                                                                //
-        make_unique<WriteTestClusterRangeRestrictedInt8s>(),                                                                //
-        make_unique<WriteTestClusterRangeRestrictedInt16u>(),                                                               //
-        make_unique<WriteTestClusterRangeRestrictedInt16s>(),                                                               //
-        make_unique<WriteTestClusterTimedWriteBoolean>(),                                                                   //
-        make_unique<WriteTestClusterUnsupported>(),                                                                         //
-        make_unique<WriteTestClusterNullableBoolean>(),                                                                     //
-        make_unique<WriteTestClusterNullableBitmap8>(),                                                                     //
-        make_unique<WriteTestClusterNullableBitmap16>(),                                                                    //
-        make_unique<WriteTestClusterNullableBitmap32>(),                                                                    //
-        make_unique<WriteTestClusterNullableBitmap64>(),                                                                    //
-        make_unique<WriteTestClusterNullableInt8u>(),                                                                       //
-        make_unique<WriteTestClusterNullableInt16u>(),                                                                      //
-        make_unique<WriteTestClusterNullableInt24u>(),                                                                      //
-        make_unique<WriteTestClusterNullableInt32u>(),                                                                      //
-        make_unique<WriteTestClusterNullableInt40u>(),                                                                      //
-        make_unique<WriteTestClusterNullableInt48u>(),                                                                      //
-        make_unique<WriteTestClusterNullableInt56u>(),                                                                      //
-        make_unique<WriteTestClusterNullableInt64u>(),                                                                      //
-        make_unique<WriteTestClusterNullableInt8s>(),                                                                       //
-        make_unique<WriteTestClusterNullableInt16s>(),                                                                      //
-        make_unique<WriteTestClusterNullableInt24s>(),                                                                      //
-        make_unique<WriteTestClusterNullableInt32s>(),                                                                      //
-        make_unique<WriteTestClusterNullableInt40s>(),                                                                      //
-        make_unique<WriteTestClusterNullableInt48s>(),                                                                      //
-        make_unique<WriteTestClusterNullableInt56s>(),                                                                      //
-        make_unique<WriteTestClusterNullableInt64s>(),                                                                      //
-        make_unique<WriteTestClusterNullableEnum8>(),                                                                       //
-        make_unique<WriteTestClusterNullableEnum16>(),                                                                      //
-        make_unique<WriteTestClusterNullableFloatSingle>(),                                                                 //
-        make_unique<WriteTestClusterNullableFloatDouble>(),                                                                 //
-        make_unique<WriteTestClusterNullableOctetString>(),                                                                 //
-        make_unique<WriteTestClusterNullableCharString>(),                                                                  //
-        make_unique<WriteTestClusterNullableEnumAttr>(),                                                                    //
-        make_unique<WriteTestClusterNullableRangeRestrictedInt8u>(),                                                        //
-        make_unique<WriteTestClusterNullableRangeRestrictedInt8s>(),                                                        //
-        make_unique<WriteTestClusterNullableRangeRestrictedInt16u>(),                                                       //
-        make_unique<WriteTestClusterNullableRangeRestrictedInt16s>(),                                                       //
-        make_unique<ReportAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReportAttribute>(Id, "Boolean", Attributes::Boolean::Id),                                                 //
+        make_unique<ReadAttribute>(Id), make_unique<ReadAttribute>(Id, "Boolean", Attributes::Boolean::Id),                   //
+        make_unique<ReadAttribute>(Id, "Bitmap8", Attributes::Bitmap8::Id),                                                   //
+        make_unique<ReadAttribute>(Id, "Bitmap16", Attributes::Bitmap16::Id),                                                 //
+        make_unique<ReadAttribute>(Id, "Bitmap32", Attributes::Bitmap32::Id),                                                 //
+        make_unique<ReadAttribute>(Id, "Bitmap64", Attributes::Bitmap64::Id),                                                 //
+        make_unique<ReadAttribute>(Id, "Int8u", Attributes::Int8u::Id),                                                       //
+        make_unique<ReadAttribute>(Id, "Int16u", Attributes::Int16u::Id),                                                     //
+        make_unique<ReadAttribute>(Id, "Int24u", Attributes::Int24u::Id),                                                     //
+        make_unique<ReadAttribute>(Id, "Int32u", Attributes::Int32u::Id),                                                     //
+        make_unique<ReadAttribute>(Id, "Int40u", Attributes::Int40u::Id),                                                     //
+        make_unique<ReadAttribute>(Id, "Int48u", Attributes::Int48u::Id),                                                     //
+        make_unique<ReadAttribute>(Id, "Int56u", Attributes::Int56u::Id),                                                     //
+        make_unique<ReadAttribute>(Id, "Int64u", Attributes::Int64u::Id),                                                     //
+        make_unique<ReadAttribute>(Id, "Int8s", Attributes::Int8s::Id),                                                       //
+        make_unique<ReadAttribute>(Id, "Int16s", Attributes::Int16s::Id),                                                     //
+        make_unique<ReadAttribute>(Id, "Int24s", Attributes::Int24s::Id),                                                     //
+        make_unique<ReadAttribute>(Id, "Int32s", Attributes::Int32s::Id),                                                     //
+        make_unique<ReadAttribute>(Id, "Int40s", Attributes::Int40s::Id),                                                     //
+        make_unique<ReadAttribute>(Id, "Int48s", Attributes::Int48s::Id),                                                     //
+        make_unique<ReadAttribute>(Id, "Int56s", Attributes::Int56s::Id),                                                     //
+        make_unique<ReadAttribute>(Id, "Int64s", Attributes::Int64s::Id),                                                     //
+        make_unique<ReadAttribute>(Id, "Enum8", Attributes::Enum8::Id),                                                       //
+        make_unique<ReadAttribute>(Id, "Enum16", Attributes::Enum16::Id),                                                     //
+        make_unique<ReadAttribute>(Id, "FloatSingle", Attributes::FloatSingle::Id),                                           //
+        make_unique<ReadAttribute>(Id, "FloatDouble", Attributes::FloatDouble::Id),                                           //
+        make_unique<ReadAttribute>(Id, "OctetString", Attributes::OctetString::Id),                                           //
+        make_unique<ReadAttribute>(Id, "ListInt8u", Attributes::ListInt8u::Id),                                               //
+        make_unique<ReadAttribute>(Id, "ListOctetString", Attributes::ListOctetString::Id),                                   //
+        make_unique<ReadAttribute>(Id, "ListStructOctetString", Attributes::ListStructOctetString::Id),                       //
+        make_unique<ReadAttribute>(Id, "LongOctetString", Attributes::LongOctetString::Id),                                   //
+        make_unique<ReadAttribute>(Id, "CharString", Attributes::CharString::Id),                                             //
+        make_unique<ReadAttribute>(Id, "LongCharString", Attributes::LongCharString::Id),                                     //
+        make_unique<ReadAttribute>(Id, "EpochUs", Attributes::EpochUs::Id),                                                   //
+        make_unique<ReadAttribute>(Id, "EpochS", Attributes::EpochS::Id),                                                     //
+        make_unique<ReadAttribute>(Id, "VendorId", Attributes::VendorId::Id),                                                 //
+        make_unique<ReadAttribute>(Id, "ListNullablesAndOptionalsStruct", Attributes::ListNullablesAndOptionalsStruct::Id),   //
+        make_unique<ReadAttribute>(Id, "EnumAttr", Attributes::EnumAttr::Id),                                                 //
+        make_unique<ReadAttribute>(Id, "StructAttr", Attributes::StructAttr::Id),                                             //
+        make_unique<ReadAttribute>(Id, "RangeRestrictedInt8u", Attributes::RangeRestrictedInt8u::Id),                         //
+        make_unique<ReadAttribute>(Id, "RangeRestrictedInt8s", Attributes::RangeRestrictedInt8s::Id),                         //
+        make_unique<ReadAttribute>(Id, "RangeRestrictedInt16u", Attributes::RangeRestrictedInt16u::Id),                       //
+        make_unique<ReadAttribute>(Id, "RangeRestrictedInt16s", Attributes::RangeRestrictedInt16s::Id),                       //
+        make_unique<ReadAttribute>(Id, "ListLongOctetString", Attributes::ListLongOctetString::Id),                           //
+        make_unique<ReadAttribute>(Id, "TimedWriteBoolean", Attributes::TimedWriteBoolean::Id),                               //
+        make_unique<ReadAttribute>(Id, "Unsupported", Attributes::Unsupported::Id),                                           //
+        make_unique<ReadAttribute>(Id, "NullableBoolean", Attributes::NullableBoolean::Id),                                   //
+        make_unique<ReadAttribute>(Id, "NullableBitmap8", Attributes::NullableBitmap8::Id),                                   //
+        make_unique<ReadAttribute>(Id, "NullableBitmap16", Attributes::NullableBitmap16::Id),                                 //
+        make_unique<ReadAttribute>(Id, "NullableBitmap32", Attributes::NullableBitmap32::Id),                                 //
+        make_unique<ReadAttribute>(Id, "NullableBitmap64", Attributes::NullableBitmap64::Id),                                 //
+        make_unique<ReadAttribute>(Id, "NullableInt8u", Attributes::NullableInt8u::Id),                                       //
+        make_unique<ReadAttribute>(Id, "NullableInt16u", Attributes::NullableInt16u::Id),                                     //
+        make_unique<ReadAttribute>(Id, "NullableInt24u", Attributes::NullableInt24u::Id),                                     //
+        make_unique<ReadAttribute>(Id, "NullableInt32u", Attributes::NullableInt32u::Id),                                     //
+        make_unique<ReadAttribute>(Id, "NullableInt40u", Attributes::NullableInt40u::Id),                                     //
+        make_unique<ReadAttribute>(Id, "NullableInt48u", Attributes::NullableInt48u::Id),                                     //
+        make_unique<ReadAttribute>(Id, "NullableInt56u", Attributes::NullableInt56u::Id),                                     //
+        make_unique<ReadAttribute>(Id, "NullableInt64u", Attributes::NullableInt64u::Id),                                     //
+        make_unique<ReadAttribute>(Id, "NullableInt8s", Attributes::NullableInt8s::Id),                                       //
+        make_unique<ReadAttribute>(Id, "NullableInt16s", Attributes::NullableInt16s::Id),                                     //
+        make_unique<ReadAttribute>(Id, "NullableInt24s", Attributes::NullableInt24s::Id),                                     //
+        make_unique<ReadAttribute>(Id, "NullableInt32s", Attributes::NullableInt32s::Id),                                     //
+        make_unique<ReadAttribute>(Id, "NullableInt40s", Attributes::NullableInt40s::Id),                                     //
+        make_unique<ReadAttribute>(Id, "NullableInt48s", Attributes::NullableInt48s::Id),                                     //
+        make_unique<ReadAttribute>(Id, "NullableInt56s", Attributes::NullableInt56s::Id),                                     //
+        make_unique<ReadAttribute>(Id, "NullableInt64s", Attributes::NullableInt64s::Id),                                     //
+        make_unique<ReadAttribute>(Id, "NullableEnum8", Attributes::NullableEnum8::Id),                                       //
+        make_unique<ReadAttribute>(Id, "NullableEnum16", Attributes::NullableEnum16::Id),                                     //
+        make_unique<ReadAttribute>(Id, "NullableFloatSingle", Attributes::NullableFloatSingle::Id),                           //
+        make_unique<ReadAttribute>(Id, "NullableFloatDouble", Attributes::NullableFloatDouble::Id),                           //
+        make_unique<ReadAttribute>(Id, "NullableOctetString", Attributes::NullableOctetString::Id),                           //
+        make_unique<ReadAttribute>(Id, "NullableCharString", Attributes::NullableCharString::Id),                             //
+        make_unique<ReadAttribute>(Id, "NullableEnumAttr", Attributes::NullableEnumAttr::Id),                                 //
+        make_unique<ReadAttribute>(Id, "NullableStruct", Attributes::NullableStruct::Id),                                     //
+        make_unique<ReadAttribute>(Id, "NullableRangeRestrictedInt8u", Attributes::NullableRangeRestrictedInt8u::Id),         //
+        make_unique<ReadAttribute>(Id, "NullableRangeRestrictedInt8s", Attributes::NullableRangeRestrictedInt8s::Id),         //
+        make_unique<ReadAttribute>(Id, "NullableRangeRestrictedInt16u", Attributes::NullableRangeRestrictedInt16u::Id),       //
+        make_unique<ReadAttribute>(Id, "NullableRangeRestrictedInt16s", Attributes::NullableRangeRestrictedInt16s::Id),       //
+        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),                                       //
+        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                                   //
+        make_unique<WriteTestClusterBoolean>(),                                                                               //
+        make_unique<WriteTestClusterBitmap8>(),                                                                               //
+        make_unique<WriteTestClusterBitmap16>(),                                                                              //
+        make_unique<WriteTestClusterBitmap32>(),                                                                              //
+        make_unique<WriteTestClusterBitmap64>(),                                                                              //
+        make_unique<WriteTestClusterInt8u>(),                                                                                 //
+        make_unique<WriteTestClusterInt16u>(),                                                                                //
+        make_unique<WriteTestClusterInt24u>(),                                                                                //
+        make_unique<WriteTestClusterInt32u>(),                                                                                //
+        make_unique<WriteTestClusterInt40u>(),                                                                                //
+        make_unique<WriteTestClusterInt48u>(),                                                                                //
+        make_unique<WriteTestClusterInt56u>(),                                                                                //
+        make_unique<WriteTestClusterInt64u>(),                                                                                //
+        make_unique<WriteTestClusterInt8s>(),                                                                                 //
+        make_unique<WriteTestClusterInt16s>(),                                                                                //
+        make_unique<WriteTestClusterInt24s>(),                                                                                //
+        make_unique<WriteTestClusterInt32s>(),                                                                                //
+        make_unique<WriteTestClusterInt40s>(),                                                                                //
+        make_unique<WriteTestClusterInt48s>(),                                                                                //
+        make_unique<WriteTestClusterInt56s>(),                                                                                //
+        make_unique<WriteTestClusterInt64s>(),                                                                                //
+        make_unique<WriteTestClusterEnum8>(),                                                                                 //
+        make_unique<WriteTestClusterEnum16>(),                                                                                //
+        make_unique<WriteTestClusterFloatSingle>(),                                                                           //
+        make_unique<WriteTestClusterFloatDouble>(),                                                                           //
+        make_unique<WriteTestClusterOctetString>(),                                                                           //
+        make_unique<WriteTestClusterLongOctetString>(),                                                                       //
+        make_unique<WriteTestClusterCharString>(),                                                                            //
+        make_unique<WriteTestClusterLongCharString>(),                                                                        //
+        make_unique<WriteTestClusterEpochUs>(),                                                                               //
+        make_unique<WriteTestClusterEpochS>(),                                                                                //
+        make_unique<WriteTestClusterVendorId>(),                                                                              //
+        make_unique<WriteTestClusterEnumAttr>(),                                                                              //
+        make_unique<WriteTestClusterRangeRestrictedInt8u>(),                                                                  //
+        make_unique<WriteTestClusterRangeRestrictedInt8s>(),                                                                  //
+        make_unique<WriteTestClusterRangeRestrictedInt16u>(),                                                                 //
+        make_unique<WriteTestClusterRangeRestrictedInt16s>(),                                                                 //
+        make_unique<WriteTestClusterTimedWriteBoolean>(),                                                                     //
+        make_unique<WriteTestClusterUnsupported>(),                                                                           //
+        make_unique<WriteTestClusterNullableBoolean>(),                                                                       //
+        make_unique<WriteTestClusterNullableBitmap8>(),                                                                       //
+        make_unique<WriteTestClusterNullableBitmap16>(),                                                                      //
+        make_unique<WriteTestClusterNullableBitmap32>(),                                                                      //
+        make_unique<WriteTestClusterNullableBitmap64>(),                                                                      //
+        make_unique<WriteTestClusterNullableInt8u>(),                                                                         //
+        make_unique<WriteTestClusterNullableInt16u>(),                                                                        //
+        make_unique<WriteTestClusterNullableInt24u>(),                                                                        //
+        make_unique<WriteTestClusterNullableInt32u>(),                                                                        //
+        make_unique<WriteTestClusterNullableInt40u>(),                                                                        //
+        make_unique<WriteTestClusterNullableInt48u>(),                                                                        //
+        make_unique<WriteTestClusterNullableInt56u>(),                                                                        //
+        make_unique<WriteTestClusterNullableInt64u>(),                                                                        //
+        make_unique<WriteTestClusterNullableInt8s>(),                                                                         //
+        make_unique<WriteTestClusterNullableInt16s>(),                                                                        //
+        make_unique<WriteTestClusterNullableInt24s>(),                                                                        //
+        make_unique<WriteTestClusterNullableInt32s>(),                                                                        //
+        make_unique<WriteTestClusterNullableInt40s>(),                                                                        //
+        make_unique<WriteTestClusterNullableInt48s>(),                                                                        //
+        make_unique<WriteTestClusterNullableInt56s>(),                                                                        //
+        make_unique<WriteTestClusterNullableInt64s>(),                                                                        //
+        make_unique<WriteTestClusterNullableEnum8>(),                                                                         //
+        make_unique<WriteTestClusterNullableEnum16>(),                                                                        //
+        make_unique<WriteTestClusterNullableFloatSingle>(),                                                                   //
+        make_unique<WriteTestClusterNullableFloatDouble>(),                                                                   //
+        make_unique<WriteTestClusterNullableOctetString>(),                                                                   //
+        make_unique<WriteTestClusterNullableCharString>(),                                                                    //
+        make_unique<WriteTestClusterNullableEnumAttr>(),                                                                      //
+        make_unique<WriteTestClusterNullableRangeRestrictedInt8u>(),                                                          //
+        make_unique<WriteTestClusterNullableRangeRestrictedInt8s>(),                                                          //
+        make_unique<WriteTestClusterNullableRangeRestrictedInt16u>(),                                                         //
+        make_unique<WriteTestClusterNullableRangeRestrictedInt16s>(),                                                         //
+        make_unique<ReportAttribute>(Id), make_unique<ReportAttribute>(Id, "Boolean", Attributes::Boolean::Id),               //
         make_unique<ReportAttribute>(Id, "Bitmap8", Attributes::Bitmap8::Id),                                                 //
         make_unique<ReportAttribute>(Id, "Bitmap16", Attributes::Bitmap16::Id),                                               //
         make_unique<ReportAttribute>(Id, "Bitmap32", Attributes::Bitmap32::Id),                                               //
@@ -10493,10 +10411,8 @@ void registerClusterTestCluster(Commands & commands)
         //
         // Events
         //
-        make_unique<ReadEvent>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReadEvent>(Id, "TestEvent", Events::TestEvent::Id), //
-        make_unique<ReportEvent>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReportEvent>(Id, "TestEvent", Events::TestEvent::Id), //
+        make_unique<ReadEvent>(Id), make_unique<ReadEvent>(Id, "TestEvent", Events::TestEvent::Id),     //
+        make_unique<ReportEvent>(Id), make_unique<ReportEvent>(Id, "TestEvent", Events::TestEvent::Id), //
     };
 
     commands.Register(clusterName, clusterCommands);
@@ -10519,56 +10435,54 @@ void registerClusterThermostat(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReadAttribute>(Id, "LocalTemperature", Attributes::LocalTemperature::Id),                     //
-        make_unique<ReadAttribute>(Id, "AbsMinHeatSetpointLimit", Attributes::AbsMinHeatSetpointLimit::Id),       //
-        make_unique<ReadAttribute>(Id, "AbsMaxHeatSetpointLimit", Attributes::AbsMaxHeatSetpointLimit::Id),       //
-        make_unique<ReadAttribute>(Id, "AbsMinCoolSetpointLimit", Attributes::AbsMinCoolSetpointLimit::Id),       //
-        make_unique<ReadAttribute>(Id, "AbsMaxCoolSetpointLimit", Attributes::AbsMaxCoolSetpointLimit::Id),       //
-        make_unique<ReadAttribute>(Id, "OccupiedCoolingSetpoint", Attributes::OccupiedCoolingSetpoint::Id),       //
-        make_unique<ReadAttribute>(Id, "OccupiedHeatingSetpoint", Attributes::OccupiedHeatingSetpoint::Id),       //
-        make_unique<ReadAttribute>(Id, "MinHeatSetpointLimit", Attributes::MinHeatSetpointLimit::Id),             //
-        make_unique<ReadAttribute>(Id, "MaxHeatSetpointLimit", Attributes::MaxHeatSetpointLimit::Id),             //
-        make_unique<ReadAttribute>(Id, "MinCoolSetpointLimit", Attributes::MinCoolSetpointLimit::Id),             //
-        make_unique<ReadAttribute>(Id, "MaxCoolSetpointLimit", Attributes::MaxCoolSetpointLimit::Id),             //
-        make_unique<ReadAttribute>(Id, "MinSetpointDeadBand", Attributes::MinSetpointDeadBand::Id),               //
-        make_unique<ReadAttribute>(Id, "ControlSequenceOfOperation", Attributes::ControlSequenceOfOperation::Id), //
-        make_unique<ReadAttribute>(Id, "SystemMode", Attributes::SystemMode::Id),                                 //
-        make_unique<ReadAttribute>(Id, "StartOfWeek", Attributes::StartOfWeek::Id),                               //
-        make_unique<ReadAttribute>(Id, "NumberOfWeeklyTransitions", Attributes::NumberOfWeeklyTransitions::Id),   //
-        make_unique<ReadAttribute>(Id, "NumberOfDailyTransitions", Attributes::NumberOfDailyTransitions::Id),     //
-        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),                           //
-        make_unique<ReadAttribute>(Id, "FeatureMap", Attributes::FeatureMap::Id),                                 //
-        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                       //
-        make_unique<WriteThermostatOccupiedCoolingSetpoint>(),                                                    //
-        make_unique<WriteThermostatOccupiedHeatingSetpoint>(),                                                    //
-        make_unique<WriteThermostatMinHeatSetpointLimit>(),                                                       //
-        make_unique<WriteThermostatMaxHeatSetpointLimit>(),                                                       //
-        make_unique<WriteThermostatMinCoolSetpointLimit>(),                                                       //
-        make_unique<WriteThermostatMaxCoolSetpointLimit>(),                                                       //
-        make_unique<WriteThermostatMinSetpointDeadBand>(),                                                        //
-        make_unique<WriteThermostatControlSequenceOfOperation>(),                                                 //
-        make_unique<WriteThermostatSystemMode>(),                                                                 //
-        make_unique<ReportAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReportAttribute>(Id, "LocalTemperature", Attributes::LocalTemperature::Id),                     //
-        make_unique<ReportAttribute>(Id, "AbsMinHeatSetpointLimit", Attributes::AbsMinHeatSetpointLimit::Id),       //
-        make_unique<ReportAttribute>(Id, "AbsMaxHeatSetpointLimit", Attributes::AbsMaxHeatSetpointLimit::Id),       //
-        make_unique<ReportAttribute>(Id, "AbsMinCoolSetpointLimit", Attributes::AbsMinCoolSetpointLimit::Id),       //
-        make_unique<ReportAttribute>(Id, "AbsMaxCoolSetpointLimit", Attributes::AbsMaxCoolSetpointLimit::Id),       //
-        make_unique<ReportAttribute>(Id, "OccupiedCoolingSetpoint", Attributes::OccupiedCoolingSetpoint::Id),       //
-        make_unique<ReportAttribute>(Id, "OccupiedHeatingSetpoint", Attributes::OccupiedHeatingSetpoint::Id),       //
-        make_unique<ReportAttribute>(Id, "MinHeatSetpointLimit", Attributes::MinHeatSetpointLimit::Id),             //
-        make_unique<ReportAttribute>(Id, "MaxHeatSetpointLimit", Attributes::MaxHeatSetpointLimit::Id),             //
-        make_unique<ReportAttribute>(Id, "MinCoolSetpointLimit", Attributes::MinCoolSetpointLimit::Id),             //
-        make_unique<ReportAttribute>(Id, "MaxCoolSetpointLimit", Attributes::MaxCoolSetpointLimit::Id),             //
-        make_unique<ReportAttribute>(Id, "MinSetpointDeadBand", Attributes::MinSetpointDeadBand::Id),               //
-        make_unique<ReportAttribute>(Id, "ControlSequenceOfOperation", Attributes::ControlSequenceOfOperation::Id), //
-        make_unique<ReportAttribute>(Id, "SystemMode", Attributes::SystemMode::Id),                                 //
-        make_unique<ReportAttribute>(Id, "StartOfWeek", Attributes::StartOfWeek::Id),                               //
-        make_unique<ReportAttribute>(Id, "NumberOfWeeklyTransitions", Attributes::NumberOfWeeklyTransitions::Id),   //
-        make_unique<ReportAttribute>(Id, "NumberOfDailyTransitions", Attributes::NumberOfDailyTransitions::Id),     //
-        make_unique<ReportAttribute>(Id, "FeatureMap", Attributes::FeatureMap::Id),                                 //
-        make_unique<ReportAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                       //
+        make_unique<ReadAttribute>(Id), make_unique<ReadAttribute>(Id, "LocalTemperature", Attributes::LocalTemperature::Id),     //
+        make_unique<ReadAttribute>(Id, "AbsMinHeatSetpointLimit", Attributes::AbsMinHeatSetpointLimit::Id),                       //
+        make_unique<ReadAttribute>(Id, "AbsMaxHeatSetpointLimit", Attributes::AbsMaxHeatSetpointLimit::Id),                       //
+        make_unique<ReadAttribute>(Id, "AbsMinCoolSetpointLimit", Attributes::AbsMinCoolSetpointLimit::Id),                       //
+        make_unique<ReadAttribute>(Id, "AbsMaxCoolSetpointLimit", Attributes::AbsMaxCoolSetpointLimit::Id),                       //
+        make_unique<ReadAttribute>(Id, "OccupiedCoolingSetpoint", Attributes::OccupiedCoolingSetpoint::Id),                       //
+        make_unique<ReadAttribute>(Id, "OccupiedHeatingSetpoint", Attributes::OccupiedHeatingSetpoint::Id),                       //
+        make_unique<ReadAttribute>(Id, "MinHeatSetpointLimit", Attributes::MinHeatSetpointLimit::Id),                             //
+        make_unique<ReadAttribute>(Id, "MaxHeatSetpointLimit", Attributes::MaxHeatSetpointLimit::Id),                             //
+        make_unique<ReadAttribute>(Id, "MinCoolSetpointLimit", Attributes::MinCoolSetpointLimit::Id),                             //
+        make_unique<ReadAttribute>(Id, "MaxCoolSetpointLimit", Attributes::MaxCoolSetpointLimit::Id),                             //
+        make_unique<ReadAttribute>(Id, "MinSetpointDeadBand", Attributes::MinSetpointDeadBand::Id),                               //
+        make_unique<ReadAttribute>(Id, "ControlSequenceOfOperation", Attributes::ControlSequenceOfOperation::Id),                 //
+        make_unique<ReadAttribute>(Id, "SystemMode", Attributes::SystemMode::Id),                                                 //
+        make_unique<ReadAttribute>(Id, "StartOfWeek", Attributes::StartOfWeek::Id),                                               //
+        make_unique<ReadAttribute>(Id, "NumberOfWeeklyTransitions", Attributes::NumberOfWeeklyTransitions::Id),                   //
+        make_unique<ReadAttribute>(Id, "NumberOfDailyTransitions", Attributes::NumberOfDailyTransitions::Id),                     //
+        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),                                           //
+        make_unique<ReadAttribute>(Id, "FeatureMap", Attributes::FeatureMap::Id),                                                 //
+        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                                       //
+        make_unique<WriteThermostatOccupiedCoolingSetpoint>(),                                                                    //
+        make_unique<WriteThermostatOccupiedHeatingSetpoint>(),                                                                    //
+        make_unique<WriteThermostatMinHeatSetpointLimit>(),                                                                       //
+        make_unique<WriteThermostatMaxHeatSetpointLimit>(),                                                                       //
+        make_unique<WriteThermostatMinCoolSetpointLimit>(),                                                                       //
+        make_unique<WriteThermostatMaxCoolSetpointLimit>(),                                                                       //
+        make_unique<WriteThermostatMinSetpointDeadBand>(),                                                                        //
+        make_unique<WriteThermostatControlSequenceOfOperation>(),                                                                 //
+        make_unique<WriteThermostatSystemMode>(),                                                                                 //
+        make_unique<ReportAttribute>(Id), make_unique<ReportAttribute>(Id, "LocalTemperature", Attributes::LocalTemperature::Id), //
+        make_unique<ReportAttribute>(Id, "AbsMinHeatSetpointLimit", Attributes::AbsMinHeatSetpointLimit::Id),                     //
+        make_unique<ReportAttribute>(Id, "AbsMaxHeatSetpointLimit", Attributes::AbsMaxHeatSetpointLimit::Id),                     //
+        make_unique<ReportAttribute>(Id, "AbsMinCoolSetpointLimit", Attributes::AbsMinCoolSetpointLimit::Id),                     //
+        make_unique<ReportAttribute>(Id, "AbsMaxCoolSetpointLimit", Attributes::AbsMaxCoolSetpointLimit::Id),                     //
+        make_unique<ReportAttribute>(Id, "OccupiedCoolingSetpoint", Attributes::OccupiedCoolingSetpoint::Id),                     //
+        make_unique<ReportAttribute>(Id, "OccupiedHeatingSetpoint", Attributes::OccupiedHeatingSetpoint::Id),                     //
+        make_unique<ReportAttribute>(Id, "MinHeatSetpointLimit", Attributes::MinHeatSetpointLimit::Id),                           //
+        make_unique<ReportAttribute>(Id, "MaxHeatSetpointLimit", Attributes::MaxHeatSetpointLimit::Id),                           //
+        make_unique<ReportAttribute>(Id, "MinCoolSetpointLimit", Attributes::MinCoolSetpointLimit::Id),                           //
+        make_unique<ReportAttribute>(Id, "MaxCoolSetpointLimit", Attributes::MaxCoolSetpointLimit::Id),                           //
+        make_unique<ReportAttribute>(Id, "MinSetpointDeadBand", Attributes::MinSetpointDeadBand::Id),                             //
+        make_unique<ReportAttribute>(Id, "ControlSequenceOfOperation", Attributes::ControlSequenceOfOperation::Id),               //
+        make_unique<ReportAttribute>(Id, "SystemMode", Attributes::SystemMode::Id),                                               //
+        make_unique<ReportAttribute>(Id, "StartOfWeek", Attributes::StartOfWeek::Id),                                             //
+        make_unique<ReportAttribute>(Id, "NumberOfWeeklyTransitions", Attributes::NumberOfWeeklyTransitions::Id),                 //
+        make_unique<ReportAttribute>(Id, "NumberOfDailyTransitions", Attributes::NumberOfDailyTransitions::Id),                   //
+        make_unique<ReportAttribute>(Id, "FeatureMap", Attributes::FeatureMap::Id),                                               //
+        make_unique<ReportAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                                     //
     };
 
     commands.Register(clusterName, clusterCommands);
@@ -10583,7 +10497,7 @@ void registerClusterThermostatUserInterfaceConfiguration(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
+        make_unique<ReadAttribute>(Id),
         make_unique<ReadAttribute>(Id, "TemperatureDisplayMode", Attributes::TemperatureDisplayMode::Id),               //
         make_unique<ReadAttribute>(Id, "KeypadLockout", Attributes::KeypadLockout::Id),                                 //
         make_unique<ReadAttribute>(Id, "ScheduleProgrammingVisibility", Attributes::ScheduleProgrammingVisibility::Id), //
@@ -10592,7 +10506,7 @@ void registerClusterThermostatUserInterfaceConfiguration(Commands & commands)
         make_unique<WriteThermostatUserInterfaceConfigurationTemperatureDisplayMode>(),                                 //
         make_unique<WriteThermostatUserInterfaceConfigurationKeypadLockout>(),                                          //
         make_unique<WriteThermostatUserInterfaceConfigurationScheduleProgrammingVisibility>(),                          //
-        make_unique<ReportAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
+        make_unique<ReportAttribute>(Id),
         make_unique<ReportAttribute>(Id, "TemperatureDisplayMode", Attributes::TemperatureDisplayMode::Id),               //
         make_unique<ReportAttribute>(Id, "KeypadLockout", Attributes::KeypadLockout::Id),                                 //
         make_unique<ReportAttribute>(Id, "ScheduleProgrammingVisibility", Attributes::ScheduleProgrammingVisibility::Id), //
@@ -10615,75 +10529,73 @@ void registerClusterThreadNetworkDiagnostics(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReadAttribute>(Id, "Channel", Attributes::Channel::Id),                                                     //
-        make_unique<ReadAttribute>(Id, "RoutingRole", Attributes::RoutingRole::Id),                                             //
-        make_unique<ReadAttribute>(Id, "NetworkName", Attributes::NetworkName::Id),                                             //
-        make_unique<ReadAttribute>(Id, "PanId", Attributes::PanId::Id),                                                         //
-        make_unique<ReadAttribute>(Id, "ExtendedPanId", Attributes::ExtendedPanId::Id),                                         //
-        make_unique<ReadAttribute>(Id, "MeshLocalPrefix", Attributes::MeshLocalPrefix::Id),                                     //
-        make_unique<ReadAttribute>(Id, "OverrunCount", Attributes::OverrunCount::Id),                                           //
-        make_unique<ReadAttribute>(Id, "NeighborTableList", Attributes::NeighborTableList::Id),                                 //
-        make_unique<ReadAttribute>(Id, "RouteTableList", Attributes::RouteTableList::Id),                                       //
-        make_unique<ReadAttribute>(Id, "PartitionId", Attributes::PartitionId::Id),                                             //
-        make_unique<ReadAttribute>(Id, "Weighting", Attributes::Weighting::Id),                                                 //
-        make_unique<ReadAttribute>(Id, "DataVersion", Attributes::DataVersion::Id),                                             //
-        make_unique<ReadAttribute>(Id, "StableDataVersion", Attributes::StableDataVersion::Id),                                 //
-        make_unique<ReadAttribute>(Id, "LeaderRouterId", Attributes::LeaderRouterId::Id),                                       //
-        make_unique<ReadAttribute>(Id, "DetachedRoleCount", Attributes::DetachedRoleCount::Id),                                 //
-        make_unique<ReadAttribute>(Id, "ChildRoleCount", Attributes::ChildRoleCount::Id),                                       //
-        make_unique<ReadAttribute>(Id, "RouterRoleCount", Attributes::RouterRoleCount::Id),                                     //
-        make_unique<ReadAttribute>(Id, "LeaderRoleCount", Attributes::LeaderRoleCount::Id),                                     //
-        make_unique<ReadAttribute>(Id, "AttachAttemptCount", Attributes::AttachAttemptCount::Id),                               //
-        make_unique<ReadAttribute>(Id, "PartitionIdChangeCount", Attributes::PartitionIdChangeCount::Id),                       //
-        make_unique<ReadAttribute>(Id, "BetterPartitionAttachAttemptCount", Attributes::BetterPartitionAttachAttemptCount::Id), //
-        make_unique<ReadAttribute>(Id, "ParentChangeCount", Attributes::ParentChangeCount::Id),                                 //
-        make_unique<ReadAttribute>(Id, "TxTotalCount", Attributes::TxTotalCount::Id),                                           //
-        make_unique<ReadAttribute>(Id, "TxUnicastCount", Attributes::TxUnicastCount::Id),                                       //
-        make_unique<ReadAttribute>(Id, "TxBroadcastCount", Attributes::TxBroadcastCount::Id),                                   //
-        make_unique<ReadAttribute>(Id, "TxAckRequestedCount", Attributes::TxAckRequestedCount::Id),                             //
-        make_unique<ReadAttribute>(Id, "TxAckedCount", Attributes::TxAckedCount::Id),                                           //
-        make_unique<ReadAttribute>(Id, "TxNoAckRequestedCount", Attributes::TxNoAckRequestedCount::Id),                         //
-        make_unique<ReadAttribute>(Id, "TxDataCount", Attributes::TxDataCount::Id),                                             //
-        make_unique<ReadAttribute>(Id, "TxDataPollCount", Attributes::TxDataPollCount::Id),                                     //
-        make_unique<ReadAttribute>(Id, "TxBeaconCount", Attributes::TxBeaconCount::Id),                                         //
-        make_unique<ReadAttribute>(Id, "TxBeaconRequestCount", Attributes::TxBeaconRequestCount::Id),                           //
-        make_unique<ReadAttribute>(Id, "TxOtherCount", Attributes::TxOtherCount::Id),                                           //
-        make_unique<ReadAttribute>(Id, "TxRetryCount", Attributes::TxRetryCount::Id),                                           //
-        make_unique<ReadAttribute>(Id, "TxDirectMaxRetryExpiryCount", Attributes::TxDirectMaxRetryExpiryCount::Id),             //
-        make_unique<ReadAttribute>(Id, "TxIndirectMaxRetryExpiryCount", Attributes::TxIndirectMaxRetryExpiryCount::Id),         //
-        make_unique<ReadAttribute>(Id, "TxErrCcaCount", Attributes::TxErrCcaCount::Id),                                         //
-        make_unique<ReadAttribute>(Id, "TxErrAbortCount", Attributes::TxErrAbortCount::Id),                                     //
-        make_unique<ReadAttribute>(Id, "TxErrBusyChannelCount", Attributes::TxErrBusyChannelCount::Id),                         //
-        make_unique<ReadAttribute>(Id, "RxTotalCount", Attributes::RxTotalCount::Id),                                           //
-        make_unique<ReadAttribute>(Id, "RxUnicastCount", Attributes::RxUnicastCount::Id),                                       //
-        make_unique<ReadAttribute>(Id, "RxBroadcastCount", Attributes::RxBroadcastCount::Id),                                   //
-        make_unique<ReadAttribute>(Id, "RxDataCount", Attributes::RxDataCount::Id),                                             //
-        make_unique<ReadAttribute>(Id, "RxDataPollCount", Attributes::RxDataPollCount::Id),                                     //
-        make_unique<ReadAttribute>(Id, "RxBeaconCount", Attributes::RxBeaconCount::Id),                                         //
-        make_unique<ReadAttribute>(Id, "RxBeaconRequestCount", Attributes::RxBeaconRequestCount::Id),                           //
-        make_unique<ReadAttribute>(Id, "RxOtherCount", Attributes::RxOtherCount::Id),                                           //
-        make_unique<ReadAttribute>(Id, "RxAddressFilteredCount", Attributes::RxAddressFilteredCount::Id),                       //
-        make_unique<ReadAttribute>(Id, "RxDestAddrFilteredCount", Attributes::RxDestAddrFilteredCount::Id),                     //
-        make_unique<ReadAttribute>(Id, "RxDuplicatedCount", Attributes::RxDuplicatedCount::Id),                                 //
-        make_unique<ReadAttribute>(Id, "RxErrNoFrameCount", Attributes::RxErrNoFrameCount::Id),                                 //
-        make_unique<ReadAttribute>(Id, "RxErrUnknownNeighborCount", Attributes::RxErrUnknownNeighborCount::Id),                 //
-        make_unique<ReadAttribute>(Id, "RxErrInvalidSrcAddrCount", Attributes::RxErrInvalidSrcAddrCount::Id),                   //
-        make_unique<ReadAttribute>(Id, "RxErrSecCount", Attributes::RxErrSecCount::Id),                                         //
-        make_unique<ReadAttribute>(Id, "RxErrFcsCount", Attributes::RxErrFcsCount::Id),                                         //
-        make_unique<ReadAttribute>(Id, "RxErrOtherCount", Attributes::RxErrOtherCount::Id),                                     //
-        make_unique<ReadAttribute>(Id, "ActiveTimestamp", Attributes::ActiveTimestamp::Id),                                     //
-        make_unique<ReadAttribute>(Id, "PendingTimestamp", Attributes::PendingTimestamp::Id),                                   //
-        make_unique<ReadAttribute>(Id, "Delay", Attributes::Delay::Id),                                                         //
-        make_unique<ReadAttribute>(Id, "SecurityPolicy", Attributes::SecurityPolicy::Id),                                       //
-        make_unique<ReadAttribute>(Id, "ChannelMask", Attributes::ChannelMask::Id),                                             //
-        make_unique<ReadAttribute>(Id, "OperationalDatasetComponents", Attributes::OperationalDatasetComponents::Id),           //
-        make_unique<ReadAttribute>(Id, "ActiveNetworkFaultsList", Attributes::ActiveNetworkFaultsList::Id),                     //
-        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),                                         //
-        make_unique<ReadAttribute>(Id, "FeatureMap", Attributes::FeatureMap::Id),                                               //
-        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                                     //
-        make_unique<ReportAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReportAttribute>(Id, "Channel", Attributes::Channel::Id),                                                     //
+        make_unique<ReadAttribute>(Id), make_unique<ReadAttribute>(Id, "Channel", Attributes::Channel::Id),                       //
+        make_unique<ReadAttribute>(Id, "RoutingRole", Attributes::RoutingRole::Id),                                               //
+        make_unique<ReadAttribute>(Id, "NetworkName", Attributes::NetworkName::Id),                                               //
+        make_unique<ReadAttribute>(Id, "PanId", Attributes::PanId::Id),                                                           //
+        make_unique<ReadAttribute>(Id, "ExtendedPanId", Attributes::ExtendedPanId::Id),                                           //
+        make_unique<ReadAttribute>(Id, "MeshLocalPrefix", Attributes::MeshLocalPrefix::Id),                                       //
+        make_unique<ReadAttribute>(Id, "OverrunCount", Attributes::OverrunCount::Id),                                             //
+        make_unique<ReadAttribute>(Id, "NeighborTableList", Attributes::NeighborTableList::Id),                                   //
+        make_unique<ReadAttribute>(Id, "RouteTableList", Attributes::RouteTableList::Id),                                         //
+        make_unique<ReadAttribute>(Id, "PartitionId", Attributes::PartitionId::Id),                                               //
+        make_unique<ReadAttribute>(Id, "Weighting", Attributes::Weighting::Id),                                                   //
+        make_unique<ReadAttribute>(Id, "DataVersion", Attributes::DataVersion::Id),                                               //
+        make_unique<ReadAttribute>(Id, "StableDataVersion", Attributes::StableDataVersion::Id),                                   //
+        make_unique<ReadAttribute>(Id, "LeaderRouterId", Attributes::LeaderRouterId::Id),                                         //
+        make_unique<ReadAttribute>(Id, "DetachedRoleCount", Attributes::DetachedRoleCount::Id),                                   //
+        make_unique<ReadAttribute>(Id, "ChildRoleCount", Attributes::ChildRoleCount::Id),                                         //
+        make_unique<ReadAttribute>(Id, "RouterRoleCount", Attributes::RouterRoleCount::Id),                                       //
+        make_unique<ReadAttribute>(Id, "LeaderRoleCount", Attributes::LeaderRoleCount::Id),                                       //
+        make_unique<ReadAttribute>(Id, "AttachAttemptCount", Attributes::AttachAttemptCount::Id),                                 //
+        make_unique<ReadAttribute>(Id, "PartitionIdChangeCount", Attributes::PartitionIdChangeCount::Id),                         //
+        make_unique<ReadAttribute>(Id, "BetterPartitionAttachAttemptCount", Attributes::BetterPartitionAttachAttemptCount::Id),   //
+        make_unique<ReadAttribute>(Id, "ParentChangeCount", Attributes::ParentChangeCount::Id),                                   //
+        make_unique<ReadAttribute>(Id, "TxTotalCount", Attributes::TxTotalCount::Id),                                             //
+        make_unique<ReadAttribute>(Id, "TxUnicastCount", Attributes::TxUnicastCount::Id),                                         //
+        make_unique<ReadAttribute>(Id, "TxBroadcastCount", Attributes::TxBroadcastCount::Id),                                     //
+        make_unique<ReadAttribute>(Id, "TxAckRequestedCount", Attributes::TxAckRequestedCount::Id),                               //
+        make_unique<ReadAttribute>(Id, "TxAckedCount", Attributes::TxAckedCount::Id),                                             //
+        make_unique<ReadAttribute>(Id, "TxNoAckRequestedCount", Attributes::TxNoAckRequestedCount::Id),                           //
+        make_unique<ReadAttribute>(Id, "TxDataCount", Attributes::TxDataCount::Id),                                               //
+        make_unique<ReadAttribute>(Id, "TxDataPollCount", Attributes::TxDataPollCount::Id),                                       //
+        make_unique<ReadAttribute>(Id, "TxBeaconCount", Attributes::TxBeaconCount::Id),                                           //
+        make_unique<ReadAttribute>(Id, "TxBeaconRequestCount", Attributes::TxBeaconRequestCount::Id),                             //
+        make_unique<ReadAttribute>(Id, "TxOtherCount", Attributes::TxOtherCount::Id),                                             //
+        make_unique<ReadAttribute>(Id, "TxRetryCount", Attributes::TxRetryCount::Id),                                             //
+        make_unique<ReadAttribute>(Id, "TxDirectMaxRetryExpiryCount", Attributes::TxDirectMaxRetryExpiryCount::Id),               //
+        make_unique<ReadAttribute>(Id, "TxIndirectMaxRetryExpiryCount", Attributes::TxIndirectMaxRetryExpiryCount::Id),           //
+        make_unique<ReadAttribute>(Id, "TxErrCcaCount", Attributes::TxErrCcaCount::Id),                                           //
+        make_unique<ReadAttribute>(Id, "TxErrAbortCount", Attributes::TxErrAbortCount::Id),                                       //
+        make_unique<ReadAttribute>(Id, "TxErrBusyChannelCount", Attributes::TxErrBusyChannelCount::Id),                           //
+        make_unique<ReadAttribute>(Id, "RxTotalCount", Attributes::RxTotalCount::Id),                                             //
+        make_unique<ReadAttribute>(Id, "RxUnicastCount", Attributes::RxUnicastCount::Id),                                         //
+        make_unique<ReadAttribute>(Id, "RxBroadcastCount", Attributes::RxBroadcastCount::Id),                                     //
+        make_unique<ReadAttribute>(Id, "RxDataCount", Attributes::RxDataCount::Id),                                               //
+        make_unique<ReadAttribute>(Id, "RxDataPollCount", Attributes::RxDataPollCount::Id),                                       //
+        make_unique<ReadAttribute>(Id, "RxBeaconCount", Attributes::RxBeaconCount::Id),                                           //
+        make_unique<ReadAttribute>(Id, "RxBeaconRequestCount", Attributes::RxBeaconRequestCount::Id),                             //
+        make_unique<ReadAttribute>(Id, "RxOtherCount", Attributes::RxOtherCount::Id),                                             //
+        make_unique<ReadAttribute>(Id, "RxAddressFilteredCount", Attributes::RxAddressFilteredCount::Id),                         //
+        make_unique<ReadAttribute>(Id, "RxDestAddrFilteredCount", Attributes::RxDestAddrFilteredCount::Id),                       //
+        make_unique<ReadAttribute>(Id, "RxDuplicatedCount", Attributes::RxDuplicatedCount::Id),                                   //
+        make_unique<ReadAttribute>(Id, "RxErrNoFrameCount", Attributes::RxErrNoFrameCount::Id),                                   //
+        make_unique<ReadAttribute>(Id, "RxErrUnknownNeighborCount", Attributes::RxErrUnknownNeighborCount::Id),                   //
+        make_unique<ReadAttribute>(Id, "RxErrInvalidSrcAddrCount", Attributes::RxErrInvalidSrcAddrCount::Id),                     //
+        make_unique<ReadAttribute>(Id, "RxErrSecCount", Attributes::RxErrSecCount::Id),                                           //
+        make_unique<ReadAttribute>(Id, "RxErrFcsCount", Attributes::RxErrFcsCount::Id),                                           //
+        make_unique<ReadAttribute>(Id, "RxErrOtherCount", Attributes::RxErrOtherCount::Id),                                       //
+        make_unique<ReadAttribute>(Id, "ActiveTimestamp", Attributes::ActiveTimestamp::Id),                                       //
+        make_unique<ReadAttribute>(Id, "PendingTimestamp", Attributes::PendingTimestamp::Id),                                     //
+        make_unique<ReadAttribute>(Id, "Delay", Attributes::Delay::Id),                                                           //
+        make_unique<ReadAttribute>(Id, "SecurityPolicy", Attributes::SecurityPolicy::Id),                                         //
+        make_unique<ReadAttribute>(Id, "ChannelMask", Attributes::ChannelMask::Id),                                               //
+        make_unique<ReadAttribute>(Id, "OperationalDatasetComponents", Attributes::OperationalDatasetComponents::Id),             //
+        make_unique<ReadAttribute>(Id, "ActiveNetworkFaultsList", Attributes::ActiveNetworkFaultsList::Id),                       //
+        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),                                           //
+        make_unique<ReadAttribute>(Id, "FeatureMap", Attributes::FeatureMap::Id),                                                 //
+        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                                       //
+        make_unique<ReportAttribute>(Id), make_unique<ReportAttribute>(Id, "Channel", Attributes::Channel::Id),                   //
         make_unique<ReportAttribute>(Id, "RoutingRole", Attributes::RoutingRole::Id),                                             //
         make_unique<ReportAttribute>(Id, "NetworkName", Attributes::NetworkName::Id),                                             //
         make_unique<ReportAttribute>(Id, "PanId", Attributes::PanId::Id),                                                         //
@@ -10750,10 +10662,8 @@ void registerClusterThreadNetworkDiagnostics(Commands & commands)
         //
         // Events
         //
-        make_unique<ReadEvent>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReadEvent>(Id, "ConnectionStatus", Events::ConnectionStatus::Id), //
-        make_unique<ReportEvent>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReportEvent>(Id, "ConnectionStatus", Events::ConnectionStatus::Id), //
+        make_unique<ReadEvent>(Id), make_unique<ReadEvent>(Id, "ConnectionStatus", Events::ConnectionStatus::Id),     //
+        make_unique<ReportEvent>(Id), make_unique<ReportEvent>(Id, "ConnectionStatus", Events::ConnectionStatus::Id), //
     };
 
     commands.Register(clusterName, clusterCommands);
@@ -10768,9 +10678,8 @@ void registerClusterUserLabel(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReadAttribute>(Id, "LabelList", Attributes::LabelList::Id),             //
-        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id), //
+        make_unique<ReadAttribute>(Id), make_unique<ReadAttribute>(Id, "LabelList", Attributes::LabelList::Id), //
+        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                     //
     };
 
     commands.Register(clusterName, clusterCommands);
@@ -10785,11 +10694,11 @@ void registerClusterWakeOnLan(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
+        make_unique<ReadAttribute>(Id),
         make_unique<ReadAttribute>(Id, "WakeOnLanMacAddress", Attributes::WakeOnLanMacAddress::Id), //
         make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),             //
         make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),         //
-        make_unique<ReportAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
+        make_unique<ReportAttribute>(Id),
         make_unique<ReportAttribute>(Id, "WakeOnLanMacAddress", Attributes::WakeOnLanMacAddress::Id), //
         make_unique<ReportAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),         //
     };
@@ -10810,25 +10719,23 @@ void registerClusterWiFiNetworkDiagnostics(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReadAttribute>(Id, "Bssid", Attributes::Bssid::Id),                                   //
-        make_unique<ReadAttribute>(Id, "SecurityType", Attributes::SecurityType::Id),                     //
-        make_unique<ReadAttribute>(Id, "WiFiVersion", Attributes::WiFiVersion::Id),                       //
-        make_unique<ReadAttribute>(Id, "ChannelNumber", Attributes::ChannelNumber::Id),                   //
-        make_unique<ReadAttribute>(Id, "Rssi", Attributes::Rssi::Id),                                     //
-        make_unique<ReadAttribute>(Id, "BeaconLostCount", Attributes::BeaconLostCount::Id),               //
-        make_unique<ReadAttribute>(Id, "BeaconRxCount", Attributes::BeaconRxCount::Id),                   //
-        make_unique<ReadAttribute>(Id, "PacketMulticastRxCount", Attributes::PacketMulticastRxCount::Id), //
-        make_unique<ReadAttribute>(Id, "PacketMulticastTxCount", Attributes::PacketMulticastTxCount::Id), //
-        make_unique<ReadAttribute>(Id, "PacketUnicastRxCount", Attributes::PacketUnicastRxCount::Id),     //
-        make_unique<ReadAttribute>(Id, "PacketUnicastTxCount", Attributes::PacketUnicastTxCount::Id),     //
-        make_unique<ReadAttribute>(Id, "CurrentMaxRate", Attributes::CurrentMaxRate::Id),                 //
-        make_unique<ReadAttribute>(Id, "OverrunCount", Attributes::OverrunCount::Id),                     //
-        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),                   //
-        make_unique<ReadAttribute>(Id, "FeatureMap", Attributes::FeatureMap::Id),                         //
-        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),               //
-        make_unique<ReportAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReportAttribute>(Id, "Bssid", Attributes::Bssid::Id),                                   //
+        make_unique<ReadAttribute>(Id), make_unique<ReadAttribute>(Id, "Bssid", Attributes::Bssid::Id),     //
+        make_unique<ReadAttribute>(Id, "SecurityType", Attributes::SecurityType::Id),                       //
+        make_unique<ReadAttribute>(Id, "WiFiVersion", Attributes::WiFiVersion::Id),                         //
+        make_unique<ReadAttribute>(Id, "ChannelNumber", Attributes::ChannelNumber::Id),                     //
+        make_unique<ReadAttribute>(Id, "Rssi", Attributes::Rssi::Id),                                       //
+        make_unique<ReadAttribute>(Id, "BeaconLostCount", Attributes::BeaconLostCount::Id),                 //
+        make_unique<ReadAttribute>(Id, "BeaconRxCount", Attributes::BeaconRxCount::Id),                     //
+        make_unique<ReadAttribute>(Id, "PacketMulticastRxCount", Attributes::PacketMulticastRxCount::Id),   //
+        make_unique<ReadAttribute>(Id, "PacketMulticastTxCount", Attributes::PacketMulticastTxCount::Id),   //
+        make_unique<ReadAttribute>(Id, "PacketUnicastRxCount", Attributes::PacketUnicastRxCount::Id),       //
+        make_unique<ReadAttribute>(Id, "PacketUnicastTxCount", Attributes::PacketUnicastTxCount::Id),       //
+        make_unique<ReadAttribute>(Id, "CurrentMaxRate", Attributes::CurrentMaxRate::Id),                   //
+        make_unique<ReadAttribute>(Id, "OverrunCount", Attributes::OverrunCount::Id),                       //
+        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),                     //
+        make_unique<ReadAttribute>(Id, "FeatureMap", Attributes::FeatureMap::Id),                           //
+        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                 //
+        make_unique<ReportAttribute>(Id), make_unique<ReportAttribute>(Id, "Bssid", Attributes::Bssid::Id), //
         make_unique<ReportAttribute>(Id, "SecurityType", Attributes::SecurityType::Id),                     //
         make_unique<ReportAttribute>(Id, "WiFiVersion", Attributes::WiFiVersion::Id),                       //
         make_unique<ReportAttribute>(Id, "ChannelNumber", Attributes::ChannelNumber::Id),                   //
@@ -10845,14 +10752,12 @@ void registerClusterWiFiNetworkDiagnostics(Commands & commands)
         //
         // Events
         //
-        make_unique<ReadEvent>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReadEvent>(Id, "Disconnection", Events::Disconnection::Id),           //
-        make_unique<ReadEvent>(Id, "AssociationFailure", Events::AssociationFailure::Id), //
-        make_unique<ReadEvent>(Id, "ConnectionStatus", Events::ConnectionStatus::Id),     //
-        make_unique<ReportEvent>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReportEvent>(Id, "Disconnection", Events::Disconnection::Id),           //
-        make_unique<ReportEvent>(Id, "AssociationFailure", Events::AssociationFailure::Id), //
-        make_unique<ReportEvent>(Id, "ConnectionStatus", Events::ConnectionStatus::Id),     //
+        make_unique<ReadEvent>(Id), make_unique<ReadEvent>(Id, "Disconnection", Events::Disconnection::Id),     //
+        make_unique<ReadEvent>(Id, "AssociationFailure", Events::AssociationFailure::Id),                       //
+        make_unique<ReadEvent>(Id, "ConnectionStatus", Events::ConnectionStatus::Id),                           //
+        make_unique<ReportEvent>(Id), make_unique<ReportEvent>(Id, "Disconnection", Events::Disconnection::Id), //
+        make_unique<ReportEvent>(Id, "AssociationFailure", Events::AssociationFailure::Id),                     //
+        make_unique<ReportEvent>(Id, "ConnectionStatus", Events::ConnectionStatus::Id),                         //
     };
 
     commands.Register(clusterName, clusterCommands);
@@ -10877,31 +10782,29 @@ void registerClusterWindowCovering(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReadAttribute>(Id, "Type", Attributes::Type::Id),                                                         //
-        make_unique<ReadAttribute>(Id, "CurrentPositionLift", Attributes::CurrentPositionLift::Id),                           //
-        make_unique<ReadAttribute>(Id, "CurrentPositionTilt", Attributes::CurrentPositionTilt::Id),                           //
-        make_unique<ReadAttribute>(Id, "ConfigStatus", Attributes::ConfigStatus::Id),                                         //
-        make_unique<ReadAttribute>(Id, "CurrentPositionLiftPercentage", Attributes::CurrentPositionLiftPercentage::Id),       //
-        make_unique<ReadAttribute>(Id, "CurrentPositionTiltPercentage", Attributes::CurrentPositionTiltPercentage::Id),       //
-        make_unique<ReadAttribute>(Id, "OperationalStatus", Attributes::OperationalStatus::Id),                               //
-        make_unique<ReadAttribute>(Id, "TargetPositionLiftPercent100ths", Attributes::TargetPositionLiftPercent100ths::Id),   //
-        make_unique<ReadAttribute>(Id, "TargetPositionTiltPercent100ths", Attributes::TargetPositionTiltPercent100ths::Id),   //
-        make_unique<ReadAttribute>(Id, "EndProductType", Attributes::EndProductType::Id),                                     //
-        make_unique<ReadAttribute>(Id, "CurrentPositionLiftPercent100ths", Attributes::CurrentPositionLiftPercent100ths::Id), //
-        make_unique<ReadAttribute>(Id, "CurrentPositionTiltPercent100ths", Attributes::CurrentPositionTiltPercent100ths::Id), //
-        make_unique<ReadAttribute>(Id, "InstalledOpenLimitLift", Attributes::InstalledOpenLimitLift::Id),                     //
-        make_unique<ReadAttribute>(Id, "InstalledClosedLimitLift", Attributes::InstalledClosedLimitLift::Id),                 //
-        make_unique<ReadAttribute>(Id, "InstalledOpenLimitTilt", Attributes::InstalledOpenLimitTilt::Id),                     //
-        make_unique<ReadAttribute>(Id, "InstalledClosedLimitTilt", Attributes::InstalledClosedLimitTilt::Id),                 //
-        make_unique<ReadAttribute>(Id, "Mode", Attributes::Mode::Id),                                                         //
-        make_unique<ReadAttribute>(Id, "SafetyStatus", Attributes::SafetyStatus::Id),                                         //
-        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),                                       //
-        make_unique<ReadAttribute>(Id, "FeatureMap", Attributes::FeatureMap::Id),                                             //
-        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                                   //
-        make_unique<WriteWindowCoveringMode>(),                                                                               //
-        make_unique<ReportAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReportAttribute>(Id, "Type", Attributes::Type::Id),                                                         //
+        make_unique<ReadAttribute>(Id), make_unique<ReadAttribute>(Id, "Type", Attributes::Type::Id),                           //
+        make_unique<ReadAttribute>(Id, "CurrentPositionLift", Attributes::CurrentPositionLift::Id),                             //
+        make_unique<ReadAttribute>(Id, "CurrentPositionTilt", Attributes::CurrentPositionTilt::Id),                             //
+        make_unique<ReadAttribute>(Id, "ConfigStatus", Attributes::ConfigStatus::Id),                                           //
+        make_unique<ReadAttribute>(Id, "CurrentPositionLiftPercentage", Attributes::CurrentPositionLiftPercentage::Id),         //
+        make_unique<ReadAttribute>(Id, "CurrentPositionTiltPercentage", Attributes::CurrentPositionTiltPercentage::Id),         //
+        make_unique<ReadAttribute>(Id, "OperationalStatus", Attributes::OperationalStatus::Id),                                 //
+        make_unique<ReadAttribute>(Id, "TargetPositionLiftPercent100ths", Attributes::TargetPositionLiftPercent100ths::Id),     //
+        make_unique<ReadAttribute>(Id, "TargetPositionTiltPercent100ths", Attributes::TargetPositionTiltPercent100ths::Id),     //
+        make_unique<ReadAttribute>(Id, "EndProductType", Attributes::EndProductType::Id),                                       //
+        make_unique<ReadAttribute>(Id, "CurrentPositionLiftPercent100ths", Attributes::CurrentPositionLiftPercent100ths::Id),   //
+        make_unique<ReadAttribute>(Id, "CurrentPositionTiltPercent100ths", Attributes::CurrentPositionTiltPercent100ths::Id),   //
+        make_unique<ReadAttribute>(Id, "InstalledOpenLimitLift", Attributes::InstalledOpenLimitLift::Id),                       //
+        make_unique<ReadAttribute>(Id, "InstalledClosedLimitLift", Attributes::InstalledClosedLimitLift::Id),                   //
+        make_unique<ReadAttribute>(Id, "InstalledOpenLimitTilt", Attributes::InstalledOpenLimitTilt::Id),                       //
+        make_unique<ReadAttribute>(Id, "InstalledClosedLimitTilt", Attributes::InstalledClosedLimitTilt::Id),                   //
+        make_unique<ReadAttribute>(Id, "Mode", Attributes::Mode::Id),                                                           //
+        make_unique<ReadAttribute>(Id, "SafetyStatus", Attributes::SafetyStatus::Id),                                           //
+        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),                                         //
+        make_unique<ReadAttribute>(Id, "FeatureMap", Attributes::FeatureMap::Id),                                               //
+        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                                     //
+        make_unique<WriteWindowCoveringMode>(),                                                                                 //
+        make_unique<ReportAttribute>(Id), make_unique<ReportAttribute>(Id, "Type", Attributes::Type::Id),                       //
         make_unique<ReportAttribute>(Id, "CurrentPositionLift", Attributes::CurrentPositionLift::Id),                           //
         make_unique<ReportAttribute>(Id, "CurrentPositionTilt", Attributes::CurrentPositionTilt::Id),                           //
         make_unique<ReportAttribute>(Id, "ConfigStatus", Attributes::ConfigStatus::Id),                                         //
@@ -10926,15 +10829,15 @@ void registerClusterWindowCovering(Commands & commands)
     commands.Register(clusterName, clusterCommands);
 }
 
-void registerClusterWildcard(Commands & commands)
+void registerClusterAny(Commands & commands)
 {
-    const char * clusterName = "0xffffffff";
+    const char * clusterName = "Any";
 
     commands_list clusterCommands = {
-        make_unique<ReadAttribute>(chip::kInvalidClusterId, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReportAttribute>(chip::kInvalidClusterId, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReadEvent>(chip::kInvalidClusterId, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReportEvent>(chip::kInvalidClusterId, "0xffffffff", chip::kInvalidAttributeId),
+        make_unique<ReadAttribute>(),
+        make_unique<ReportAttribute>(),
+        make_unique<ReadEvent>(),
+        make_unique<ReportEvent>(),
     };
 
     commands.Register(clusterName, clusterCommands);
@@ -10942,7 +10845,7 @@ void registerClusterWildcard(Commands & commands)
 
 void registerClusters(Commands & commands)
 {
-    registerClusterWildcard(commands);
+    registerClusterAny(commands);
     registerClusterAccessControl(commands);
     registerClusterAccountLogin(commands);
     registerClusterAdministratorCommissioning(commands);
