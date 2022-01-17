@@ -135,7 +135,7 @@ void registerCluster{{asUpperCamelCase name}}(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
+        make_unique<ReadAttribute>(Id),
         {{/first}}
         make_unique<ReadAttribute>(Id, "{{asUpperCamelCase name}}", Attributes::{{asUpperCamelCase name}}::Id), //
         {{/chip_server_cluster_attributes}}
@@ -152,7 +152,7 @@ void registerCluster{{asUpperCamelCase name}}(Commands & commands)
         {{/unless}}
         {{/chip_server_cluster_attributes}}
         {{#if (chip_server_has_reportable_attributes)}}
-        make_unique<ReportAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
+        make_unique<ReportAttribute>(Id),
         {{#chip_server_cluster_attributes}}
         {{#if isReportableAttribute}}
         make_unique<ReportAttribute>(Id, "{{asUpperCamelCase name}}", Attributes::{{asUpperCamelCase name}}::Id), //
@@ -164,13 +164,13 @@ void registerCluster{{asUpperCamelCase name}}(Commands & commands)
         //
         // Events
         //
-        make_unique<ReadEvent>(Id, "0xffffffff", chip::kInvalidAttributeId),
+        make_unique<ReadEvent>(Id),
         {{/first}}
         make_unique<ReadEvent>(Id, "{{asUpperCamelCase name}}", Events::{{asUpperCamelCase name}}::Id), //
         {{/chip_server_cluster_events}}
         {{#chip_server_cluster_events}}
         {{#first}}
-        make_unique<ReportEvent>(Id, "0xffffffff", chip::kInvalidAttributeId),
+        make_unique<ReportEvent>(Id),
         {{/first}}
         make_unique<ReportEvent>(Id, "{{asUpperCamelCase name}}", Events::{{asUpperCamelCase name}}::Id), //
         {{/chip_server_cluster_events}}
@@ -180,15 +180,15 @@ void registerCluster{{asUpperCamelCase name}}(Commands & commands)
 }
 {{/chip_client_clusters}}
 
-void registerClusterWildcard(Commands & commands)
+void registerClusterAny(Commands & commands)
 {
-    const char * clusterName = "0xffffffff";
+    const char * clusterName = "Any";
 
     commands_list clusterCommands = {
-        make_unique<ReadAttribute>(chip::kInvalidClusterId, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReportAttribute>(chip::kInvalidClusterId, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReadEvent>(chip::kInvalidClusterId, "0xffffffff", chip::kInvalidAttributeId),
-        make_unique<ReportEvent>(chip::kInvalidClusterId, "0xffffffff", chip::kInvalidAttributeId),
+        make_unique<ReadAttribute>(),
+        make_unique<ReportAttribute>(),
+        make_unique<ReadEvent>(),
+        make_unique<ReportEvent>(),
     };
 
     commands.Register(clusterName, clusterCommands);
@@ -196,7 +196,7 @@ void registerClusterWildcard(Commands & commands)
 
 void registerClusters(Commands & commands)
 {
-    registerClusterWildcard(commands);
+    registerClusterAny(commands);
 {{#chip_client_clusters}}
     registerCluster{{asUpperCamelCase name}}(commands);
 {{/chip_client_clusters}}

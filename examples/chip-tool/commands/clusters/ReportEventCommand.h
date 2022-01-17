@@ -23,8 +23,26 @@
 class ReportEvent : public ModelCommand
 {
 public:
+    ReportEvent() : ModelCommand("report-event-by-id")
+    {
+        AddArgument("cluster-id", 0, UINT32_MAX, &mClusterId);
+        AddArgument("event-id", 0, UINT32_MAX, &mEventId);
+        AddArgument("min-interval", 0, UINT16_MAX, &mMinInterval);
+        AddArgument("max-interval", 0, UINT16_MAX, &mMaxInterval);
+        AddArgument("wait", 0, 1, &mWait);
+        ModelCommand::AddArguments();
+    }
+
+    ReportEvent(chip::ClusterId clusterId) : ModelCommand("report-event-by-id"), mClusterId(clusterId)
+    {
+        AddArgument("event-id", 0, UINT32_MAX, &mEventId);
+        AddArgument("min-interval", 0, UINT16_MAX, &mMinInterval);
+        AddArgument("max-interval", 0, UINT16_MAX, &mMaxInterval);
+        AddArgument("wait", 0, 1, &mWait);
+        ModelCommand::AddArguments();
+    }
     ReportEvent(chip::ClusterId clusterId, const char * eventName, chip::EventId eventId) :
-        ModelCommand("report"), mClusterId(clusterId), mEventId(eventId)
+        ModelCommand("report-event"), mClusterId(clusterId), mEventId(eventId)
     {
         AddArgument("attr-name", eventName);
         AddArgument("min-interval", 0, UINT16_MAX, &mMinInterval);

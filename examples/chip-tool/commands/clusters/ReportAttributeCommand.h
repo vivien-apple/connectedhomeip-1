@@ -23,6 +23,25 @@
 class ReportAttribute : public ModelCommand
 {
 public:
+    ReportAttribute() : ModelCommand("report-by-id")
+    {
+        AddArgument("cluster-id", 0, UINT32_MAX, &mClusterId);
+        AddArgument("attribute-id", 0, UINT32_MAX, &mAttributeId);
+        AddArgument("min-interval", 0, UINT16_MAX, &mMinInterval);
+        AddArgument("max-interval", 0, UINT16_MAX, &mMaxInterval);
+        AddArgument("wait", 0, 1, &mWait);
+        ModelCommand::AddArguments();
+    }
+
+    ReportAttribute(chip::ClusterId clusterId) : ModelCommand("report-by-id"), mClusterId(clusterId)
+    {
+        AddArgument("attribute-id", 0, UINT32_MAX, &mAttributeId);
+        AddArgument("min-interval", 0, UINT16_MAX, &mMinInterval);
+        AddArgument("max-interval", 0, UINT16_MAX, &mMaxInterval);
+        AddArgument("wait", 0, 1, &mWait);
+        ModelCommand::AddArguments();
+    }
+
     ReportAttribute(chip::ClusterId clusterId, const char * attributeName, chip::AttributeId attributeId) :
         ModelCommand("report"), mClusterId(clusterId), mAttributeId(attributeId)
     {

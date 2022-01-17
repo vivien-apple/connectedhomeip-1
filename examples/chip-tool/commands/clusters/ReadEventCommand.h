@@ -23,6 +23,19 @@
 class ReadEvent : public ModelCommand
 {
 public:
+    ReadEvent() : ModelCommand("read-event-by-id")
+    {
+        AddArgument("cluster-id", 0, UINT32_MAX, &mClusterId);
+        AddArgument("event-id", 0, UINT32_MAX, &mEventId);
+        ModelCommand::AddArguments();
+    }
+
+    ReadEvent(chip::ClusterId clusterId) : ModelCommand("read-event-by-id"), mClusterId(clusterId)
+    {
+        AddArgument("event-id", 0, UINT32_MAX, &mEventId);
+        ModelCommand::AddArguments();
+    }
+
     ReadEvent(chip::ClusterId clusterId, const char * eventName, chip::EventId eventId) :
         ModelCommand("read-event"), mClusterId(clusterId), mEventId(eventId)
     {

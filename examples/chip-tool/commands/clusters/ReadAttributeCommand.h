@@ -23,6 +23,19 @@
 class ReadAttribute : public ModelCommand
 {
 public:
+    ReadAttribute() : ModelCommand("read-by-id")
+    {
+        AddArgument("cluster-id", 0, UINT32_MAX, &mClusterId);
+        AddArgument("attribute-id", 0, UINT32_MAX, &mAttributeId);
+        ModelCommand::AddArguments();
+    }
+
+    ReadAttribute(chip::ClusterId clusterId) : ModelCommand("read-by-id"), mClusterId(clusterId)
+    {
+        AddArgument("attribute-id", 0, UINT32_MAX, &mAttributeId);
+        ModelCommand::AddArguments();
+    }
+
     ReadAttribute(chip::ClusterId clusterId, const char * attributeName, chip::AttributeId attributeId) :
         ModelCommand("read"), mClusterId(clusterId), mAttributeId(attributeId)
     {
