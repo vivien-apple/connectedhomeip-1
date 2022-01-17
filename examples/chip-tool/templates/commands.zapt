@@ -8,6 +8,10 @@
 
 #include <app-common/zap-generated/cluster-objects.h>
 #include <commands/clusters/ModelCommand.h>
+#include <commands/clusters/ReadAttributeCommand.h>
+#include <commands/clusters/ReadEventCommand.h>
+#include <commands/clusters/ReportAttributeCommand.h>
+#include <commands/clusters/ReportEventCommand.h>
 
 {{> clusters_header}}
 
@@ -63,219 +67,9 @@ private:
 
 {{/chip_cluster_commands}}
 
-/*
- * Event Wildcard
- */
-class ReadEvent{{asUpperCamelCase name}}Wildcard: public ModelCommand
-{
-public:
-    ReadEvent{{asUpperCamelCase name}}Wildcard(): ModelCommand("read-event")
-    {
-        AddArgument("event-name", "0xffffffff");
-        ModelCommand::AddArguments();
-    }
-
-    ~ReadEvent{{asUpperCamelCase name}}Wildcard()
-    {
-    }
-
-    CHIP_ERROR SendCommand(ChipDevice * device, chip::EndpointId endpointId) override
-    {
-        return ReadEvent(device, endpointId, {{asHex code 8}}, chip::kInvalidEventId);
-    }
-};
-
-class ReportEvent{{asUpperCamelCase name}}Wildcard: public ModelCommand
-{
-public:
-    ReportEvent{{asUpperCamelCase name}}Wildcard(): ModelCommand("report-event")
-    {
-        AddArgument("event-name", "0xffffffff");
-        AddArgument("min-interval", 0, UINT16_MAX, &mMinInterval);
-        AddArgument("max-interval", 0, UINT16_MAX, &mMaxInterval);
-        AddArgument("wait", 0, 1, &mWait);
-        ModelCommand::AddArguments();
-    }
-
-    ~ReportEvent{{asUpperCamelCase name}}Wildcard()
-    {
-    }
-
-    CHIP_ERROR SendCommand(ChipDevice * device, chip::EndpointId endpointId) override
-    {
-        return SubscribeEvent(device, endpointId, {{asHex code 8}}, chip::kInvalidEventId, mMinInterval, mMaxInterval);
-    }
-
-    chip::System::Clock::Timeout GetWaitDuration() const override
-    {
-        return chip::System::Clock::Seconds16(mWait ? UINT16_MAX : 10);
-    }
-
-    void OnEventSubscription() override
-    {
-        if (!mWait)
-        {
-            SetCommandExitStatus(CHIP_NO_ERROR);
-        }
-    }
-
-private:
-    uint16_t mMinInterval;
-    uint16_t mMaxInterval;
-    bool mWait;
-};
-
-{{#chip_server_cluster_events}}
-/*
- * Event {{asUpperCamelCase name}}
- */
-class Read{{asUpperCamelCase parent.name}}{{asUpperCamelCase name}}: public ModelCommand
-{
-public:
-    Read{{asUpperCamelCase parent.name}}{{asUpperCamelCase name}}(): ModelCommand("read-event")
-    {
-        AddArgument("event-name", "{{asDelimitedCommand (asUpperCamelCase name)}}");
-        ModelCommand::AddArguments();
-    }
-
-    ~Read{{asUpperCamelCase parent.name}}{{asUpperCamelCase name}}()
-    {
-    }
-
-    CHIP_ERROR SendCommand(ChipDevice * device, chip::EndpointId endpointId) override
-    {
-        return ReadEvent(device, endpointId, {{asHex parent.code 8}}, {{asHex code 8}});
-    }
-};
-
-class Report{{asUpperCamelCase parent.name}}{{asUpperCamelCase name}}: public ModelCommand
-{
-public:
-    Report{{asUpperCamelCase parent.name}}{{asUpperCamelCase name}}(): ModelCommand("report-event")
-    {
-        AddArgument("event-name", "{{asDelimitedCommand (asUpperCamelCase name)}}");
-        AddArgument("min-interval", 0, UINT16_MAX, &mMinInterval);
-        AddArgument("max-interval", 0, UINT16_MAX, &mMaxInterval);
-        AddArgument("wait", 0, 1, &mWait);
-        ModelCommand::AddArguments();
-    }
-
-    ~Report{{asUpperCamelCase parent.name}}{{asUpperCamelCase name}}()
-    {
-    }
-
-    CHIP_ERROR SendCommand(ChipDevice * device, chip::EndpointId endpointId) override
-    {
-        return SubscribeEvent(device, endpointId, {{asHex parent.code 8}}, {{asHex code 8}}, mMinInterval, mMaxInterval);
-    }
-
-    chip::System::Clock::Timeout GetWaitDuration() const override
-    {
-        return chip::System::Clock::Seconds16(mWait ? UINT16_MAX : 10);
-    }
-
-    void OnEventSubscription() override
-    {
-        if (!mWait)
-        {
-            SetCommandExitStatus(CHIP_NO_ERROR);
-        }
-    }
-
-private:
-    uint16_t mMinInterval;
-    uint16_t mMaxInterval;
-    bool mWait;
-};
-{{/chip_server_cluster_events}}
-
-/*
- * Attribute wildcard
- */
-class Read{{asUpperCamelCase name}}Wildcard: public ModelCommand
-{
-public:
-    Read{{asUpperCamelCase name}}Wildcard(): ModelCommand("read")
-    {
-        AddArgument("attr-name", "0xffffffff");
-        ModelCommand::AddArguments();
-    }
-
-    ~Read{{asUpperCamelCase name}}Wildcard()
-    {
-    }
-
-    CHIP_ERROR SendCommand(ChipDevice * device, chip::EndpointId endpointId) override
-    {
-        return ReadAttribute(device, endpointId, {{asHex code 8}}, chip::kInvalidAttributeId);
-    }
-};
-
-class Report{{asUpperCamelCase name}}Wildcard: public ModelCommand
-{
-public:
-    Report{{asUpperCamelCase name}}Wildcard(): ModelCommand("report")
-    {
-        AddArgument("attr-name", "0xffffffff");
-        AddArgument("min-interval", 0, UINT16_MAX, &mMinInterval);
-        AddArgument("max-interval", 0, UINT16_MAX, &mMaxInterval);
-        AddArgument("wait", 0, 1, &mWait);
-        ModelCommand::AddArguments();
-    }
-
-    ~Report{{asUpperCamelCase name}}Wildcard()
-    {
-    }
-
-    CHIP_ERROR SendCommand(ChipDevice * device, chip::EndpointId endpointId) override
-    {
-        return SubscribeAttribute(device, endpointId, {{asHex code 8}}, chip::kInvalidAttributeId, mMinInterval, mMaxInterval);
-    }
-
-    chip::System::Clock::Timeout GetWaitDuration() const override
-    {
-        return chip::System::Clock::Seconds16(mWait ? UINT16_MAX : 10);
-    }
-
-    void OnAttributeSubscription() override
-    {
-        if (!mWait)
-        {
-            SetCommandExitStatus(CHIP_NO_ERROR);
-        }
-    }
-
-private:
-    uint16_t mMinInterval;
-    uint16_t mMaxInterval;
-    bool mWait;
-};
-
 {{#chip_server_cluster_attributes}}
 {{! TODO: Various types (floats, structs) not supported here. }}
 {{#unless (isStrEqual chipCallback.name "Unsupported")}}
-/*
- * Attribute {{asUpperCamelCase name}}
- */
-class Read{{asUpperCamelCase parent.name}}{{asUpperCamelCase name}}: public ModelCommand
-{
-public:
-    Read{{asUpperCamelCase parent.name}}{{asUpperCamelCase name}}(): ModelCommand("read")
-    {
-        AddArgument("attr-name", "{{asDelimitedCommand (asUpperCamelCase name)}}");
-        ModelCommand::AddArguments();
-    }
-
-    ~Read{{asUpperCamelCase parent.name}}{{asUpperCamelCase name}}()
-    {
-    }
-
-    CHIP_ERROR SendCommand(ChipDevice * device, chip::EndpointId endpointId) override
-    {
-        return ReadAttribute(device, endpointId, {{asHex parent.code 8}}, {{asHex code 8}});
-    }
-};
-
 {{#if isWritableAttribute}}
 {{! No list support for writing yet.  Need to figure out how to represent the
     values. }}
@@ -313,172 +107,9 @@ private:
 
 {{/unless}}
 {{/if}}
-{{#if isReportableAttribute}}
-class Report{{asUpperCamelCase parent.name}}{{asUpperCamelCase name}}: public ModelCommand
-{
-public:
-    Report{{asUpperCamelCase parent.name}}{{asUpperCamelCase name}}(): ModelCommand("report")
-    {
-        AddArgument("attr-name", "{{asDelimitedCommand (asUpperCamelCase name)}}");
-        AddArgument("min-interval", 0, UINT16_MAX, &mMinInterval);
-        AddArgument("max-interval", 0, UINT16_MAX, &mMaxInterval);
-        AddArgument("wait", 0, 1, &mWait);
-        ModelCommand::AddArguments();
-    }
-
-    ~Report{{asUpperCamelCase parent.name}}{{asUpperCamelCase name}}()
-    {
-    }
-
-    CHIP_ERROR SendCommand(ChipDevice * device, chip::EndpointId endpointId) override
-    {
-        return SubscribeAttribute(device, endpointId, {{asHex parent.code 8}}, {{asHex code 8}}, mMinInterval, mMaxInterval);
-    }
-
-    chip::System::Clock::Timeout GetWaitDuration() const override
-    {
-        return chip::System::Clock::Seconds16(mWait ? UINT16_MAX : 10);
-    }
-
-    void OnAttributeSubscription() override
-    {
-        if (!mWait)
-        {
-            SetCommandExitStatus(CHIP_NO_ERROR);
-        }
-    }
-
-private:
-    uint16_t mMinInterval;
-    uint16_t mMaxInterval;
-    bool mWait;
-};
-
-{{/if}}
 {{/unless}}
 {{/chip_server_cluster_attributes}}
 {{/chip_client_clusters}}
-
-/*
- * Event Wildcard
- */
-class ReadEventWildcard: public ModelCommand
-{
-public:
-    ReadEventWildcard(): ModelCommand("read-event")
-    {
-        AddArgument("attr-name", "0xffffffff");
-        ModelCommand::AddArguments();
-    }
-
-    ~ReadEventWildcard()
-    {
-    }
-
-    CHIP_ERROR SendCommand(ChipDevice * device, chip::EndpointId endpointId) override
-    {
-        return ReadEvent(device, endpointId, chip::kInvalidClusterId, chip::kInvalidEventId);
-    }
-};
-
-class ReportEventWildcard: public ModelCommand
-{
-public:
-    ReportEventWildcard(): ModelCommand("report-event")
-    {
-        AddArgument("attr-name", "0xffffffff");
-        AddArgument("min-interval", 0, UINT16_MAX, &mMinInterval);
-        AddArgument("max-interval", 0, UINT16_MAX, &mMaxInterval);
-        AddArgument("wait", 0, 1, &mWait);
-        ModelCommand::AddArguments();
-    }
-
-    ~ReportEventWildcard()
-    {
-    }
-
-    CHIP_ERROR SendCommand(ChipDevice * device, chip::EndpointId endpointId) override
-    {
-        return SubscribeEvent(device, endpointId, chip::kInvalidClusterId, chip::kInvalidEventId, mMinInterval, mMaxInterval);
-    }
-
-    chip::System::Clock::Timeout GetWaitDuration() const override
-    {
-        return chip::System::Clock::Seconds16(mWait ? UINT16_MAX : 10);
-    }
-
-    void OnEventSubscription() override
-    {
-        if (!mWait)
-        {
-            SetCommandExitStatus(CHIP_NO_ERROR);
-        }
-    }
-
-private:
-    uint16_t mMinInterval;
-    uint16_t mMaxInterval;
-    bool mWait;
-};
-
-class ReadWildcard: public ModelCommand
-{
-public:
-    ReadWildcard(): ModelCommand("read")
-    {
-        AddArgument("attr-name", "0xffffffff");
-        ModelCommand::AddArguments();
-    }
-
-    ~ReadWildcard()
-    {
-    }
-
-    CHIP_ERROR SendCommand(ChipDevice * device, chip::EndpointId endpointId) override
-    {
-        return ReadAttribute(device, endpointId, chip::kInvalidClusterId, chip::kInvalidAttributeId);
-    }
-};
-
-class ReportWildcard: public ModelCommand
-{
-public:
-    ReportWildcard(): ModelCommand("report")
-    {
-        AddArgument("attr-name", "0xffffffff");
-        AddArgument("min-interval", 0, UINT16_MAX, &mMinInterval);
-        AddArgument("max-interval", 0, UINT16_MAX, &mMaxInterval);
-        AddArgument("wait", 0, 1, &mWait);
-        ModelCommand::AddArguments();
-    }
-
-    ~ReportWildcard()
-    {
-    }
-
-    CHIP_ERROR SendCommand(ChipDevice * device, chip::EndpointId endpointId) override
-    {
-        return SubscribeAttribute(device, endpointId, chip::kInvalidClusterId, chip::kInvalidAttributeId, mMinInterval, mMaxInterval);
-    }
-
-    chip::System::Clock::Timeout GetWaitDuration() const override
-    {
-        return chip::System::Clock::Seconds16(mWait ? UINT16_MAX : 10);
-    }
-
-    void OnAttributeSubscription() override
-    {
-        if (!mWait)
-        {
-            SetCommandExitStatus(CHIP_NO_ERROR);
-        }
-    }
-
-private:
-    uint16_t mMinInterval;
-    uint16_t mMaxInterval;
-    bool mWait;
-};
 
 /*----------------------------------------------------------------------------*\
 | Register all Clusters commands                                               |
@@ -486,18 +117,31 @@ private:
 {{#chip_client_clusters}}
 void registerCluster{{asUpperCamelCase name}}(Commands & commands)
 {
+    using namespace chip::app::Clusters::{{asUpperCamelCase name}};
+
     const char * clusterName = "{{asUpperCamelCase name}}";
 
     commands_list clusterCommands = {
         {{#chip_cluster_commands}}
+        {{#first}}
+        //
+        // Commands
+        //
+        {{/first}}
         make_unique<{{asUpperCamelCase clusterName}}{{asUpperCamelCase name}}>(), //
         {{/chip_cluster_commands}}
-        make_unique<Read{{asUpperCamelCase name}}Wildcard>(), //
-        make_unique<Report{{asUpperCamelCase name}}Wildcard>(), //
+        {{#chip_server_cluster_attributes}}
+        {{#first}}
+        //
+        // Attributes
+        //
+        make_unique<ReadAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
+        {{/first}}
+        make_unique<ReadAttribute>(Id, "{{asUpperCamelCase name}}", Attributes::{{asUpperCamelCase name}}::Id), //
+        {{/chip_server_cluster_attributes}}
         {{#chip_server_cluster_attributes}}
         {{! TODO: Various types (floats, structs) not supported here. }}
         {{#unless (isStrEqual chipCallback.name "Unsupported")}}
-        make_unique<Read{{asUpperCamelCase parent.name}}{{asUpperCamelCase name}}>(), //
         {{#if isWritableAttribute}}
         {{! No list support for writing yet.  Need to figure out how to
             represent the values. }}
@@ -505,18 +149,30 @@ void registerCluster{{asUpperCamelCase name}}(Commands & commands)
         make_unique<Write{{asUpperCamelCase parent.name}}{{asUpperCamelCase name}}>(), //
         {{/unless}}
         {{/if}}
-        {{#if isReportableAttribute}}
-        {{#unless isList}}
-        make_unique<Report{{asUpperCamelCase parent.name}}{{asUpperCamelCase name}}>(), //
-        {{/unless}}
-        {{/if}}
         {{/unless}}
         {{/chip_server_cluster_attributes}}
-        make_unique<ReadEvent{{asUpperCamelCase name}}Wildcard>(), //
-        make_unique<ReportEvent{{asUpperCamelCase name}}Wildcard>(), //
+        {{#if (chip_server_has_reportable_attributes)}}
+        make_unique<ReportAttribute>(Id, "0xffffffff", chip::kInvalidAttributeId),
+        {{#chip_server_cluster_attributes}}
+        {{#if isReportableAttribute}}
+        make_unique<ReportAttribute>(Id, "{{asUpperCamelCase name}}", Attributes::{{asUpperCamelCase name}}::Id), //
+        {{/if}}
+        {{/chip_server_cluster_attributes}}
+        {{/if}}
         {{#chip_server_cluster_events}}
-        make_unique<Read{{asUpperCamelCase parent.name}}{{asUpperCamelCase name}}>(), //
-        make_unique<Report{{asUpperCamelCase parent.name}}{{asUpperCamelCase name}}>(), //
+        {{#first}}
+        //
+        // Events
+        //
+        make_unique<ReadEvent>(Id, "0xffffffff", chip::kInvalidAttributeId),
+        {{/first}}
+        make_unique<ReadEvent>(Id, "{{asUpperCamelCase name}}", Events::{{asUpperCamelCase name}}::Id), //
+        {{/chip_server_cluster_events}}
+        {{#chip_server_cluster_events}}
+        {{#first}}
+        make_unique<ReportEvent>(Id, "0xffffffff", chip::kInvalidAttributeId),
+        {{/first}}
+        make_unique<ReportEvent>(Id, "{{asUpperCamelCase name}}", Events::{{asUpperCamelCase name}}::Id), //
         {{/chip_server_cluster_events}}
     };
 
@@ -529,10 +185,10 @@ void registerClusterWildcard(Commands & commands)
     const char * clusterName = "0xffffffff";
 
     commands_list clusterCommands = {
-        make_unique<ReadWildcard>(), //
-        make_unique<ReportWildcard>(), //
-        make_unique<ReadEventWildcard>(), //
-        make_unique<ReportEventWildcard>(), //
+        make_unique<ReadAttribute>(chip::kInvalidClusterId, "0xffffffff", chip::kInvalidAttributeId),
+        make_unique<ReportAttribute>(chip::kInvalidClusterId, "0xffffffff", chip::kInvalidAttributeId),
+        make_unique<ReadEvent>(chip::kInvalidClusterId, "0xffffffff", chip::kInvalidAttributeId),
+        make_unique<ReportEvent>(chip::kInvalidClusterId, "0xffffffff", chip::kInvalidAttributeId),
     };
 
     commands.Register(clusterName, clusterCommands);
