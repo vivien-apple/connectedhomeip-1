@@ -7,275 +7,7 @@
 #include <type_traits>
 
 #include <app-common/zap-generated/cluster-objects.h>
-#include <app/data-model/DecodableList.h>
-#include <app/data-model/Nullable.h>
 #include <commands/clusters/ModelCommand.h>
-#include <commands/common/CommandInvoker.h>
-#include <lib/core/CHIPSafeCasts.h>
-#include <lib/support/BytesToHex.h>
-#include <lib/support/Span.h>
-#include <lib/support/TypeTraits.h>
-#include <zap-generated/CHIPClientCallbacks.h>
-#include <zap-generated/CHIPClusters.h>
-
-// Value logging functions.  The non-generated ones depend on the
-// generated ones, so are placed here.
-namespace {
-
-{{#zcl_structs}}
-{{#if has_more_than_one_cluster}}
-CHIP_ERROR LogValue(const char * label, size_t indent, {{zapTypeToDecodableClusterObjectType name ns="detail" isArgument=true}} value);
-{{/if}}
-{{/zcl_structs}}
-
-{{#zcl_clusters}}
-{{#zcl_structs}}
-{{#unless has_more_than_one_cluster}}
-CHIP_ERROR LogValue(const char * label, size_t indent, {{zapTypeToDecodableClusterObjectType name ns=parent.name isArgument=true}} value);
-{{/unless}}
-{{/zcl_structs}}
-{{/zcl_clusters}}
-
-void LogAttributePath(const chip::app::ConcreteDataAttributePath & path)
-{
-    ChipLogProgress(chipTool, "Endpoint: %" PRIu16 " Cluster: " ChipLogFormatMEI " Attribute " ChipLogFormatMEI, path.mEndpointId,
-                    ChipLogValueMEI(path.mClusterId), ChipLogValueMEI(path.mAttributeId));
-}
-
-void LogEventPath(const chip::app::ConcreteEventPath & path)
-{
-    ChipLogProgress(chipTool, "Endpoint: %" PRIu16 " Cluster: " ChipLogFormatMEI " Event " ChipLogFormatMEI, path.mEndpointId,
-                    ChipLogValueMEI(path.mClusterId), ChipLogValueMEI(path.mEventId));
-}
-
-void LogEventHeader(const chip::app::EventHeader & header)
-{
-    LogEventPath(header.mPath);
-
-    ChipLogProgress(chipTool, "\t Event number: %" PRIu64, header.mEventNumber);
-
-    if (header.mPriorityLevel == chip::app::PriorityLevel::Info)
-    {
-        ChipLogProgress(chipTool, "\t Priority: Info");
-    }
-    else if (header.mPriorityLevel == chip::app::PriorityLevel::Critical)
-    {
-        ChipLogProgress(chipTool, "\t Priority: Critical");
-    }
-    else if (header.mPriorityLevel == chip::app::PriorityLevel::Debug)
-    {
-        ChipLogProgress(chipTool, "\t Priority: Debug");
-    }
-    else
-    {
-        ChipLogProgress(chipTool, "\t Priority: Unknown");
-    }
-
-    ChipLogProgress(chipTool, "\t Timestamp: %" PRIu64, header.mTimestamp.mValue);
-}
-
-{{#zcl_clusters}}
-{{#zcl_events}}
-{{#unless has_more_than_one_cluster}}
-CHIP_ERROR LogValue(const char * label, size_t indent, {{zapTypeToDecodableClusterObjectType name ns=parent.name isArgument=true forceNotOptional=true}} value);
-{{/unless}}
-{{/zcl_events}}
-{{/zcl_clusters}}
-
-#if CHIP_PROGRESS_LOGGING
-std::string IndentStr(size_t indent)
-{
-  std::string str;
-  for (size_t i = 0; i < indent; ++i) {
-    str.append("  ");
-  }
-  return str;
-}
-#endif // CHIP_PROGRESS_LOGGING
-
-template <typename X, typename std::enable_if_t<std::is_integral<X>::value && !std::is_same<std::remove_cv_t<std::remove_reference_t<X>>, bool>::value, int> = 0>
-CHIP_ERROR LogValue(const char * label, size_t indent, X value)
-{
-    ChipLogProgress(chipTool, "%s%s: %s", IndentStr(indent).c_str(), label, std::to_string(value).c_str());
-    return CHIP_NO_ERROR;
-}
-
-template <typename X, typename std::enable_if_t<std::is_floating_point<X>::value, int> = 0>
-CHIP_ERROR LogValue(const char * label, size_t indent, X value)
-{
-    ChipLogProgress(chipTool, "%s%s: %s", IndentStr(indent).c_str(), label, std::to_string(value).c_str());
-    return CHIP_NO_ERROR;
-}
-
-CHIP_ERROR LogValue(const char * label, size_t indent, bool value)
-{
-    ChipLogProgress(chipTool, "%s%s: %s", IndentStr(indent).c_str(), label, value ? "TRUE" : "FALSE");
-    return CHIP_NO_ERROR;
-}
-
-template <typename X, typename std::enable_if_t<std::is_enum<X>::value, int> = 0>
-CHIP_ERROR LogValue(const char * label, size_t indent, X value)
-{
-    return LogValue(label, indent, chip::to_underlying(value));
-}
-
-
-CHIP_ERROR LogValue(const char * label, size_t indent, chip::CharSpan value)
-{
-    ChipLogProgress(chipTool, "%s%s: %.*s", IndentStr(indent).c_str(), label, static_cast<int>(value.size()), value.data());
-    return CHIP_NO_ERROR;
-}
-
-CHIP_ERROR LogValue(const char * label, size_t indent, chip::ByteSpan value)
-{
-    char buffer[CHIP_CONFIG_LOG_MESSAGE_MAX_SIZE];
-    if (CHIP_NO_ERROR == chip::Encoding::BytesToUppercaseHexString(value.data(), value.size(), &buffer[0], CHIP_CONFIG_LOG_MESSAGE_MAX_SIZE))
-    {
-        ChipLogProgress(chipTool, "%s%s: %s", IndentStr(indent).c_str(), label, buffer);
-    }
-    else
-    {
-      ChipLogProgress(chipTool, "%s%s: %zu", IndentStr(indent).c_str(), label, value.size());
-    }
-    return CHIP_NO_ERROR;
-}
-
-template <typename X>
-CHIP_ERROR LogValue(const char * label, size_t indent, chip::BitFlags<X> value)
-{
-    return LogValue(label, indent, value.Raw());
-}
-
-template <typename T>
-CHIP_ERROR LogValue(const char * label, size_t indent, const chip::app::DataModel::DecodableList<T> & value)
-{
-    size_t count = 0;
-    CHIP_ERROR err = value.ComputeSize(&count);
-    if (err != CHIP_NO_ERROR)
-    {
-        return err;
-    }
-    ChipLogProgress(chipTool, "%s%s: %zu entries", IndentStr(indent).c_str(), label, count);
-
-    auto iter = value.begin();
-    size_t i = 0;
-    while (iter.Next())
-    {
-      ++i;
-      std::string itemLabel = std::string("[") + std::to_string(i) + "]";
-      ReturnErrorOnFailure(LogValue(itemLabel.c_str(), indent + 1, iter.GetValue()));
-    }
-    if (iter.GetStatus() != CHIP_NO_ERROR)
-    {
-      ChipLogProgress(chipTool, "%sList truncated due to invalid value", IndentStr(indent+1).c_str());
-    }
-    return iter.GetStatus();
-}
-
-
-template <typename T>
-CHIP_ERROR LogValue(const char * label, size_t indent, const chip::app::DataModel::Nullable<T> & value)
-{
-    if (!value.IsNull())
-    {
-        return LogValue(label, indent, value.Value());
-    }
-    ChipLogProgress(chipTool, "%s%s: null", IndentStr(indent).c_str(), label);
-    return CHIP_NO_ERROR;
-}
-
-template <typename T>
-CHIP_ERROR LogValue(const char * label, size_t indent, const chip::Optional<T> & value)
-{
-    if (value.HasValue())
-    {
-        return LogValue(label, indent, value.Value());
-    }
-
-    return CHIP_NO_ERROR;
-}
-
-// We output helpers for all structs here, including ones we might not actually
-// be logging.
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-function"
-{{#zcl_structs}}
-{{#if has_more_than_one_cluster}}
-{{> log_struct_value ns="detail"}}
-{{/if}}
-{{/zcl_structs}}
-
-{{#zcl_clusters}}
-{{#zcl_structs}}
-{{#unless has_more_than_one_cluster}}
-{{> log_struct_value ns=parent.name}}
-{{/unless}}
-{{/zcl_structs}}
-{{/zcl_clusters}}
-#pragma GCC diagnostic pop
-
-// We output helpers for all events here, including ones we might not actually
-// be logging.
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-function"
-{{#zcl_clusters}}
-{{#zcl_events}}
-{{#unless has_more_than_one_cluster}}
-{{> log_event_value ns=parent.name}}
-{{/unless}}
-{{/zcl_events}}
-{{/zcl_clusters}}
-#pragma GCC diagnostic pop
-} // anonymous namespace
-
-static void OnDefaultSuccessResponse(void * context)
-{
-    ChipLogProgress(chipTool, "Default Success Response");
-
-    ModelCommand * command = static_cast<ModelCommand *>(context);
-    command->SetCommandExitStatus(CHIP_NO_ERROR);
-}
-
-static void OnDefaultFailure(void * context, EmberAfStatus status)
-{
-    ChipLogProgress(chipTool, "Default Failure Response: 0x%02x", chip::to_underlying(status));
-
-    ModelCommand * command = static_cast<ModelCommand *>(context);
-    command->SetCommandExitStatus(CHIP_ERROR_INTERNAL);
-}
-
-static void OnDefaultSuccess(void * context, const chip::app::DataModel::NullObjectType & data)
-{
-    OnDefaultSuccessResponse(context);
-};
-
-template <typename T>
-static void OnGeneralAttributeResponse(void * context, const char * label, T value)
-{
-    CHIP_ERROR err = LogValue(label, 0, value);
-
-    auto * command = static_cast<ModelCommand *>(context);
-    command->SetCommandExitStatus(err);
-}
-
-{{#chip_client_clusters}}
-{{#chip_cluster_responses}}
-static void On{{asUpperCamelCase parent.name}}{{asUpperCamelCase name}}Success(void * context, const chip::app::Clusters::{{asUpperCamelCase parent.name}}::Commands::{{asUpperCamelCase name}}::DecodableType & data)
-{
-    ChipLogProgress(Zcl, "Received {{asUpperCamelCase name}}:");
-    CHIP_ERROR err = CHIP_NO_ERROR;
-    {{#chip_cluster_response_arguments}}
-    if (err == CHIP_NO_ERROR) {
-       err = LogValue("{{asLowerCamelCase label}}", 1, data.{{asLowerCamelCase label}});
-    }
-    {{/chip_cluster_response_arguments}}
-
-    ModelCommand * command = static_cast<ModelCommand *>(context);
-    command->SetCommandExitStatus(err);
-};
-
-{{/chip_cluster_responses}}
-{{/chip_client_clusters}}
 
 {{> clusters_header}}
 
@@ -322,7 +54,7 @@ public:
         {{/if}}
         {{/chip_cluster_command_non_expanded_arguments}}
 
-        return chip::Controller::InvokeCommand(device, this, {{#if hasSpecificResponse}}On{{asUpperCamelCase parent.name}}{{asUpperCamelCase response.name}}Success{{else}}OnDefaultSuccess{{/if}}, OnDefaultFailure, endpointId, mRequest, mTimedInteractionTimeoutMs);
+        return RunCommand(device, endpointId, {{asHex parent.code 8}}, {{asHex code 8}}, mRequest);
     }
 
 private:
@@ -351,13 +83,6 @@ public:
     {
         return ReadEvent(device, endpointId, {{asHex code 8}}, chip::kInvalidEventId);
     }
-
-    CHIP_ERROR OnEventData(const chip::app::EventHeader & header, chip::TLV::TLVReader * data) override
-    {
-        LogEventHeader(header);
-        // TODO: Generate a method that log the value based on the content of the data 
-        return CHIP_NO_ERROR;
-    }
 };
 
 class ReportEvent{{asUpperCamelCase name}}Wildcard: public ModelCommand
@@ -384,13 +109,6 @@ public:
     chip::System::Clock::Timeout GetWaitDuration() const override
     {
         return chip::System::Clock::Seconds16(mWait ? UINT16_MAX : 10);
-    }
-
-    CHIP_ERROR OnEventData(const chip::app::EventHeader & header, chip::TLV::TLVReader * data) override
-    {
-        LogEventHeader(header);
-        // TODO: Generate a method that log the value based on the content of the data 
-        return CHIP_NO_ERROR;
     }
 
     void OnEventSubscription() override
@@ -428,14 +146,6 @@ public:
     {
         return ReadEvent(device, endpointId, {{asHex parent.code 8}}, {{asHex code 8}});
     }
-
-    CHIP_ERROR OnEventData(const chip::app::EventHeader & header, chip::TLV::TLVReader * data) override
-    {
-        LogEventHeader(header);
-        {{zapTypeToDecodableClusterObjectType name ns=parent.name}} value;
-        ReturnErrorOnFailure(chip::app::DataModel::Decode(*data, value));
-        return LogValue("{{asUpperCamelCase parent.name}}.{{asUpperCamelCase name}} report", 0, value);
-    }
 };
 
 class Report{{asUpperCamelCase parent.name}}{{asUpperCamelCase name}}: public ModelCommand
@@ -462,14 +172,6 @@ public:
     chip::System::Clock::Timeout GetWaitDuration() const override
     {
         return chip::System::Clock::Seconds16(mWait ? UINT16_MAX : 10);
-    }
-
-    CHIP_ERROR OnEventData(const chip::app::EventHeader & header, chip::TLV::TLVReader * data) override
-    {
-        LogEventHeader(header);
-        {{zapTypeToDecodableClusterObjectType name ns=parent.name}} value;
-        ReturnErrorOnFailure(chip::app::DataModel::Decode(*data, value));
-        return LogValue("{{asUpperCamelCase parent.name}}.{{asUpperCamelCase name}} report", 0, value);
     }
 
     void OnEventSubscription() override
@@ -507,13 +209,6 @@ public:
     {
         return ReadAttribute(device, endpointId, {{asHex code 8}}, chip::kInvalidAttributeId);
     }
-
-    CHIP_ERROR OnAttributeData(const chip::app::ConcreteDataAttributePath & path, chip::TLV::TLVReader * data) override
-    {
-        LogAttributePath(path);
-        // TODO: Generate a method that Log the value based on the content of the ConcreteDataAttributePath
-        return CHIP_NO_ERROR;
-    }
 };
 
 class Report{{asUpperCamelCase name}}Wildcard: public ModelCommand
@@ -540,13 +235,6 @@ public:
     chip::System::Clock::Timeout GetWaitDuration() const override
     {
         return chip::System::Clock::Seconds16(mWait ? UINT16_MAX : 10);
-    }
-
-    CHIP_ERROR OnAttributeData(const chip::app::ConcreteDataAttributePath & path, chip::TLV::TLVReader * data) override
-    {
-        LogAttributePath(path);
-        // TODO: Generate a method that Log the value based on the content of the ConcreteDataAttributePath
-        return CHIP_NO_ERROR;
     }
 
     void OnAttributeSubscription() override
@@ -585,14 +273,6 @@ public:
     CHIP_ERROR SendCommand(ChipDevice * device, chip::EndpointId endpointId) override
     {
         return ReadAttribute(device, endpointId, {{asHex parent.code 8}}, {{asHex code 8}});
-    }
-
-    CHIP_ERROR OnAttributeData(const chip::app::ConcreteDataAttributePath & path, chip::TLV::TLVReader * data) override
-    {
-        LogAttributePath(path);
-        {{zapTypeToDecodableClusterObjectType type ns=parent.name}} value;
-        ReturnErrorOnFailure(chip::app::DataModel::Decode(*data, value));
-        return LogValue("{{asUpperCamelCase parent.name}}.{{asUpperCamelCase name}} report", 0, value);
     }
 };
 
@@ -660,14 +340,6 @@ public:
         return chip::System::Clock::Seconds16(mWait ? UINT16_MAX : 10);
     }
 
-    CHIP_ERROR OnAttributeData(const chip::app::ConcreteDataAttributePath & path, chip::TLV::TLVReader * data) override
-    {
-        LogAttributePath(path);
-        {{zapTypeToDecodableClusterObjectType type ns=parent.name}} value;
-        ReturnErrorOnFailure(chip::app::DataModel::Decode(*data, value));
-        return LogValue("{{asUpperCamelCase parent.name}}.{{asUpperCamelCase name}} report", 0, value);
-    }
-
     void OnAttributeSubscription() override
     {
         if (!mWait)
@@ -707,13 +379,6 @@ public:
     {
         return ReadEvent(device, endpointId, chip::kInvalidClusterId, chip::kInvalidEventId);
     }
-
-    CHIP_ERROR OnEventData(const chip::app::EventHeader & header, chip::TLV::TLVReader * data) override
-    {
-        LogEventHeader(header);
-        // TODO: Generate a method that log the value based on the content of the data 
-        return CHIP_NO_ERROR;
-    }
 };
 
 class ReportEventWildcard: public ModelCommand
@@ -740,13 +405,6 @@ public:
     chip::System::Clock::Timeout GetWaitDuration() const override
     {
         return chip::System::Clock::Seconds16(mWait ? UINT16_MAX : 10);
-    }
-
-    CHIP_ERROR OnEventData(const chip::app::EventHeader & header, chip::TLV::TLVReader * data) override
-    {
-        LogEventHeader(header);
-        // TODO: Generate a method that log the value based on the content of the data 
-        return CHIP_NO_ERROR;
     }
 
     void OnEventSubscription() override
@@ -780,13 +438,6 @@ public:
     {
         return ReadAttribute(device, endpointId, chip::kInvalidClusterId, chip::kInvalidAttributeId);
     }
-
-    CHIP_ERROR OnAttributeData(const chip::app::ConcreteDataAttributePath & path, chip::TLV::TLVReader * data) override
-    {
-        LogAttributePath(path);
-        // TODO: Generate a method that Log the value based on the content of the ConcreteDataAttributePath
-        return CHIP_NO_ERROR;
-    }
 };
 
 class ReportWildcard: public ModelCommand
@@ -813,13 +464,6 @@ public:
     chip::System::Clock::Timeout GetWaitDuration() const override
     {
         return chip::System::Clock::Seconds16(mWait ? UINT16_MAX : 10);
-    }
-
-    CHIP_ERROR OnAttributeData(const chip::app::ConcreteDataAttributePath & path, chip::TLV::TLVReader * data) override
-    {
-        LogAttributePath(path);
-        // TODO: Generate a method that Log the value based on the content of the ConcreteDataAttributePath
-        return CHIP_NO_ERROR;
     }
 
     void OnAttributeSubscription() override

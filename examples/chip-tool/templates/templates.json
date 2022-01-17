@@ -52,6 +52,11 @@
             "output": "cluster/Commands.h"
         },
         {
+            "path": "ModelCommandLogger-src.zapt",
+            "name": "Cluster Commands Value Logger",
+            "output": "cluster/ModelCommandLogger.cpp"
+        },
+        {
             "path": "tests-commands.zapt",
             "name": "Tests Commands header",
             "output": "test/Commands.h"

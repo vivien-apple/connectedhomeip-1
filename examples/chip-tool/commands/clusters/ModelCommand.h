@@ -20,10 +20,14 @@
 
 #include "../../config/PersistentStorage.h"
 #include "../common/CHIPCommand.h"
-#include <app/chip-zcl-zpro-codec.h>
+#include "ModelCommandLogger.h"
+#include <app/CommandSender.h>
 #include <lib/core/CHIPEncoding.h>
 
-class ModelCommand : public CHIPCommand, public chip::app::ReadClient::Callback, public chip::app::WriteClient::Callback
+class ModelCommand : public CHIPCommand,
+                     public chip::app::ReadClient::Callback,
+                     public chip::app::WriteClient::Callback,
+                     public chip::app::CommandSender::Callback
 {
 public:
     using ChipDevice = ::chip::OperationalDeviceProxy;
@@ -45,6 +49,38 @@ public:
     chip::System::Clock::Timeout GetWaitDuration() const override { return chip::System::Clock::Seconds16(10); }
 
     virtual CHIP_ERROR SendCommand(ChipDevice * device, chip::EndpointId endPointId) = 0;
+
+    /////////// CommandSender Callback Interface /////////
+    virtual void OnResponse(chip::app::CommandSender * client, const chip::app::ConcreteCommandPath & path,
+                            const chip::app::StatusIB & status, chip::TLV::TLVReader * data) override
+    {
+        if (CHIP_NO_ERROR != status.ToChipError())
+        {
+            ChipLogError(chipTool, "Response Failure: %s", chip::ErrorStr(status.ToChipError()));
+            SetCommandExitStatus(status.ToChipError());
+            return;
+        }
+
+        CHIP_ERROR error = LogCommand(path, data);
+        if (CHIP_NO_ERROR != error)
+        {
+            ChipLogError(chipTool, "Response Failure: Can not decode Data");
+            SetCommandExitStatus(error);
+            return;
+        }
+    }
+
+    virtual void OnError(const chip::app::CommandSender * client, const chip::app::StatusIB & status, CHIP_ERROR error) override
+    {
+        ChipLogProgress(chipTool, "Internal Error: %s", chip::ErrorStr(error));
+        SetCommandExitStatus(error);
+    }
+
+    virtual void OnDone(chip::app::CommandSender * client) override
+    {
+        commandSender.reset();
+        SetCommandExitStatus(CHIP_NO_ERROR);
+    }
 
     /////////// WriteClient Callback Interface /////////
     void OnResponse(const chip::app::WriteClient * client, const chip::app::ConcreteAttributePath & path,
@@ -84,7 +120,7 @@ public:
             return;
         }
 
-        CHIP_ERROR error = OnEventData(eventHeader, data);
+        CHIP_ERROR error = LogEvent(eventHeader, data);
         if (CHIP_NO_ERROR != error)
         {
             ChipLogError(chipTool, "Response Failure: Can not decode Data");
@@ -110,7 +146,7 @@ public:
             return;
         }
 
-        CHIP_ERROR error = OnAttributeData(path, data);
+        CHIP_ERROR error = LogAttribute(path, data);
         if (CHIP_NO_ERROR != error)
         {
             ChipLogError(chipTool, "Response Failure: Can not decode Data");
@@ -133,14 +169,6 @@ public:
 
     void OnSubscriptionEstablished(const chip::app::ReadClient * client) override { OnAttributeSubscription(); }
 
-    virtual CHIP_ERROR OnAttributeData(const chip::app::ConcreteDataAttributePath & path, chip::TLV::TLVReader * data)
-    {
-        return CHIP_ERROR_NOT_IMPLEMENTED;
-    };
-    virtual CHIP_ERROR OnEventData(const chip::app::EventHeader & header, chip::TLV::TLVReader * data)
-    {
-        return CHIP_ERROR_NOT_IMPLEMENTED;
-    };
     virtual void OnAttributeSubscription(){};
     virtual void OnEventSubscription(){};
 
@@ -250,6 +278,20 @@ public:
         return readClient->SendRequest(readPrepareParams);
     }
 
+    template <class T>
+    CHIP_ERROR RunCommand(ChipDevice * device, chip::EndpointId endpointId, chip::ClusterId clusterId, chip::CommandId commandId,
+                          const T & value)
+    {
+        chip::app::CommandPathParams commandPath = { endpointId, 0 /* groupId */, clusterId, commandId,
+                                                     (chip::app::CommandPathFlags::kEndpointIdValid) };
+        commandSender =
+            std::make_unique<chip::app::CommandSender>(this, device->GetExchangeManager(), mTimedInteractionTimeoutMs.HasValue());
+        VerifyOrReturnError(commandSender != nullptr, CHIP_ERROR_NO_MEMORY);
+        ReturnErrorOnFailure(commandSender->AddRequestDataNoTimedCheck(commandPath, value, mTimedInteractionTimeoutMs));
+        ReturnErrorOnFailure(commandSender->SendCommandRequest(device->GetSecureSession().Value()));
+        return CHIP_NO_ERROR;
+    }
+
 protected:
     chip::Optional<uint16_t> mTimedInteractionTimeoutMs;
 
@@ -264,5 +306,6 @@ private:
     chip::Callback::Callback<chip::OnDeviceConnectionFailure> mOnDeviceConnectionFailureCallback;
 
     std::unique_ptr<chip::app::ReadClient> readClient;
+    std::unique_ptr<chip::app::CommandSender> commandSender;
     chip::app::BufferedReadCallback mBufferedReadAdapter;
 };

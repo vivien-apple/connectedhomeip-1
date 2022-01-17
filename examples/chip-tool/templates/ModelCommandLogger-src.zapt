@@ -1,0 +1,310 @@
+{{> header}}
+
+#include <commands/clusters/ModelCommandLogger.h>
+
+#include <string>
+
+#include <app-common/zap-generated/cluster-objects.h>
+#include <app/data-model/DecodableList.h>
+#include <lib/support/BytesToHex.h>
+
+using namespace chip::app::Clusters;
+
+#if CHIP_PROGRESS_LOGGING
+std::string IndentStr(size_t indent)
+{
+  std::string str;
+  for (size_t i = 0; i < indent; ++i) {
+    str.append("  ");
+  }
+  return str;
+}
+#endif // CHIP_PROGRESS_LOGGING
+
+// We output helpers for all structs here, including ones we might not actually
+// be logging.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
+{{#zcl_structs}}
+{{#if has_more_than_one_cluster}}
+CHIP_ERROR LogValue(const char * label, size_t indent, {{zapTypeToDecodableClusterObjectType name ns="detail" isArgument=true}} value);
+{{/if}}
+{{/zcl_structs}}
+
+{{#zcl_clusters}}
+{{#zcl_structs}}
+{{#unless has_more_than_one_cluster}}
+CHIP_ERROR LogValue(const char * label, size_t indent, {{zapTypeToDecodableClusterObjectType name ns=parent.name isArgument=true}} value);
+{{/unless}}
+{{/zcl_structs}}
+{{#zcl_events}}
+{{#unless has_more_than_one_cluster}}
+CHIP_ERROR LogValue(const char * label, size_t indent, {{zapTypeToDecodableClusterObjectType name ns=parent.name isArgument=true}} value);
+{{/unless}}
+{{/zcl_events}}
+{{/zcl_clusters}}
+#pragma GCC diagnostic pop
+
+{{#chip_client_clusters}}
+{{#chip_cluster_responses}}
+CHIP_ERROR LogValue(const char * label, size_t indent, {{asUpperCamelCase parent.name}}::Commands::{{asUpperCamelCase name}}::DecodableType value);
+{{/chip_cluster_responses}}
+{{/chip_client_clusters}}
+
+template <typename X, typename std::enable_if_t<std::is_integral<X>::value && !std::is_same<std::remove_cv_t<std::remove_reference_t<X>>, bool>::value, int> = 0>
+CHIP_ERROR LogValue(const char * label, size_t indent, X value)
+{
+    ChipLogProgress(chipTool, "%s%s: %s", IndentStr(indent).c_str(), label, std::to_string(value).c_str());
+    return CHIP_NO_ERROR;
+}
+
+template <typename X, typename std::enable_if_t<std::is_floating_point<X>::value, int> = 0>
+CHIP_ERROR LogValue(const char * label, size_t indent, X value)
+{
+    ChipLogProgress(chipTool, "%s%s: %s", IndentStr(indent).c_str(), label, std::to_string(value).c_str());
+    return CHIP_NO_ERROR;
+}
+
+CHIP_ERROR LogValue(const char * label, size_t indent, bool value)
+{
+    ChipLogProgress(chipTool, "%s%s: %s", IndentStr(indent).c_str(), label, value ? "TRUE" : "FALSE");
+    return CHIP_NO_ERROR;
+}
+
+template <typename X, typename std::enable_if_t<std::is_enum<X>::value, int> = 0>
+CHIP_ERROR LogValue(const char * label, size_t indent, X value)
+{
+    return LogValue(label, indent, chip::to_underlying(value));
+}
+
+CHIP_ERROR LogValue(const char * label, size_t indent, chip::CharSpan value)
+{
+    ChipLogProgress(chipTool, "%s%s: %.*s", IndentStr(indent).c_str(), label, static_cast<int>(value.size()), value.data());
+    return CHIP_NO_ERROR;
+}
+
+CHIP_ERROR LogValue(const char * label, size_t indent, chip::ByteSpan value)
+{
+    char buffer[CHIP_CONFIG_LOG_MESSAGE_MAX_SIZE];
+    if (CHIP_NO_ERROR == chip::Encoding::BytesToUppercaseHexString(value.data(), value.size(), &buffer[0], CHIP_CONFIG_LOG_MESSAGE_MAX_SIZE))
+    {
+        ChipLogProgress(chipTool, "%s%s: %s", IndentStr(indent).c_str(), label, buffer);
+    }
+    else
+    {
+      ChipLogProgress(chipTool, "%s%s: %zu", IndentStr(indent).c_str(), label, value.size());
+    }
+    return CHIP_NO_ERROR;
+}
+
+template <typename T>
+CHIP_ERROR LogValue(const char * label, size_t indent, const chip::app::DataModel::DecodableList<T> & value)
+{
+    size_t count = 0;
+    CHIP_ERROR err = value.ComputeSize(&count);
+    if (err != CHIP_NO_ERROR)
+    {
+        return err;
+    }
+    ChipLogProgress(chipTool, "%s%s: %zu entries", IndentStr(indent).c_str(), label, count);
+
+    auto iter = value.begin();
+    size_t i = 0;
+    while (iter.Next())
+    {
+      ++i;
+      std::string itemLabel = std::string("[") + std::to_string(i) + "]";
+      ReturnErrorOnFailure(LogValue(itemLabel.c_str(), indent + 1, iter.GetValue()));
+    }
+    if (iter.GetStatus() != CHIP_NO_ERROR)
+    {
+      ChipLogProgress(chipTool, "%sList truncated due to invalid value", IndentStr(indent+1).c_str());
+    }
+    return iter.GetStatus();
+}
+
+template <typename T>
+CHIP_ERROR LogValue(const char * label, size_t indent, const chip::app::DataModel::Nullable<T> & value)
+{
+    if (!value.IsNull())
+    {
+        return LogValue(label, indent, value.Value());
+    }
+    ChipLogProgress(chipTool, "%s%s: null", IndentStr(indent).c_str(), label);
+    return CHIP_NO_ERROR;
+}
+
+template <typename T>
+CHIP_ERROR LogValue(const char * label, size_t indent, const chip::Optional<T> & value)
+{
+    if (value.HasValue())
+    {
+        return LogValue(label, indent, value.Value());
+    }
+
+    return CHIP_NO_ERROR;
+}
+
+template <typename X>
+CHIP_ERROR LogValue(const char * label, size_t indent, chip::BitFlags<X> value)
+{
+    return LogValue(label, indent, value.Raw());
+}
+
+// We output helpers for all structs here, including ones we might not actually
+// be logging.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
+{{#zcl_structs}}
+{{#if has_more_than_one_cluster}}
+{{> log_struct_value ns="detail"}}
+{{/if}}
+{{/zcl_structs}}
+
+{{#zcl_clusters}}
+{{#zcl_structs}}
+{{#unless has_more_than_one_cluster}}
+{{> log_struct_value ns=parent.name}}
+{{/unless}}
+{{/zcl_structs}}
+{{/zcl_clusters}}
+
+{{#zcl_clusters}}
+{{#zcl_events}}
+{{#unless has_more_than_one_cluster}}
+{{> log_event_value ns=parent.name}}
+{{/unless}}
+{{/zcl_events}}
+{{/zcl_clusters}}
+#pragma GCC diagnostic pop
+
+{{#chip_client_clusters}}
+{{#chip_cluster_responses}}
+CHIP_ERROR LogValue(const char * label, size_t indent, {{asUpperCamelCase parent.name}}::Commands::{{asUpperCamelCase name}}::DecodableType value)
+{
+  ChipLogProgress(chipTool, "%s%s: {", IndentStr(indent).c_str(), label);
+  {{#chip_cluster_response_arguments}}
+  ReturnErrorOnFailure(LogValue("{{asLowerCamelCase label}}", 1, value.{{asLowerCamelCase label}}));
+  {{/chip_cluster_response_arguments}}
+  return CHIP_NO_ERROR;
+}
+{{/chip_cluster_responses}}
+{{/chip_client_clusters}}
+
+
+CHIP_ERROR LogAttribute(const chip::app::ConcreteDataAttributePath & path, chip::TLV::TLVReader * data)
+{
+    ChipLogProgress(chipTool, "Endpoint: %" PRIu16 " Cluster: " ChipLogFormatMEI " Attribute " ChipLogFormatMEI, path.mEndpointId,
+                    ChipLogValueMEI(path.mClusterId), ChipLogValueMEI(path.mAttributeId));
+
+    switch (path.mClusterId)
+    {
+{{#chip_client_clusters}}
+{{#chip_server_cluster_attributes}}
+{{#first}}
+        case {{asUpperCamelCase parent.name}}::Id:
+        {
+          switch(path.mAttributeId)
+          {
+{{/first}}
+            case {{asUpperCamelCase parent.name}}::Attributes::{{asUpperCamelCase name}}::Id:
+            {
+                {{zapTypeToDecodableClusterObjectType type ns=parent.name}} value;
+                ReturnErrorOnFailure(chip::app::DataModel::Decode(*data, value));
+                return LogValue("{{name}}", 1, value);
+            }
+{{#last}}
+          }
+        }
+{{/last}}
+{{/chip_server_cluster_attributes}}
+{{/chip_client_clusters}}
+        default:
+          return CHIP_NO_ERROR;
+    }
+}
+
+CHIP_ERROR LogCommand(const chip::app::ConcreteCommandPath & path, chip::TLV::TLVReader * data)
+{
+    ChipLogProgress(chipTool, "Endpoint: %" PRIu16 " Cluster: " ChipLogFormatMEI " Command " ChipLogFormatMEI, path.mEndpointId,
+                    ChipLogValueMEI(path.mClusterId), ChipLogValueMEI(path.mCommandId));
+
+    switch (path.mClusterId)
+    {
+{{#chip_client_clusters}}
+{{#chip_cluster_responses}}
+{{#first}}
+        case {{asUpperCamelCase parent.name}}::Id:
+        {
+          switch(path.mCommandId)
+          {
+{{/first}}
+            case {{asUpperCamelCase parent.name}}::Commands::{{asUpperCamelCase name}}::Id:
+            {
+                {{asUpperCamelCase parent.name}}::Commands::{{asUpperCamelCase name}}::DecodableType value;
+                ReturnErrorOnFailure(chip::app::DataModel::Decode(*data, value));
+                return LogValue("{{name}}", 1, value);
+            }
+{{#last}}
+          }
+        }
+{{/last}}
+{{/chip_cluster_responses}}
+{{/chip_client_clusters}}
+        default:
+          return CHIP_NO_ERROR;
+    }
+}
+
+CHIP_ERROR LogEvent(const chip::app::EventHeader & header, chip::TLV::TLVReader * data)
+{
+    ChipLogProgress(chipTool, "Endpoint: %" PRIu16 " Cluster: " ChipLogFormatMEI " Event " ChipLogFormatMEI, header.mPath.mEndpointId,
+                    ChipLogValueMEI(header.mPath.mClusterId), ChipLogValueMEI(header.mPath.mEventId));
+
+    ChipLogProgress(chipTool, "\t Event number: %" PRIu64, header.mEventNumber);
+
+    if (header.mPriorityLevel == chip::app::PriorityLevel::Info)
+    {
+        ChipLogProgress(chipTool, "\t Priority: Info");
+    }
+    else if (header.mPriorityLevel == chip::app::PriorityLevel::Critical)
+    {
+        ChipLogProgress(chipTool, "\t Priority: Critical");
+    }
+    else if (header.mPriorityLevel == chip::app::PriorityLevel::Debug)
+    {
+        ChipLogProgress(chipTool, "\t Priority: Debug");
+    }
+    else
+    {
+        ChipLogProgress(chipTool, "\t Priority: Unknown");
+    }
+
+    ChipLogProgress(chipTool, "\t Timestamp: %" PRIu64, header.mTimestamp.mValue);
+
+    switch (header.mPath.mClusterId)
+    {
+{{#chip_client_clusters}}
+{{#chip_server_cluster_events}}
+{{#first}}
+        case {{asUpperCamelCase parent.name}}::Id:
+        {
+          switch(header.mPath.mEventId)
+          {
+{{/first}}
+            case {{asUpperCamelCase parent.name}}::Events::{{asUpperCamelCase name}}::Id:
+            {
+                {{zapTypeToDecodableClusterObjectType name ns=parent.name}} value;
+                ReturnErrorOnFailure(chip::app::DataModel::Decode(*data, value));
+                return LogValue("{{name}}", 1, value);
+            }
+{{#last}}
+          }
+        }
+{{/last}}
+{{/chip_server_cluster_events}}
+{{/chip_client_clusters}}
+        default:
+          return CHIP_NO_ERROR;
+    }
+}
