@@ -31,6 +31,8 @@
 #include <mutex>
 #include <vector>
 
+#include <json/json.h>
+
 class Command;
 
 // Limits on endpoint values.
@@ -69,7 +71,8 @@ enum ArgumentType
     CharString,
     OctetString,
     Attribute,
-    Address
+    Address,
+    JSON
 };
 
 struct Argument
@@ -207,6 +210,8 @@ public:
     {
         return AddArgument(name, min, max, reinterpret_cast<double *>(value), flags | Argument::kNullable);
     }
+
+    size_t AddArgument(const char * name, Json::Value * payload);
 
     virtual CHIP_ERROR Run() = 0;
 

@@ -183,6 +183,12 @@ bool Command::InitArgument(size_t argIndex, char * argValue)
     Argument arg = mArgs.at(argIndex);
     switch (arg.type)
     {
+    case ArgumentType::JSON: {
+        Json::Value * root = reinterpret_cast<Json::Value *>(arg.value);
+        Json::Reader reader;
+        reader.parse(argValue, *root);
+        return true;
+    }
     case ArgumentType::Attribute: {
         if (arg.isOptional() || arg.isNullable())
         {
@@ -592,4 +598,15 @@ size_t Command::AddArgumentToList(Argument && argument)
     // Never reached.
     VerifyOrDie(false);
     return 0;
+}
+
+size_t Command::AddArgument(const char * name, Json::Value * value)
+{
+    Argument arg;
+    arg.type  = ArgumentType::JSON;
+    arg.name  = name;
+    arg.value = const_cast<void *>(reinterpret_cast<const void *>(value));
+    arg.flags = 0;
+
+    return AddArgumentToList(std::move(arg));
 }

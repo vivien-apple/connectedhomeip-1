@@ -12,6 +12,7 @@
 #include <commands/clusters/ReadEventCommand.h>
 #include <commands/clusters/ReportAttributeCommand.h>
 #include <commands/clusters/ReportEventCommand.h>
+#include <commands/clusters/WriteAttributeFromJSON.h>
 
 {{> clusters_header}}
 
@@ -74,17 +75,14 @@ private:
 {{! No list support for writing yet.  Need to figure out how to represent the
     values. }}
 {{#unless isList}}
+{{#unless isStruct}}
 class Write{{asUpperCamelCase parent.name}}{{asUpperCamelCase name}}: public ModelCommand
 {
 public:
     Write{{asUpperCamelCase parent.name}}{{asUpperCamelCase name}}(): ModelCommand("write")
     {
         AddArgument("attr-name", "{{asDelimitedCommand (asUpperCamelCase name)}}");
-        {{#if isArray}}
-        // {{label}} Array parsing is not supported yet
-        {{else if isStruct}}
-        // {{label}} Struct parsing is not supported yet
-        {{else if (isString type)}}
+        {{#if (isString type)}}
         AddArgument("attr-value", &mValue);
         {{else}}
         AddArgument("attr-value", {{asTypeMinValue type}}, {{asTypeMaxValue type}}, &mValue);
@@ -105,6 +103,7 @@ private:
     {{zapTypeToEncodableClusterObjectType type ns=parent.name}} mValue;
 };
 
+{{/unless}}
 {{/unless}}
 {{/if}}
 {{/unless}}
@@ -143,11 +142,13 @@ void registerCluster{{asUpperCamelCase name}}(Commands & commands)
         {{! TODO: Various types (floats, structs) not supported here. }}
         {{#unless (isStrEqual chipCallback.name "Unsupported")}}
         {{#if isWritableAttribute}}
-        {{! No list support for writing yet.  Need to figure out how to
-            represent the values. }}
-        {{#unless isList}}
+        {{#if isList}}
+        make_unique<WriteAttributeFromJSON>(Id, "{{asUpperCamelCase name}}", Attributes::{{asUpperCamelCase name}}::Id), //
+        {{else if isStruct}}
+        make_unique<WriteAttributeFromJSON>(Id, "{{asUpperCamelCase name}}", Attributes::{{asUpperCamelCase name}}::Id), //
+        {{else}}
         make_unique<Write{{asUpperCamelCase parent.name}}{{asUpperCamelCase name}}>(), //
-        {{/unless}}
+        {{/if}}
         {{/if}}
         {{/unless}}
         {{/chip_server_cluster_attributes}}

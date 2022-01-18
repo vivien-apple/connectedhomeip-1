@@ -1,0 +1,384 @@
+{{>header}}
+
+#include <commands/clusters/WriteAttributeFromJSON.h>
+
+#include <app/data-model/List.h>
+#include <app/data-model/Nullable.h>
+#include <json/json.h>
+#include <lib/core/Optional.h>
+#include <lib/support/BytesToHex.h>
+#include <lib/support/SafeInt.h>
+
+#define kMaxLabelLength 100
+
+class RequestEncoder
+{
+public:
+    template <typename T>
+    static bool IsOptionalParameter(chip::Optional<T> & request)
+    {
+        return true;
+    }
+
+    template <typename T>
+    static bool IsOptionalParameter(T & request)
+    {
+        return false;
+    }
+
+    static CHIP_ERROR PrepareRequest(const char * label, uint8_t & request, Json::Value value)
+    {
+        if (!value.isNumeric() || !chip::CanCastTo<uint8_t>(value.asLargestUInt()))
+        {
+            ChipLogError(chipTool, "Error while encoding %s as an unsigned integer.", label);
+            return CHIP_ERROR_INVALID_ARGUMENT;
+        }
+
+        request = static_cast<uint8_t>(value.asUInt());
+        return CHIP_NO_ERROR;
+    }
+
+    static CHIP_ERROR PrepareRequest(const char * label, uint16_t & request, Json::Value value)
+    {
+        if (!value.isNumeric() || !chip::CanCastTo<uint16_t>(value.asLargestUInt()))
+        {
+            ChipLogError(chipTool, "Error while encoding %s as an unsigned integer.", label);
+            return CHIP_ERROR_INVALID_ARGUMENT;
+        }
+
+
+        request = static_cast<uint16_t>(value.asUInt());
+        return CHIP_NO_ERROR;
+    }
+
+    static CHIP_ERROR PrepareRequest(const char * label, uint32_t & request, Json::Value value)
+    {
+        if (!value.isNumeric() || !chip::CanCastTo<uint32_t>(value.asLargestUInt()))
+        {
+            ChipLogError(chipTool, "Error while encoding %s as an unsigned integer.", label);
+            return CHIP_ERROR_INVALID_ARGUMENT;
+        }
+
+        request = static_cast<uint32_t>(value.asUInt());
+        return CHIP_NO_ERROR;
+    }
+
+    static CHIP_ERROR PrepareRequest(const char * label, uint64_t & request, Json::Value value)
+    {
+        if (!value.isNumeric() || !chip::CanCastTo<uint64_t>(value.asLargestUInt()))
+        {
+            ChipLogError(chipTool, "Error while encoding %s as an unsigned integer.", label);
+            return CHIP_ERROR_INVALID_ARGUMENT;
+        }
+
+        request = static_cast<uint64_t>(value.asUInt());
+        return CHIP_NO_ERROR;
+    }
+
+    template <typename T, std::enable_if_t<std::is_signed<T>::value, bool> = true>
+    static CHIP_ERROR PrepareRequest(const char * label, T & request, Json::Value value)
+    {
+        VerifyOrReturnError(value.isIntegral(), CHIP_ERROR_INVALID_ARGUMENT);
+        VerifyOrReturnError(chip::CanCastTo<T>(value.asLargestInt()), CHIP_ERROR_INVALID_ARGUMENT);
+
+        request = static_cast<T>(value.asInt());
+        return CHIP_NO_ERROR;
+    }
+
+    template <typename T, typename std::enable_if_t<std::is_enum<T>::value, int> = 0>
+    static CHIP_ERROR PrepareRequest(const char * label, T & request, Json::Value value)
+    {
+        std::underlying_type_t<T> requestValue;
+        ReturnErrorOnFailure(RequestEncoder::PrepareRequest(label, requestValue, value));
+
+        request = static_cast<T>(requestValue);
+        return CHIP_NO_ERROR;
+    }
+
+    template <typename T>
+    static CHIP_ERROR PrepareRequest(const char * label, chip::BitFlags<T> & request, Json::Value & value)
+    {
+        T requestValue;
+        ReturnErrorOnFailure(RequestEncoder::PrepareRequest(label, requestValue, value));
+
+        request = chip::BitFlags<T>(requestValue);
+        return CHIP_NO_ERROR;
+    }
+
+    template <typename T>
+    static CHIP_ERROR PrepareRequest(const char * label, chip::Optional<T> & request, Json::Value & value)
+    {
+        T requestValue;
+        ReturnErrorOnFailure(RequestEncoder::PrepareRequest(label, requestValue, value));
+
+        request = chip::Optional<T>(requestValue);
+        return CHIP_NO_ERROR;
+    }
+
+    template <typename T>
+    static CHIP_ERROR PrepareRequest(const char * label, chip::app::DataModel::Nullable<T> & request, Json::Value & value)
+    {
+        if (value.isNull())
+        {
+            request.SetNull();
+            return CHIP_NO_ERROR;
+        }
+
+        T requestValue;
+        ReturnErrorOnFailure(RequestEncoder::PrepareRequest(label, requestValue, value));
+
+        request = chip::app::DataModel::Nullable<T>(requestValue);
+        return CHIP_NO_ERROR;
+    }
+
+    template <typename T>
+    static CHIP_ERROR PrepareRequest(const char * label, chip::app::DataModel::List<T> & request, Json::Value & value)
+    {
+        VerifyOrReturnError(value.type() == Json::arrayValue, CHIP_ERROR_INVALID_ARGUMENT);
+
+        auto content = static_cast<typename std::remove_const<T>::type *>(chip::Platform::MemoryCalloc(value.size(), sizeof(T)));
+
+        Json::ArrayIndex size = value.size();
+        for (Json::ArrayIndex i = 0; i < size; i++)
+        {
+            char labelWithIndex[kMaxLabelLength];
+            snprintf(labelWithIndex, sizeof(labelWithIndex), "%s[%d]", label, i);
+            ReturnErrorOnFailure(RequestEncoder::PrepareRequest(labelWithIndex, content[i], value[i]));
+        }
+
+        request = chip::app::DataModel::List<T>(content, value.size());
+        return CHIP_NO_ERROR;
+    }
+
+    static CHIP_ERROR PrepareRequest(const char * label, chip::ByteSpan & request, Json::Value & value)
+    {
+        VerifyOrReturnError(value.isString(), CHIP_ERROR_INVALID_ARGUMENT);
+        VerifyOrReturnError(strlen(value.asCString()) % 2 == 0, CHIP_ERROR_INVALID_STRING_LENGTH);
+
+        size_t size = strlen(value.asCString());
+        auto buffer = static_cast<uint8_t *>(chip::Platform::MemoryCalloc(size/2, sizeof(uint8_t)));
+        size_t octetCount = chip::Encoding::HexToBytes(value.asCString(), size, buffer, size / 2);
+
+        request           = chip::ByteSpan(buffer, octetCount);
+        return CHIP_NO_ERROR;
+    }
+
+    static CHIP_ERROR PrepareRequest(const char * label, chip::CharSpan & request, Json::Value & value)
+    {
+        VerifyOrReturnError(value.isString(), CHIP_ERROR_INVALID_ARGUMENT);
+
+        size_t size  = strlen(value.asCString());
+        auto buffer = static_cast<char *>(chip::Platform::MemoryCalloc(size, sizeof(char)));
+        strncpy(buffer, value.asCString(), size);
+
+        request     = chip::CharSpan(buffer, size);
+        return CHIP_NO_ERROR;
+    }
+
+    static CHIP_ERROR PrepareRequest(const char * label, float & request, Json::Value & value)
+    {
+        VerifyOrReturnError(value.isNumeric(), CHIP_ERROR_INVALID_ARGUMENT);
+
+        request = static_cast<float>(value.asFloat());
+        return CHIP_NO_ERROR;
+    }
+
+    static CHIP_ERROR PrepareRequest(const char * label, double & request, Json::Value & value)
+    {
+        VerifyOrReturnError(value.isNumeric(), CHIP_ERROR_INVALID_ARGUMENT);
+
+        request = static_cast<double>(value.asDouble());
+        return CHIP_NO_ERROR;
+    }
+
+    static CHIP_ERROR PrepareRequest(const char * label, bool & request, Json::Value & value)
+    {
+        VerifyOrReturnError(value.isBool(), CHIP_ERROR_INVALID_ARGUMENT);
+        VerifyOrReturnError(chip::CanCastTo<bool>(value.asBool()), CHIP_ERROR_INVALID_ARGUMENT);
+
+        request = value.asBool();
+        return CHIP_NO_ERROR;
+    }
+
+    static CHIP_ERROR EnsureMemberExist(const char * label, bool hasMember)
+    {
+        if (hasMember)
+        {
+            return CHIP_NO_ERROR;
+        }
+
+        ChipLogError(chipTool, "%s is required.", label);
+        return CHIP_ERROR_INVALID_ARGUMENT;
+    }
+
+{{#zcl_structs}}
+{{#if has_more_than_one_cluster}}
+    static CHIP_ERROR PrepareRequest(const char * label, {{zapTypeToEncodableClusterObjectType name ns="detail"}} & request, Json::Value & value)
+    {
+        VerifyOrReturnError(value.isObject(), CHIP_ERROR_INVALID_ARGUMENT);
+
+        {{#zcl_struct_items}}
+        {{#unless isOptional}}
+        ReturnErrorOnFailure(RequestEncoder::EnsureMemberExist("{{parent.name}}.{{asLowerCamelCase label}}", value.isMember("{{asLowerCamelCase label}}")));
+        {{/unless}}
+        {{/zcl_struct_items}}
+
+        char labelWithMember[kMaxLabelLength];
+        {{#zcl_struct_items}}
+        {{#if isOptional}}
+        if (value.isMember("{{asLowerCamelCase label}}"))
+        {
+        {{/if}}
+        snprintf(labelWithMember, sizeof(labelWithMember), "%s.%s", label, "{{asLowerCamelCase label}}");
+        ReturnErrorOnFailure(RequestEncoder::PrepareRequest(labelWithMember, request.{{asLowerCamelCase label}}, value["{{asLowerCamelCase label}}"]));
+        {{#if isOptional}}
+        }
+        {{/if}}
+
+        {{/zcl_struct_items}}
+        return CHIP_NO_ERROR;
+    }
+
+    static void FinalizeRequest({{zapTypeToEncodableClusterObjectType name ns="detail"}} & request)
+    {
+        {{#zcl_struct_items}}
+        RequestEncoder::FinalizeRequest(request.{{asLowerCamelCase label}});
+        {{/zcl_struct_items}}
+    }
+{{/if}}
+{{/zcl_structs}}
+
+{{#zcl_clusters}}
+{{#zcl_structs}}
+{{#unless has_more_than_one_cluster}}
+    static CHIP_ERROR PrepareRequest(const char * label, {{zapTypeToEncodableClusterObjectType name ns=parent.name}} & request, Json::Value & value)
+    {
+        VerifyOrReturnError(value.isObject(), CHIP_ERROR_INVALID_ARGUMENT);
+
+        {{#zcl_struct_items}}
+        {{#unless isOptional}}
+        ReturnErrorOnFailure(RequestEncoder::EnsureMemberExist("{{parent.name}}.{{asLowerCamelCase label}}", value.isMember("{{asLowerCamelCase label}}")));
+        {{/unless}}
+        {{/zcl_struct_items}}
+
+        char labelWithMember[kMaxLabelLength];
+        {{#zcl_struct_items}}
+        {{#if isOptional}}
+        if (value.isMember("{{asLowerCamelCase label}}"))
+        {
+        {{/if}}
+        snprintf(labelWithMember, sizeof(labelWithMember), "%s.%s", label, "{{asLowerCamelCase label}}");
+        ReturnErrorOnFailure(RequestEncoder::PrepareRequest(labelWithMember, request.{{asLowerCamelCase label}}, value["{{asLowerCamelCase label}}"]));
+        {{#if isOptional}}
+        }
+        {{/if}}
+
+        {{/zcl_struct_items}}
+        return CHIP_NO_ERROR;
+    }
+
+    static void FinalizeRequest({{zapTypeToEncodableClusterObjectType name ns=parent.name}} & request)
+    {
+        {{#zcl_struct_items}}
+        RequestEncoder::FinalizeRequest(request.{{asLowerCamelCase label}});
+        {{/zcl_struct_items}}
+    }
+{{/unless}}
+{{/zcl_structs}}
+{{/zcl_clusters}}
+
+  template <typename T>
+  static void FinalizeRequest(T & request) {}
+
+  template <typename T>
+  static void FinalizeRequest(chip::Optional<T> & request)
+  {
+      if (request.HasValue())
+      {
+          RequestEncoder::FinalizeRequest(request.Value());
+      }
+  }
+
+  template <typename T>
+  static void FinalizeRequest(chip::app::DataModel::Nullable<T> & request)
+  {
+      if (!request.IsNull())
+      {
+          RequestEncoder::FinalizeRequest(request.Value());
+      }
+  }
+
+  static void FinalizeRequest(chip::ByteSpan & request)
+  {
+      chip::Platform::MemoryFree(reinterpret_cast<void *>(const_cast<uint8_t *>(request.data())));
+  }
+
+  static void FinalizeRequest(chip::CharSpan & request)
+  {
+      chip::Platform::MemoryFree(reinterpret_cast<void *>(const_cast<char *>(request.data())));
+  }
+
+  template <typename T>
+  static void FinalizeRequest(chip::app::DataModel::List<T> & request)
+  {
+      size_t size = request.size();
+      auto data   = const_cast<typename std::remove_const<T>::type *>(request.data());
+      for (size_t i = 0; i < size; i++)
+      {
+          FinalizeRequest(data[i]);
+      }
+      
+      chip::Platform::MemoryFree(reinterpret_cast<void *>(data));
+  }
+};
+
+CHIP_ERROR JSONAttributeWriter::WriteAttribute(chip::OperationalDeviceProxy * device, chip::EndpointId endpointId, chip::ClusterId clusterId, chip::AttributeId attributeId, Json::Value & value)
+{
+    using namespace chip::app::Clusters;
+
+    switch (clusterId)
+    {
+    {{#chip_client_clusters}}
+    {{#if (chip_server_has_complex_writable_attributes)}}
+    case {{asUpperCamelCase name}}::Id:
+    {
+      switch (attributeId)
+      {
+      {{#chip_server_cluster_attributes}}
+      {{#if isWritableAttribute}}
+      {{#if isList}}
+      case {{asUpperCamelCase parent.name}}::Attributes::{{asUpperCamelCase name}}::Id:
+      {
+        {{zapTypeToEncodableClusterObjectType type ns=parent.name}} request;
+        ReturnErrorOnFailure(RequestEncoder::PrepareRequest("{{asUpperCamelCase name}}", request, value));
+        ReturnErrorOnFailure(mCommand->WriteAttribute(device, endpointId, clusterId, attributeId, request));
+        RequestEncoder::FinalizeRequest(request);
+        break;
+      }
+      {{else if isStruct}}
+      case {{asUpperCamelCase parent.name}}::Attributes::{{asUpperCamelCase name}}::Id:
+      {
+        {{zapTypeToEncodableClusterObjectType type ns=parent.name}} request;
+        ReturnErrorOnFailure(RequestEncoder::PrepareRequest("{{asUpperCamelCase name}}", request, value));
+        ReturnErrorOnFailure(mCommand->WriteAttribute(device, endpointId, clusterId, attributeId, request));
+        RequestEncoder::FinalizeRequest(request);
+        break;
+      }
+      {{/if}}
+      {{/if}}
+      {{/chip_server_cluster_attributes}}
+
+      default:
+      return CHIP_ERROR_INVALID_ARGUMENT;
+      }
+      break;
+    }
+    {{/if}}
+    {{/chip_client_clusters}}
+
+    default:
+      return CHIP_ERROR_INVALID_ARGUMENT;
+    }
+
+    return CHIP_NO_ERROR;
+}

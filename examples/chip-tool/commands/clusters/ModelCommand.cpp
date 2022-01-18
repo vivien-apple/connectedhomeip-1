@@ -33,7 +33,11 @@ void ModelCommand::OnDeviceConnectedFn(void * context, ChipDevice * device)
 {
     ModelCommand * command = reinterpret_cast<ModelCommand *>(context);
     VerifyOrReturn(command != nullptr, ChipLogError(chipTool, "OnDeviceConnectedFn: context is null"));
-    command->SendCommand(device, command->mEndPointId);
+    CHIP_ERROR err = command->SendCommand(device, command->mEndPointId);
+    if (CHIP_NO_ERROR != err)
+    {
+        command->SetCommandExitStatus(err);
+    }
 }
 
 void ModelCommand::OnDeviceConnectionFailureFn(void * context, PeerId peerId, CHIP_ERROR err)

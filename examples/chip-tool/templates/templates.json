@@ -57,6 +57,11 @@
             "output": "cluster/ModelCommandLogger.cpp"
         },
         {
+            "path": "JSONAttributeWriter-src.zapt",
+            "name": "Cluster Commands JSON Attribute Writer",
+            "output": "cluster/JSONAttributeWriter.cpp"
+        },
+        {
             "path": "tests-commands.zapt",
             "name": "Tests Commands header",
             "output": "test/Commands.h"
