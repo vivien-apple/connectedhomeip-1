@@ -184,8 +184,13 @@ bool Command::InitArgument(size_t argIndex, char * argValue)
     switch (arg.type)
     {
     case ArgumentType::Complex: {
-        ComplexArgument * complexArgument = reinterpret_cast<ComplexArgument *>(arg.value);
+        auto complexArgument = reinterpret_cast<ComplexArgument *>(arg.value);
         return CHIP_NO_ERROR == complexArgument->Parse(arg.name, argValue);
+    }
+
+    case ArgumentType::Custom: {
+        auto customArgument = reinterpret_cast<CustomArgument *>(arg.value);
+        return CHIP_NO_ERROR == customArgument->Parse(arg.name, argValue);
     }
 
     case ArgumentType::Attribute: {
@@ -488,6 +493,17 @@ size_t Command::AddArgument(const char * name, ComplexArgument * value)
 {
     Argument arg;
     arg.type  = ArgumentType::Complex;
+    arg.name  = name;
+    arg.value = const_cast<void *>(reinterpret_cast<const void *>(value));
+    arg.flags = 0;
+
+    return AddArgumentToList(std::move(arg));
+}
+
+size_t Command::AddArgument(const char * name, CustomArgument * value)
+{
+    Argument arg;
+    arg.type  = ArgumentType::Custom;
     arg.name  = name;
     arg.value = const_cast<void *>(reinterpret_cast<const void *>(value));
     arg.flags = 0;
