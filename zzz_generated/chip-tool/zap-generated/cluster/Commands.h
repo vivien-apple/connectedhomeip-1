@@ -29,6 +29,7 @@
 #include <commands/clusters/ReadEventCommand.h>
 #include <commands/clusters/ReportAttributeCommand.h>
 #include <commands/clusters/ReportEventCommand.h>
+#include <commands/clusters/WriteAttributeFromJSON.h>
 
 /*----------------------------------------------------------------------------*\
 | Cluster Name                                                        |   ID   |
@@ -8279,6 +8280,8 @@ void registerClusterAccessControl(Commands & commands)
         make_unique<ReadAttribute>(Id, "Extension", Attributes::Extension::Id),             //
         make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),     //
         make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id), //
+        make_unique<WriteAttributeFromJSON>(Id, "Acl", Attributes::Acl::Id),                //
+        make_unique<WriteAttributeFromJSON>(Id, "Extension", Attributes::Extension::Id),    //
         make_unique<ReportAttribute>(Id),
         make_unique<ReportAttribute>(Id, "Acl", Attributes::Acl::Id),             //
         make_unique<ReportAttribute>(Id, "Extension", Attributes::Extension::Id), //
@@ -9610,12 +9613,13 @@ void registerClusterOtaSoftwareUpdateRequestor(Commands & commands)
         // Attributes
         //
         make_unique<ReadAttribute>(Id),
-        make_unique<ReadAttribute>(Id, "DefaultOtaProviders", Attributes::DefaultOtaProviders::Id), //
-        make_unique<ReadAttribute>(Id, "UpdatePossible", Attributes::UpdatePossible::Id),           //
-        make_unique<ReadAttribute>(Id, "UpdateState", Attributes::UpdateState::Id),                 //
-        make_unique<ReadAttribute>(Id, "UpdateStateProgress", Attributes::UpdateStateProgress::Id), //
-        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),             //
-        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),         //
+        make_unique<ReadAttribute>(Id, "DefaultOtaProviders", Attributes::DefaultOtaProviders::Id),          //
+        make_unique<ReadAttribute>(Id, "UpdatePossible", Attributes::UpdatePossible::Id),                    //
+        make_unique<ReadAttribute>(Id, "UpdateState", Attributes::UpdateState::Id),                          //
+        make_unique<ReadAttribute>(Id, "UpdateStateProgress", Attributes::UpdateStateProgress::Id),          //
+        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),                      //
+        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                  //
+        make_unique<WriteAttributeFromJSON>(Id, "DefaultOtaProviders", Attributes::DefaultOtaProviders::Id), //
         make_unique<ReportAttribute>(Id),
         make_unique<ReportAttribute>(Id, "DefaultOtaProviders", Attributes::DefaultOtaProviders::Id), //
         make_unique<ReportAttribute>(Id, "UpdatePossible", Attributes::UpdatePossible::Id),           //
@@ -10180,118 +10184,123 @@ void registerClusterTestCluster(Commands & commands)
         //
         // Attributes
         //
-        make_unique<ReadAttribute>(Id), make_unique<ReadAttribute>(Id, "Boolean", Attributes::Boolean::Id),                   //
-        make_unique<ReadAttribute>(Id, "Bitmap8", Attributes::Bitmap8::Id),                                                   //
-        make_unique<ReadAttribute>(Id, "Bitmap16", Attributes::Bitmap16::Id),                                                 //
-        make_unique<ReadAttribute>(Id, "Bitmap32", Attributes::Bitmap32::Id),                                                 //
-        make_unique<ReadAttribute>(Id, "Bitmap64", Attributes::Bitmap64::Id),                                                 //
-        make_unique<ReadAttribute>(Id, "Int8u", Attributes::Int8u::Id),                                                       //
-        make_unique<ReadAttribute>(Id, "Int16u", Attributes::Int16u::Id),                                                     //
-        make_unique<ReadAttribute>(Id, "Int24u", Attributes::Int24u::Id),                                                     //
-        make_unique<ReadAttribute>(Id, "Int32u", Attributes::Int32u::Id),                                                     //
-        make_unique<ReadAttribute>(Id, "Int40u", Attributes::Int40u::Id),                                                     //
-        make_unique<ReadAttribute>(Id, "Int48u", Attributes::Int48u::Id),                                                     //
-        make_unique<ReadAttribute>(Id, "Int56u", Attributes::Int56u::Id),                                                     //
-        make_unique<ReadAttribute>(Id, "Int64u", Attributes::Int64u::Id),                                                     //
-        make_unique<ReadAttribute>(Id, "Int8s", Attributes::Int8s::Id),                                                       //
-        make_unique<ReadAttribute>(Id, "Int16s", Attributes::Int16s::Id),                                                     //
-        make_unique<ReadAttribute>(Id, "Int24s", Attributes::Int24s::Id),                                                     //
-        make_unique<ReadAttribute>(Id, "Int32s", Attributes::Int32s::Id),                                                     //
-        make_unique<ReadAttribute>(Id, "Int40s", Attributes::Int40s::Id),                                                     //
-        make_unique<ReadAttribute>(Id, "Int48s", Attributes::Int48s::Id),                                                     //
-        make_unique<ReadAttribute>(Id, "Int56s", Attributes::Int56s::Id),                                                     //
-        make_unique<ReadAttribute>(Id, "Int64s", Attributes::Int64s::Id),                                                     //
-        make_unique<ReadAttribute>(Id, "Enum8", Attributes::Enum8::Id),                                                       //
-        make_unique<ReadAttribute>(Id, "Enum16", Attributes::Enum16::Id),                                                     //
-        make_unique<ReadAttribute>(Id, "FloatSingle", Attributes::FloatSingle::Id),                                           //
-        make_unique<ReadAttribute>(Id, "FloatDouble", Attributes::FloatDouble::Id),                                           //
-        make_unique<ReadAttribute>(Id, "OctetString", Attributes::OctetString::Id),                                           //
-        make_unique<ReadAttribute>(Id, "ListInt8u", Attributes::ListInt8u::Id),                                               //
-        make_unique<ReadAttribute>(Id, "ListOctetString", Attributes::ListOctetString::Id),                                   //
-        make_unique<ReadAttribute>(Id, "ListStructOctetString", Attributes::ListStructOctetString::Id),                       //
-        make_unique<ReadAttribute>(Id, "LongOctetString", Attributes::LongOctetString::Id),                                   //
-        make_unique<ReadAttribute>(Id, "CharString", Attributes::CharString::Id),                                             //
-        make_unique<ReadAttribute>(Id, "LongCharString", Attributes::LongCharString::Id),                                     //
-        make_unique<ReadAttribute>(Id, "EpochUs", Attributes::EpochUs::Id),                                                   //
-        make_unique<ReadAttribute>(Id, "EpochS", Attributes::EpochS::Id),                                                     //
-        make_unique<ReadAttribute>(Id, "VendorId", Attributes::VendorId::Id),                                                 //
-        make_unique<ReadAttribute>(Id, "ListNullablesAndOptionalsStruct", Attributes::ListNullablesAndOptionalsStruct::Id),   //
-        make_unique<ReadAttribute>(Id, "EnumAttr", Attributes::EnumAttr::Id),                                                 //
-        make_unique<ReadAttribute>(Id, "StructAttr", Attributes::StructAttr::Id),                                             //
-        make_unique<ReadAttribute>(Id, "RangeRestrictedInt8u", Attributes::RangeRestrictedInt8u::Id),                         //
-        make_unique<ReadAttribute>(Id, "RangeRestrictedInt8s", Attributes::RangeRestrictedInt8s::Id),                         //
-        make_unique<ReadAttribute>(Id, "RangeRestrictedInt16u", Attributes::RangeRestrictedInt16u::Id),                       //
-        make_unique<ReadAttribute>(Id, "RangeRestrictedInt16s", Attributes::RangeRestrictedInt16s::Id),                       //
-        make_unique<ReadAttribute>(Id, "ListLongOctetString", Attributes::ListLongOctetString::Id),                           //
-        make_unique<ReadAttribute>(Id, "TimedWriteBoolean", Attributes::TimedWriteBoolean::Id),                               //
-        make_unique<ReadAttribute>(Id, "Unsupported", Attributes::Unsupported::Id),                                           //
-        make_unique<ReadAttribute>(Id, "NullableBoolean", Attributes::NullableBoolean::Id),                                   //
-        make_unique<ReadAttribute>(Id, "NullableBitmap8", Attributes::NullableBitmap8::Id),                                   //
-        make_unique<ReadAttribute>(Id, "NullableBitmap16", Attributes::NullableBitmap16::Id),                                 //
-        make_unique<ReadAttribute>(Id, "NullableBitmap32", Attributes::NullableBitmap32::Id),                                 //
-        make_unique<ReadAttribute>(Id, "NullableBitmap64", Attributes::NullableBitmap64::Id),                                 //
-        make_unique<ReadAttribute>(Id, "NullableInt8u", Attributes::NullableInt8u::Id),                                       //
-        make_unique<ReadAttribute>(Id, "NullableInt16u", Attributes::NullableInt16u::Id),                                     //
-        make_unique<ReadAttribute>(Id, "NullableInt24u", Attributes::NullableInt24u::Id),                                     //
-        make_unique<ReadAttribute>(Id, "NullableInt32u", Attributes::NullableInt32u::Id),                                     //
-        make_unique<ReadAttribute>(Id, "NullableInt40u", Attributes::NullableInt40u::Id),                                     //
-        make_unique<ReadAttribute>(Id, "NullableInt48u", Attributes::NullableInt48u::Id),                                     //
-        make_unique<ReadAttribute>(Id, "NullableInt56u", Attributes::NullableInt56u::Id),                                     //
-        make_unique<ReadAttribute>(Id, "NullableInt64u", Attributes::NullableInt64u::Id),                                     //
-        make_unique<ReadAttribute>(Id, "NullableInt8s", Attributes::NullableInt8s::Id),                                       //
-        make_unique<ReadAttribute>(Id, "NullableInt16s", Attributes::NullableInt16s::Id),                                     //
-        make_unique<ReadAttribute>(Id, "NullableInt24s", Attributes::NullableInt24s::Id),                                     //
-        make_unique<ReadAttribute>(Id, "NullableInt32s", Attributes::NullableInt32s::Id),                                     //
-        make_unique<ReadAttribute>(Id, "NullableInt40s", Attributes::NullableInt40s::Id),                                     //
-        make_unique<ReadAttribute>(Id, "NullableInt48s", Attributes::NullableInt48s::Id),                                     //
-        make_unique<ReadAttribute>(Id, "NullableInt56s", Attributes::NullableInt56s::Id),                                     //
-        make_unique<ReadAttribute>(Id, "NullableInt64s", Attributes::NullableInt64s::Id),                                     //
-        make_unique<ReadAttribute>(Id, "NullableEnum8", Attributes::NullableEnum8::Id),                                       //
-        make_unique<ReadAttribute>(Id, "NullableEnum16", Attributes::NullableEnum16::Id),                                     //
-        make_unique<ReadAttribute>(Id, "NullableFloatSingle", Attributes::NullableFloatSingle::Id),                           //
-        make_unique<ReadAttribute>(Id, "NullableFloatDouble", Attributes::NullableFloatDouble::Id),                           //
-        make_unique<ReadAttribute>(Id, "NullableOctetString", Attributes::NullableOctetString::Id),                           //
-        make_unique<ReadAttribute>(Id, "NullableCharString", Attributes::NullableCharString::Id),                             //
-        make_unique<ReadAttribute>(Id, "NullableEnumAttr", Attributes::NullableEnumAttr::Id),                                 //
-        make_unique<ReadAttribute>(Id, "NullableStruct", Attributes::NullableStruct::Id),                                     //
-        make_unique<ReadAttribute>(Id, "NullableRangeRestrictedInt8u", Attributes::NullableRangeRestrictedInt8u::Id),         //
-        make_unique<ReadAttribute>(Id, "NullableRangeRestrictedInt8s", Attributes::NullableRangeRestrictedInt8s::Id),         //
-        make_unique<ReadAttribute>(Id, "NullableRangeRestrictedInt16u", Attributes::NullableRangeRestrictedInt16u::Id),       //
-        make_unique<ReadAttribute>(Id, "NullableRangeRestrictedInt16s", Attributes::NullableRangeRestrictedInt16s::Id),       //
-        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),                                       //
-        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                                   //
-        make_unique<WriteTestClusterBoolean>(),                                                                               //
-        make_unique<WriteTestClusterBitmap8>(),                                                                               //
-        make_unique<WriteTestClusterBitmap16>(),                                                                              //
-        make_unique<WriteTestClusterBitmap32>(),                                                                              //
-        make_unique<WriteTestClusterBitmap64>(),                                                                              //
-        make_unique<WriteTestClusterInt8u>(),                                                                                 //
-        make_unique<WriteTestClusterInt16u>(),                                                                                //
-        make_unique<WriteTestClusterInt24u>(),                                                                                //
-        make_unique<WriteTestClusterInt32u>(),                                                                                //
-        make_unique<WriteTestClusterInt40u>(),                                                                                //
-        make_unique<WriteTestClusterInt48u>(),                                                                                //
-        make_unique<WriteTestClusterInt56u>(),                                                                                //
-        make_unique<WriteTestClusterInt64u>(),                                                                                //
-        make_unique<WriteTestClusterInt8s>(),                                                                                 //
-        make_unique<WriteTestClusterInt16s>(),                                                                                //
-        make_unique<WriteTestClusterInt24s>(),                                                                                //
-        make_unique<WriteTestClusterInt32s>(),                                                                                //
-        make_unique<WriteTestClusterInt40s>(),                                                                                //
-        make_unique<WriteTestClusterInt48s>(),                                                                                //
-        make_unique<WriteTestClusterInt56s>(),                                                                                //
-        make_unique<WriteTestClusterInt64s>(),                                                                                //
-        make_unique<WriteTestClusterEnum8>(),                                                                                 //
-        make_unique<WriteTestClusterEnum16>(),                                                                                //
-        make_unique<WriteTestClusterFloatSingle>(),                                                                           //
-        make_unique<WriteTestClusterFloatDouble>(),                                                                           //
-        make_unique<WriteTestClusterOctetString>(),                                                                           //
-        make_unique<WriteTestClusterLongOctetString>(),                                                                       //
-        make_unique<WriteTestClusterCharString>(),                                                                            //
-        make_unique<WriteTestClusterLongCharString>(),                                                                        //
-        make_unique<WriteTestClusterEpochUs>(),                                                                               //
-        make_unique<WriteTestClusterEpochS>(),                                                                                //
-        make_unique<WriteTestClusterVendorId>(),                                                                              //
+        make_unique<ReadAttribute>(Id), make_unique<ReadAttribute>(Id, "Boolean", Attributes::Boolean::Id),                 //
+        make_unique<ReadAttribute>(Id, "Bitmap8", Attributes::Bitmap8::Id),                                                 //
+        make_unique<ReadAttribute>(Id, "Bitmap16", Attributes::Bitmap16::Id),                                               //
+        make_unique<ReadAttribute>(Id, "Bitmap32", Attributes::Bitmap32::Id),                                               //
+        make_unique<ReadAttribute>(Id, "Bitmap64", Attributes::Bitmap64::Id),                                               //
+        make_unique<ReadAttribute>(Id, "Int8u", Attributes::Int8u::Id),                                                     //
+        make_unique<ReadAttribute>(Id, "Int16u", Attributes::Int16u::Id),                                                   //
+        make_unique<ReadAttribute>(Id, "Int24u", Attributes::Int24u::Id),                                                   //
+        make_unique<ReadAttribute>(Id, "Int32u", Attributes::Int32u::Id),                                                   //
+        make_unique<ReadAttribute>(Id, "Int40u", Attributes::Int40u::Id),                                                   //
+        make_unique<ReadAttribute>(Id, "Int48u", Attributes::Int48u::Id),                                                   //
+        make_unique<ReadAttribute>(Id, "Int56u", Attributes::Int56u::Id),                                                   //
+        make_unique<ReadAttribute>(Id, "Int64u", Attributes::Int64u::Id),                                                   //
+        make_unique<ReadAttribute>(Id, "Int8s", Attributes::Int8s::Id),                                                     //
+        make_unique<ReadAttribute>(Id, "Int16s", Attributes::Int16s::Id),                                                   //
+        make_unique<ReadAttribute>(Id, "Int24s", Attributes::Int24s::Id),                                                   //
+        make_unique<ReadAttribute>(Id, "Int32s", Attributes::Int32s::Id),                                                   //
+        make_unique<ReadAttribute>(Id, "Int40s", Attributes::Int40s::Id),                                                   //
+        make_unique<ReadAttribute>(Id, "Int48s", Attributes::Int48s::Id),                                                   //
+        make_unique<ReadAttribute>(Id, "Int56s", Attributes::Int56s::Id),                                                   //
+        make_unique<ReadAttribute>(Id, "Int64s", Attributes::Int64s::Id),                                                   //
+        make_unique<ReadAttribute>(Id, "Enum8", Attributes::Enum8::Id),                                                     //
+        make_unique<ReadAttribute>(Id, "Enum16", Attributes::Enum16::Id),                                                   //
+        make_unique<ReadAttribute>(Id, "FloatSingle", Attributes::FloatSingle::Id),                                         //
+        make_unique<ReadAttribute>(Id, "FloatDouble", Attributes::FloatDouble::Id),                                         //
+        make_unique<ReadAttribute>(Id, "OctetString", Attributes::OctetString::Id),                                         //
+        make_unique<ReadAttribute>(Id, "ListInt8u", Attributes::ListInt8u::Id),                                             //
+        make_unique<ReadAttribute>(Id, "ListOctetString", Attributes::ListOctetString::Id),                                 //
+        make_unique<ReadAttribute>(Id, "ListStructOctetString", Attributes::ListStructOctetString::Id),                     //
+        make_unique<ReadAttribute>(Id, "LongOctetString", Attributes::LongOctetString::Id),                                 //
+        make_unique<ReadAttribute>(Id, "CharString", Attributes::CharString::Id),                                           //
+        make_unique<ReadAttribute>(Id, "LongCharString", Attributes::LongCharString::Id),                                   //
+        make_unique<ReadAttribute>(Id, "EpochUs", Attributes::EpochUs::Id),                                                 //
+        make_unique<ReadAttribute>(Id, "EpochS", Attributes::EpochS::Id),                                                   //
+        make_unique<ReadAttribute>(Id, "VendorId", Attributes::VendorId::Id),                                               //
+        make_unique<ReadAttribute>(Id, "ListNullablesAndOptionalsStruct", Attributes::ListNullablesAndOptionalsStruct::Id), //
+        make_unique<ReadAttribute>(Id, "EnumAttr", Attributes::EnumAttr::Id),                                               //
+        make_unique<ReadAttribute>(Id, "StructAttr", Attributes::StructAttr::Id),                                           //
+        make_unique<ReadAttribute>(Id, "RangeRestrictedInt8u", Attributes::RangeRestrictedInt8u::Id),                       //
+        make_unique<ReadAttribute>(Id, "RangeRestrictedInt8s", Attributes::RangeRestrictedInt8s::Id),                       //
+        make_unique<ReadAttribute>(Id, "RangeRestrictedInt16u", Attributes::RangeRestrictedInt16u::Id),                     //
+        make_unique<ReadAttribute>(Id, "RangeRestrictedInt16s", Attributes::RangeRestrictedInt16s::Id),                     //
+        make_unique<ReadAttribute>(Id, "ListLongOctetString", Attributes::ListLongOctetString::Id),                         //
+        make_unique<ReadAttribute>(Id, "TimedWriteBoolean", Attributes::TimedWriteBoolean::Id),                             //
+        make_unique<ReadAttribute>(Id, "Unsupported", Attributes::Unsupported::Id),                                         //
+        make_unique<ReadAttribute>(Id, "NullableBoolean", Attributes::NullableBoolean::Id),                                 //
+        make_unique<ReadAttribute>(Id, "NullableBitmap8", Attributes::NullableBitmap8::Id),                                 //
+        make_unique<ReadAttribute>(Id, "NullableBitmap16", Attributes::NullableBitmap16::Id),                               //
+        make_unique<ReadAttribute>(Id, "NullableBitmap32", Attributes::NullableBitmap32::Id),                               //
+        make_unique<ReadAttribute>(Id, "NullableBitmap64", Attributes::NullableBitmap64::Id),                               //
+        make_unique<ReadAttribute>(Id, "NullableInt8u", Attributes::NullableInt8u::Id),                                     //
+        make_unique<ReadAttribute>(Id, "NullableInt16u", Attributes::NullableInt16u::Id),                                   //
+        make_unique<ReadAttribute>(Id, "NullableInt24u", Attributes::NullableInt24u::Id),                                   //
+        make_unique<ReadAttribute>(Id, "NullableInt32u", Attributes::NullableInt32u::Id),                                   //
+        make_unique<ReadAttribute>(Id, "NullableInt40u", Attributes::NullableInt40u::Id),                                   //
+        make_unique<ReadAttribute>(Id, "NullableInt48u", Attributes::NullableInt48u::Id),                                   //
+        make_unique<ReadAttribute>(Id, "NullableInt56u", Attributes::NullableInt56u::Id),                                   //
+        make_unique<ReadAttribute>(Id, "NullableInt64u", Attributes::NullableInt64u::Id),                                   //
+        make_unique<ReadAttribute>(Id, "NullableInt8s", Attributes::NullableInt8s::Id),                                     //
+        make_unique<ReadAttribute>(Id, "NullableInt16s", Attributes::NullableInt16s::Id),                                   //
+        make_unique<ReadAttribute>(Id, "NullableInt24s", Attributes::NullableInt24s::Id),                                   //
+        make_unique<ReadAttribute>(Id, "NullableInt32s", Attributes::NullableInt32s::Id),                                   //
+        make_unique<ReadAttribute>(Id, "NullableInt40s", Attributes::NullableInt40s::Id),                                   //
+        make_unique<ReadAttribute>(Id, "NullableInt48s", Attributes::NullableInt48s::Id),                                   //
+        make_unique<ReadAttribute>(Id, "NullableInt56s", Attributes::NullableInt56s::Id),                                   //
+        make_unique<ReadAttribute>(Id, "NullableInt64s", Attributes::NullableInt64s::Id),                                   //
+        make_unique<ReadAttribute>(Id, "NullableEnum8", Attributes::NullableEnum8::Id),                                     //
+        make_unique<ReadAttribute>(Id, "NullableEnum16", Attributes::NullableEnum16::Id),                                   //
+        make_unique<ReadAttribute>(Id, "NullableFloatSingle", Attributes::NullableFloatSingle::Id),                         //
+        make_unique<ReadAttribute>(Id, "NullableFloatDouble", Attributes::NullableFloatDouble::Id),                         //
+        make_unique<ReadAttribute>(Id, "NullableOctetString", Attributes::NullableOctetString::Id),                         //
+        make_unique<ReadAttribute>(Id, "NullableCharString", Attributes::NullableCharString::Id),                           //
+        make_unique<ReadAttribute>(Id, "NullableEnumAttr", Attributes::NullableEnumAttr::Id),                               //
+        make_unique<ReadAttribute>(Id, "NullableStruct", Attributes::NullableStruct::Id),                                   //
+        make_unique<ReadAttribute>(Id, "NullableRangeRestrictedInt8u", Attributes::NullableRangeRestrictedInt8u::Id),       //
+        make_unique<ReadAttribute>(Id, "NullableRangeRestrictedInt8s", Attributes::NullableRangeRestrictedInt8s::Id),       //
+        make_unique<ReadAttribute>(Id, "NullableRangeRestrictedInt16u", Attributes::NullableRangeRestrictedInt16u::Id),     //
+        make_unique<ReadAttribute>(Id, "NullableRangeRestrictedInt16s", Attributes::NullableRangeRestrictedInt16s::Id),     //
+        make_unique<ReadAttribute>(Id, "AttributeList", Attributes::AttributeList::Id),                                     //
+        make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                                 //
+        make_unique<WriteTestClusterBoolean>(),                                                                             //
+        make_unique<WriteTestClusterBitmap8>(),                                                                             //
+        make_unique<WriteTestClusterBitmap16>(),                                                                            //
+        make_unique<WriteTestClusterBitmap32>(),                                                                            //
+        make_unique<WriteTestClusterBitmap64>(),                                                                            //
+        make_unique<WriteTestClusterInt8u>(),                                                                               //
+        make_unique<WriteTestClusterInt16u>(),                                                                              //
+        make_unique<WriteTestClusterInt24u>(),                                                                              //
+        make_unique<WriteTestClusterInt32u>(),                                                                              //
+        make_unique<WriteTestClusterInt40u>(),                                                                              //
+        make_unique<WriteTestClusterInt48u>(),                                                                              //
+        make_unique<WriteTestClusterInt56u>(),                                                                              //
+        make_unique<WriteTestClusterInt64u>(),                                                                              //
+        make_unique<WriteTestClusterInt8s>(),                                                                               //
+        make_unique<WriteTestClusterInt16s>(),                                                                              //
+        make_unique<WriteTestClusterInt24s>(),                                                                              //
+        make_unique<WriteTestClusterInt32s>(),                                                                              //
+        make_unique<WriteTestClusterInt40s>(),                                                                              //
+        make_unique<WriteTestClusterInt48s>(),                                                                              //
+        make_unique<WriteTestClusterInt56s>(),                                                                              //
+        make_unique<WriteTestClusterInt64s>(),                                                                              //
+        make_unique<WriteTestClusterEnum8>(),                                                                               //
+        make_unique<WriteTestClusterEnum16>(),                                                                              //
+        make_unique<WriteTestClusterFloatSingle>(),                                                                         //
+        make_unique<WriteTestClusterFloatDouble>(),                                                                         //
+        make_unique<WriteTestClusterOctetString>(),                                                                         //
+        make_unique<WriteAttributeFromJSON>(Id, "ListInt8u", Attributes::ListInt8u::Id),                                    //
+        make_unique<WriteAttributeFromJSON>(Id, "ListOctetString", Attributes::ListOctetString::Id),                        //
+        make_unique<WriteAttributeFromJSON>(Id, "ListStructOctetString", Attributes::ListStructOctetString::Id),            //
+        make_unique<WriteTestClusterLongOctetString>(),                                                                     //
+        make_unique<WriteTestClusterCharString>(),                                                                          //
+        make_unique<WriteTestClusterLongCharString>(),                                                                      //
+        make_unique<WriteTestClusterEpochUs>(),                                                                             //
+        make_unique<WriteTestClusterEpochS>(),                                                                              //
+        make_unique<WriteTestClusterVendorId>(),                                                                            //
+        make_unique<WriteAttributeFromJSON>(Id, "ListNullablesAndOptionalsStruct",
+                                            Attributes::ListNullablesAndOptionalsStruct::Id),                                 //
         make_unique<WriteTestClusterEnumAttr>(),                                                                              //
         make_unique<WriteTestClusterRangeRestrictedInt8u>(),                                                                  //
         make_unique<WriteTestClusterRangeRestrictedInt8s>(),                                                                  //
@@ -10680,6 +10689,7 @@ void registerClusterUserLabel(Commands & commands)
         //
         make_unique<ReadAttribute>(Id), make_unique<ReadAttribute>(Id, "LabelList", Attributes::LabelList::Id), //
         make_unique<ReadAttribute>(Id, "ClusterRevision", Attributes::ClusterRevision::Id),                     //
+        make_unique<WriteAttributeFromJSON>(Id, "LabelList", Attributes::LabelList::Id),                        //
     };
 
     commands.Register(clusterName, clusterCommands);
