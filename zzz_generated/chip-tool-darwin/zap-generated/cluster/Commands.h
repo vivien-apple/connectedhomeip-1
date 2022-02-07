@@ -1868,28 +1868,6 @@ public:
     }
 };
 
-class WriteApplicationBasicApplicationApp : public ModelCommand {
-public:
-    WriteApplicationBasicApplicationApp()
-        : ModelCommand("write")
-    {
-        AddArgument("attr-name", "application-app");
-        //  Struct parsing is not supported yet
-        ModelCommand::AddArguments();
-    }
-
-    ~WriteApplicationBasicApplicationApp() {}
-
-    CHIP_ERROR SendCommand(CHIPDevice * device, chip::EndpointId endpointId) override
-    {
-        ChipLogProgress(chipTool, "Sending cluster (0x0000050D) WriteAttribute (0x00000004) on endpoint %" PRIu16, endpointId);
-
-        return CHIP_ERROR_NOT_IMPLEMENTED;
-    }
-
-private:
-};
-
 class ReportApplicationBasicApplicationApp : public ModelCommand {
 public:
     ReportApplicationBasicApplicationApp()
@@ -2375,6 +2353,7 @@ private:
 |------------------------------------------------------------------------------|
 | Attributes:                                                         |        |
 | * ApplicationLauncherList                                           | 0x0000 |
+| * ApplicationLauncherApp                                            | 0x0001 |
 | * ServerGeneratedCommandList                                        | 0xFFF8 |
 | * ClientGeneratedCommandList                                        | 0xFFF9 |
 | * AttributeList                                                     | 0xFFFB |
@@ -2426,7 +2405,6 @@ public:
     ApplicationLauncherLaunchAppRequest()
         : ModelCommand("launch-app-request")
     {
-        AddArgument("Data", &mData);
         ModelCommand::AddArguments();
     }
 
@@ -2440,8 +2418,8 @@ public:
                                                                                       queue:callbackQueue];
 
         __auto_type * params = [[CHIPApplicationLauncherClusterLaunchAppRequestParams alloc] init];
-        params.data = [[NSString alloc] initWithBytes:mData.data() length:mData.size() encoding:NSUTF8StringEncoding];
         // application Struct parsing is not supported yet
+        params.data = [[NSData alloc] initWithBytes:mData.data() length:mData.size()];
         [cluster launchAppRequestWithParams:params
                           completionHandler:^(
                               CHIPApplicationLauncherClusterLauncherResponseParams * _Nullable values, NSError * _Nullable error) {
@@ -2539,6 +2517,82 @@ public:
     CHIP_ERROR SendCommand(CHIPDevice * device, chip::EndpointId endpointId) override
     {
         ChipLogProgress(chipTool, "Sending cluster (0x0000050C) ReportAttribute (0x00000000) on endpoint %" PRIu16, endpointId);
+
+        return CHIP_ERROR_NOT_IMPLEMENTED;
+    }
+
+    chip::System::Clock::Timeout GetWaitDuration() const override
+    {
+        return chip::System::Clock::Seconds16(mWait ? UINT16_MAX : 10);
+    }
+
+private:
+    uint16_t mMinInterval;
+    uint16_t mMaxInterval;
+    bool mWait;
+};
+
+/*
+ * Attribute ApplicationLauncherApp
+ */
+class ReadApplicationLauncherApplicationLauncherApp : public ModelCommand {
+public:
+    ReadApplicationLauncherApplicationLauncherApp()
+        : ModelCommand("read")
+    {
+        AddArgument("attr-name", "application-launcher-app");
+        ModelCommand::AddArguments();
+    }
+
+    ~ReadApplicationLauncherApplicationLauncherApp() {}
+
+    CHIP_ERROR SendCommand(CHIPDevice * device, chip::EndpointId endpointId) override
+    {
+        ChipLogProgress(chipTool, "Sending cluster (0x0000050C) ReadAttribute (0x00000001) on endpoint %" PRIu16, endpointId);
+
+        return CHIP_ERROR_NOT_IMPLEMENTED;
+    }
+};
+
+class WriteApplicationLauncherApplicationLauncherApp : public ModelCommand {
+public:
+    WriteApplicationLauncherApplicationLauncherApp()
+        : ModelCommand("write")
+    {
+        AddArgument("attr-name", "application-launcher-app");
+        //  Struct parsing is not supported yet
+        ModelCommand::AddArguments();
+    }
+
+    ~WriteApplicationLauncherApplicationLauncherApp() {}
+
+    CHIP_ERROR SendCommand(CHIPDevice * device, chip::EndpointId endpointId) override
+    {
+        ChipLogProgress(chipTool, "Sending cluster (0x0000050C) WriteAttribute (0x00000001) on endpoint %" PRIu16, endpointId);
+
+        return CHIP_ERROR_NOT_IMPLEMENTED;
+    }
+
+private:
+};
+
+class ReportApplicationLauncherApplicationLauncherApp : public ModelCommand {
+public:
+    ReportApplicationLauncherApplicationLauncherApp()
+        : ModelCommand("subscribe")
+    {
+        AddArgument("attr-name", "application-launcher-app");
+        AddArgument("min-interval", 0, UINT16_MAX, &mMinInterval);
+        AddArgument("max-interval", 0, UINT16_MAX, &mMaxInterval);
+        AddArgument("wait", 0, 1, &mWait);
+        ModelCommand::AddArguments();
+    }
+
+    ~ReportApplicationLauncherApplicationLauncherApp() {}
+
+    CHIP_ERROR SendCommand(CHIPDevice * device, chip::EndpointId endpointId) override
+    {
+        ChipLogProgress(chipTool, "Sending cluster (0x0000050C) ReportAttribute (0x00000001) on endpoint %" PRIu16, endpointId);
 
         return CHIP_ERROR_NOT_IMPLEMENTED;
     }
@@ -9259,6 +9313,8 @@ private:
 |------------------------------------------------------------------------------|
 | Attributes:                                                         |        |
 | * ChannelList                                                       | 0x0000 |
+| * ChannelLineup                                                     | 0x0001 |
+| * CurrentChannel                                                    | 0x0002 |
 | * ServerGeneratedCommandList                                        | 0xFFF8 |
 | * ClientGeneratedCommandList                                        | 0xFFF9 |
 | * AttributeList                                                     | 0xFFFB |
@@ -9417,6 +9473,114 @@ public:
     CHIP_ERROR SendCommand(CHIPDevice * device, chip::EndpointId endpointId) override
     {
         ChipLogProgress(chipTool, "Sending cluster (0x00000504) ReportAttribute (0x00000000) on endpoint %" PRIu16, endpointId);
+
+        return CHIP_ERROR_NOT_IMPLEMENTED;
+    }
+
+    chip::System::Clock::Timeout GetWaitDuration() const override
+    {
+        return chip::System::Clock::Seconds16(mWait ? UINT16_MAX : 10);
+    }
+
+private:
+    uint16_t mMinInterval;
+    uint16_t mMaxInterval;
+    bool mWait;
+};
+
+/*
+ * Attribute ChannelLineup
+ */
+class ReadChannelChannelLineup : public ModelCommand {
+public:
+    ReadChannelChannelLineup()
+        : ModelCommand("read")
+    {
+        AddArgument("attr-name", "channel-lineup");
+        ModelCommand::AddArguments();
+    }
+
+    ~ReadChannelChannelLineup() {}
+
+    CHIP_ERROR SendCommand(CHIPDevice * device, chip::EndpointId endpointId) override
+    {
+        ChipLogProgress(chipTool, "Sending cluster (0x00000504) ReadAttribute (0x00000001) on endpoint %" PRIu16, endpointId);
+
+        return CHIP_ERROR_NOT_IMPLEMENTED;
+    }
+};
+
+class ReportChannelChannelLineup : public ModelCommand {
+public:
+    ReportChannelChannelLineup()
+        : ModelCommand("subscribe")
+    {
+        AddArgument("attr-name", "channel-lineup");
+        AddArgument("min-interval", 0, UINT16_MAX, &mMinInterval);
+        AddArgument("max-interval", 0, UINT16_MAX, &mMaxInterval);
+        AddArgument("wait", 0, 1, &mWait);
+        ModelCommand::AddArguments();
+    }
+
+    ~ReportChannelChannelLineup() {}
+
+    CHIP_ERROR SendCommand(CHIPDevice * device, chip::EndpointId endpointId) override
+    {
+        ChipLogProgress(chipTool, "Sending cluster (0x00000504) ReportAttribute (0x00000001) on endpoint %" PRIu16, endpointId);
+
+        return CHIP_ERROR_NOT_IMPLEMENTED;
+    }
+
+    chip::System::Clock::Timeout GetWaitDuration() const override
+    {
+        return chip::System::Clock::Seconds16(mWait ? UINT16_MAX : 10);
+    }
+
+private:
+    uint16_t mMinInterval;
+    uint16_t mMaxInterval;
+    bool mWait;
+};
+
+/*
+ * Attribute CurrentChannel
+ */
+class ReadChannelCurrentChannel : public ModelCommand {
+public:
+    ReadChannelCurrentChannel()
+        : ModelCommand("read")
+    {
+        AddArgument("attr-name", "current-channel");
+        ModelCommand::AddArguments();
+    }
+
+    ~ReadChannelCurrentChannel() {}
+
+    CHIP_ERROR SendCommand(CHIPDevice * device, chip::EndpointId endpointId) override
+    {
+        ChipLogProgress(chipTool, "Sending cluster (0x00000504) ReadAttribute (0x00000002) on endpoint %" PRIu16, endpointId);
+
+        return CHIP_ERROR_NOT_IMPLEMENTED;
+    }
+};
+
+class ReportChannelCurrentChannel : public ModelCommand {
+public:
+    ReportChannelCurrentChannel()
+        : ModelCommand("subscribe")
+    {
+        AddArgument("attr-name", "current-channel");
+        AddArgument("min-interval", 0, UINT16_MAX, &mMinInterval);
+        AddArgument("max-interval", 0, UINT16_MAX, &mMaxInterval);
+        AddArgument("wait", 0, 1, &mWait);
+        ModelCommand::AddArguments();
+    }
+
+    ~ReportChannelCurrentChannel() {}
+
+    CHIP_ERROR SendCommand(CHIPDevice * device, chip::EndpointId endpointId) override
+    {
+        ChipLogProgress(chipTool, "Sending cluster (0x00000504) ReportAttribute (0x00000002) on endpoint %" PRIu16, endpointId);
 
         return CHIP_ERROR_NOT_IMPLEMENTED;
     }
@@ -14483,9 +14647,9 @@ public:
         CHIPContentLauncher * cluster = [[CHIPContentLauncher alloc] initWithDevice:device endpoint:endpointId queue:callbackQueue];
 
         __auto_type * params = [[CHIPContentLauncherClusterLaunchContentRequestParams alloc] init];
+        // search Array parsing is not supported yet
         params.autoPlay = [NSNumber numberWithBool:mAutoPlay];
         params.data = [[NSString alloc] initWithBytes:mData.data() length:mData.size() encoding:NSUTF8StringEncoding];
-        // search Array parsing is not supported yet
         [cluster launchContentRequestWithParams:params
                               completionHandler:^(
                                   CHIPContentLauncherClusterLaunchResponseParams * _Nullable values, NSError * _Nullable error) {
@@ -28282,6 +28446,7 @@ private:
 | * PlaybackState                                                     | 0x0000 |
 | * StartTime                                                         | 0x0001 |
 | * Duration                                                          | 0x0002 |
+| * Position                                                          | 0x0003 |
 | * PlaybackSpeed                                                     | 0x0004 |
 | * SeekRangeEnd                                                      | 0x0005 |
 | * SeekRangeStart                                                    | 0x0006 |
@@ -28806,6 +28971,60 @@ public:
     CHIP_ERROR SendCommand(CHIPDevice * device, chip::EndpointId endpointId) override
     {
         ChipLogProgress(chipTool, "Sending cluster (0x00000506) ReportAttribute (0x00000002) on endpoint %" PRIu16, endpointId);
+
+        return CHIP_ERROR_NOT_IMPLEMENTED;
+    }
+
+    chip::System::Clock::Timeout GetWaitDuration() const override
+    {
+        return chip::System::Clock::Seconds16(mWait ? UINT16_MAX : 10);
+    }
+
+private:
+    uint16_t mMinInterval;
+    uint16_t mMaxInterval;
+    bool mWait;
+};
+
+/*
+ * Attribute Position
+ */
+class ReadMediaPlaybackPosition : public ModelCommand {
+public:
+    ReadMediaPlaybackPosition()
+        : ModelCommand("read")
+    {
+        AddArgument("attr-name", "position");
+        ModelCommand::AddArguments();
+    }
+
+    ~ReadMediaPlaybackPosition() {}
+
+    CHIP_ERROR SendCommand(CHIPDevice * device, chip::EndpointId endpointId) override
+    {
+        ChipLogProgress(chipTool, "Sending cluster (0x00000506) ReadAttribute (0x00000003) on endpoint %" PRIu16, endpointId);
+
+        return CHIP_ERROR_NOT_IMPLEMENTED;
+    }
+};
+
+class ReportMediaPlaybackPosition : public ModelCommand {
+public:
+    ReportMediaPlaybackPosition()
+        : ModelCommand("subscribe")
+    {
+        AddArgument("attr-name", "position");
+        AddArgument("min-interval", 0, UINT16_MAX, &mMinInterval);
+        AddArgument("max-interval", 0, UINT16_MAX, &mMaxInterval);
+        AddArgument("wait", 0, 1, &mWait);
+        ModelCommand::AddArguments();
+    }
+
+    ~ReportMediaPlaybackPosition() {}
+
+    CHIP_ERROR SendCommand(CHIPDevice * device, chip::EndpointId endpointId) override
+    {
+        ChipLogProgress(chipTool, "Sending cluster (0x00000506) ReportAttribute (0x00000003) on endpoint %" PRIu16, endpointId);
 
         return CHIP_ERROR_NOT_IMPLEMENTED;
     }
@@ -62459,7 +62678,6 @@ void registerClusterApplicationBasic(Commands & commands)
         make_unique<ReadApplicationBasicProductId>(), //
         make_unique<ReportApplicationBasicProductId>(), //
         make_unique<ReadApplicationBasicApplicationApp>(), //
-        make_unique<WriteApplicationBasicApplicationApp>(), //
         make_unique<ReportApplicationBasicApplicationApp>(), //
         make_unique<ReadApplicationBasicApplicationStatus>(), //
         make_unique<ReportApplicationBasicApplicationStatus>(), //
@@ -62489,6 +62707,9 @@ void registerClusterApplicationLauncher(Commands & commands)
         make_unique<ApplicationLauncherStopAppRequest>(), //
         make_unique<ReadApplicationLauncherApplicationLauncherList>(), //
         make_unique<ReportApplicationLauncherApplicationLauncherList>(), //
+        make_unique<ReadApplicationLauncherApplicationLauncherApp>(), //
+        make_unique<WriteApplicationLauncherApplicationLauncherApp>(), //
+        make_unique<ReportApplicationLauncherApplicationLauncherApp>(), //
         make_unique<ReadApplicationLauncherServerGeneratedCommandList>(), //
         make_unique<ReportApplicationLauncherServerGeneratedCommandList>(), //
         make_unique<ReadApplicationLauncherClientGeneratedCommandList>(), //
@@ -62785,6 +63006,10 @@ void registerClusterChannel(Commands & commands)
         make_unique<ChannelSkipChannelRequest>(), //
         make_unique<ReadChannelChannelList>(), //
         make_unique<ReportChannelChannelList>(), //
+        make_unique<ReadChannelChannelLineup>(), //
+        make_unique<ReportChannelChannelLineup>(), //
+        make_unique<ReadChannelCurrentChannel>(), //
+        make_unique<ReportChannelCurrentChannel>(), //
         make_unique<ReadChannelServerGeneratedCommandList>(), //
         make_unique<ReportChannelServerGeneratedCommandList>(), //
         make_unique<ReadChannelClientGeneratedCommandList>(), //
@@ -63569,6 +63794,8 @@ void registerClusterMediaPlayback(Commands & commands)
         make_unique<ReportMediaPlaybackStartTime>(), //
         make_unique<ReadMediaPlaybackDuration>(), //
         make_unique<ReportMediaPlaybackDuration>(), //
+        make_unique<ReadMediaPlaybackPosition>(), //
+        make_unique<ReportMediaPlaybackPosition>(), //
         make_unique<ReadMediaPlaybackPlaybackSpeed>(), //
         make_unique<ReportMediaPlaybackPlaybackSpeed>(), //
         make_unique<ReadMediaPlaybackSeekRangeEnd>(), //
