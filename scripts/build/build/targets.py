@@ -150,6 +150,8 @@ def HostTargets():
         app_targets.append(target.Extend(
             'all-clusters', app=HostApp.ALL_CLUSTERS))
         app_targets.append(target.Extend('chip-tool', app=HostApp.CHIP_TOOL))
+        app_targets.append(target.Extend(
+            'chip-tool-darwin', app=HostApp.CHIP_TOOL_DARWIN))
         app_targets.append(target.Extend('thermostat', app=HostApp.THERMOSTAT))
         app_targets.append(target.Extend('minmdns', app=HostApp.MIN_MDNS))
         app_targets.append(target.Extend('door-lock', app=HostApp.LOCK))
@@ -166,7 +168,7 @@ def HostTargets():
         HostBuildVariant(name="test-group",
                          validator=AcceptNameWithSubstrings(['-all-clusters', '-chip-tool']), test_group=True),
         HostBuildVariant(name="same-event-loop",
-                         validator=AcceptNameWithSubstrings(['-chip-tool']), separate_event_loop=False),
+                         validator=AcceptNameWithSubstrings(['-chip-tool', '-chip-tool-darwin']), separate_event_loop=False),
     ]
 
     glob_whitelist = set(['ipv6only'])

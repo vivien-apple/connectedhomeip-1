@@ -94,10 +94,6 @@ jobs:
             - name: Clean Build
               run: xcodebuild clean
               working-directory: src/darwin/Framework
-            - name: Build example All Clusters Server
-              timeout-minutes: 10
-              run: |
-                scripts/examples/gn_build_example.sh examples/all-clusters-app/linux out/debug chip_config_network_layer_ble=false
             - name: Build example OTA Provider
               timeout-minutes: 5
               run: |
@@ -113,7 +109,6 @@ jobs:
               timeout-minutes: 10
               run: |
                 mkdir -p /tmp/darwin/framework-tests
-                ../../../out/debug/chip-all-clusters-app > >(tee /tmp/darwin/framework-tests/all-cluster-app.log) 2> >(tee /tmp/darwin/framework-tests/all-cluster-app-err.log >&2) &
                 xcodebuild test -target "CHIP" -scheme "CHIP Framework Tests" -sdk macosx OTHER_CFLAGS='${inherited} -Werror -Wno-documentation -Wno-conditional-uninitialized -Wno-incomplete-umbrella' > >(tee /tmp/darwin/framework-tests/darwin-tests.log) 2> >(tee /tmp/darwin/framework-tests/darwin-tests-err.log >&2)
               working-directory: src/darwin/Framework
             - name: Uploading log files
