@@ -140,6 +140,13 @@ int ChipLinuxAppInit(int argc, char ** argv, OptionSet * customOptions)
     err = DeviceLayer::PlatformMgr().InitChipStack();
     SuccessOrExit(err);
 
+    if (0 != LinuxDeviceOptions::GetInstance().payload.discriminator)
+    {
+        uint16_t discriminator = LinuxDeviceOptions::GetInstance().payload.discriminator;
+        err                    = DeviceLayer::ConfigurationMgr().StoreSetupDiscriminator(discriminator);
+        SuccessOrExit(err);
+    }
+
     err = GetSetupPayload(LinuxDeviceOptions::GetInstance().payload, rendezvousFlags);
     SuccessOrExit(err);
 
