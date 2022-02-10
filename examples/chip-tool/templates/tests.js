@@ -250,6 +250,7 @@ function getTests()
     'TestOperationalCredentialsCluster',
     'TestModeSelectCluster',
     'TestSystemCommands',
+    'TestMultiAdmin',
   ];
 
   const SoftwareDiagnostics = [

@@ -19,6 +19,7 @@
 #pragma once
 
 #include "../common/CHIPCommand.h"
+#include <app/tests/suites/commands/commissioner/CommissionerCommands.h>
 #include <app/tests/suites/commands/discovery/DiscoveryCommands.h>
 #include <app/tests/suites/commands/log/LogCommands.h>
 #include <app/tests/suites/commands/system/SystemCommands.h>
@@ -35,6 +36,7 @@ class TestCommand : public CHIPCommand,
                     public ConstraintsChecker,
                     public PICSChecker,
                     public LogCommands,
+                    public CommissionerCommands,
                     public DiscoveryCommands,
                     public SystemCommands
 {
@@ -70,6 +72,7 @@ protected:
     static void OnWaitForMsFn(chip::System::Layer * systemLayer, void * context);
 
     CHIP_ERROR ContinueOnChipMainThread() override { return WaitForMs(0); };
+    chip::Controller::DeviceCommissioner & GetCurrentCommissioner() override { return CurrentCommissioner(); };
 
     void Exit(std::string message) override;
     void ThrowFailureResponse();
