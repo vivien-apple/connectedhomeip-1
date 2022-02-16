@@ -26,7 +26,6 @@
 #include <app/tests/suites/include/ConstraintsChecker.h>
 #include <app/tests/suites/include/PICSChecker.h>
 #include <app/tests/suites/include/ValueChecker.h>
-#include <lib/support/UnitTestUtils.h>
 #include <zap-generated/tests/CHIPClustersTest.h>
 
 constexpr uint16_t kTimeoutInSeconds = 90;
@@ -45,7 +44,6 @@ public:
         CHIPCommand(commandName, credsIssuerConfig), mOnDeviceConnectedCallback(OnDeviceConnectedFn, this),
         mOnDeviceConnectionFailureCallback(OnDeviceConnectionFailureFn, this)
     {
-        AddArgument("delayInMs", 0, UINT64_MAX, &mDelayInMs);
         AddArgument("PICS", &mPICSFilePath);
     }
 
@@ -84,14 +82,6 @@ protected:
     chip::Callback::Callback<chip::OnDeviceConnected> mOnDeviceConnectedCallback;
     chip::Callback::Callback<chip::OnDeviceConnectionFailure> mOnDeviceConnectionFailureCallback;
 
-    void Wait()
-    {
-        if (mDelayInMs.HasValue())
-        {
-            chip::test_utils::SleepMillis(mDelayInMs.Value());
-        }
-    };
-    chip::Optional<uint64_t> mDelayInMs;
     chip::Optional<char *> mPICSFilePath;
     chip::Optional<uint16_t> mTimeout;
 };

@@ -137,7 +137,6 @@ protected:
     chip::app::ConcreteAttributePath mAttributePath;
     chip::Optional<chip::EndpointId> mEndpointId;
     void SetIdentity(const char * name){};
-    void Wait(){};
 
     /////////// DelayCommands Interface /////////
     void OnWaitForMs() override { NextTest(); }
