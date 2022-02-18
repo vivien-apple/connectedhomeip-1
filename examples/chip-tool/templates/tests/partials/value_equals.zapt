@@ -57,5 +57,5 @@
       {{else}}{{asTypedLiteral expected type}}
       {{/if}}
     ));
-  {{/if_is_struct}}
+  {{~/if_is_struct}}
 {{/if}}
