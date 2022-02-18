@@ -89,30 +89,36 @@ function setDefaultTypeForWaitCommand(test)
   const type = test[kWaitCommandName];
   switch (type) {
   case 'readEvent':
+    test.commandName = 'WaitEvent';
     test.isEvent     = true;
     test.isReadEvent = true;
     break;
   case 'subscribeEvent':
+    test.commandName      = 'WaitEvent';
     test.isEvent          = true;
     test.isSubscribe      = true;
     test.isSubscribeEvent = true;
     break;
   case 'readAttribute':
+    test.commandName     = 'WaitAttribute';
     test.isAttribute     = true;
     test.isReadAttribute = true;
     break;
   case 'writeAttribute':
+    test.commandName      = 'WaitAttribute';
     test.isAttribute      = true;
     test.isWriteAttribute = true;
     break;
   case 'subscribeAttribute':
+    test.commandName          = 'WaitAttribute';
     test.isAttribute          = true;
     test.isSubscribe          = true;
     test.isSubscribeAttribute = true;
     break;
   default:
-    test.isCommand = true;
-    test.command   = test.wait
+    test.commandName = 'WaitCommand';
+    test.isCommand   = true;
+    test.command     = test.wait
     break;
   }
 
@@ -124,20 +130,20 @@ function setDefaultTypeForCommand(test)
   const type = test[kCommandName];
   switch (type) {
   case 'readEvent':
-    test.commandName = 'Read';
+    test.commandName = 'ReadEvent';
     test.isEvent     = true;
     test.isReadEvent = true;
     break;
 
   case 'subscribeEvent':
-    test.commandName      = 'Subscribe';
+    test.commandName      = 'SubscribeEvent';
     test.isEvent          = true;
     test.isSubscribe      = true;
     test.isSubscribeEvent = true;
     break;
 
   case 'readAttribute':
-    test.commandName     = 'Read';
+    test.commandName     = 'ReadAttribute';
     test.isAttribute     = true;
     test.isReadAttribute = true;
     if (!(kFabricFiltered in test)) {
@@ -146,7 +152,7 @@ function setDefaultTypeForCommand(test)
     break;
 
   case 'writeAttribute':
-    test.commandName      = 'Write';
+    test.commandName      = 'WriteAttribute';
     test.isAttribute      = true;
     test.isWriteAttribute = true;
     if ((kGroupId in test)) {
@@ -156,7 +162,7 @@ function setDefaultTypeForCommand(test)
     break;
 
   case 'subscribeAttribute':
-    test.commandName          = 'Subscribe';
+    test.commandName          = 'SubscribeAttribute';
     test.isAttribute          = true;
     test.isSubscribe          = true;
     test.isSubscribeAttribute = true;
@@ -166,13 +172,13 @@ function setDefaultTypeForCommand(test)
     break;
 
   case 'waitForReport':
-    test.commandName     = 'Report';
+    test.commandName     = 'WaitForReport';
     test.isAttribute     = true;
     test.isWaitForReport = true;
     break;
 
   default:
-    test.commandName = test.command;
+    test.commandName = isTestOnlyCluster(test.cluster) ? test.command : 'SendCommand';
     test.isCommand   = true;
     if ((kGroupId in test)) {
       test.isGroupCommand = true;
@@ -321,11 +327,11 @@ function setDefaults(test, defaultConfig)
   const defaultEndpointId   = kEndpointName in defaultConfig ? defaultConfig[kEndpointName] : null;
   const defaultDisabled     = false;
 
-  setDefaultType(test);
   setDefault(test, kIdentityName, defaultIdentityName);
   setDefault(test, kClusterName, defaultClusterName);
   setDefault(test, kEndpointName, defaultEndpointId);
   setDefault(test, kDisabledName, defaultDisabled);
+  setDefaultType(test);
   setDefaultPICS(test);
   setDefaultArguments(test);
   setDefaultResponse(test);
