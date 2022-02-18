@@ -63,3 +63,15 @@ CHIP_ERROR DelayCommands::RunInternal(const char * command)
     VerifyOrReturnError(system(command) == 0, CHIP_ERROR_INTERNAL);
     return ContinueOnChipMainThread(CHIP_NO_ERROR);
 }
+
+CHIP_ERROR DelayCommands::BusyWaitFor(uint32_t durationInMs)
+{
+    using namespace chip::System::Clock::Literals;
+    auto duration = chip::System::Clock::Milliseconds32(durationInMs);
+    auto & clock  = chip::System::SystemClock();
+    auto start    = clock.GetMonotonicTimestamp();
+    while (clock.GetMonotonicTimestamp() - start < duration)
+    {
+    };
+    return CHIP_NO_ERROR;
+}
