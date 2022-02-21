@@ -36,6 +36,13 @@ zclHelper['isEvent'] = function(db, event_name, packageId) {
       .then(events => events ? 'event' : dbEnum.zclType.unknown);
 }
 
+zclHelper['isCommand'] = function(db, command_name, packageId) {
+    return queryCommand
+      .selectAllCommands(db, packageId)
+      .then(commands => commands.find(command => command.name == command_name))
+      .then(commands => commands ? 'commands' : dbEnum.zclType.unknown);
+}
+
 // This list of attributes is taken from section '11.2. Global Attributes' of the
 // Data Model specification.
 const kGlobalAttributes = [
@@ -488,12 +495,12 @@ async function zapTypeToClusterObjectType(type, isDecodable, options)
   {
     const ns          = options.hash.ns ? ('chip::app::Clusters::' + nsValueToNamespace(options.hash.ns) + '::') : '';
     const typeChecker = async (method) => zclHelper[method](this.global.db, type, pkgId).then(zclType => zclType != 'unknown');
-
-    const types = {
+    const types                        = {
       isEnum : await typeChecker('isEnum'),
       isBitmap : await typeChecker('isBitmap'),
       isEvent : await typeChecker('isEvent'),
       isStruct : await typeChecker('isStruct'),
+      isCommand : await typeChecker('isCommand'),
     };
 
     const typesCount = Object.values(types).filter(isType => isType).length;
@@ -523,6 +530,11 @@ async function zapTypeToClusterObjectType(type, isDecodable, options)
     if (types.isEvent) {
       passByReference = true;
       return ns + 'Events::' + type + '::' + (isDecodable ? 'DecodableType' : 'Type');
+    }
+
+    if (types.isCommand) {
+      passByReference = true;
+      return ns + 'Commands::' + type + '::' + (isDecodable ? 'DecodableType' : 'Type');
     }
 
     return zclHelper.asUnderlyingZclType.call({ global : this.global }, type, options);

@@ -16,8 +16,10 @@
  */
 
 // Import helpers from zap core
-const zapPath   = '../../../../third_party/zap/repo/dist/src-electron/';
-const appHelper = require('../../../../src/app/zap-templates/templates/app/helper.js');
+const zapPath = '../../../../third_party/zap/repo/dist/src-electron/';
+const { zapTypeToEncodableClusterObjectType, zapTypeToDecodableClusterObjectType, asUpperCamelCase, asLowerCamelCase }
+= require('../../../../src/app/zap-templates/templates/app/helper.js');
+const { isTestOnlyCluster } = require('../../../../src/app/zap-templates/common/simulated-clusters/SimulatedClusters.js');
 
 function utf8StringLength(str)
 {
@@ -37,7 +39,7 @@ function asRootObject(options)
   // The decodable type for commands is a struct by default, even if the
   // command just returns a single value.
   if (this.parent.isCommand) {
-    rootObject += '.' + appHelper.asLowerCamelCase(this.name);
+    rootObject += '.' + asLowerCamelCase(this.name);
   }
 
   if (this.isOptional && !options.hash.forceNotOptional) {
@@ -47,8 +49,59 @@ function asRootObject(options)
   return rootObject;
 }
 
+async function asEncodableType()
+{
+  const options = { 'hash' : { ns : this.cluster } };
+
+  let type;
+  if ('commandObject' in this) {
+    type = this.commandObject.name;
+  } else if ('attributeObject' in this) {
+    type = this.attributeObject.type;
+    this.isArray    = this.attributeObject.isArray;
+    this.isOptional = this.attributeObject.isOptional;
+    this.isNullable = this.attributeObject.isNullable;
+  } else if ('eventObject' in this) {
+    type = this.eventObject.type;
+  } else {
+    throw new Error("Unsupported encodable type");
+  }
+
+  if (isTestOnlyCluster(this.cluster)) {
+    return `chip::app::Clusters::${asUpperCamelCase(this.cluster)}::Commands::${asUpperCamelCase(type)}::Type`;
+  }
+
+  return await zapTypeToEncodableClusterObjectType.call(this, type, options);
+}
+
+async function asDecodableType()
+{
+  const options = { 'hash' : { ns : this.cluster } };
+  let type;
+  if ('commandObject' in this) {
+    type = this.commandObject.responseName;
+  } else if ('attributeObject' in this) {
+    type = this.attributeObject.type;
+    this.isArray    = this.attributeObject.isArray;
+    this.isOptional = this.attributeObject.isOptional;
+    this.isNullable = this.attributeObject.isNullable;
+  } else if ('eventObject' in this) {
+    type = this.eventObject.type;
+  } else {
+    throw new Error("Unsupported decodable type");
+  }
+
+  if (isTestOnlyCluster(this.cluster)) {
+    return `chip::app::Clusters::${asUpperCamelCase(this.cluster)}::Commands::${asUpperCamelCase(type)}::DecodableType`;
+  }
+
+  return await zapTypeToDecodableClusterObjectType.call(this, type, options);
+}
+
 //
 // Module exports
 //
 exports.utf8StringLength = utf8StringLength;
 exports.asRootObject     = asRootObject;
+exports.asDecodableType  = asDecodableType;
+exports.asEncodableType  = asEncodableType;
