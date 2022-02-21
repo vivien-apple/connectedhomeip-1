@@ -1,14 +1,13 @@
 {{#if saveAs}}
-    {{~#*inline "item"}}value{{#if parent.isCommand}}.{{asLowerCamelCase name}}{{/if}}{{#if isOptional}}.Value(){{/if}}{{/inline}}
     {{#if (isString type)}}
         if ({{saveAs}}Buffer != nullptr)
         {
             chip::Platform::MemoryFree({{saveAs}}Buffer);
         }
-        {{saveAs}}Buffer = static_cast<{{#if (isOctetString type)}}uint8_t{{else}}char{{/if}} *>(chip::Platform::MemoryAlloc({{>item}}.size()));
-        memcpy({{saveAs}}Buffer, {{>item}}.data(), {{>item}}.size());
-        {{saveAs}} = {{chipType}}({{saveAs}}Buffer, {{>item}}.size());
+        {{saveAs}}Buffer = static_cast<{{#if (isOctetString type)}}uint8_t{{else}}char{{/if}} *>(chip::Platform::MemoryAlloc({{asRootObject}}.size()));
+        memcpy({{saveAs}}Buffer, {{asRootObject}}.data(), {{asRootObject}}.size());
+        {{saveAs}} = {{chipType}}({{saveAs}}Buffer, {{asRootObject}}.size());
     {{else}}
-        {{saveAs}} = {{>item}};
+        {{saveAs}} = {{asRootObject}};
     {{/if}}
 {{/if}}

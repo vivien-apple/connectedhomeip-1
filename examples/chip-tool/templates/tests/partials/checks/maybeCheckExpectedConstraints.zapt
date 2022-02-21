@@ -1,38 +1,35 @@
 {{#if hasExpectedConstraints}}
     {{#if isOptional}}
-        {{~#*inline "item"}}value{{#if parent.isCommand}}.{{asLowerCamelCase name}}{{/if}}{{/inline}}
-        VerifyOrReturn(CheckValuePresent("{{> item}}", {{> item}}));
+        VerifyOrReturn(CheckValuePresent("{{asRootObject forceNotOptional=true}}", {{asRootObject forceNotOptional=true}}));
     {{/if}}
 
-    {{~#*inline "item"}}value{{#if parent.isCommand}}.{{asLowerCamelCase name}}{{/if}}{{#if isOptional}}.Value(){{/if}}{{/inline}}
+    {{~#if (hasProperty expectedConstraints "type")}}VerifyOrReturn(CheckConstraintType("{{asRootObject}}", "", "{{expectedConstraints.type}}"));{{/if}}
 
-    {{~#if (hasProperty expectedConstraints "type")}}VerifyOrReturn(CheckConstraintType("{{>item}}", "", "{{expectedConstraints.type}}"));{{/if}}
+    {{~#if (hasProperty expectedConstraints "format")}}VerifyOrReturn(CheckConstraintFormat("{{asRootObject}}", "", "{{expectedConstraints.format}}"));{{/if}}
 
-    {{~#if (hasProperty expectedConstraints "format")}}VerifyOrReturn(CheckConstraintFormat("{{>item}}", "", "{{expectedConstraints.format}}"));{{/if}}
+    {{~#if (hasProperty expectedConstraints "startsWith")}}VerifyOrReturn(CheckConstraintStartsWith("{{asRootObject}}", {{asRootObject}}, "{{expectedConstraints.startsWith}}"));{{/if}}
 
-    {{~#if (hasProperty expectedConstraints "startsWith")}}VerifyOrReturn(CheckConstraintStartsWith("{{>item}}", {{>item}}, "{{expectedConstraints.startsWith}}"));{{/if}}
+    {{~#if (hasProperty expectedConstraints "endsWith")}}VerifyOrReturn(CheckConstraintEndsWith("{{asRootObject}}", {{asRootObject}}, "{{expectedConstraints.endsWith}}"));{{/if}}
 
-    {{~#if (hasProperty expectedConstraints "endsWith")}}VerifyOrReturn(CheckConstraintEndsWith("{{>item}}", {{>item}}, "{{expectedConstraints.endsWith}}"));{{/if}}
+    {{~#if (hasProperty expectedConstraints "isUpperCase")}}VerifyOrReturn(CheckConstraintIsUpperCase("{{asRootObject}}", {{asRootObject}}, {{expectedConstraints.isUpperCase}}));{{/if}}
 
-    {{~#if (hasProperty expectedConstraints "isUpperCase")}}VerifyOrReturn(CheckConstraintIsUpperCase("{{>item}}", {{>item}}, {{expectedConstraints.isUpperCase}}));{{/if}}
+    {{~#if (hasProperty expectedConstraints "isLowerCase")}}VerifyOrReturn(CheckConstraintIsLowerCase("{{asRootObject}}", {{asRootObject}}, {{expectedConstraints.isLowerCase}}));{{/if}}
 
-    {{~#if (hasProperty expectedConstraints "isLowerCase")}}VerifyOrReturn(CheckConstraintIsLowerCase("{{>item}}", {{>item}}, {{expectedConstraints.isLowerCase}}));{{/if}}
+    {{~#if (hasProperty expectedConstraints "isHexString")}}VerifyOrReturn(CheckConstraintIsHexString("{{asRootObject}}", {{asRootObject}}, {{expectedConstraints.isHexString}}));{{/if}}
 
-    {{~#if (hasProperty expectedConstraints "isHexString")}}VerifyOrReturn(CheckConstraintIsHexString("{{>item}}", {{>item}}, {{expectedConstraints.isHexString}}));{{/if}}
+    {{~#if (hasProperty expectedConstraints "minLength")}}VerifyOrReturn(CheckConstraintMinLength("{{asRootObject}}", {{asRootObject}}.size(), {{expectedConstraints.minLength}}));{{/if}}
 
-    {{~#if (hasProperty expectedConstraints "minLength")}}VerifyOrReturn(CheckConstraintMinLength("{{>item}}", {{>item}}.size(), {{expectedConstraints.minLength}}));{{/if}}
+    {{~#if (hasProperty expectedConstraints "maxLength")}}VerifyOrReturn(CheckConstraintMaxLength("{{asRootObject}}", {{asRootObject}}.size(), {{expectedConstraints.maxLength}}));{{/if}}
 
-    {{~#if (hasProperty expectedConstraints "maxLength")}}VerifyOrReturn(CheckConstraintMaxLength("{{>item}}", {{>item}}.size(), {{expectedConstraints.maxLength}}));{{/if}}
+    {{~#if (hasProperty expectedConstraints "minValue")}}VerifyOrReturn(CheckConstraintMinValue<{{chipType}}>("{{asRootObject}}", {{asRootObject}}, {{asTypedLiteral expectedConstraints.minValue type}}));{{/if}}
 
-    {{~#if (hasProperty expectedConstraints "minValue")}}VerifyOrReturn(CheckConstraintMinValue<{{chipType}}>("{{>item}}", {{>item}}, {{asTypedLiteral expectedConstraints.minValue type}}));{{/if}}
-
-    {{~#if (hasProperty expectedConstraints "maxValue")}}VerifyOrReturn(CheckConstraintMaxValue<{{chipType}}>("{{>item}}", {{>item}}, {{asTypedLiteral expectedConstraints.maxValue type}}));{{/if}}
+    {{~#if (hasProperty expectedConstraints "maxValue")}}VerifyOrReturn(CheckConstraintMaxValue<{{chipType}}>("{{asRootObject}}", {{asRootObject}}, {{asTypedLiteral expectedConstraints.maxValue type}}));{{/if}}
 
     {{~#if (hasProperty expectedConstraints "notValue")}}
         {{#if (isLiteralNull expectedConstraints.notValue)}}
-            VerifyOrReturn(CheckValueNonNull("{{>item}}", {{>item}}));
+            VerifyOrReturn(CheckValueNonNull("{{asRootObject}}", {{asRootObject}}));
         {{else}}
-            VerifyOrReturn(CheckConstraintNotValue("{{>item}}", {{>item}}, {{asTypedLiteral expectedConstraints.notValue type}}));
+            VerifyOrReturn(CheckConstraintNotValue("{{asRootObject}}", {{asRootObject}}, {{asTypedLiteral expectedConstraints.notValue type}}));
         {{/if}}
     {{/if}}
 {{/if}}

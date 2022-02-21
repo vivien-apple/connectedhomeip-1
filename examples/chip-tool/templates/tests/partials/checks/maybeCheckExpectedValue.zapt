@@ -1,7 +1,3 @@
 {{~#if hasExpectedValue}}
-    {{~# if parent.isCommand~}}
-        {{~>valueEquals actual=(concat "value." (asLowerCamelCase name)) label=(asLowerCamelCase name) expected=expectedValue depth=0~}}
-    {{~else~}}
-        {{~>valueEquals actual="value" label=(asLowerCamelCase name) expected=expectedValue depth=0~}}
-    {{~/if~}}
+    {{~>valueEquals actual=(asRootObject forceNotOptional=true) label=(asLowerCamelCase name) expected=expectedValue depth=0~}}
 {{~/if~}}
