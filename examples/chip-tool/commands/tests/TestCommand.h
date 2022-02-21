@@ -80,8 +80,6 @@ protected:
     }
 
     void Exit(std::string message) override;
-    void ThrowFailureResponse();
-    void ThrowSuccessResponse();
 
     chip::Callback::Callback<chip::OnDeviceConnected> mOnDeviceConnectedCallback;
     chip::Callback::Callback<chip::OnDeviceConnectionFailure> mOnDeviceConnectionFailureCallback;

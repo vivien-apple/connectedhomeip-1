@@ -289,7 +289,7 @@ function setDefaultResponse(test)
     return;
   }
 
-  if (test.isWriteAttribute || test.isSubscribe) {
+  if (test.isWriteAttribute) {
     if (hasResponseValueOrConstraints) {
       const errorStr = 'Test has a "value" or a "constraints" defined.';
       throwError(test, errorStr);
@@ -354,6 +354,7 @@ function parse(filename)
   // definition. In this case, a new async "waitForReport" test step will be synthesized
   // and added to the list of tests.
   yaml.tests.forEach((test, index) => {
+    return;
     if (test.command == "subscribeAttribute" && test.response) {
       // Create a new report test where the expected response is the response argument
       // for the "subscribeAttributeTest"

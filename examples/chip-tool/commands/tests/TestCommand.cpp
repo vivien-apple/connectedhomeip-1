@@ -58,16 +58,7 @@ void TestCommand::OnDeviceConnectionFailureFn(void * context, PeerId peerId, CHI
 
 void TestCommand::Exit(std::string message)
 {
+    InteractionModel::Shutdown();
     ChipLogError(chipTool, " ***** Test Failure: %s\n", message.c_str());
     SetCommandExitStatus(CHIP_ERROR_INTERNAL);
-}
-
-void TestCommand::ThrowFailureResponse()
-{
-    Exit("Expecting success response but got a failure response");
-}
-
-void TestCommand::ThrowSuccessResponse()
-{
-    Exit("Expecting failure response but got a success response");
 }

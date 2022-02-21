@@ -132,6 +132,21 @@ public:
 
     std::atomic_bool isRunning{ true };
 
+    CHIP_ERROR WaitAttribute(chip::EndpointId endpointId, chip::ClusterId clusterId, chip::AttributeId attributeId)
+    {
+        ClearAttributeAndCommandPaths();
+        ChipLogError(chipTool, "[Endpoint: 0x%08x Cluster: %d, Attribute: %d]", endpointId, clusterId, attributeId);
+        mAttributePath = chip::app::ConcreteAttributePath(endpointId, clusterId, attributeId);
+        return CHIP_NO_ERROR;
+    }
+
+    CHIP_ERROR WaitCommand(chip::EndpointId endpointId, chip::ClusterId clusterId, chip::CommandId commandId)
+    {
+        ClearAttributeAndCommandPaths();
+        ChipLogError(chipTool, "[Endpoint: 0x%08x Cluster: %d, Command: %d]", endpointId, clusterId, commandId);
+        mCommandPath = chip::app::ConcreteCommandPath(endpointId, clusterId, attributeId);
+    }
+
 protected:
     chip::app::ConcreteCommandPath mCommandPath;
     chip::app::ConcreteAttributePath mAttributePath;
