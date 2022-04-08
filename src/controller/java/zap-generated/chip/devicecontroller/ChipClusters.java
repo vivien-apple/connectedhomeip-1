@@ -21732,7 +21732,7 @@ public class ChipClusters {
     public void goToLiftPercentage(
         DefaultClusterCallback callback,
         Integer liftPercentageValue,
-        Integer liftPercent100thsValue) {
+        Optional<Integer> liftPercent100thsValue) {
       goToLiftPercentage(
           chipClusterPtr, callback, liftPercentageValue, liftPercent100thsValue, null);
     }
@@ -21740,7 +21740,7 @@ public class ChipClusters {
     public void goToLiftPercentage(
         DefaultClusterCallback callback,
         Integer liftPercentageValue,
-        Integer liftPercent100thsValue,
+        Optional<Integer> liftPercent100thsValue,
         int timedInvokeTimeoutMs) {
       goToLiftPercentage(
           chipClusterPtr,
@@ -21762,7 +21762,7 @@ public class ChipClusters {
     public void goToTiltPercentage(
         DefaultClusterCallback callback,
         Integer tiltPercentageValue,
-        Integer tiltPercent100thsValue) {
+        Optional<Integer> tiltPercent100thsValue) {
       goToTiltPercentage(
           chipClusterPtr, callback, tiltPercentageValue, tiltPercent100thsValue, null);
     }
@@ -21770,7 +21770,7 @@ public class ChipClusters {
     public void goToTiltPercentage(
         DefaultClusterCallback callback,
         Integer tiltPercentageValue,
-        Integer tiltPercent100thsValue,
+        Optional<Integer> tiltPercent100thsValue,
         int timedInvokeTimeoutMs) {
       goToTiltPercentage(
           chipClusterPtr,
@@ -21816,7 +21816,7 @@ public class ChipClusters {
         long chipClusterPtr,
         DefaultClusterCallback Callback,
         Integer liftPercentageValue,
-        Integer liftPercent100thsValue,
+        Optional<Integer> liftPercent100thsValue,
         @Nullable Integer timedInvokeTimeoutMs);
 
     private native void goToLiftValue(
@@ -21829,7 +21829,7 @@ public class ChipClusters {
         long chipClusterPtr,
         DefaultClusterCallback Callback,
         Integer tiltPercentageValue,
-        Integer tiltPercent100thsValue,
+        Optional<Integer> tiltPercent100thsValue,
         @Nullable Integer timedInvokeTimeoutMs);
 
     private native void goToTiltValue(
