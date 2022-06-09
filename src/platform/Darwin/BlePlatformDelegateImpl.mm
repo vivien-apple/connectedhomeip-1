@@ -120,12 +120,6 @@ namespace DeviceLayer {
             return mtuLength;
         }
 
-        bool BlePlatformDelegateImpl::SendIndication(
-            BLE_CONNECTION_OBJECT connObj, const ChipBleUUID * svcId, const ChipBleUUID * charId, PacketBufferHandle pBuf)
-        {
-            return false;
-        }
-
         bool BlePlatformDelegateImpl::SendWriteRequest(
             BLE_CONNECTION_OBJECT connObj, const ChipBleUUID * svcId, const ChipBleUUID * charId, PacketBufferHandle pBuf)
         {

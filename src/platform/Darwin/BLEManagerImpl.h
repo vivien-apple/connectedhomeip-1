@@ -41,7 +41,7 @@ class BLEManagerImpl final : public BLEManager, private BleLayer
     friend BLEManager;
 
 public:
-    CHIP_ERROR ConfigureBle(uint32_t aNodeId, bool aIsCentral) { return CHIP_NO_ERROR; }
+    CHIP_ERROR ConfigureBle(uint32_t nodeId, bool isCentral);
 
 private:
     // ===== Members that implement the BLEManager internal interface.
@@ -54,7 +54,7 @@ private:
     CHIP_ERROR _SetAdvertisingEnabled(bool val);
     bool _IsAdvertising(void);
     CHIP_ERROR _SetAdvertisingMode(BLEAdvertisingMode mode);
-    CHIP_ERROR _GetDeviceName(char * buf, size_t bufSize);
+    CHIP_ERROR _GetDeviceName(char * buffer, size_t bufferSize);
     CHIP_ERROR _SetDeviceName(const char * deviceName);
     uint16_t _NumConnections(void);
     void _OnPlatformEvent(const ChipDeviceEvent * event);
@@ -66,6 +66,10 @@ private:
     friend BLEManagerImpl & BLEMgrImpl(void);
 
     static BLEManagerImpl sInstance;
+
+    CHIPoBLEServiceMode mServiceMode = ConnectivityManager::kCHIPoBLEServiceMode_NotSupported;
+    bool mIsCentral                  = true;
+    bool mHasConnection              = false;
 };
 
 /**

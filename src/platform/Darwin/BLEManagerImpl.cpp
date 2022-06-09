@@ -27,6 +27,7 @@
 #include <lib/support/logging/CHIPLogging.h>
 #include <platform/Darwin/BleApplicationDelegate.h>
 #include <platform/Darwin/BleConnectionDelegate.h>
+#include <platform/Darwin/BlePeripheral.h>
 #include <platform/Darwin/BlePlatformDelegate.h>
 
 #include <new>
@@ -40,68 +41,97 @@ namespace chip {
 namespace DeviceLayer {
 namespace Internal {
 
+namespace {
+static BlePeripheral gPeripheral;
+} // namespace
+
 BLEManagerImpl BLEManagerImpl::sInstance;
+
+CHIP_ERROR BLEManagerImpl::ConfigureBle(uint32_t nodeId, bool isCentral)
+{
+    mIsCentral = isCentral;
+    return CHIP_NO_ERROR;
+}
 
 CHIP_ERROR BLEManagerImpl::_Init()
 {
-    CHIP_ERROR err;
-
     ChipLogDetail(DeviceLayer, "%s", __FUNCTION__);
 
     // Initialize the Chip BleLayer.
     BleApplicationDelegateImpl * appDelegate   = new BleApplicationDelegateImpl();
     BleConnectionDelegateImpl * connDelegate   = new BleConnectionDelegateImpl();
     BlePlatformDelegateImpl * platformDelegate = new BlePlatformDelegateImpl();
-    err = BleLayer::Init(platformDelegate, connDelegate, appDelegate, &DeviceLayer::SystemLayer());
-    return err;
+    ReturnErrorOnFailure(BleLayer::Init(platformDelegate, connDelegate, appDelegate, &SystemLayer()));
+
+    if (mIsCentral)
+    {
+        ReturnErrorOnFailure(_SetCHIPoBLEServiceMode(ConnectivityManager::kCHIPoBLEServiceMode_Disabled));
+    }
+    else
+    {
+        ReturnErrorOnFailure(_SetCHIPoBLEServiceMode(ConnectivityManager::kCHIPoBLEServiceMode_Enabled));
+
+        bool shouldStartAdvertising = CHIP_DEVICE_CONFIG_CHIPOBLE_ENABLE_ADVERTISING_AUTOSTART;
+#if CHIP_DEVICE_CONFIG_CHIPOBLE_DISABLE_ADVERTISING_WHEN_PROVISIONED
+        if (shouldStartAdvertising && ConfigurationMgr().IsFullyProvisioned())
+        {
+            shouldStartAdvertising = false;
+        }
+
+#endif // CHIP_DEVICE_CONFIG_CHIPOBLE_DISABLE_ADVERTISING_WHEN_PROVISIONED
+        ReturnErrorOnFailure(_SetAdvertisingEnabled(shouldStartAdvertising));
+    }
+
+    return CHIP_NO_ERROR;
 }
 
 ConnectivityManager::CHIPoBLEServiceMode BLEManagerImpl::_GetCHIPoBLEServiceMode(void)
 {
-    ChipLogDetail(DeviceLayer, "%s", __FUNCTION__);
-    return ConnectivityManager::kCHIPoBLEServiceMode_NotSupported;
+    return mServiceMode;
 }
 
 CHIP_ERROR BLEManagerImpl::_SetCHIPoBLEServiceMode(ConnectivityManager::CHIPoBLEServiceMode val)
 {
-    ChipLogDetail(DeviceLayer, "%s", __FUNCTION__);
-    return CHIP_ERROR_UNSUPPORTED_CHIP_FEATURE;
+    ReturnErrorCodeIf(val == ConnectivityManager::kCHIPoBLEServiceMode_NotSupported, CHIP_ERROR_INVALID_ARGUMENT);
+    ReturnErrorCodeIf(mServiceMode != ConnectivityManager::kCHIPoBLEServiceMode_NotSupported, CHIP_ERROR_UNSUPPORTED_CHIP_FEATURE);
+
+    if (val == ConnectivityManager::kCHIPoBLEServiceMode_Enabled)
+    {
+        ReturnErrorOnFailure(gPeripheral.Init());
+    }
+
+    mServiceMode = val;
+    return CHIP_NO_ERROR;
 }
 
 bool BLEManagerImpl::_IsAdvertisingEnabled(void)
 {
-    ChipLogDetail(DeviceLayer, "%s", __FUNCTION__);
-    return false;
+    return gPeripheral.IsAdvertisingEnabled();
 }
 
 CHIP_ERROR BLEManagerImpl::_SetAdvertisingEnabled(bool val)
 {
-    ChipLogDetail(DeviceLayer, "%s", __FUNCTION__);
-    return CHIP_ERROR_UNSUPPORTED_CHIP_FEATURE;
+    return gPeripheral.SetAdvertisingEnabled(val);
 }
 
 CHIP_ERROR BLEManagerImpl::_SetAdvertisingMode(BLEAdvertisingMode mode)
 {
-    ChipLogDetail(DeviceLayer, "%s", __FUNCTION__);
-    return CHIP_ERROR_UNSUPPORTED_CHIP_FEATURE;
+    return gPeripheral.SetAdvertisingMode(mode);
 }
 
 bool BLEManagerImpl::_IsAdvertising(void)
 {
-    ChipLogDetail(DeviceLayer, "%s", __FUNCTION__);
-    return false;
+    return gPeripheral.IsAdvertising();
 }
 
-CHIP_ERROR BLEManagerImpl::_GetDeviceName(char * buf, size_t bufSize)
+CHIP_ERROR BLEManagerImpl::_GetDeviceName(char * buffer, size_t bufferSize)
 {
-    ChipLogDetail(DeviceLayer, "%s", __FUNCTION__);
-    return CHIP_ERROR_UNSUPPORTED_CHIP_FEATURE;
+    return gPeripheral.GetDeviceName(buffer, bufferSize);
 }
 
 CHIP_ERROR BLEManagerImpl::_SetDeviceName(const char * deviceName)
 {
-    ChipLogDetail(DeviceLayer, "%s", __FUNCTION__);
-    return CHIP_ERROR_UNSUPPORTED_CHIP_FEATURE;
+    return gPeripheral.SetDeviceName(deviceName);
 }
 
 BleLayer * BLEManagerImpl::_GetBleLayer()
@@ -111,13 +141,72 @@ BleLayer * BLEManagerImpl::_GetBleLayer()
 
 uint16_t BLEManagerImpl::_NumConnections(void)
 {
-    ChipLogDetail(DeviceLayer, "%s", __FUNCTION__);
-    return 0;
+    return mHasConnection ? 1 : 0;
 }
 
 void BLEManagerImpl::_OnPlatformEvent(const ChipDeviceEvent * event)
 {
-    ChipLogDetail(DeviceLayer, "%s", __FUNCTION__);
+    auto svcId           = &CHIP_BLE_SVC_ID;
+    const ChipBleUUID C1 = { { 0x18, 0xEE, 0x2E, 0xF5, 0x26, 0x3D, 0x45, 0x59, 0x95, 0x9F, 0x4F, 0x9C, 0x42, 0x9F, 0x9D, 0x11 } };
+    const ChipBleUUID C2 = { { 0x18, 0xEE, 0x2E, 0xF5, 0x26, 0x3D, 0x45, 0x59, 0x95, 0x9F, 0x4F, 0x9C, 0x42, 0x9F, 0x9D, 0x12 } };
+
+    switch (event->Type)
+    {
+    case DeviceEventType::kCHIPoBLESubscribe:
+        HandleSubscribeReceived(event->CHIPoBLESubscribe.ConId, svcId, &C2);
+        mHasConnection = true;
+        {
+            ChipDeviceEvent evt;
+            evt.Type = DeviceEventType::kCHIPoBLEConnectionEstablished;
+            PlatformMgr().PostEventOrDie(&evt);
+        }
+        break;
+
+    case DeviceEventType::kCHIPoBLEUnsubscribe:
+        HandleUnsubscribeReceived(event->CHIPoBLEUnsubscribe.ConId, svcId, &C2);
+        mHasConnection = false;
+        {
+            ChipDeviceEvent evt;
+            evt.Type = DeviceEventType::kCHIPoBLEConnectionClosed;
+            PlatformMgr().PostEventOrDie(&evt);
+        }
+        break;
+
+    case DeviceEventType::kCHIPoBLEIndicateConfirm:
+        HandleIndicationConfirmation(event->CHIPoBLEIndicateConfirm.ConId, svcId, &C2);
+        break;
+
+    case DeviceEventType::kCHIPoBLEWriteReceived:
+        HandleWriteReceived(event->CHIPoBLEWriteReceived.ConId, svcId, &C1,
+                            PacketBufferHandle::Adopt(event->CHIPoBLEWriteReceived.Data));
+        break;
+
+    case DeviceEventType::kCHIPoBLEAdvertisingChange:
+        ChipLogError(Ble, "DeviceEventType::kCHIPoBLEAdvertisingChange");
+        break;
+
+    case DeviceEventType::kCHIPoBLEConnectionError:
+        HandleConnectionError(event->CHIPoBLEConnectionError.ConId, event->CHIPoBLEConnectionError.Reason);
+        break;
+
+    case DeviceEventType::kServiceProvisioningChange:
+    case DeviceEventType::kAccountPairingChange:
+        ChipLogError(Ble, "Service provisoning or account pairing change...");
+#if CHIP_DEVICE_CONFIG_CHIPOBLE_DISABLE_ADVERTISING_WHEN_PROVISIONED
+        // If CHIPOBLE_DISABLE_ADVERTISING_WHEN_PROVISIONED is enabled, and there is a change to the
+        // device's provisioning state, then automatically disable CHIPoBLE advertising if the device
+        // is now fully provisioned.
+        if (ConfigurationMgr().IsFullyProvisioned())
+        {
+            _SetAdvertisingEnabled(false);
+            ChipLogProgress(DeviceLayer, "CHIPoBLE advertising disabled because device is fully provisioned");
+        }
+#endif // CHIP_DEVICE_CONFIG_CHIPOBLE_DISABLE_ADVERTISING_WHEN_PROVISIONED
+        break;
+    default:
+        // Not interested in the other events.
+        break;
+    }
 }
 
 } // namespace Internal
