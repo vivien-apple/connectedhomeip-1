@@ -29,6 +29,7 @@
 #include <app/util/af.h>
 #include <lib/support/CHIPMem.h>
 #include <new>
+#include <platform/Darwin/NetworkCommissioningDriver.h>
 #include <platform/DiagnosticDataProvider.h>
 #include <platform/Linux/NetworkCommissioningDriver.h>
 #include <platform/PlatformManager.h>
@@ -298,22 +299,33 @@ constexpr EndpointId kNetworkCommissioningEndpointSecondary = 0xFFFE;
 
 #if CHIP_DEVICE_LAYER_TARGET_LINUX
 #if CHIP_DEVICE_CONFIG_ENABLE_THREAD
-NetworkCommissioning::LinuxThreadDriver sLinuxThreadDriver;
-Clusters::NetworkCommissioning::Instance sThreadNetworkCommissioningInstance(kNetworkCommissioningEndpointMain,
-                                                                             &sLinuxThreadDriver);
-#endif
+NetworkCommissioning::LinuxThreadDriver sThreadDriver;
+#endif // CHIP_DEVICE_CONFIG_ENABLE_THREAD
+
 #if CHIP_DEVICE_CONFIG_ENABLE_WPA
-NetworkCommissioning::LinuxWiFiDriver sLinuxWiFiDriver;
-Clusters::NetworkCommissioning::Instance sWiFiNetworkCommissioningInstance(kNetworkCommissioningEndpointSecondary,
-                                                                           &sLinuxWiFiDriver);
-#endif
-NetworkCommissioning::LinuxEthernetDriver sLinuxEthernetDriver;
-Clusters::NetworkCommissioning::Instance sEthernetNetworkCommissioningInstance(kNetworkCommissioningEndpointMain,
-                                                                               &sLinuxEthernetDriver);
-#else  // CHIP_DEVICE_LAYER_TARGET_LINUX
-Clusters::NetworkCommissioning::NullNetworkDriver sNullNetworkDriver;
-Clusters::NetworkCommissioning::Instance sNullNetworkCommissioningInstance(kNetworkCommissioningEndpointMain, &sNullNetworkDriver);
+NetworkCommissioning::LinuxWiFiDriver sWiFiDriver;
+#endif // CHIP_DEVICE_CONFIG_ENABLE_WPA
+
+NetworkCommissioning::LinuxEthernetDriver sEthernetDriver;
 #endif // CHIP_DEVICE_LAYER_TARGET_LINUX
+
+#if CHIP_DEVICE_LAYER_TARGET_DARWIN
+#if CHIP_DEVICE_CONFIG_ENABLE_WPA
+NetworkCommissioning::DarwinWiFiDriver sWiFiDriver;
+#endif // CHIP_DEVICE_CONFIG_ENABLE_WPA
+
+NetworkCommissioning::DarwinEthernetDriver sEthernetDriver;
+#endif // CHIP_DEVICE_LAYER_TARGET_DARWIN
+
+#if CHIP_DEVICE_CONFIG_ENABLE_THREAD
+Clusters::NetworkCommissioning::Instance sThreadNetworkCommissioningInstance(kNetworkCommissioningEndpointMain, &sThreadDriver);
+#endif // CHIP_DEVICE_CONFIG_ENABLE_THREAD
+
+#if CHIP_DEVICE_CONFIG_ENABLE_WPA
+Clusters::NetworkCommissioning::Instance sWiFiNetworkCommissioningInstance(kNetworkCommissioningEndpointSecondary, &sWiFiDriver);
+#endif
+
+Clusters::NetworkCommissioning::Instance sEthernetNetworkCommissioningInstance(kNetworkCommissioningEndpointMain, &sEthernetDriver);
 } // namespace
 
 void ApplicationInit()
@@ -326,7 +338,6 @@ void ApplicationInit()
     // Enable secondary endpoint only when we need it, this should be applied to all platforms.
     emberAfEndpointEnableDisable(kNetworkCommissioningEndpointSecondary, false);
 
-#if CHIP_DEVICE_LAYER_TARGET_LINUX
     const bool kThreadEnabled = {
 #if CHIP_DEVICE_CONFIG_ENABLE_THREAD
         LinuxDeviceOptions::GetInstance().mThread
@@ -366,19 +377,13 @@ void ApplicationInit()
         // If we only enable WiFi on this device, "move" WiFi instance to main NetworkCommissioning cluster endpoint.
         sWiFiNetworkCommissioningInstance.~Instance();
         new (&sWiFiNetworkCommissioningInstance)
-            Clusters::NetworkCommissioning::Instance(kNetworkCommissioningEndpointMain, &sLinuxWiFiDriver);
+            Clusters::NetworkCommissioning::Instance(kNetworkCommissioningEndpointMain, &sWiFiDriver);
         sWiFiNetworkCommissioningInstance.Init();
 #endif
     }
     else
-#endif // CHIP_DEVICE_LAYER_TARGET_LINUX
     {
-#if CHIP_DEVICE_LAYER_TARGET_LINUX
         sEthernetNetworkCommissioningInstance.Init();
-#else
-        // Use NullNetworkCommissioningInstance to disable the network commissioning functions.
-        sNullNetworkCommissioningInstance.Init();
-#endif
     }
 }
 

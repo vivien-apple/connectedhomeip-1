@@ -62,6 +62,10 @@ class ConnectivityManagerImpl final : public ConnectivityManager,
     // the implementation methods provided by this class.
     friend class ConnectivityManager;
 
+public:
+    void StartWiFiManagement(){};
+    bool IsWiFiManagementStarted() { return true; }
+
 private:
     // ===== Members that implement the ConnectivityManager abstract interface.
 

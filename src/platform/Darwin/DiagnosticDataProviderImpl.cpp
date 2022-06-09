@@ -27,6 +27,17 @@
 #include <platform/Darwin/DiagnosticDataProviderImpl.h>
 #include <platform/DiagnosticDataProvider.h>
 
+#include <arpa/inet.h>
+#include <dirent.h>
+#include <ifaddrs.h>
+#include <net/if.h>
+#include <netinet/in.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/types.h>
+#include <unistd.h>
+
 namespace chip {
 namespace DeviceLayer {
 
@@ -75,6 +86,36 @@ CHIP_ERROR DiagnosticDataProviderImpl::ResetWatermarks()
     // On Darwin, overide with non-op to pass CI.
 
     return CHIP_NO_ERROR;
+}
+
+CHIP_ERROR DiagnosticDataProviderImpl::GetNetworkInterfaces(NetworkInterface ** interfaces)
+{
+    NetworkInterface * interface = new NetworkInterface();
+
+    strncpy(interface->Name, "WiFi-Test", Inet::InterfaceId::kMaxIfNameLength);
+    interface->name          = CharSpan::fromCharString(interface->Name);
+    interface->isOperational = true;
+    interface->type          = EMBER_ZCL_INTERFACE_TYPE_WI_FI;
+    interface->offPremiseServicesReachableIPv4.SetNull();
+    interface->offPremiseServicesReachableIPv6.SetNull();
+
+    uint8_t mac[] = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05 };
+    memcpy(interface->MacAddress, mac, kMaxHardwareAddrSize);
+    interface->hardwareAddress = ByteSpan(interface->MacAddress, sizeof(mac));
+    interface->Next            = nullptr;
+
+    *interfaces = interface;
+    return CHIP_NO_ERROR;
+}
+
+void DiagnosticDataProviderImpl::ReleaseNetworkInterfaces(NetworkInterface * interface)
+{
+    while (interface)
+    {
+        NetworkInterface * del = interface;
+        interface              = interface->Next;
+        delete del;
+    }
 }
 
 } // namespace DeviceLayer

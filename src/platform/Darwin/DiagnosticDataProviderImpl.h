@@ -42,6 +42,9 @@ public:
     // ===== Methods that implement the DiagnosticDataProvider abstract interface.
     bool SupportsWatermarks() override { return true; }
     CHIP_ERROR ResetWatermarks() override;
+
+    CHIP_ERROR GetNetworkInterfaces(NetworkInterface ** netifpp) override;
+    void ReleaseNetworkInterfaces(NetworkInterface * netifp) override;
 };
 
 } // namespace DeviceLayer
