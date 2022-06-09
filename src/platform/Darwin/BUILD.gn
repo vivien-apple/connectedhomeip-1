@@ -18,14 +18,21 @@ import("${chip_root}/src/platform/device.gni")
 
 assert(chip_device_platform == "darwin")
 
+declare_args() {
+  chip_config_use_mock_ble = false
+}
+
 config("darwin_config") {
   frameworks = [
     "CoreData.framework",
     "CoreFoundation.framework",
-    "CoreBluetooth.framework",
     "Foundation.framework",
     "IOKit.framework",
   ]
+
+  if (chip_disable_platform_kvs == false) {
+    frameworks += [ "CoreBluetooth.framework"]
+  }
 
   cflags = [ "-fobjc-arc" ]
 }
@@ -65,6 +72,12 @@ static_library("Darwin") {
     "SystemPlatformConfig.h",
     "SystemTimeSupport.cpp",
   ]
+
+  if (chip_config_use_mock_ble == true) {
+    sources += [
+      "mocks/CBCentralManager.mm",
+    ]
+  }
 
   if (chip_disable_platform_kvs == false) {
     sources += [
