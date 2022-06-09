@@ -18,12 +18,16 @@ import("${chip_root}/src/platform/device.gni")
 
 assert(chip_device_platform == "darwin")
 
+declare_args() {
+  chip_config_use_mock_ble = false
+}
+
 config("darwin_config") {
   frameworks = [
     "CoreData.framework",
     "CoreFoundation.framework",
-    "CoreBluetooth.framework",
     "Foundation.framework",
+    "Network.framework",
   ]
 
   if (current_os == "mac") {
@@ -31,6 +35,14 @@ config("darwin_config") {
       "SystemConfiguration.framework",
       "CoreWLAN.framework",
       "IOKit.framework",
+    ]
+  }
+
+  if (chip_config_use_mock_ble == false) {
+    frameworks += [ "CoreBluetooth.framework"]
+  } else {
+    defines = [
+        "CONFIG_USE_BLE_MOCK=${chip_config_use_mock_ble}",
     ]
   }
 
@@ -78,6 +90,14 @@ static_library("Darwin") {
       "WiFi/ConnectivityManagerImplWiFi.mm",
       "WiFi/NetworkCommissioningWiFiDriver.h",
       "WiFi/NetworkCommissioningWiFiDriver.mm",
+    ]
+  }
+
+  if (chip_config_use_mock_ble == true) {
+    sources += [
+      "mocks/MockBluetooth.mm",
+      "mocks/MockBluetoothNetwork.mm",
+      "mocks/MockBluetoothNetworkJSON.mm",
     ]
   }
 

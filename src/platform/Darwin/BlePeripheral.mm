@@ -237,20 +237,24 @@ namespace DeviceLayer {
 {
     VerifyOrReturn(nil == error, ChipLogError(Ble, "Add service error: [%s]", [error.localizedDescription UTF8String]));
 
-    // Ideally the peripheral will advertise using CBAdvertisementDataServiceDataKey but this is not possible using CoreBluetooth.
-    /*
+
+// Normaly the peripheral will advertise using CBAdvertisementDataServiceDataKey but this is not possible using CoreBluetooth.
+#if CONFIG_USE_BLE_MOCK
     uint8_t opcode = 0;
-    uint8_t bytes[3] = {};
+    uint8_t bytes[8] = {};
     bytes[0] = opcode;
     bytes[1] = (_deviceDiscriminator & 0xFF);
     bytes[2] = (_deviceDiscriminator >> 8) & 0xFF;
 
     NSData * value = [NSData dataWithBytes:bytes length:sizeof(bytes)];
-    */
 
-    NSArray * services = @[ [service UUID] ];
+    NSDictionary * advertisement =
+        @{ CBAdvertisementDataLocalNameKey : _deviceName, CBAdvertisementDataServiceDataKey : @{ _service.UUID: value } };
+#else
+    NSArray * services = @[ service.UUID ];
     NSDictionary * advertisement =
         @{ CBAdvertisementDataLocalNameKey : _deviceName, CBAdvertisementDataServiceUUIDsKey : services };
+#endif
 
     [_peripheralManager startAdvertising:advertisement];
 }
