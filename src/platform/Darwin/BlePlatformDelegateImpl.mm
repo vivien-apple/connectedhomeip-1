@@ -30,7 +30,10 @@
 #include <ble/BleLayer.h>
 #include <ble/BleUUID.h>
 #include <lib/support/logging/CHIPLogging.h>
+#include <platform/Darwin/BlePeripheral.h>
 #include <platform/Darwin/BlePlatformDelegate.h>
+
+#include <platform/CHIPDeviceLayer.h>
 
 #import "UUIDHelper.h"
 
@@ -123,7 +126,13 @@ namespace DeviceLayer {
         bool BlePlatformDelegateImpl::SendIndication(
             BLE_CONNECTION_OBJECT connObj, const ChipBleUUID * svcId, const ChipBleUUID * charId, PacketBufferHandle pBuf)
         {
-            return false;
+            if (nullptr == svcId || nullptr == charId || pBuf.IsNull()) {
+                return false;
+            }
+
+            BlePeripheral::SendIndication(std::move(pBuf));
+
+            return true;
         }
 
         bool BlePlatformDelegateImpl::SendWriteRequest(

@@ -66,6 +66,35 @@ private:
     friend BLEManagerImpl & BLEMgrImpl(void);
 
     static BLEManagerImpl sInstance;
+
+    CHIPoBLEServiceMode mServiceMode;
+    bool mIsCentral = false;
+
+    enum
+    {
+        kMaxDeviceNameLength = 20
+    };
+
+    char mDeviceName[kMaxDeviceNameLength + 1];
+
+    enum class Flags : uint16_t
+    {
+        kAsyncInitCompleted        = 0x0001, /**< One-time asynchronous initialization actions have been performed. */
+        kDarwinBLELayerInitialized = 0x0002, /**< The Darwin layer has been initialized. */
+        kAppRegistered             = 0x0004, /**< The CHIPoBLE application has been registered with the Bluez layer. */
+        kAdvertisingConfigured     = 0x0008, /**< CHIPoBLE advertising has been configured in the Bluez layer. */
+        kAdvertising               = 0x0010, /**< The system is currently CHIPoBLE advertising. */
+        kControlOpInProgress       = 0x0020, /**< An async control operation has been issued to the ESP BLE layer. */
+        kAdvertisingEnabled        = 0x0040, /**< The application has enabled CHIPoBLE advertising. */
+        kFastAdvertisingEnabled    = 0x0080, /**< The application has enabled fast advertising. */
+        kUseCustomDeviceName       = 0x0100, /**< The application has configured a custom BLE device name. */
+        kAdvertisingRefreshNeeded  = 0x0200, /**< The advertising configuration/state in BLE layer needs to be updated. */
+    };
+
+    BitFlags<Flags> mFlags;
+
+    void DriveBLEState();
+    static void DriveBLEState(intptr_t arg);
 };
 
 /**
