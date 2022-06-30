@@ -21,9 +21,9 @@
 #import "CHIPUIViewUtils.h"
 #import "DefaultsUtils.h"
 #import "DeviceSelector.h"
-#import <CHIP/CHIP.h>
-#import <CHIP/CHIPDeviceAttestationDelegate.h>
-#import <CHIP/CHIPSetupPayload.h>
+#import <Matter/CHIPDeviceAttestationDelegate.h>
+#import <Matter/CHIPSetupPayload.h>
+#import <Matter/Matter.h>
 
 // system imports
 #import <AVFoundation/AVFoundation.h>

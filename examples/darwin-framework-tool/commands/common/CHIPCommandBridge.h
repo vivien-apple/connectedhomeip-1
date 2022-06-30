@@ -17,7 +17,7 @@
  */
 
 #pragma once
-#import <CHIP/CHIP.h>
+#import <Matter/Matter.h>
 #include <commands/common/Command.h>
 #include <commands/common/CredentialIssuerCommands.h>
 #include <map>

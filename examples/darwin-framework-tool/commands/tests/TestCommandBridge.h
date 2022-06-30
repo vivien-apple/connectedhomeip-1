@@ -30,8 +30,8 @@
 #include <string>
 #include <zap-generated/cluster/CHIPTestClustersObjc.h>
 
-#import <CHIP/CHIP.h>
-#import <CHIP/CHIPError_Internal.h>
+#import <Matter/Matter.h>
+#import <Matter/CHIPError_Internal.h>
 
 class TestCommandBridge;
 

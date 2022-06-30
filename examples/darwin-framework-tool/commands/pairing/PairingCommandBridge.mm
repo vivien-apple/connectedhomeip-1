@@ -16,8 +16,8 @@
  *
  */
 
-#import <CHIP/CHIP.h>
-#import <CHIP/CHIPError_Internal.h>
+#import <Matter/Matter.h>
+#import <Matter/CHIPError_Internal.h>
 
 #include "../common/CHIPCommandBridge.h"
 #include "PairingCommandBridge.h"

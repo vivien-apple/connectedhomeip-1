@@ -19,7 +19,7 @@
 #import "CHIPUIViewUtils.h"
 #import "DefaultsUtils.h"
 #import "DeviceSelector.h"
-#import <CHIP/CHIP.h>
+#import <Matter/Matter.h>
 
 NSString * const kCHIPNumLightOnOffCluster = @"OnOffViewController_NumLights";
 

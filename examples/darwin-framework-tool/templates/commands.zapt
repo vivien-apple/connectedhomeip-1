@@ -2,7 +2,7 @@
 
 #pragma once
 
-#import <CHIP/CHIP.h>
+#import <Matter/Matter.h>
 
 #include <cstdint>
 #include <string>

@@ -17,7 +17,7 @@
  */
 
 #include "PairingDelegateBridge.h"
-#import <CHIP/CHIP.h>
+#import <Matter/Matter.h>
 
 @interface CHIPToolPairingDelegate ()
 @end

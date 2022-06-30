@@ -13,8 +13,8 @@
 		2C460C3225D97CB3000512D6 /* UnpairDevicesViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C460C3025D97CB3000512D6 /* UnpairDevicesViewController.m */; };
 		51C8E3FB28261DCF00D47D00 /* FabricKeys.m in Sources */ = {isa = PBXBuildFile; fileRef = 51C8E3FA28261DCF00D47D00 /* FabricKeys.m */; };
 		991DC091247747F500C13860 /* EnumerateViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 991DC090247747F500C13860 /* EnumerateViewController.m */; };
-		997A639C253F93F7005C64E6 /* CHIP.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 997A639B253F93F7005C64E6 /* CHIP.framework */; };
-		997A639D253F93F7005C64E6 /* CHIP.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 997A639B253F93F7005C64E6 /* CHIP.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		997A639C253F93F7005C64E6 /* Matter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 997A639B253F93F7005C64E6 /* Matter.framework */; };
+		997A639D253F93F7005C64E6 /* Matter.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 997A639B253F93F7005C64E6 /* Matter.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		B204A621244E1D0600C7C0E1 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = B204A620244E1D0600C7C0E1 /* AppDelegate.m */; };
 		B204A624244E1D0600C7C0E1 /* SceneDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = B204A623244E1D0600C7C0E1 /* SceneDelegate.m */; };
 		B204A627244E1D0600C7C0E1 /* QRCodeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = B204A626244E1D0600C7C0E1 /* QRCodeViewController.m */; };
@@ -47,7 +47,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				997A639D253F93F7005C64E6 /* CHIP.framework in Embed Frameworks */,
+				997A639D253F93F7005C64E6 /* Matter.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -67,7 +67,7 @@
 		51C8E3FA28261DCF00D47D00 /* FabricKeys.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FabricKeys.m; sourceTree = "<group>"; };
 		991DC08F247747F500C13860 /* EnumerateViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = EnumerateViewController.h; sourceTree = "<group>"; };
 		991DC090247747F500C13860 /* EnumerateViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = EnumerateViewController.m; sourceTree = "<group>"; };
-		997A639B253F93F7005C64E6 /* CHIP.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = CHIP.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		997A639B253F93F7005C64E6 /* Matter.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Matter.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		B204A61C244E1D0600C7C0E1 /* CHIPTool.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CHIPTool.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B204A61F244E1D0600C7C0E1 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		B204A620244E1D0600C7C0E1 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -103,7 +103,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				997A639C253F93F7005C64E6 /* CHIP.framework in Frameworks */,
+				997A639C253F93F7005C64E6 /* Matter.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -165,7 +165,7 @@
 		B20252DE2459EC7600F97062 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				997A639B253F93F7005C64E6 /* CHIP.framework */,
+				997A639B253F93F7005C64E6 /* Matter.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -338,7 +338,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastUpgradeCheck = 1200;
-				ORGANIZATIONNAME = CHIP;
+				ORGANIZATIONNAME = Matter;
 				TargetAttributes = {
 					B204A61B244E1D0600C7C0E1 = {
 						CreatedOnToolsVersion = 11.4.1;

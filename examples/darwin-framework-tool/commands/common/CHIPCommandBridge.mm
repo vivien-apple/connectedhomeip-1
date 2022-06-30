@@ -19,8 +19,8 @@
 #include "CHIPCommandBridge.h"
 
 #import "CHIPToolKeypair.h"
-#import <CHIP/CHIP.h>
-#import <CHIP/CHIPError_Internal.h>
+#import <Matter/Matter.h>
+#import <Matter/CHIPError_Internal.h>
 
 #include <core/CHIPBuildConfig.h>
 #include <lib/core/CHIPVendorIdentifiers.hpp>

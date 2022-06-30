@@ -18,8 +18,8 @@
 
 #pragma once
 
-#import <CHIP/CHIP.h>
-#import <CHIP/CHIPDevice_Internal.h> // For NSObjectFromCHIPTLV
+#import <Matter/Matter.h>
+#import <Matter/CHIPDevice_Internal.h> // For NSObjectFromCHIPTLV
 #include <lib/support/UnitTestUtils.h>
 
 #include "ModelCommandBridge.h"

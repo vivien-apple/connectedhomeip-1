@@ -16,8 +16,8 @@
 
 #pragma once
 
-#import <CHIP/CHIP.h>
 #import <Foundation/Foundation.h>
+#import <Matter/Matter.h>
 
 /**
  * Management of the CA key and IPK for our fabric.

@@ -1,6 +1,6 @@
 {{> header}}
 
-#import <CHIP/CHIP.h>
+#import <Matter/Matter.h>
 
 @class CHIPDevice;
 

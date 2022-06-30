@@ -15,8 +15,8 @@
  *    limitations under the License.
  */
 
-#import <CHIP/CHIP.h>
 #import <Foundation/Foundation.h>
+#import <Matter/Matter.h>
 
 NS_ASSUME_NONNULL_BEGIN
 

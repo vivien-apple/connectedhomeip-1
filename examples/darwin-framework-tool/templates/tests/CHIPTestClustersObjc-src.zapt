@@ -1,7 +1,7 @@
 {{> header}}
 #import <Foundation/Foundation.h>
 
-#import "CHIP/CHIP.h"
+#import "Matter/Matter.h"
 
 #import "CHIPCallbackBridge_internal.h" // For CHIPDefaultSuccessCallbackBridge, etc
 #import "CHIPCluster_internal.h" // For self.callbackQueue
