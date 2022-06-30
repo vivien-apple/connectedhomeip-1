@@ -173,6 +173,10 @@ int ChipLinuxAppInit(int argc, char * const argv[], OptionSet * customOptions)
     SuccessOrExit(err);
 #endif
 
+#if CONFIG_NETWORK_LAYER_BLE
+    DeviceLayer::Internal::BLEMgrImpl().ConfigureBle(LinuxDeviceOptions::GetInstance().mBleDevice, false);
+#endif // CONFIG_NETWORK_LAYER_BLE
+
     err = DeviceLayer::PlatformMgr().InitChipStack();
     SuccessOrExit(err);
 
@@ -246,9 +250,7 @@ int ChipLinuxAppInit(int argc, char * const argv[], OptionSet * customOptions)
 
 #if CONFIG_NETWORK_LAYER_BLE
     DeviceLayer::ConnectivityMgr().SetBLEDeviceName(nullptr); // Use default device name (CHIP-XXXX)
-    DeviceLayer::Internal::BLEMgrImpl().ConfigureBle(LinuxDeviceOptions::GetInstance().mBleDevice, false);
-    DeviceLayer::ConnectivityMgr().SetBLEAdvertisingEnabled(true);
-#endif
+#endif                                                        // CONFIG_NETWORK_LAYER_BLE
 
 #if CHIP_DEVICE_CONFIG_ENABLE_WPA
     if (LinuxDeviceOptions::GetInstance().mWiFi)
