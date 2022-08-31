@@ -1,6 +1,6 @@
 /*
  *
- *    Copyright (c) 2021 Project CHIP Authors
+ *    Copyright (c) 2022 Project CHIP Authors
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -22,26 +22,18 @@
 
 #pragma once
 
-#include <sys/select.h>
-
-#if CHIP_SYSTEM_CONFIG_POSIX_LOCKING
-#include <atomic>
-#include <pthread.h>
-#endif // CHIP_SYSTEM_CONFIG_POSIX_LOCKING
-
 #include <lib/support/ObjectLifeCycle.h>
 #include <system/SystemLayer.h>
 #include <system/SystemTimer.h>
-#include <system/WakeEvent.h>
 
 namespace chip {
 namespace System {
 
-class LayerImplSelect : public LayerSocketsLoop
+class LayerImplDispatch : public LayerSockets
 {
 public:
-    LayerImplSelect() = default;
-    ~LayerImplSelect() override { VerifyOrDie(mLayerState.Destroy()); }
+    LayerImplDispatch() = default;
+    ~LayerImplDispatch() override { VerifyOrDie(mLayerState.Destroy()); }
 
     // Layer overrides.
     CHIP_ERROR Init() override;
@@ -61,19 +53,12 @@ public:
     CHIP_ERROR StopWatchingSocket(SocketWatchToken * tokenInOut) override;
     SocketWatchToken InvalidSocketWatchToken() override { return reinterpret_cast<SocketWatchToken>(nullptr); }
 
-    // LayerSocketLoop overrides.
-    void Signal() override;
-    void EventLoopBegins() override {}
-    void PrepareEvents() override;
-    void WaitForEvents() override;
-    void HandleEvents() override;
-    void EventLoopEnds() override {}
-
-    // Expose the result of WaitForEvents() for non-blocking socket implementations.
-    bool IsSelectResultValid() const { return mSelectResult >= 0; }
+    void SetDispatchQueue(dispatch_queue_t dispatchQueue) override { mDispatchQueue = dispatchQueue; };
+    dispatch_queue_t GetDispatchQueue() override { return mDispatchQueue; };
+    void HandleTimerComplete(TimerList::Node * timer);
 
 protected:
-    static SocketEvents SocketEventsFromFDs(int socket, const fd_set & readfds, const fd_set & writefds, const fd_set & exceptfds);
+    static void MaybeClearDispatchSource(dispatch_source_t source);
 
     static constexpr int kSocketWatchMax = (INET_CONFIG_ENABLE_TCP_ENDPOINT ? INET_CONFIG_NUM_TCP_ENDPOINTS : 0) +
         (INET_CONFIG_ENABLE_UDP_ENDPOINT ? INET_CONFIG_NUM_UDP_ENDPOINTS : 0);
@@ -84,36 +69,19 @@ protected:
         int mFD;
         SocketEvents mPendingIO;
         SocketWatchCallback mCallback;
+        dispatch_source_t mRdSource;
+        dispatch_source_t mWrSource;
         intptr_t mCallbackData;
     };
     SocketWatch mSocketWatchPool[kSocketWatchMax];
 
     TimerPool<TimerList::Node> mTimerPool;
     TimerList mTimerList;
-    timeval mNextTimeout;
-
-    // Members for select loop
-    struct SelectSets
-    {
-        fd_set mReadSet;
-        fd_set mWriteSet;
-        fd_set mErrorSet;
-    };
-    SelectSets mSelected;
-    int mMaxFd;
-
-    // Return value from select(), carried between WaitForEvents() and HandleEvents().
-    int mSelectResult;
-
     ObjectLifeCycle mLayerState;
-    WakeEvent mWakeEvent;
-
-#if CHIP_SYSTEM_CONFIG_POSIX_LOCKING
-    std::atomic<pthread_t> mHandleSelectThread;
-#endif // CHIP_SYSTEM_CONFIG_POSIX_LOCKING
+    dispatch_queue_t mDispatchQueue = nullptr;
 };
 
-using LayerImpl = LayerImplSelect;
+using LayerImpl = LayerImplDispatch;
 
 } // namespace System
 } // namespace chip

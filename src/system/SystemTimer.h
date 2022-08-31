@@ -89,7 +89,7 @@ private:
     Callback mCallback;
 
 #if CHIP_SYSTEM_CONFIG_USE_DISPATCH
-    friend class LayerImplSelect;
+    friend class LayerImplDispatch;
     dispatch_source_t mTimerSource = nullptr;
 #endif // CHIP_SYSTEM_CONFIG_USE_DISPATCH
 

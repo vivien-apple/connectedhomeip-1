@@ -169,6 +169,11 @@ public:
         return ScheduleLambdaBridge(std::move(bridge));
     }
 
+#if CHIP_SYSTEM_CONFIG_USE_DISPATCH
+    virtual void SetDispatchQueue(dispatch_queue_t dispatchQueue) = 0;
+    virtual dispatch_queue_t GetDispatchQueue()                   = 0;
+#endif // CHIP_SYSTEM_CONFIG_USE_DISPATCH
+
 private:
     // Copy and assignment NOT DEFINED
     Layer(const Layer &) = delete;
@@ -246,11 +251,6 @@ public:
     virtual void WaitForEvents()   = 0;
     virtual void HandleEvents()    = 0;
     virtual void EventLoopEnds()   = 0;
-
-#if CHIP_SYSTEM_CONFIG_USE_DISPATCH
-    virtual void SetDispatchQueue(dispatch_queue_t dispatchQueue) = 0;
-    virtual dispatch_queue_t GetDispatchQueue()                   = 0;
-#endif // CHIP_SYSTEM_CONFIG_USE_DISPATCH
 };
 
 #endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS

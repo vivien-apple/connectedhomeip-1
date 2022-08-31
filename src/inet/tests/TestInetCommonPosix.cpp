@@ -443,11 +443,13 @@ void ServiceEvents(uint32_t aSleepTimeMilliseconds)
     gSystemLayer.StartTimer(
         System::Clock::Milliseconds32(aSleepTimeMilliseconds), [](System::Layer *, void *) -> void {}, nullptr);
 
+#if CHIP_SYSTEM_CONFIG_USE_DISPATCH == 0
 #if CHIP_SYSTEM_CONFIG_USE_SOCKETS
     gSystemLayer.PrepareEvents();
     gSystemLayer.WaitForEvents();
     gSystemLayer.HandleEvents();
 #endif // CHIP_SYSTEM_CONFIG_USE_SOCKETS
+#endif // CHIP_SYSTEM_CONFIG_USE_DISPATCH == 0
 
 #if CHIP_SYSTEM_CONFIG_USE_LWIP
     if (gSystemLayer.IsInitialized())

@@ -55,7 +55,7 @@ CHIP_ERROR PlatformManagerImpl::_InitChipStack()
     mRunLoopSem = dispatch_semaphore_create(0);
 
     // Ensure there is a dispatch queue available
-    static_cast<System::LayerSocketsLoop &>(DeviceLayer::SystemLayer()).SetDispatchQueue(GetWorkQueue());
+    static_cast<System::LayerSockets &>(DeviceLayer::SystemLayer()).SetDispatchQueue(GetWorkQueue());
 
     // Call _InitChipStack() on the generic implementation base class
     // to finish the initialization process.
@@ -78,6 +78,7 @@ CHIP_ERROR PlatformManagerImpl::_StartEventLoopTask()
 {
     if (mIsWorkQueueSuspended)
     {
+        ChipLogError(chipTool, "PlatformManagerImpl work queue running");
         mIsWorkQueueSuspended = false;
         dispatch_resume(mWorkQueue);
     }
@@ -95,6 +96,7 @@ CHIP_ERROR PlatformManagerImpl::_StopEventLoopTask()
             // dispatch_sync is used in order to guarantee serialization of the caller with
             // respect to any tasks that might already be on the queue, or running.
             dispatch_sync(mWorkQueue, ^{
+                ChipLogError(chipTool, "PlatformManagerImpl work queue suspended");
                 dispatch_suspend(mWorkQueue);
             });
 
@@ -108,6 +110,7 @@ CHIP_ERROR PlatformManagerImpl::_StopEventLoopTask()
             // guarantee that we don't signal the semaphore until we have ensured
             // that no more tasks will run on the queue.
             dispatch_async(mWorkQueue, ^{
+                ChipLogError(chipTool, "PlatformManagerImpl work queue suspended");
                 dispatch_suspend(mWorkQueue);
                 mIsWorkQueueSuspended         = true;
                 mIsWorkQueueSuspensionPending = false;
