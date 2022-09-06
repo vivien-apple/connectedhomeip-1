@@ -59,6 +59,8 @@ CHIP_ERROR DecodableType::Decode(TLV::TLVReader &reader) {
             {{#zcl_command_arguments}}
             case to_underlying(Fields::k{{asUpperCamelCase label}}):
                 ReturnErrorOnFailure(DataModel::Decode(reader, {{asLowerCamelCase label}}));
+                {{~#if min}}VerifyOrReturnError({{asLowerCamelCase label}} >= {{min}}, CHIP_IM_GLOBAL_STATUS(ConstraintError));{{/if~}}
+                {{~#if max}}VerifyOrReturnError({{asLowerCamelCase label}} <= {{max}}, CHIP_IM_GLOBAL_STATUS(ConstraintError));{{/if~}}
                 break;
                 {{/zcl_command_arguments}}
             default:
