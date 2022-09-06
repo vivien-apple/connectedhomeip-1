@@ -20,6 +20,31 @@
 namespace chip {
 namespace app {
 
+namespace {
+void MaybeDispatchServerError(CommandHandler * handler, const ConcreteCommandPath & path, CHIP_ERROR error)
+{
+    VerifyOrReturn(CHIP_NO_ERROR != error);
+
+    if (error == CHIP_IM_GLOBAL_STATUS(UnsupportedCluster))
+    {
+        ChipLogError(Zcl, "Unknown cluster " ChipLogFormatMEI, ChipLogValueMEI(path.mClusterId));
+    }
+    else if (error == CHIP_IM_GLOBAL_STATUS(UnsupportedCommand))
+    {
+        // Unrecognized command ID, error status will apply.
+        ChipLogError(Zcl, "Unknown command " ChipLogFormatMEI " for cluster " ChipLogFormatMEI,
+                     ChipLogValueMEI(path.mCommandId), ChipLogValueMEI(path.mClusterId));
+    }
+    else
+    {
+        ChipLogProgress(Zcl, "Failed to dispatch command, Error=%" CHIP_ERROR_FORMAT, error.Format());
+    }
+
+    auto status = error.IsIMStatus() ? StatusIB(error).mStatus : Protocols::InteractionModel::Status::InvalidCommand;
+    handler->AddStatus(path, status);
+}
+} // namespace
+
 // Cluster specific command parsing
 
 namespace Clusters {
@@ -28,37 +53,27 @@ namespace Clusters {
 {{#if (isServer clusterSide)}}
 namespace {{asUpperCamelCase clusterName}} {
 
-void DispatchServerCommand(CommandHandler * apCommandObj, const ConcreteCommandPath & aCommandPath, TLV::TLVReader & aDataTlv)
+CHIP_ERROR DispatchServerCommand(CommandHandler * handler, const ConcreteCommandPath & path, TLV::TLVReader & tlvData)
 {
     {{#all_incoming_commands_for_cluster clusterName clusterSide}}
     {{#first}}
-    CHIP_ERROR TLVError = CHIP_NO_ERROR;
-    bool wasHandled = false;
+    switch (path.mCommandId)
     {
-        switch (aCommandPath.mCommandId)
-        {
     {{/first}}
         case Commands::{{asUpperCamelCase commandName}}::Id: {
-        {{> im_command_handler_cluster_commands}}
+            Commands::{{asUpperCamelCase commandName}}::DecodableType data;
+            ReturnErrorOnFailure(DataModel::Decode(tlvData, data));
+            VerifyOrReturnError(emberAf{{asUpperCamelCase parent.clusterName}}Cluster{{asUpperCamelCase commandName}}Callback(handler, path, data), CHIP_ERROR_INTERNAL);
             break;
         }
     {{#last}}
-        default: {
-            // Unrecognized command ID, error status will apply.
-            apCommandObj->AddStatus(aCommandPath, Protocols::InteractionModel::Status::UnsupportedCommand);
-            ChipLogError(Zcl, "Unknown command " ChipLogFormatMEI " for cluster " ChipLogFormatMEI, ChipLogValueMEI(aCommandPath.mCommandId), ChipLogValueMEI(aCommandPath.mClusterId));
-            return;
-        }
-        }
+    default: {
+        return CHIP_IM_GLOBAL_STATUS(UnsupportedCommand);
     }
-
-    if (CHIP_NO_ERROR != TLVError || !wasHandled)
-    {
-      apCommandObj->AddStatus(aCommandPath, Protocols::InteractionModel::Status::InvalidCommand);
-      ChipLogProgress(Zcl, "Failed to dispatch command, TLVError=%" CHIP_ERROR_FORMAT, TLVError.Format());
     }
     {{/last}}
     {{/all_incoming_commands_for_cluster}}
+    return CHIP_NO_ERROR;
 }
 
 }
@@ -72,23 +87,21 @@ void DispatchSingleClusterCommand(const ConcreteCommandPath & aCommandPath, TLV:
 {
     Compatibility::SetupEmberAfCommandHandler(apCommandObj, aCommandPath);
 
+    CHIP_ERROR err = CHIP_NO_ERROR;
     switch (aCommandPath.mClusterId)
     {
     {{#all_user_clusters_with_incoming_commands}}
     {{#if (isServer clusterSide)}}
     case Clusters::{{asUpperCamelCase clusterName}}::Id:
-        Clusters::{{asUpperCamelCase clusterName}}::DispatchServerCommand(apCommandObj, aCommandPath, aReader);
+        err = Clusters::{{asUpperCamelCase clusterName}}::DispatchServerCommand(apCommandObj, aCommandPath, aReader);
         break;
     {{/if}}
     {{/all_user_clusters_with_incoming_commands}}
     default:
-        ChipLogError(Zcl, "Unknown cluster " ChipLogFormatMEI, ChipLogValueMEI(aCommandPath.mClusterId));
-        apCommandObj->AddStatus(
-          aCommandPath,
-          Protocols::InteractionModel::Status::UnsupportedCluster
-        );
+        err = CHIP_IM_GLOBAL_STATUS(UnsupportedCluster);
         break;
     }
+    MaybeDispatchServerError(apCommandObj, aCommandPath, err);
 
     Compatibility::ResetEmberAfObjects();
 }

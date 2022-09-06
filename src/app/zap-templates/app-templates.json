@@ -24,10 +24,6 @@
             "path": "partials/cluster_header.zapt"
         },
         {
-            "name": "im_command_handler_cluster_commands",
-            "path": "partials/im_command_handler_cluster_commands.zapt"
-        },
-        {
             "name": "idl_structure_definition",
             "path": "partials/idl/structure_definition.zapt"
         },
