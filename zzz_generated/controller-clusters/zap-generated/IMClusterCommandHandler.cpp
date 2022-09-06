@@ -37,6 +37,31 @@
 namespace chip {
 namespace app {
 
+namespace {
+void MaybeDispatchServerError(CommandHandler * handler, const ConcreteCommandPath & path, CHIP_ERROR error)
+{
+    VerifyOrReturn(CHIP_NO_ERROR != error);
+
+    if (error == CHIP_IM_GLOBAL_STATUS(UnsupportedCluster))
+    {
+        ChipLogError(Zcl, "Unknown cluster " ChipLogFormatMEI, ChipLogValueMEI(path.mClusterId));
+    }
+    else if (error == CHIP_IM_GLOBAL_STATUS(UnsupportedCommand))
+    {
+        // Unrecognized command ID, error status will apply.
+        ChipLogError(Zcl, "Unknown command " ChipLogFormatMEI " for cluster " ChipLogFormatMEI, ChipLogValueMEI(path.mCommandId),
+                     ChipLogValueMEI(path.mClusterId));
+    }
+    else
+    {
+        ChipLogProgress(Zcl, "Failed to dispatch command, Error=%" CHIP_ERROR_FORMAT, error.Format());
+    }
+
+    auto status = error.IsIMStatus() ? StatusIB(error).mStatus : Protocols::InteractionModel::Status::InvalidCommand;
+    handler->AddStatus(path, status);
+}
+} // namespace
+
 // Cluster specific command parsing
 
 namespace Clusters {
@@ -47,13 +72,14 @@ void DispatchSingleClusterCommand(const ConcreteCommandPath & aCommandPath, TLV:
 {
     Compatibility::SetupEmberAfCommandHandler(apCommandObj, aCommandPath);
 
+    CHIP_ERROR err = CHIP_NO_ERROR;
     switch (aCommandPath.mClusterId)
     {
     default:
-        ChipLogError(Zcl, "Unknown cluster " ChipLogFormatMEI, ChipLogValueMEI(aCommandPath.mClusterId));
-        apCommandObj->AddStatus(aCommandPath, Protocols::InteractionModel::Status::UnsupportedCluster);
+        err = CHIP_IM_GLOBAL_STATUS(UnsupportedCluster);
         break;
     }
+    MaybeDispatchServerError(apCommandObj, aCommandPath, err);
 
     Compatibility::ResetEmberAfObjects();
 }
