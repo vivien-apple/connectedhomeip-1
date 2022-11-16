@@ -294,3 +294,6 @@
 	url = https://git.gitlab.arm.com/iot/open-iot-sdk/storage.git
 	branch = main
     platforms = openiotsdk
+[submodule "third_party/websocketpp/repo"]
+	path = third_party/websocketpp/repo
+	url = https://github.com/zaphoyd/websocketpp
