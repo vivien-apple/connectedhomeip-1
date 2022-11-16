@@ -139,9 +139,22 @@ CHIP_ERROR TlvToJson(TLV::TLVReader & reader, KeyContext context, Json::Value & 
     }
 
     case TLV::kTLVType_FloatingPointNumber: {
-        double v;
-        ReturnErrorOnFailure(reader.Get(v));
-        InsertKeyValue(parent, context, v);
+        // Try float first, and if this is not the right type the code will fallback on reading
+        // the value as a double.
+        float floatValue;
+        auto err = reader.Get(floatValue);
+        if (CHIP_NO_ERROR == err)
+        {
+            char buffer[30];
+            snprintf(buffer, sizeof(buffer), "%g", floatValue);
+            InsertKeyValue(parent, context, std::stod(buffer));
+        }
+        else
+        {
+            double v;
+            ReturnErrorOnFailure(reader.Get(v));
+            InsertKeyValue(parent, context, v);
+        }
         break;
     }
 
