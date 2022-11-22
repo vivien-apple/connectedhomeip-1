@@ -166,27 +166,25 @@ public:
 
     static CHIP_ERROR Setup(const char * label, chip::ByteSpan & request, Json::Value & value)
     {
-        if (!value.isString())
-        {
-            ChipLogError(chipTool, "Error while encoding %s as an octet string: Not a string.", label);
-            return CHIP_ERROR_INVALID_ARGUMENT;
-        }
+        uint8_t * outBuffer = nullptr;
+        size_t outSize      = 0;
+        ReturnErrorOnFailure(GetAsBuffer(label, value, &outBuffer, &outSize));
 
-        if (strlen(value.asCString()) % 2 != 0)
-        {
-            ChipLogError(chipTool, "Error while encoding %s as an octet string: Odd number of characters.", label);
-            return CHIP_ERROR_INVALID_STRING_LENGTH;
-        }
-
-        size_t size       = strlen(value.asCString());
-        auto buffer       = static_cast<uint8_t *>(chip::Platform::MemoryCalloc(size / 2, sizeof(uint8_t)));
-        size_t octetCount = chip::Encoding::HexToBytes(value.asCString(), size, buffer, size / 2);
-
-        request = chip::ByteSpan(buffer, octetCount);
+        request = chip::ByteSpan(outBuffer, outSize);
         return CHIP_NO_ERROR;
     }
 
     static CHIP_ERROR Setup(const char * label, chip::CharSpan & request, Json::Value & value)
+    {
+        uint8_t * outBuffer = nullptr;
+        size_t outSize      = 0;
+        ReturnErrorOnFailure(GetAsBuffer(label, value, &outBuffer, &outSize));
+
+        request = chip::CharSpan(reinterpret_cast<char *>(outBuffer), outSize);
+        return CHIP_NO_ERROR;
+    }
+
+    static CHIP_ERROR GetAsBuffer(const char * label, Json::Value & value, uint8_t ** outBuffer, size_t * outSize)
     {
         if (!value.isString())
         {
@@ -194,11 +192,29 @@ public:
             return CHIP_ERROR_INVALID_ARGUMENT;
         }
 
-        size_t size = strlen(value.asCString());
-        auto buffer = static_cast<char *>(chip::Platform::MemoryCalloc(size, sizeof(char)));
-        memcpy(buffer, value.asCString(), size);
+        auto str  = value.asString();
+        auto size = str.size();
 
-        request = chip::CharSpan(buffer, size);
+        // Check if the string is an hexadecimal string, if not it is assumed to be a regular string.
+        if (IsHexString(str.c_str()))
+        {
+            if (size % 2 != 0)
+            {
+                ChipLogError(chipTool, "Error while encoding %s as an hex string: Odd number of characters.", label);
+                return CHIP_ERROR_INVALID_STRING_LENGTH;
+            }
+
+            *outBuffer = static_cast<uint8_t *>(chip::Platform::MemoryCalloc(size / 2, sizeof(uint8_t)));
+            *outSize =
+                chip::Encoding::HexToBytes(str.c_str() + kHexStringPrefixLen, size - kHexStringPrefixLen, *outBuffer, size / 2);
+        }
+        else
+        {
+            *outBuffer = static_cast<uint8_t *>(chip::Platform::MemoryCalloc(size, sizeof(uint8_t)));
+            memcpy(*outBuffer, str.c_str(), size);
+            *outSize = size;
+        }
+
         return CHIP_NO_ERROR;
     }
 
