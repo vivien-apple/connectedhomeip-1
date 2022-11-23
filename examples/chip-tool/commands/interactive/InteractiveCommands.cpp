@@ -22,11 +22,18 @@
 #include <iomanip>
 #include <sstream>
 
+#include <websocketpp/config/asio.hpp>
+#include <websocketpp/server.hpp>
+
 char kInteractiveModeName[]                            = "";
 constexpr const char * kInteractiveModePrompt          = ">>> ";
 constexpr uint8_t kInteractiveModeArgumentsMaxLength   = 32;
 constexpr const char * kInteractiveModeHistoryFilePath = "/tmp/chip_tool_history";
 constexpr const char * kInteractiveModeStopCommand     = "quit()";
+
+typedef websocketpp::server<websocketpp::config::asio> ws_server_type;
+ws_server_type server;
+websocketpp::connection_hdl server_connection;
 
 namespace {
 
@@ -41,6 +48,20 @@ void ENFORCE_FORMAT(3, 0) LoggingCallback(const char * module, uint8_t category,
     chip::Logging::Platform::LogV(module, category, msg, args);
     ClearLine();
 }
+
+InteractiveServerCommand * kInteractiveCommand = nullptr;
+void OnInteractiveMessageReceived(ws_server_type * s, websocketpp::connection_hdl hdl, ws_server_type::message_ptr msg)
+{
+    ChipLogProgress(chipTool, "%s", msg->get_payload().c_str());
+    server_connection = hdl;
+
+    // Install a hook such that the command response, instead of beeing only forwarded to DataModelLogger::LogCommand
+    // is also converted to a json stuff that is passed over the wire...
+
+    DataModelLogger::SetJSONDelegate(kInteractiveCommand);
+    kInteractiveCommand->ParseCommand(msg->get_payload().c_str());
+}
+
 } // namespace
 
 char * GetCommand(char * command)
@@ -61,6 +82,30 @@ char * GetCommand(char * command)
     }
 
     return command;
+}
+
+CHIP_ERROR InteractiveServerCommand::RunCommand()
+{
+    kInteractiveCommand = this;
+
+    server.set_access_channels(websocketpp::log::alevel::all);
+    server.init_asio();
+    server.set_message_handler(
+        bind(&OnInteractiveMessageReceived, &server, websocketpp::lib::placeholders::_1, websocketpp::lib::placeholders::_2));
+    server.set_reuse_addr(true);
+    server.listen(9002);
+    server.start_accept();
+    server.run();
+
+    kInteractiveCommand = nullptr;
+    SetCommandExitStatus(CHIP_NO_ERROR);
+    return CHIP_NO_ERROR;
+}
+
+CHIP_ERROR InteractiveServerCommand::LogJSON(const char * json)
+{
+    server.send(server_connection, json, websocketpp::frame::opcode::TEXT);
+    return CHIP_NO_ERROR;
 }
 
 CHIP_ERROR InteractiveStartCommand::RunCommand()
@@ -91,7 +136,7 @@ CHIP_ERROR InteractiveStartCommand::RunCommand()
     return CHIP_NO_ERROR;
 }
 
-bool InteractiveStartCommand::ParseCommand(char * command)
+bool InteractiveCommand::ParseCommand(const char * command)
 {
     if (strcmp(command, kInteractiveModeStopCommand) == 0)
     {
@@ -119,7 +164,13 @@ bool InteractiveStartCommand::ParseCommand(char * command)
     }
 
     ClearLine();
-    mHandler->RunInteractive(argsCount, args);
+    auto exitCode = mHandler->RunInteractive(argsCount, args);
+    if (nullptr != kInteractiveCommand)
+    {
+        constexpr const char * kSuccess = "success";
+        constexpr const char * kFailure = "failure";
+        kInteractiveCommand->LogJSON(exitCode == EXIT_SUCCESS ? kSuccess : kFailure);
+    }
 
     // Do not delete arg[0]
     while (--argsCount)

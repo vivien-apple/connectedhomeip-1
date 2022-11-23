@@ -138,7 +138,8 @@ CHIP_ERROR Commands::RunCommand(int argc, char ** argv, bool interactive)
         }
     }
 
-    if (!command->InitArguments(argc - 3, &argv[3]))
+    int argumentsPosition = IsGlobalCommand(argv[2]) ? 4 : 3;
+    if (!command->InitArguments(argc - argumentsPosition, &argv[argumentsPosition]))
     {
         ShowCommand(argv[0], argv[1], command);
         return CHIP_ERROR_INVALID_ARGUMENT;

@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "../clusters/DataModelLogger.h"
 #include "../common/CHIPCommand.h"
 #include "../common/Commands.h"
 
@@ -25,18 +26,40 @@
 
 class Commands;
 
-class InteractiveStartCommand : public CHIPCommand
+class InteractiveCommand : public CHIPCommand
+{
+public:
+    InteractiveCommand(const char * name, Commands * commandsHandler, CredentialIssuerCommands * credsIssuerConfig) :
+        CHIPCommand(name, credsIssuerConfig), mHandler(commandsHandler)
+    {}
+
+    chip::System::Clock::Timeout GetWaitDuration() const override { return chip::System::Clock::Seconds16(0); }
+
+    bool ParseCommand(const char * command);
+
+private:
+    Commands * mHandler = nullptr;
+};
+
+class InteractiveStartCommand : public InteractiveCommand
 {
 public:
     InteractiveStartCommand(Commands * commandsHandler, CredentialIssuerCommands * credsIssuerConfig) :
-        CHIPCommand("start", credsIssuerConfig), mHandler(commandsHandler)
+        InteractiveCommand("start", commandsHandler, credsIssuerConfig)
+    {}
+
+    CHIP_ERROR RunCommand() override;
+};
+
+class InteractiveServerCommand : public InteractiveCommand, public DataModelLoggerJSONDelegate
+{
+public:
+    InteractiveServerCommand(Commands * commandsHandler, CredentialIssuerCommands * credsIssuerConfig) :
+        InteractiveCommand("server", commandsHandler, credsIssuerConfig)
     {}
 
     CHIP_ERROR RunCommand() override;
 
-    chip::System::Clock::Timeout GetWaitDuration() const override { return chip::System::Clock::Seconds16(0); }
-
-private:
-    bool ParseCommand(char * command);
-    Commands * mHandler = nullptr;
+    // DataModelLoggerJSONDelegate interface
+    CHIP_ERROR LogJSON(const char * json) override;
 };
