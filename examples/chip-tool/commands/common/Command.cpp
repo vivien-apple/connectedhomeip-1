@@ -28,6 +28,7 @@
 #include <math.h> // For INFINITY
 
 #include <lib/core/CHIPSafeCasts.h>
+#include <lib/support/Base64.h>
 #include <lib/support/BytesToHex.h>
 #include <lib/support/CHIPMem.h>
 #include <lib/support/CodeUtils.h>
@@ -35,19 +36,125 @@
 #include <lib/support/ScopedBuffer.h>
 #include <lib/support/logging/CHIPLogging.h>
 
+#include "../clusters/JsonParser.h"
+
 constexpr const char * kOptionalArgumentPrefix = "--";
 constexpr size_t kOptionalArgumentPrefixLength = 2;
+constexpr uint8_t kArgumentsMaxLength          = 32;
 
 bool Command::InitArguments(int argc, char ** argv)
 {
     bool isValidCommand = false;
 
     size_t argvExtraArgsCount = (size_t) argc;
+    size_t startArgsPosition  = 0;
     size_t mandatoryArgsCount = 0;
     size_t optionalArgsCount  = 0;
+
+    if (argc && strncmp(argv[0], "arguments", strlen(argv[0])) == 0)
+    {
+        int remoteArgc                         = 0;
+        char * remoteArgv[kArgumentsMaxLength] = {};
+
+        // Entering a special mode for parsing remote arguments. Remote clients does not know the ordering
+        // or arguments, so instead they are passed in as ArgumentName=ArgumentValue style.
+        ChipLogError(chipTool, "Special mode on for %d", argc);
+
+        char * encodedData     = argv[1];
+        size_t encodedDataSize = strlen(encodedData);
+
+        chip::Platform::ScopedMemoryBuffer<uint8_t> decodedData;
+        size_t expectedMaxDecodedSize = BASE64_MAX_DECODED_LEN(encodedDataSize);
+        VerifyOrReturnValue(decodedData.Calloc(expectedMaxDecodedSize + 1 /* for null */), false);
+
+        size_t decodedDataSize = chip::Base64Decode(encodedData, static_cast<uint16_t>(encodedDataSize), decodedData.Get());
+        if (decodedDataSize == 0)
+        {
+            ChipLogError(chipTool, "Error while decoding base64 data.");
+            return false;
+        }
+
+        decodedData.Get()[decodedDataSize] = '\0';
+        ChipLogProgress(chipTool, "DecodedData: %s", decodedData.Get());
+
+        Json::Value value;
+        if (!JsonParser::ParseCustomArgument(argv[0], reinterpret_cast<char *>(decodedData.Get()), value) && value.isObject())
+        {
+            ExitNow();
+        }
+
+        // First add non-optional arguments
+        for (auto const & id : value.getMemberNames())
+        {
+            ChipLogProgress(chipTool, "Member Name: %s", id.c_str());
+            bool isAttribute = false;
+            for (size_t i = 0; i < mArgs.size(); i++)
+            {
+                if (mArgs[i].isOptional())
+                {
+                    continue;
+                }
+
+                if (mArgs[i].type == ArgumentType::Attribute)
+                {
+                    isAttribute = true;
+                    continue;
+                }
+
+                auto argumentName = GetArgumentName(i);
+                if (!(strcasecmp(argumentName, id.c_str()) == 0))
+                {
+                    continue;
+                }
+
+                ChipLogProgress(chipTool, "\tArgument name: %s", argumentName);
+                auto arg = value[id].asString();
+                ChipLogProgress(chipTool, "\tMaking %s (%zu) with value: %s:", argumentName, i, arg.c_str());
+                remoteArgv[isAttribute ? i - 1 : i] = strdup(arg.c_str());
+                remoteArgc++;
+                break;
+            }
+        }
+
+        // Then add optional arguments
+        for (auto const & id : value.getMemberNames())
+        {
+            ChipLogProgress(chipTool, "Member Name: %s", id.c_str());
+            for (size_t i = 0; i < mArgs.size(); i++)
+            {
+                if (!mArgs[i].isOptional())
+                {
+                    continue;
+                }
+
+                auto argumentName = GetArgumentName(i);
+                if (!(strcasecmp(argumentName, id.c_str()) == 0))
+                {
+                    continue;
+                }
+
+                ChipLogProgress(chipTool, "\tArgument name: %s", argumentName);
+                auto arg = value[id].asString();
+                ChipLogProgress(chipTool, "\tMaking (optional) %s (%zu) with value: %s:", argumentName, i, arg.c_str());
+                char argument[100] = {};
+                snprintf(argument, sizeof(argument), "--%s", mArgs[i].name);
+                remoteArgv[remoteArgc++] = strdup(argument);
+                remoteArgv[remoteArgc++] = strdup(arg.c_str());
+                break;
+            }
+        }
+
+        argc = remoteArgc;
+        argv = remoteArgv;
+    }
+
     for (auto & arg : mArgs)
     {
-        if (arg.isOptional())
+        if (arg.type == ArgumentType::Attribute)
+        {
+            startArgsPosition = 1;
+        }
+        else if (arg.isOptional())
         {
             optionalArgsCount++;
         }
@@ -66,7 +173,7 @@ bool Command::InitArguments(int argc, char ** argv)
     for (size_t i = 0; i < mandatoryArgsCount; i++)
     {
         char * arg = argv[i];
-        if (!InitArgument(i, arg))
+        if (!InitArgument(startArgsPosition + i, arg))
         {
             ExitNow();
         }
@@ -77,7 +184,7 @@ bool Command::InitArguments(int argc, char ** argv)
     for (size_t i = mandatoryArgsCount; i < (size_t) argc; i += 2)
     {
         bool found = false;
-        for (size_t j = mandatoryArgsCount; j < mandatoryArgsCount + optionalArgsCount; j++)
+        for (size_t j = startArgsPosition + mandatoryArgsCount; j < startArgsPosition + mandatoryArgsCount + optionalArgsCount; j++)
         {
             // optional arguments starts with kOptionalArgumentPrefix
             if (strlen(argv[i]) <= kOptionalArgumentPrefixLength &&
