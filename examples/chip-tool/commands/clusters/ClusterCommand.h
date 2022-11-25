@@ -48,7 +48,8 @@ public:
     CHIP_ERROR SendCommand(chip::DeviceProxy * device, std::vector<chip::EndpointId> endpointIds) override
     {
         return InteractionModelCommands::SendCommand(device, endpointIds.at(0), mClusterId, mCommandId, mPayload,
-                                                     mTimedInteractionTimeoutMs, mSuppressResponse, mRepeatCount, mRepeatDelayInMs);
+                                                     mTimedInteractionTimeoutMs, mBusyWaitForMs, mSuppressResponse, mRepeatCount,
+                                                     mRepeatDelayInMs);
     }
 
     template <class T>
@@ -56,7 +57,7 @@ public:
                            chip::CommandId commandId, const T & value)
     {
         return InteractionModelCommands::SendCommand(device, endpointId, clusterId, commandId, value, mTimedInteractionTimeoutMs,
-                                                     mSuppressResponse, mRepeatCount, mRepeatDelayInMs);
+                                                     mBusyWaitForMs, mSuppressResponse, mRepeatCount, mRepeatDelayInMs);
     }
 
     CHIP_ERROR SendGroupCommand(chip::GroupId groupId, chip::FabricIndex fabricIndex) override
@@ -142,6 +143,8 @@ protected:
         AddArgument("timedInteractionTimeoutMs", 0, UINT16_MAX, &mTimedInteractionTimeoutMs,
                     "If provided, do a timed invoke with the given timed interaction timeout. See \"7.6.10. Timed Interaction\" in "
                     "the Matter specification.");
+        AddArgument("busyWaitForMs", 0, UINT16_MAX, &mBusyWaitForMs,
+                    "If provided, block the main thread processing for the given time right after sending a command.");
         AddArgument("suppressResponse", 0, 1, &mSuppressResponse);
         AddArgument("repeat-count", 1, UINT16_MAX, &mRepeatCount);
         AddArgument("repeat-delay-ms", 0, UINT16_MAX, &mRepeatDelayInMs);
@@ -152,6 +155,7 @@ private:
     chip::ClusterId mClusterId;
     chip::CommandId mCommandId;
     chip::Optional<uint16_t> mTimedInteractionTimeoutMs;
+    chip::Optional<uint16_t> mBusyWaitForMs;
     chip::Optional<bool> mSuppressResponse;
     chip::Optional<uint16_t> mRepeatCount;
     chip::Optional<uint16_t> mRepeatDelayInMs;

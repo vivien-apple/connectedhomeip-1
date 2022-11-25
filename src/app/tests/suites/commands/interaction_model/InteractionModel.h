@@ -155,6 +155,7 @@ protected:
     CHIP_ERROR SendCommand(chip::DeviceProxy * device, chip::EndpointId endpointId, chip::ClusterId clusterId,
                            chip::CommandId commandId, const T & value,
                            const chip::Optional<uint16_t> & timedInteractionTimeoutMs = chip::NullOptional,
+                           const chip::Optional<uint16_t> & busyWaitForMs             = chip::NullOptional,
                            const chip::Optional<bool> & suppressResponse              = chip::NullOptional,
                            const chip::Optional<uint16_t> & repeatCount               = chip::NullOptional,
                            const chip::Optional<uint16_t> & repeatDelayInMs           = chip::NullOptional)
@@ -173,6 +174,17 @@ protected:
                                                                            suppressResponse.ValueOr(false)));
             ReturnErrorOnFailure(commandSender->SendCommandRequest(device->GetSecureSession().Value()));
             mCommandSender.push_back(std::move(commandSender));
+
+            if (busyWaitForMs.HasValue())
+            {
+                auto & clock = chip::System::SystemClock();
+                auto start   = clock.GetMonotonicTimestamp();
+                chip::System::Clock::Milliseconds32 durationInMs(busyWaitForMs.Value());
+                while (clock.GetMonotonicTimestamp() - start < durationInMs)
+                {
+                    // nothing to do.
+                };
+            }
 
             if (repeatDelayInMs.HasValue())
             {
@@ -222,6 +234,7 @@ protected:
                               std::vector<chip::ClusterId> clusterIds, std::vector<chip::AttributeId> attributeIds,
                               const std::vector<T> & values,
                               const chip::Optional<uint16_t> & timedInteractionTimeoutMs          = chip::NullOptional,
+                              const chip::Optional<uint16_t> & busyWaitForMs                      = chip::NullOptional,
                               const chip::Optional<bool> & suppressResponse                       = chip::NullOptional,
                               const chip::Optional<std::vector<chip::DataVersion>> & dataVersions = chip::NullOptional,
                               const chip::Optional<uint16_t> & repeatCount                        = chip::NullOptional,
@@ -251,6 +264,17 @@ protected:
 
             ReturnErrorOnFailure(mWriteClient->SendWriteRequest(device->GetSecureSession().Value()));
 
+            if (busyWaitForMs.HasValue())
+            {
+                auto & clock = chip::System::SystemClock();
+                auto start   = clock.GetMonotonicTimestamp();
+                chip::System::Clock::Milliseconds32 durationInMs(busyWaitForMs.Value());
+                while (clock.GetMonotonicTimestamp() - start < durationInMs)
+                {
+                    // nothing to do.
+                };
+            }
+
             if (repeatDelayInMs.HasValue())
             {
                 chip::test_utils::SleepMillis(repeatDelayInMs.Value());
@@ -264,14 +288,15 @@ protected:
     CHIP_ERROR WriteAttribute(chip::DeviceProxy * device, std::vector<chip::EndpointId> endpointIds,
                               std::vector<chip::ClusterId> clusterIds, std::vector<chip::AttributeId> attributeIds, const T & value,
                               const chip::Optional<uint16_t> & timedInteractionTimeoutMs          = chip::NullOptional,
+                              const chip::Optional<uint16_t> & busyWaitForMs                      = chip::NullOptional,
                               const chip::Optional<bool> & suppressResponse                       = chip::NullOptional,
                               const chip::Optional<std::vector<chip::DataVersion>> & dataVersions = chip::NullOptional,
                               const chip::Optional<uint16_t> & repeatCount                        = chip::NullOptional,
                               const chip::Optional<uint16_t> & repeatDelayInMs                    = chip::NullOptional)
     {
         std::vector<T> values = { value };
-        return WriteAttribute(device, endpointIds, clusterIds, attributeIds, values, timedInteractionTimeoutMs, suppressResponse,
-                              dataVersions, repeatCount, repeatDelayInMs);
+        return WriteAttribute(device, endpointIds, clusterIds, attributeIds, values, timedInteractionTimeoutMs, busyWaitForMs,
+                              suppressResponse, dataVersions, repeatCount, repeatDelayInMs);
     }
 
     template <class T>
@@ -368,6 +393,7 @@ public:
     CHIP_ERROR WriteAttribute(const char * identity, chip::EndpointId endpointId, chip::ClusterId clusterId,
                               chip::AttributeId attributeId, const T & value,
                               const chip::Optional<uint16_t> & timedInteractionTimeoutMs = chip::NullOptional,
+                              const chip::Optional<uint16_t> & busyWaitForMs             = chip::NullOptional,
                               const chip::Optional<bool> & suppressResponse              = chip::NullOptional,
                               const chip::Optional<chip::DataVersion> & dataVersion      = chip::NullOptional)
     {
@@ -386,7 +412,8 @@ public:
         }
 
         return InteractionModelWriter::WriteAttribute(device, endpointIds, clusterIds, attributeIds, value,
-                                                      timedInteractionTimeoutMs, suppressResponse, optionalDataVersions);
+                                                      timedInteractionTimeoutMs, busyWaitForMs, suppressResponse,
+                                                      optionalDataVersions);
     }
 
     template <class T>
@@ -404,13 +431,14 @@ public:
     template <class T>
     CHIP_ERROR SendCommand(const char * identity, chip::EndpointId endpointId, chip::ClusterId clusterId, chip::CommandId commandId,
                            const T & value, chip::Optional<uint16_t> timedInteractionTimeoutMs = chip::NullOptional,
+                           chip::Optional<uint16_t> busyWaitMs           = chip::NullOptional,
                            const chip::Optional<bool> & suppressResponse = chip::NullOptional)
     {
         chip::DeviceProxy * device = GetDevice(identity);
         VerifyOrReturnError(device != nullptr, CHIP_ERROR_INCORRECT_STATE);
 
         return InteractionModelCommands::SendCommand(device, endpointId, clusterId, commandId, value, timedInteractionTimeoutMs,
-                                                     suppressResponse);
+                                                     busyWaitMs, suppressResponse);
     }
 
     template <class T>
