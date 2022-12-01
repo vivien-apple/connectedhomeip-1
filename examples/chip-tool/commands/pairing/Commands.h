@@ -23,6 +23,7 @@
 #include "commands/pairing/CommissionedListCommand.h"
 #include "commands/pairing/OpenCommissioningWindowCommand.h"
 #include "commands/pairing/PairingCommand.h"
+#include "commands/pairing/WaitForCommissioneeCommand.h"
 
 #include <app/server/Dnssd.h>
 #include <commands/common/CredentialIssuerCommands.h>
@@ -220,6 +221,7 @@ void registerCommandsPairing(Commands & commands, CredentialIssuerCommands * cre
         make_unique<StartUdcServerCommand>(credsIssuerConfig),
         make_unique<OpenCommissioningWindowCommand>(credsIssuerConfig),
         make_unique<CloseSessionCommand>(credsIssuerConfig),
+        make_unique<WaitForCommissioneeCommand>(credsIssuerConfig),
     };
 
     commands.Register(clusterName, clusterCommands);

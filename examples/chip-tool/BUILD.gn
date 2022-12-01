@@ -70,6 +70,8 @@ static_library("chip-tool-utils") {
     "commands/pairing/CloseSessionCommand.h",
     "commands/pairing/OpenCommissioningWindowCommand.cpp",
     "commands/pairing/OpenCommissioningWindowCommand.h",
+    "commands/pairing/WaitForCommissioneeCommand.cpp",
+    "commands/pairing/WaitForCommissioneeCommand.h",
     "commands/payload/AdditionalDataParseCommand.cpp",
     "commands/payload/SetupPayloadGenerateCommand.cpp",
     "commands/payload/SetupPayloadParseCommand.cpp",
