@@ -29,7 +29,9 @@
 
 #include "JsonParser.h"
 
-constexpr uint8_t kMaxLabelLength = 100;
+constexpr uint8_t kMaxLabelLength   = 100;
+constexpr const char kNullString[]  = "null";
+constexpr const char kNullStringLen = ArraySize(kNullString) - 1 /* ignore \0 */;
 
 class ComplexArgumentParser
 {
@@ -341,8 +343,13 @@ public:
 
     CHIP_ERROR Parse(const char * label, const char * json)
     {
+        ChipLogError(chipTool, "Foobar %s: %s", label, json);
         Json::Value value;
-        if (!JsonParser::ParseComplexArgument(label, json, value))
+        if (strncmp(kNullString, json, kNullStringLen) == 0 && strlen(json) == kNullStringLen)
+        {
+            value = Json::nullValue;
+        }
+        else if (!JsonParser::ParseComplexArgument(label, json, value))
         {
             return CHIP_ERROR_INVALID_ARGUMENT;
         }
