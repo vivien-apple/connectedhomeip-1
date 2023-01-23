@@ -26,6 +26,7 @@ pw_python_distribution("matter_yamltests_distribution") {
   packages = [
     "${chip_root}/scripts/py_matter_yamltests:matter_yamltests",
     "${chip_root}/examples/chip-tool/py_matter_chip_tool_adapter:matter_chip_tool_adapter",
+    "${chip_root}/examples/placeholder/py_matter_placeholder_adapter:matter_placeholder_adapter",
   ]
   generate_setup_cfg = {
     common_config_file = "common_setup.cfg"
