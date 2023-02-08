@@ -107,31 +107,31 @@ bool emberAfBasicClusterMfgSpecificPingCallback(chip::app::CommandHandler * comm
     return true;
 }
 
-void OnIdentifyStart(::Identify *)
+void OnIdentifyStart(Clusters::Identify::Identify *)
 {
     ChipLogProgress(Zcl, "OnIdentifyStart");
 }
 
-void OnIdentifyStop(::Identify *)
+void OnIdentifyStop(Clusters::Identify::Identify *)
 {
     ChipLogProgress(Zcl, "OnIdentifyStop");
 }
 
-void OnTriggerEffect(::Identify * identify)
+void OnTriggerEffect(Clusters::Identify::Identify * identify)
 {
     switch (identify->mCurrentEffectIdentifier)
     {
-    case EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_BLINK:
-        ChipLogProgress(Zcl, "EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_BLINK");
+    case Clusters::Identify::IdentifyEffectIdentifier::kBlink:
+        ChipLogProgress(Zcl, "IdentifyEffectIdentifier::kBlink");
         break;
-    case EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_BREATHE:
-        ChipLogProgress(Zcl, "EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_BREATHE");
+    case Clusters::Identify::IdentifyEffectIdentifier::kBreathe:
+        ChipLogProgress(Zcl, "IdentifyEffectIdentifier::kBreathe");
         break;
-    case EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_OKAY:
-        ChipLogProgress(Zcl, "EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_OKAY");
+    case Clusters::Identify::IdentifyEffectIdentifier::kOkay:
+        ChipLogProgress(Zcl, "IdentifyEffectIdentifier::kOkay");
         break;
-    case EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_CHANNEL_CHANGE:
-        ChipLogProgress(Zcl, "EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_CHANNEL_CHANGE");
+    case Clusters::Identify::IdentifyEffectIdentifier::kChannelChange:
+        ChipLogProgress(Zcl, "IdentifyEffectIdentifier::kChannelChange");
         break;
     default:
         ChipLogProgress(Zcl, "No identifier effect");
@@ -139,12 +139,12 @@ void OnTriggerEffect(::Identify * identify)
     }
 }
 
-static Identify gIdentify0 = {
-    chip::EndpointId{ 0 }, OnIdentifyStart, OnIdentifyStop, EMBER_ZCL_IDENTIFY_IDENTIFY_TYPE_VISIBLE_LED, OnTriggerEffect,
+static Clusters::Identify::Identify gIdentify0 = {
+    chip::EndpointId{ 0 }, OnIdentifyStart, OnIdentifyStop, Clusters::Identify::IdentifyIdentifyType::kVisibleLED, OnTriggerEffect,
 };
 
-static Identify gIdentify1 = {
-    chip::EndpointId{ 1 }, OnIdentifyStart, OnIdentifyStop, EMBER_ZCL_IDENTIFY_IDENTIFY_TYPE_VISIBLE_LED, OnTriggerEffect,
+static Clusters::Identify::Identify gIdentify1 = {
+    chip::EndpointId{ 1 }, OnIdentifyStart, OnIdentifyStop, Clusters::Identify::IdentifyIdentifyType::kVisibleLED, OnTriggerEffect,
 };
 
 // Network commissioning

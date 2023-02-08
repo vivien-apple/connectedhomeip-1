@@ -138,11 +138,11 @@ void OnIdentifyStop(Identify *)
     ChipLogProgress(Zcl, "OnIdentifyStop");
 }
 
-static Identify gIdentify1 = {
+static Clusters::Identify::Identify gIdentify1 = {
     chip::EndpointId{ 1 },
     OnIdentifyStart,
     OnIdentifyStop,
-    EMBER_ZCL_IDENTIFY_IDENTIFY_TYPE_NONE,
+    Clusters::Identify::IdentifyIdentifyType::kNone,
 };
 
 static void InitServer(intptr_t context)

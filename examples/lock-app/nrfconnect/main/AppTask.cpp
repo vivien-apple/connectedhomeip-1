@@ -75,7 +75,7 @@ K_MSGQ_DEFINE(sAppEventQueue, sizeof(AppEvent), kAppEventQueueSize, alignof(AppE
 k_timer sFunctionTimer;
 
 Identify sIdentify = { kLockEndpointId, AppTask::IdentifyStartHandler, AppTask::IdentifyStopHandler,
-                       EMBER_ZCL_IDENTIFY_IDENTIFY_TYPE_VISIBLE_LED };
+                       Clusters::Identify::IdentifyIdentifyType::kVisibleLED };
 
 LEDWidget sStatusLED;
 LEDWidget sLockLED;

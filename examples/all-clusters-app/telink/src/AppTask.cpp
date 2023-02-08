@@ -117,7 +117,7 @@ Identify sIdentify = {
     kEndpointId,
     [](Identify *) { ChipLogProgress(Zcl, "OnIdentifyStart"); },
     [](Identify *) { ChipLogProgress(Zcl, "OnIdentifyStop"); },
-    EMBER_ZCL_IDENTIFY_IDENTIFY_TYPE_VISIBLE_LED,
+    Clusters::Identify::IdentifyIdentifyType::kVisibleLED,
     OnIdentifyTriggerEffect,
 };
 
@@ -253,45 +253,45 @@ CHIP_ERROR AppTask::StartApp(void)
     }
 }
 
-void AppTask::IdentifyEffectHandler(EmberAfIdentifyEffectIdentifier aEffect)
+void AppTask::IdentifyEffectHandler(Clusters::Identify::IdentifyEffectIdentifier aEffect)
 {
     AppEvent event;
     event.Type = AppEvent::kEventType_IdentifyStart;
 
     switch (aEffect)
     {
-    case EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_BLINK:
-        ChipLogProgress(Zcl, "EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_BLINK");
+    case Clusters::Identify::IdentifyEffectIdentifier::kBlink:
+        ChipLogProgress(Zcl, "IdentifyEffectIdentifier::kBlink");
         event.Handler = [](AppEvent *) {
             sAppTask.mPwmIdentifyLed.InitiateBlinkAction(kIdentifyBlinkRateMs, kIdentifyBlinkRateMs);
         };
         break;
-    case EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_BREATHE:
-        ChipLogProgress(Zcl, "EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_BREATHE");
+    case Clusters::Identify::IdentifyEffectIdentifier::kBreathe:
+        ChipLogProgress(Zcl, "IdentifyEffectIdentifier::kBreathe");
         event.Handler = [](AppEvent *) {
             sAppTask.mPwmIdentifyLed.InitiateBreatheAction(PWMDevice::kBreatheType_Both, kIdentifyBreatheRateMs);
         };
         break;
-    case EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_OKAY:
-        ChipLogProgress(Zcl, "EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_OKAY");
+    case Clusters::Identify::IdentifyEffectIdentifier::kOkay:
+        ChipLogProgress(Zcl, "IdentifyEffectIdentifier::kOkay");
         event.Handler = [](AppEvent *) {
             sAppTask.mPwmIdentifyLed.InitiateBlinkAction(kIdentifyOkayOnRateMs, kIdentifyOkayOffRateMs);
         };
         break;
-    case EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_CHANNEL_CHANGE:
-        ChipLogProgress(Zcl, "EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_CHANNEL_CHANGE");
+    case Clusters::Identify::IdentifyEffectIdentifier::kChannelChange:
+        ChipLogProgress(Zcl, "IdentifyEffectIdentifier::kChannelChange");
         event.Handler = [](AppEvent *) {
             sAppTask.mPwmIdentifyLed.InitiateBlinkAction(kIdentifyChannelChangeRateMs, kIdentifyChannelChangeRateMs);
         };
         break;
-    case EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_FINISH_EFFECT:
-        ChipLogProgress(Zcl, "EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_FINISH_EFFECT");
+    case Clusters::Identify::IdentifyEffectIdentifier::kFinishEffect:
+        ChipLogProgress(Zcl, "IdentifyEffectIdentifier::kFinishEffect");
         event.Handler = [](AppEvent *) {
             sAppTask.mPwmIdentifyLed.InitiateBlinkAction(kIdentifyFinishOnRateMs, kIdentifyFinishOffRateMs);
         };
         break;
-    case EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_STOP_EFFECT:
-        ChipLogProgress(Zcl, "EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_STOP_EFFECT");
+    case Clusters::Identify::IdentifyEffectIdentifier::kStopEffect:
+        ChipLogProgress(Zcl, "IdentifyEffectIdentifier::kStopEffect");
         event.Handler = [](AppEvent *) { sAppTask.mPwmIdentifyLed.StopAction(); };
         event.Type    = AppEvent::kEventType_IdentifyStop;
         break;

@@ -17,8 +17,14 @@
 
 #pragma once
 
-#include <app-common/zap-generated/enums.h>
+#include <app-common/zap-generated/cluster-objects.h>
 #include <app/util/basic-types.h>
+
+namespace chip {
+namespace app {
+namespace Clusters {
+
+namespace Identify {
 
 struct Identify
 {
@@ -45,18 +51,18 @@ struct Identify
      * @param effectVariant if supported by the app, initial effect variant
      */
     Identify(chip::EndpointId endpoint, onIdentifyStartCb onIdentifyStart, onIdentifyStopCb onIdentifyStop,
-             EmberAfIdentifyIdentifyType identifyType, onEffectIdentifierCb onEffectIdentifier = nullptr,
-             EmberAfIdentifyEffectIdentifier effectIdentifier = EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_BLINK,
-             EmberAfIdentifyEffectVariant effectVariant       = EMBER_ZCL_IDENTIFY_EFFECT_VARIANT_DEFAULT);
+             IdentifyIdentifyType identifyType, onEffectIdentifierCb onEffectIdentifier = nullptr,
+             IdentifyEffectIdentifier effectIdentifier = IdentifyEffectIdentifier::kBlink,
+             IdentifyEffectVariant effectVariant       = IdentifyEffectVariant::kDefault);
     ~Identify();
 
     chip::EndpointId mEndpoint;
     onIdentifyStartCb mOnIdentifyStart = nullptr;
     onIdentifyStopCb mOnIdentifyStop   = nullptr;
-    EmberAfIdentifyIdentifyType mIdentifyType;
+    IdentifyIdentifyType mIdentifyType;
     onEffectIdentifierCb mOnEffectIdentifier;
-    EmberAfIdentifyEffectIdentifier mCurrentEffectIdentifier;
-    EmberAfIdentifyEffectIdentifier mTargetEffectIdentifier;
+    IdentifyEffectIdentifier mCurrentEffectIdentifier;
+    IdentifyEffectIdentifier mTargetEffectIdentifier;
     uint8_t mEffectVariant;
     bool mActive            = false;
     Identify * nextIdentify = nullptr;
@@ -67,3 +73,9 @@ struct Identify
 
     void setNext(Identify * inst) { this->nextIdentify = inst; }
 };
+
+} // namespace Identify
+
+} // namespace Clusters
+} // namespace app
+} // namespace chip

@@ -45,17 +45,17 @@ void OnIdentifyTriggerEffect(Identify * identify)
 {
     switch (identify->mCurrentEffectIdentifier)
     {
-    case EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_BLINK:
-        PLAT_LOG("EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_BLINK");
+    case Clusters::Identify::IdentifyEffectIdentifier::kBlink:
+        PLAT_LOG("IdentifyEffectIdentifier::kBlink");
         break;
-    case EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_BREATHE:
-        PLAT_LOG("EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_BREATHE");
+    case Clusters::Identify::IdentifyEffectIdentifier::kBreathe:
+        PLAT_LOG("IdentifyEffectIdentifier::kBreathe");
         break;
-    case EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_OKAY:
-        PLAT_LOG("EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_OKAY");
+    case Clusters::Identify::IdentifyEffectIdentifier::kOkay:
+        PLAT_LOG("IdentifyEffectIdentifier::kOkay");
         break;
-    case EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_CHANNEL_CHANGE:
-        PLAT_LOG("EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_CHANNEL_CHANGE");
+    case Clusters::Identify::IdentifyEffectIdentifier::kChannelChange:
+        PLAT_LOG("IdentifyEffectIdentifier::kChannelChange");
         break;
     default:
         PLAT_LOG("No identifier effect");
@@ -64,19 +64,19 @@ void OnIdentifyTriggerEffect(Identify * identify)
     return;
 }
 
-Identify gIdentify0 = {
+Clusters::Identify::Identify gIdentify0 = {
     chip::EndpointId{ 0 },
     [](Identify *) { PLAT_LOG("onIdentifyStart"); },
     [](Identify *) { PLAT_LOG("onIdentifyStop"); },
-    EMBER_ZCL_IDENTIFY_IDENTIFY_TYPE_VISIBLE_LED,
+    Clusters::Identify::IdentifyIdentifyType::kVisibleLED,
     OnIdentifyTriggerEffect,
 };
 
-Identify gIdentify1 = {
+Clusters::Identify::Identify gIdentify1 = {
     chip::EndpointId{ 1 },
     [](Identify *) { PLAT_LOG("onIdentifyStart"); },
     [](Identify *) { PLAT_LOG("onIdentifyStop"); },
-    EMBER_ZCL_IDENTIFY_IDENTIFY_TYPE_VISIBLE_LED,
+    Clusters::Identify::IdentifyIdentifyType::kVisibleLED,
     OnIdentifyTriggerEffect,
 };
 

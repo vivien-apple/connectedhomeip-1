@@ -53,18 +53,18 @@ void OnIdentifyTriggerEffect(Identify * identify)
 {
     switch (identify->mCurrentEffectIdentifier)
     {
-    case EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_BLINK:
+    case Clusters::Identify::IdentifyEffectIdentifier::kBlink:
         statusLED1.Blink(kIdentifyTimerDelayMS * 2);
-        ChipLogProgress(Zcl, "EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_BLINK");
+        ChipLogProgress(Zcl, "IdentifyEffectIdentifier::kBlink");
         break;
-    case EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_BREATHE:
-        ChipLogProgress(Zcl, "EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_BREATHE");
+    case Clusters::Identify::IdentifyEffectIdentifier::kBreathe:
+        ChipLogProgress(Zcl, "IdentifyEffectIdentifier::kBreathe");
         break;
-    case EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_OKAY:
-        ChipLogProgress(Zcl, "EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_OKAY");
+    case Clusters::Identify::IdentifyEffectIdentifier::kOkay:
+        ChipLogProgress(Zcl, "IdentifyEffectIdentifier::kOkay");
         break;
-    case EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_CHANNEL_CHANGE:
-        ChipLogProgress(Zcl, "EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_CHANNEL_CHANGE");
+    case Clusters::Identify::IdentifyEffectIdentifier::kChannelChange:
+        ChipLogProgress(Zcl, "IdentifyEffectIdentifier::kChannelChange");
         break;
     default:
         ChipLogProgress(Zcl, "No identifier effect");
@@ -73,19 +73,19 @@ void OnIdentifyTriggerEffect(Identify * identify)
     return;
 }
 
-Identify gIdentify0 = {
+Clusters::Identify::Identify gIdentify0 = {
     chip::EndpointId{ 0 },
     [](Identify *) { ChipLogProgress(Zcl, "onIdentifyStart"); },
     [](Identify *) { ChipLogProgress(Zcl, "onIdentifyStop"); },
-    EMBER_ZCL_IDENTIFY_IDENTIFY_TYPE_VISIBLE_LED,
+    Clusters::Identify::IdentifyIdentifyType::kVisibleLED,
     OnIdentifyTriggerEffect,
 };
 
-Identify gIdentify1 = {
+Clusters::Identify::Identify gIdentify1 = {
     chip::EndpointId{ 1 },
     [](Identify *) { ChipLogProgress(Zcl, "onIdentifyStart"); },
     [](Identify *) { ChipLogProgress(Zcl, "onIdentifyStop"); },
-    EMBER_ZCL_IDENTIFY_IDENTIFY_TYPE_VISIBLE_LED,
+    Clusters::Identify::IdentifyIdentifyType::kVisibleLED,
     OnIdentifyTriggerEffect,
 };
 

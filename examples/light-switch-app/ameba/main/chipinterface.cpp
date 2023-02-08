@@ -73,18 +73,18 @@ void NetWorkCommissioningInstInit()
     emberAfEndpointEnableDisable(kNetworkCommissioningEndpointSecondary, false);
 }
 
-Identify gIdentify0 = {
+Clusters::Identify::Identify gIdentify0 = {
     chip::EndpointId{ 0 },
     [](Identify *) { ChipLogProgress(Zcl, "onIdentifyStart"); },
     [](Identify *) { ChipLogProgress(Zcl, "onIdentifyStop"); },
-    EMBER_ZCL_IDENTIFY_IDENTIFY_TYPE_VISIBLE_LED,
+    Clusters::Identify::IdentifyIdentifyType::kVisibleLED,
 };
 
-Identify gIdentify1 = {
+Clusters::Identify::Identify gIdentify1 = {
     chip::EndpointId{ 1 },
     [](Identify *) { ChipLogProgress(Zcl, "onIdentifyStart"); },
     [](Identify *) { ChipLogProgress(Zcl, "onIdentifyStop"); },
-    EMBER_ZCL_IDENTIFY_IDENTIFY_TYPE_VISIBLE_LED,
+    Clusters::Identify::IdentifyIdentifyType::kVisibleLED,
 };
 
 #ifdef CONFIG_PLATFORM_8721D

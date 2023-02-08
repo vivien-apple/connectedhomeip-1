@@ -105,7 +105,7 @@ static const chip::EndpointId sIdentifyEndpointId = 0;
 static const uint32_t sIdentifyBlinkRateMs        = 500;
 
 ::Identify stIdentify = { sIdentifyEndpointId, AppTask::IdentifyStartHandler, AppTask::IdentifyStopHandler,
-                          EMBER_ZCL_IDENTIFY_IDENTIFY_TYPE_VISIBLE_LED, AppTask::TriggerIdentifyEffectHandler };
+                          Clusters::Identify::IdentifyIdentifyType::kVisibleLED, AppTask::TriggerIdentifyEffectHandler };
 
 int AppTask::StartAppTask()
 {
@@ -631,41 +631,41 @@ void AppTask::PostEvents(intptr_t context)
     }
 }
 
-void AppTask::IdentifyStartHandler(::Identify *)
+void AppTask::IdentifyStartHandler(Clusters::Identify::Identify *)
 {
     AppEvent event;
     event.Type = AppEvent::kEventType_IdentifyStart;
     sAppTask.PostEvent(&event);
 }
 
-void AppTask::IdentifyStopHandler(::Identify *)
+void AppTask::IdentifyStopHandler(Clusters::Identify::Identify *)
 {
     AppEvent event;
     event.Type = AppEvent::kEventType_IdentifyStop;
     sAppTask.PostEvent(&event);
 }
 
-void AppTask::TriggerIdentifyEffectHandler(::Identify * identify)
+void AppTask::TriggerIdentifyEffectHandler(Clusters::Identify::Identify * identify)
 {
     switch (identify->mCurrentEffectIdentifier)
     {
-    case EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_BLINK:
+    case Clusters::Identify::IdentifyEffectIdentifier::kBlink:
         PLAT_LOG("Starting blink identifier effect");
         IdentifyStartHandler(identify);
         break;
-    case EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_BREATHE:
+    case Clusters::Identify::IdentifyEffectIdentifier::kBreathe:
         PLAT_LOG("Breathe identifier effect not implemented");
         break;
-    case EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_OKAY:
+    case Clusters::Identify::IdentifyEffectIdentifier::kOkay:
         PLAT_LOG("Okay identifier effect not implemented");
         break;
-    case EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_CHANNEL_CHANGE:
+    case Clusters::Identify::IdentifyEffectIdentifier::kChannelChange:
         PLAT_LOG("Channel Change identifier effect not implemented");
         break;
-    case EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_FINISH_EFFECT:
+    case Clusters::Identify::IdentifyEffectIdentifier::kFinishEffect:
         PLAT_LOG("Finish identifier effect not implemented");
         break;
-    case EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_STOP_EFFECT:
+    case Clusters::Identify::IdentifyEffectIdentifier::kStopEffect:
         PLAT_LOG("Stop identifier effect");
         IdentifyStopHandler(identify);
         break;

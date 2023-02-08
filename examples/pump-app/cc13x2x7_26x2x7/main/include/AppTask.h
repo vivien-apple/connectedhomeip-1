@@ -45,9 +45,9 @@ public:
     void InitOnOffClusterState();
     void InitPCCClusterState();
 
-    static void IdentifyStartHandler(::Identify *);
-    static void IdentifyStopHandler(::Identify *);
-    static void TriggerIdentifyEffectHandler(::Identify * identify);
+    static void IdentifyStartHandler(Clusters::Identify::Identify *);
+    static void IdentifyStopHandler(Clusters::Identify::Identify *);
+    static void TriggerIdentifyEffectHandler(Clusters::Identify::Identify * identify);
 
 private:
     friend AppTask & GetAppTask(void);

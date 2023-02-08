@@ -49,7 +49,7 @@ public:
 
     void PostLightingActionRequest(Action_t aAction);
     void PostEvent(AppEvent * event);
-    static void IdentifyEffectHandler(EmberAfIdentifyEffectIdentifier aEffect);
+    static void IdentifyEffectHandler(Clusters::Identify::IdentifyEffectIdentifier aEffect);
 
 private:
     friend AppTask & GetAppTask(void);

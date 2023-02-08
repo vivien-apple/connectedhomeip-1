@@ -13,9 +13,6 @@
 - HueDirection
 - HueMoveMode
 - HueStepMode
-- IdentifyEffectIdentifier
-- IdentifyEffectVariant
-- IdentifyIdentifyType
 - InterfaceTypeEnum
 - KeypadLockout
 - LevelControlOptions

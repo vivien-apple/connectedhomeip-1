@@ -112,7 +112,7 @@ bool sHaveBLEConnections = false;
 
 #endif // CHIP_DEVICE_CONFIG_ENABLE_SED
 
-EmberAfIdentifyEffectIdentifier sIdentifyEffect = EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_STOP_EFFECT;
+Clusters::Identify::IdentifyEffectIdentifier sIdentifyEffect = Clusters::Identify::IdentifyEffectIdentifier::kStopEffect;
 
 uint8_t sAppEventQueueBuffer[APP_EVENT_QUEUE_SIZE * sizeof(AppEvent)];
 StaticQueue_t sAppEventQueueStruct;
@@ -336,21 +336,21 @@ void BaseApplication::LightEventHandler()
             sStatusLED.Blink(250, 250);
 #endif // ENABLE_WSTK_LEDS
         }
-        else if (sIdentifyEffect != EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_STOP_EFFECT)
+        else if (sIdentifyEffect != Clusters::Identify::IdentifyEffectIdentifier::kStopEffect)
         {
-            if (sIdentifyEffect == EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_BLINK)
+            if (sIdentifyEffect == Clusters::Identify::IdentifyEffectIdentifier::kBlink)
             {
 #if defined(ENABLE_WSTK_LEDS) && defined(SL_CATALOG_SIMPLE_LED_LED1_PRESENT)
                 sStatusLED.Blink(50, 50);
 #endif // ENABLE_WSTK_LEDS
             }
-            if (sIdentifyEffect == EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_BREATHE)
+            if (sIdentifyEffect == Clusters::Identify::IdentifyEffectIdentifier::kBreathe)
             {
 #if defined(ENABLE_WSTK_LEDS) && defined(SL_CATALOG_SIMPLE_LED_LED1_PRESENT)
                 sStatusLED.Blink(1000, 1000);
 #endif // ENABLE_WSTK_LEDS
             }
-            if (sIdentifyEffect == EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_OKAY)
+            if (sIdentifyEffect == Clusters::Identify::IdentifyEffectIdentifier::kOkay)
             {
 #if defined(ENABLE_WSTK_LEDS) && defined(SL_CATALOG_SIMPLE_LED_LED1_PRESENT)
                 sStatusLED.Blink(300, 700);

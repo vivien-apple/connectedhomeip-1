@@ -101,7 +101,7 @@ bool sHaveBLEConnections = false;
 
 #endif // CHIP_DEVICE_CONFIG_ENABLE_SED
 
-EmberAfIdentifyEffectIdentifier sIdentifyEffect = EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_STOP_EFFECT;
+Clusters::Identify::IdentifyEffectIdentifier sIdentifyEffect = Clusters::Identify::IdentifyEffectIdentifier::kStopEffect;
 
 uint8_t sAppEventQueueBuffer[APP_EVENT_QUEUE_SIZE * sizeof(AppEvent)];
 StaticQueue_t sAppEventQueueStruct;
@@ -323,17 +323,17 @@ void BaseApplication::LightEventHandler()
         {
             sStatusLED.Blink(250, 250);
         }
-        else if (sIdentifyEffect != EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_STOP_EFFECT)
+        else if (sIdentifyEffect != Clusters::Identify::IdentifyEffectIdentifier::kStopEffect)
         {
-            if (sIdentifyEffect == EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_BLINK)
+            if (sIdentifyEffect == Clusters::Identify::IdentifyEffectIdentifier::kBlink)
             {
                 sStatusLED.Blink(50, 50);
             }
-            if (sIdentifyEffect == EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_BREATHE)
+            if (sIdentifyEffect == Clusters::Identify::IdentifyEffectIdentifier::kBreathe)
             {
                 sStatusLED.Blink(1000, 1000);
             }
-            if (sIdentifyEffect == EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_OKAY)
+            if (sIdentifyEffect == Clusters::Identify::IdentifyEffectIdentifier::kOkay)
             {
                 sStatusLED.Blink(300, 700);
             }

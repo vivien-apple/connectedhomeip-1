@@ -71,17 +71,17 @@ void OnIdentifyTriggerEffect(Identify * identify)
 {
     switch (identify->mCurrentEffectIdentifier)
     {
-    case EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_BLINK:
-        ChipLogProgress(Zcl, "EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_BLINK");
+    case Clusters::Identify::IdentifyEffectIdentifier::kBlink:
+        ChipLogProgress(Zcl, "IdentifyEffectIdentifier::kBlink");
         break;
-    case EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_BREATHE:
-        ChipLogProgress(Zcl, "EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_BREATHE");
+    case Clusters::Identify::IdentifyEffectIdentifier::kBreathe:
+        ChipLogProgress(Zcl, "IdentifyEffectIdentifier::kBreathe");
         break;
-    case EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_OKAY:
-        ChipLogProgress(Zcl, "EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_OKAY");
+    case Clusters::Identify::IdentifyEffectIdentifier::kOkay:
+        ChipLogProgress(Zcl, "IdentifyEffectIdentifier::kOkay");
         break;
-    case EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_CHANNEL_CHANGE:
-        ChipLogProgress(Zcl, "EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_CHANNEL_CHANGE");
+    case Clusters::Identify::IdentifyEffectIdentifier::kChannelChange:
+        ChipLogProgress(Zcl, "IdentifyEffectIdentifier::kChannelChange");
         break;
     default:
         ChipLogProgress(Zcl, "No identifier effect");
@@ -90,11 +90,11 @@ void OnIdentifyTriggerEffect(Identify * identify)
     return;
 }
 
-static Identify gIdentify = {
+static Clusters::Identify::Identify gIdentify = {
     chip::EndpointId{ 1 },
     [](Identify *) { ChipLogProgress(Zcl, "onIdentifyStart"); },
     [](Identify *) { ChipLogProgress(Zcl, "onIdentifyStop"); },
-    EMBER_ZCL_IDENTIFY_IDENTIFY_TYPE_NONE,
+    Clusters::Identify::IdentifyIdentifyType::kNone,
     OnIdentifyTriggerEffect,
 };
 

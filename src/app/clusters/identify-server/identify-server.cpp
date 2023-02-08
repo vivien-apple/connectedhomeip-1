@@ -94,7 +94,7 @@ void emberAfIdentifyClusterServerInitCallback(EndpointId endpoint)
     Identify * identify = inst(endpoint);
     if (identify != nullptr)
     {
-        (void) Clusters::Identify::Attributes::IdentifyType::Set(endpoint, identify->mIdentifyType);
+        (void) Clusters::Identify::Attributes::IdentifyType::Set(endpoint, static_cast<uint8_t>(identify->mIdentifyType));
     }
 }
 
@@ -157,12 +157,14 @@ void MatterIdentifyClusterServerAttributeChangedCallback(const app::ConcreteAttr
                 identify->mCurrentEffectIdentifier = identify->mTargetEffectIdentifier;
 
                 /* finish identify process */
-                if (EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_FINISH_EFFECT == identify->mCurrentEffectIdentifier && identifyTime > 0)
+                if (Clusters::Identify::IdentifyEffectIdentifier::kFinishEffect == identify->mCurrentEffectIdentifier &&
+                    identifyTime > 0)
                 {
                     Clusters::Identify::Attributes::IdentifyTime::Set(endpoint, 1);
                 }
                 /* stop identify process */
-                if (EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_STOP_EFFECT == identify->mCurrentEffectIdentifier && identifyTime > 0)
+                if (Clusters::Identify::IdentifyEffectIdentifier::kStopEffect == identify->mCurrentEffectIdentifier &&
+                    identifyTime > 0)
                 {
                     Clusters::Identify::Attributes::IdentifyTime::Set(endpoint, 0);
                     identify_deactivate(identify);
@@ -217,11 +219,12 @@ bool emberAfIdentifyClusterTriggerEffectCallback(CommandHandler * commandObj, co
     EndpointId endpoint = commandPath.mEndpointId;
 
     // cmd TriggerEffect
-    Identify * identify                      = inst(endpoint);
-    uint16_t identifyTime                    = 0;
-    EmberAfIdentifyEffectIdentifier effectId = static_cast<EmberAfIdentifyEffectIdentifier>(effectIdentifier);
+    Identify * identify   = inst(endpoint);
+    uint16_t identifyTime = 0;
+    Clusters::Identify::IdentifyEffectIdentifier effectId =
+        static_cast<Clusters::Identify::IdentifyEffectIdentifier>(effectIdentifier);
 
-    emberAfIdentifyClusterPrintln("RX identify:trigger effect 0x%X variant 0x%X", effectId, effectVariant);
+    emberAfIdentifyClusterPrintln("RX identify:trigger effect 0x%" PRIx8 " variant 0x%" PRIx8, effectId, effectVariant);
 
     if (identify == nullptr)
     {
@@ -229,7 +232,7 @@ bool emberAfIdentifyClusterTriggerEffectCallback(CommandHandler * commandObj, co
     }
 
     identify->mTargetEffectIdentifier = effectId;
-    identify->mEffectVariant          = effectVariant;
+    identify->mEffectVariant          = static_cast<uint8_t>(effectVariant);
 
     /* only call the callback if no identify is in progress */
     if (nullptr != identify->mOnEffectIdentifier &&
@@ -244,8 +247,9 @@ bool emberAfIdentifyClusterTriggerEffectCallback(CommandHandler * commandObj, co
 }
 
 Identify::Identify(chip::EndpointId endpoint, onIdentifyStartCb onIdentifyStart, onIdentifyStopCb onIdentifyStop,
-                   EmberAfIdentifyIdentifyType identifyType, onEffectIdentifierCb onEffectIdentifier,
-                   EmberAfIdentifyEffectIdentifier effectIdentifier, EmberAfIdentifyEffectVariant effectVariant) :
+                   Clusters::Identify::IdentifyIdentifyType identifyType, onEffectIdentifierCb onEffectIdentifier,
+                   Clusters::Identify::IdentifyEffectIdentifier effectIdentifier,
+                   Clusters::Identify::IdentifyEffectVariant effectVariant) :
     mEndpoint(endpoint),
     mOnIdentifyStart(onIdentifyStart), mOnIdentifyStop(onIdentifyStop), mIdentifyType(identifyType),
     mOnEffectIdentifier(onEffectIdentifier), mCurrentEffectIdentifier(effectIdentifier), mTargetEffectIdentifier(effectIdentifier),

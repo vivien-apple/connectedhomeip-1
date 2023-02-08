@@ -36,27 +36,27 @@ inline void OnTriggerEffectCompleted(chip::System::Layer * systemLayer, void * a
 
 void OnTriggerEffect(Identify * identify)
 {
-    EmberAfIdentifyEffectIdentifier sIdentifyEffect = identify->mCurrentEffectIdentifier;
+    Clusters::Identify::IdentifyEffectIdentifier sIdentifyEffect = identify->mCurrentEffectIdentifier;
 
     ChipLogProgress(Zcl, "IDENTFY  OnTriggerEffect");
 
-    if (identify->mCurrentEffectIdentifier == EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_CHANNEL_CHANGE)
+    if (identify->mCurrentEffectIdentifier == Clusters::Identify::IdentifyEffectIdentifier::kChannelChange)
     {
-        ChipLogProgress(Zcl, "IDENTIFY_EFFECT_IDENTIFIER_CHANNEL_CHANGE - Not supported, use effect varriant %d",
+        ChipLogProgress(Zcl, "IdentifyEffectIdentifier::kChannelChange - Not supported, use effect variant 0x%" PRIx8,
                         identify->mEffectVariant);
-        sIdentifyEffect = static_cast<EmberAfIdentifyEffectIdentifier>(identify->mEffectVariant);
+        sIdentifyEffect = static_cast<Clusters::Identify::IdentifyEffectIdentifier>(identify->mEffectVariant);
     }
 
     switch (sIdentifyEffect)
     {
-    case EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_BLINK:
-    case EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_BREATHE:
-    case EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_OKAY:
+    case Clusters::Identify::IdentifyEffectIdentifier::kBlink:
+    case Clusters::Identify::IdentifyEffectIdentifier::kBreathe:
+    case Clusters::Identify::IdentifyEffectIdentifier::kOkay:
         WindowApp::Instance().PostEvent(WindowApp::EventId::WinkOn);
         (void) chip::DeviceLayer::SystemLayer().StartTimer(chip::System::Clock::Seconds16(5), OnTriggerEffectCompleted, identify);
         break;
-    case EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_FINISH_EFFECT:
-    case EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_STOP_EFFECT:
+    case Clusters::Identify::IdentifyEffectIdentifier::kFinishEffect:
+    case Clusters::Identify::IdentifyEffectIdentifier::kStopEffect:
         (void) chip::DeviceLayer::SystemLayer().CancelTimer(OnTriggerEffectCompleted, identify);
         break;
     default:
@@ -64,11 +64,11 @@ void OnTriggerEffect(Identify * identify)
     }
 }
 
-Identify gIdentify = {
+Clusters::Identify::Identify gIdentify = {
     chip::EndpointId{ 1 },
     [](Identify *) { ChipLogProgress(Zcl, "onIdentifyStart"); },
     [](Identify *) { ChipLogProgress(Zcl, "onIdentifyStop"); },
-    EMBER_ZCL_IDENTIFY_IDENTIFY_TYPE_VISIBLE_LED,
+    Clusters::Identify::IdentifyIdentifyType::kVisibleLED,
     OnTriggerEffect,
 };
 

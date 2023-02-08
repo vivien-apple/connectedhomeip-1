@@ -45,7 +45,7 @@ public:
     CHIP_ERROR StartApp(void);
 
     void PostEvent(AppEvent * event);
-    static void IdentifyEffectHandler(EmberAfIdentifyEffectIdentifier aEffect);
+    static void IdentifyEffectHandler(Clusters::Identify::IdentifyEffectIdentifier aEffect);
 
     void UpdateClusterState(void);
     void UpdateThermoStatUI(void);

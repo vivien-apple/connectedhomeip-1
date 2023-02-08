@@ -57,7 +57,7 @@ public:
         kButtonId_StartBleAdv
     } ButtonId;
 
-    static void IdentifyEffectHandler(EmberAfIdentifyEffectIdentifier aEffect);
+    static void IdentifyEffectHandler(Clusters::Identify::IdentifyEffectIdentifier aEffect);
 
 private:
 #ifdef CONFIG_CHIP_PW_RPC

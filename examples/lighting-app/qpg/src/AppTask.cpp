@@ -87,7 +87,7 @@ StaticQueue_t sAppEventQueueStruct;
 StackType_t appStack[APP_TASK_STACK_SIZE / sizeof(StackType_t)];
 StaticTask_t appTaskStruct;
 
-EmberAfIdentifyEffectIdentifier sIdentifyEffect = EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_STOP_EFFECT;
+Clusters::Identify::IdentifyEffectIdentifier sIdentifyEffect = Clusters::Identify::IdentifyEffectIdentifier::kStopEffect;
 chip::DeviceLayer::DeviceInfoProviderImpl gExampleDeviceInfoProvider;
 
 /**********************************************************
@@ -97,7 +97,7 @@ chip::DeviceLayer::DeviceInfoProviderImpl gExampleDeviceInfoProvider;
 namespace {
 void OnTriggerIdentifyEffectCompleted(chip::System::Layer * systemLayer, void * appState)
 {
-    sIdentifyEffect = EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_STOP_EFFECT;
+    sIdentifyEffect = Clusters::Identify::IdentifyEffectIdentifier::kStopEffect;
 }
 } // namespace
 
@@ -105,40 +105,40 @@ void OnTriggerIdentifyEffect(Identify * identify)
 {
     sIdentifyEffect = identify->mCurrentEffectIdentifier;
 
-    if (identify->mCurrentEffectIdentifier == EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_CHANNEL_CHANGE)
+    if (identify->mCurrentEffectIdentifier == Clusters::Identify::IdentifyEffectIdentifier::kChannelChange)
     {
-        ChipLogProgress(Zcl, "IDENTIFY_EFFECT_IDENTIFIER_CHANNEL_CHANGE - Not supported, use effect variant %d",
+        ChipLogProgress(Zcl, "IdentifyEffectIdentifier::kChannelChange - Not supported, use effect variant 0x%" PRIx8,
                         identify->mEffectVariant);
-        sIdentifyEffect = static_cast<EmberAfIdentifyEffectIdentifier>(identify->mEffectVariant);
+        sIdentifyEffect = static_cast<Clusters::Identify::IdentifyEffectIdentifier>(identify->mEffectVariant);
     }
 
     switch (sIdentifyEffect)
     {
-    case EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_BLINK:
-    case EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_BREATHE:
-    case EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_OKAY:
+    case Clusters::Identify::IdentifyEffectIdentifier::kBlink:
+    case Clusters::Identify::IdentifyEffectIdentifier::kBreathe:
+    case Clusters::Identify::IdentifyEffectIdentifier::kOkay:
         (void) chip::DeviceLayer::SystemLayer().StartTimer(chip::System::Clock::Seconds16(5), OnTriggerIdentifyEffectCompleted,
                                                            identify);
         break;
-    case EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_FINISH_EFFECT:
+    case Clusters::Identify::IdentifyEffectIdentifier::kFinishEffect:
         (void) chip::DeviceLayer::SystemLayer().CancelTimer(OnTriggerIdentifyEffectCompleted, identify);
         (void) chip::DeviceLayer::SystemLayer().StartTimer(chip::System::Clock::Seconds16(1), OnTriggerIdentifyEffectCompleted,
                                                            identify);
         break;
-    case EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_STOP_EFFECT:
+    case Clusters::Identify::IdentifyEffectIdentifier::kStopEffect:
         (void) chip::DeviceLayer::SystemLayer().CancelTimer(OnTriggerIdentifyEffectCompleted, identify);
-        sIdentifyEffect = EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_STOP_EFFECT;
+        sIdentifyEffect = Clusters::Identify::IdentifyEffectIdentifier::kStopEffect;
         break;
     default:
         ChipLogProgress(Zcl, "No identifier effect");
     }
 }
 
-Identify gIdentify = {
+Clusters::Identify::Identify gIdentify = {
     chip::EndpointId{ 1 },
     [](Identify *) { ChipLogProgress(Zcl, "onIdentifyStart"); },
     [](Identify *) { ChipLogProgress(Zcl, "onIdentifyStop"); },
-    EMBER_ZCL_IDENTIFY_IDENTIFY_TYPE_VISIBLE_LED,
+    Clusters::Identify::IdentifyIdentifyType::kVisibleLED,
     OnTriggerIdentifyEffect,
 };
 

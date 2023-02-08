@@ -267,7 +267,7 @@ tests:
           [1667198739.677716][11428:11428] CHIP:DMG: AccessControl: allowed
           [1667198739.677783][11428:11428] CHIP:DMG: Received command for Endpoint=1 Cluster=0x0000_0003 Command=0x0000_0040
           [1667198739.677865][11428:11428] CHIP:ZCL: RX identify:trigger effect 0x0 variant 0x0
-          [1667198739.677938][11428:11428] CHIP:ZCL: EMBER_ZCL_IDENTIFY_EFFECT_IDENTIFIER_BLINK
+          [1667198739.677938][11428:11428] CHIP:ZCL: Clusters::Identify::IdentifyEffectIdentifier::kBlink
           [1667198739.678031][11428:11428] CHIP:DMG: Command handler moving to [ Preparing]
           [1667198739.678102][11428:11428] CHIP:DMG: Command handler moving to [AddingComm]
           [1667198739.678166][11428:11428] CHIP:DMG: Command handler moving to [AddedComma]

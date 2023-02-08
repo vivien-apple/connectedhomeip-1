@@ -88,11 +88,11 @@ static wiced_led_config_t chip_lighting_led_config[2] = {
     },
 };
 
-static Identify gIdentify = {
+static Clusters::Identify::Identify gIdentify = {
     chip::EndpointId{ 1 },
     [](Identify *) { ChipLogProgress(Zcl, "onIdentifyStart"); },
     [](Identify *) { ChipLogProgress(Zcl, "onIdentifyStop"); },
-    EMBER_ZCL_IDENTIFY_IDENTIFY_TYPE_VISIBLE_LED,
+    Clusters::Identify::IdentifyIdentifyType::kVisibleLED,
 };
 
 APPLICATION_START()
