@@ -96,19 +96,20 @@ struct OnOffEffect
     chip::EndpointId mEndpoint;
     OffWithEffectTriggerCommand mOffWithEffectTrigger = nullptr;
     chip::app::Clusters::OnOff::OnOffEffectIdentifier mEffectIdentifier;
-    uint8_t mEffectVariant;
+    chip::app::Clusters::OnOff::OnOffDelayedAllOffEffectVariant mEffectVariant;
     OnOffEffect * nextEffect = nullptr;
 
-    OnOffEffect(
-        chip::EndpointId endpoint, OffWithEffectTriggerCommand offWithEffectTrigger,
-        chip::app::Clusters::OnOff::OnOffEffectIdentifier effectIdentifier = EMBER_ZCL_ON_OFF_EFFECT_IDENTIFIER_DELAYED_ALL_OFF,
+    OnOffEffect(chip::EndpointId endpoint, OffWithEffectTriggerCommand offWithEffectTrigger,
+                chip::app::Clusters::OnOff::OnOffEffectIdentifier effectIdentifier =
+                    chip::app::Clusters::OnOff::OnOffEffectIdentifier::kDelayedAllOff,
 
-        /*
-         * effectVariant's type depends on the effect effectIdentifier so we don't know the type at compile time.
-         * Casting to uint8_t for more flexibility since the type can be OnOffDelayedAllOffEffectVariant or
-         * OnOffDelayedAllOffEffectVariant
-         */
-        uint8_t effectVariant = static_cast<uint8_t>(EMBER_ZCL_ON_OFF_DELAYED_ALL_OFF_EFFECT_VARIANT_FADE_TO_OFF_IN_0P8_SECONDS));
+                /*
+                 * effectVariant's type depends on the effect effectIdentifier so we don't know the type at compile time.
+                 * Casting to uint8_t for more flexibility since the type can be OnOffDelayedAllOffEffectVariant or
+                 * OnOffDelayedAllOffEffectVariant
+                 */
+                chip::app::Clusters::OnOff::OnOffDelayedAllOffEffectVariant effectVariant =
+                    chip::app::Clusters::OnOff::OnOffDelayedAllOffEffectVariant::kFadeToOffIn0p8Seconds);
     ~OnOffEffect();
 
     bool hasNext() { return this->nextEffect != nullptr; }

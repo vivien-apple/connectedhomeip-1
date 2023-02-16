@@ -353,10 +353,10 @@ bool OnOffServer::toggleCommand(app::CommandHandler * commandObj, const app::Con
 bool OnOffServer::offWithEffectCommand(app::CommandHandler * commandObj, const app::ConcreteCommandPath & commandPath,
                                        const Commands::OffWithEffect::DecodableType & commandData)
 {
-    OnOffEffectIdentifier effectId = commandData.effectIdentifier;
-    uint8_t effectVariant          = commandData.effectVariant;
-    chip::EndpointId endpoint      = commandPath.mEndpointId;
-    Status status                  = Status::Success;
+    auto effectId             = commandData.effectIdentifier;
+    auto effectVariant        = commandData.effectVariant;
+    chip::EndpointId endpoint = commandPath.mEndpointId;
+    Status status             = Status::Success;
 
     if (SupportsLightingApplications(endpoint))
     {
@@ -686,7 +686,7 @@ static inline void unreg(OnOffEffect * inst)
 }
 
 OnOffEffect::OnOffEffect(chip::EndpointId endpoint, OffWithEffectTriggerCommand offWithEffectTrigger,
-                         OnOffEffectIdentifier effectIdentifier, uint8_t effectVariant) :
+                         OnOffEffectIdentifier effectIdentifier, OnOffDelayedAllOffEffectVariant effectVariant) :
     mEndpoint(endpoint),
     mOffWithEffectTrigger(offWithEffectTrigger), mEffectIdentifier(effectIdentifier), mEffectVariant(effectVariant)
 {
