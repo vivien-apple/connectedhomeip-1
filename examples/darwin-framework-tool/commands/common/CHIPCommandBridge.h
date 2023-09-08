@@ -45,6 +45,8 @@ public:
         AddArgument("paa-trust-store-path", &mPaaTrustStorePath,
             "Path to directory holding PAA certificate information.  Can be absolute or relative to the current working "
             "directory.");
+        AddArgument("storage-directory", &mStorageDirectory,
+            "Directory to place darwin-framework tool's storage files in.  Defaults to $TMPDIR, with fallback to /tmp");
         AddArgument("commissioner-vendor-id", 0, UINT16_MAX, &mCommissionerVendorId,
             "The vendor id to use for darwin-framework-tool. If not provided, chip::VendorId::TestVendor1 (65521, 0xFFF1) will be "
             "used.");
