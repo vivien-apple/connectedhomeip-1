@@ -303,6 +303,12 @@ class StructFieldsNameConverter():
                     )
                     del value[str(field_code)]
 
+                # darwin-framework-tool returns "Description" as "descriptionString" since description is reserved keyword
+                # and can not be exposed as if in an objc struct.
+                if field_name == 'Description' and 'descriptionString' in value:
+                    value['Description'] = value['descriptionString']
+                    del value['descriptionString']
+
                 # darwin-framework-tool returns the field name but with a different casing than what
                 # the test suite expects.
                 # To not confuse the test suite, the field name is replaced by its field name
