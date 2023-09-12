@@ -34,6 +34,7 @@ constexpr const char * kCommandIdKey = "commandId";
 constexpr const char * kErrorIdKey = "error";
 constexpr const char * kClusterErrorIdKey = "clusterError";
 constexpr const char * kValueKey = "value";
+constexpr const char * kNodeIdKey = "nodeId";
 
 constexpr const char kBase64Header[] = "base64:";
 
@@ -189,6 +190,18 @@ CHIP_ERROR LogCommandErrorAsJSON(NSNumber * endpointId, NSNumber * clusterId, NS
     auto err = MTRErrorToCHIPErrorCode(error);
     auto status = chip::app::StatusIB(err);
     return LogError(value, status);
+}
+
+CHIP_ERROR LogGetCommissionerNodeId(NSNumber * value)
+{
+    VerifyOrReturnError(gDelegate != nullptr, CHIP_NO_ERROR);
+
+    Json::Value rootValue;
+    rootValue[kValueKey] = Json::Value();
+    rootValue[kValueKey][kNodeIdKey] = [value unsignedLongLongValue];
+
+    auto valueStr = JsonToString(rootValue);
+    return gDelegate->LogJSON(valueStr.c_str());
 }
 
 void SetDelegate(RemoteDataModelLoggerDelegate * delegate) { gDelegate = delegate; }
