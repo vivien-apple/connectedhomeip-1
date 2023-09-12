@@ -14,6 +14,7 @@
 
 import base64
 import json
+import re
 
 # These constants represent the vocabulary used for the incoming JSON.
 _CLUSTER_ID = 'clusterId'
@@ -43,6 +44,7 @@ _EVENT_NUMBER = 'eventNumber'
 # a field is used for a fabric scoped struct.
 _FABRIC_INDEX_FIELD_CODE = '254'
 _FABRIC_INDEX_FIELD_NAME = 'FabricIndex'
+_FABRIC_INDEX_FIELD_NAME_DARWIN = 'fabricIndex'
 _FABRIC_INDEX_FIELD_TYPE = 'int8u'
 
 
@@ -313,8 +315,17 @@ class StructFieldsNameConverter():
                 # the test suite expects.
                 # To not confuse the test suite, the field name is replaced by its field name
                 # equivalent from the spec and then removed.
-                wrong_casing_field_name = field_name[0].lower(
-                ) + field_name[1:]
+
+                # If field_name starts with a sequence of capital letters (which can happen for
+                # output of asLowerCamelCase if the original string started that way,
+                # lowercase all but the last one.
+                wrong_casing_name = re.sub(
+                    '^([A-Z]+)([A-Z])', lambda matches: matches.group(1).lower() + matches.group(2), field_name)
+
+                # All field names in darwin-framework-tool all starts lowercased.
+                wrong_casing_field_name = wrong_casing_name[0].lower(
+                ) + wrong_casing_name[1:]
+
                 if field_name not in value and field_name[0].upper() == field_name[0] and wrong_casing_field_name in value:
                     value[field_name] = self.run(
                         specs,
@@ -326,13 +337,18 @@ class StructFieldsNameConverter():
                     del value[wrong_casing_field_name]
 
             if specs.is_fabric_scoped(struct):
+                if _FABRIC_INDEX_FIELD_CODE in value:
+                    key_name = _FABRIC_INDEX_FIELD_CODE
+                elif _FABRIC_INDEX_FIELD_NAME_DARWIN in value:
+                    key_name = _FABRIC_INDEX_FIELD_NAME_DARWIN
+
                 value[_FABRIC_INDEX_FIELD_NAME] = self.run(
                     specs,
-                    value[_FABRIC_INDEX_FIELD_CODE],
+                    value[key_name],
                     cluster_name,
                     _FABRIC_INDEX_FIELD_TYPE,
                     False)
-                del value[_FABRIC_INDEX_FIELD_CODE]
+                del value[key_name]
 
         elif isinstance(value, list) and array:
             value = [self.run(specs, v, cluster_name, typename, False)
