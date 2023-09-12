@@ -38,7 +38,7 @@
     } else if (state == MTRDeviceStateUnreachable) {
         _commandBridge->SetCommandExitStatus(CHIP_ERROR_NOT_FOUND);
     } else if (state == MTRDeviceStateUnknown) {
-        _commandBridge->SetCommandExitStatus(CHIP_ERROR_NOT_FOUND);
+        // We would just wait a little more...
     } else {
         // This should not happens.
         chipDie();
@@ -69,8 +69,18 @@ CHIP_ERROR WaitForCommissioneeCommand::RunCommand()
     auto * device = [MTRDevice deviceWithNodeID:@(mNodeId) controller:commissioner];
     VerifyOrReturnError(device != nil, CHIP_ERROR_INCORRECT_STATE);
 
+    auto state = [device state];
+    if (state == MTRDeviceStateReachable) {
+        SetCommandExitStatus(CHIP_NO_ERROR);
+        return CHIP_NO_ERROR;
+    }
+
+    if (state == MTRDeviceStateUnreachable) {
+        SetCommandExitStatus(CHIP_ERROR_NOT_FOUND);
+        return CHIP_ERROR_NOT_FOUND;
+    }
+
     auto queue = dispatch_queue_create("com.chip.wait_for_commissionee", DISPATCH_QUEUE_SERIAL);
     [device setDelegate:mDeviceDelegate queue:queue];
-
     return CHIP_NO_ERROR;
 }
