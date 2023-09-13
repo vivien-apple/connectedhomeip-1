@@ -163,6 +163,54 @@ def _GetInDevelopmentTests() -> Set[str]:
     }
 
 
+def _GetDarwinFrameworkToolUnsupportedTests() -> Set[str]:
+    """Tests that fail in darwin-framework-tool for some reason."""
+    return {
+        "DL_LockUnlock",  # Events error.
+        "Test_AddNewFabricFromExistingFabric",  # darwin-framework-tool does not support the GetCommissionerRootCertificate command.
+        "TestAttributesById",
+        "TestClusterComplexTypes",
+        "TestClusterMultiFabric",
+        "TestCommandsById",  # Test Failure : The test expects the "UNSUPPORTED_ENDPOINT" error but the "FAILURE" error occured.
+        "TestCommissioningWindow",
+        "TestDiscovery",  # darwin-framework-tool does not support dns-sd commands.
+        "TestEvents",
+        "TestEventsById",
+        "TestGroupMessaging",  # darwin-framework-tool does not support group commands.
+        "TestReadNoneSubscribeNone",  # darwin-framework-tool does not supports those commands.
+
+        "Test_TC_ACE_1_6",  # darwin-framework-tool does not support group commands.
+        "Test_TC_ACL_2_5",  # Events error.
+        "Test_TC_ACL_2_6",  # Events error.
+        "Test_TC_ACL_2_7",  # Events error.
+        "Test_TC_ACL_2_8",  # Events error.
+        "Test_TC_ACL_2_9",  # Events error.
+        "Test_TC_ACL_2_10",  # Events error.
+        "Test_TC_BINFO_2_1",  # Test Failure : The test expects the "UNSUPPORTED_WRITE" error but the "FAILURE" error occured
+        "Test_TC_BINFO_2_2",  # Events error.
+        "Test_TC_BRBINFO_2_1",  # Test Failure : The test expects the "UNSUPPORTED_ATTRIBUTE" error but the "FAILURE" error occured.
+        "Test_TC_DGEN_2_1",  # minValue: 1 <-- The response value (0) should be greater or equal to the constraint but 0 < 1
+        "Test_TC_DGGEN_2_3",  # Events error.
+        "Test_TC_DRLK_2_1",  # Test Failure : The test expects the "UNSUPPORTED_WRITE" error but the "FAILURE" error occured
+        "Test_TC_DGTHREAD_2_1",
+        "Test_TC_DGTHREAD_2_2",
+        "Test_TC_DGTHREAD_2_3",
+        "Test_TC_DGTHREAD_2_4",
+        "Test_TC_FLABEL_2_1",  # Test Failure : The test expects the "UNSUPPORTED_WRITE" error but the "FAILURE" error occured
+        "Test_TC_GRPKEY_2_1",  # Test Failure : The test expects the "UNSUPPORTED_WRITE" error but the "FAILURE" error occured
+        "Test_TC_LCFG_2_1",  # Test Failure : The test expects the "UNSUPPORTED_WRITE" error but the "FAILURE" error occured
+        "Test_TC_OPCREDS_3_7",  # darwin-framework-tool does not support the GetCommissionerRootCertificate command.
+        "Test_TC_OPSTATE_2_4",  # Events error.
+        "Test_TC_SMOKECO_2_2",  # Events error.
+        "Test_TC_SMOKECO_2_3",  # Events error.
+        "Test_TC_SMOKECO_2_4",  # Events error.
+        "Test_TC_SMOKECO_2_5",  # Events error.
+        "Test_TC_SMOKECO_2_6",  # Events error.
+        "Test_TC_SC_4_1",  # darwin-framework-tool does not support dns-sd commands.
+        "Test_TC_SC_5_2",  # darwin-framework-tool does not support group commands.
+    }
+
+
 def _GetChipReplUnsupportedTests() -> Set[str]:
     """Tests that fail in chip-repl for some reason"""
     return {
@@ -271,7 +319,7 @@ def tests_with_command(chip_tool: str, is_manual: bool):
         )
 
 
-def _AllFoundYamlTests(treat_repl_unsupported_as_in_development: bool, use_short_run_name: bool):
+def _AllFoundYamlTests(use_short_run_name: bool):
     """
     use_short_run_name should be true if we want the run_name to be "Test_ABC" instead of "some/path/Test_ABC.yaml"
     """
@@ -280,7 +328,6 @@ def _AllFoundYamlTests(treat_repl_unsupported_as_in_development: bool, use_short
     slow_tests = _GetSlowTests()
     extra_slow_tests = _GetExtraSlowTests()
     in_development_tests = _GetInDevelopmentTests()
-    chip_repl_unsupported_tests = _GetChipReplUnsupportedTests()
     purposeful_failure_tests = _GetPurposefulFailureTests()
 
     for path in _AllYamlTests():
@@ -306,9 +353,6 @@ def _AllFoundYamlTests(treat_repl_unsupported_as_in_development: bool, use_short
         if path.name in purposeful_failure_tests:
             tags.add(TestTag.PURPOSEFUL_FAILURE)
 
-        if treat_repl_unsupported_as_in_development and path.name in chip_repl_unsupported_tests:
-            tags.add(TestTag.IN_DEVELOPMENT)
-
         if use_short_run_name:
             run_name = path.stem  # `path.stem` converts "some/path/Test_ABC_1.2.yaml" to "Test_ABC.1.2"
         else:
@@ -323,12 +367,26 @@ def _AllFoundYamlTests(treat_repl_unsupported_as_in_development: bool, use_short
 
 
 def AllReplYamlTests():
-    for test in _AllFoundYamlTests(treat_repl_unsupported_as_in_development=True, use_short_run_name=False):
+    unsupported_tests = _GetChipReplUnsupportedTests()
+    for test in _AllFoundYamlTests(use_short_run_name=False):
+
+        if Path(test.run_name).name in unsupported_tests:
+            test.tags.add(TestTag.IN_DEVELOPMENT)
+
         yield test
 
 
 def AllChipToolYamlTests():
-    for test in _AllFoundYamlTests(treat_repl_unsupported_as_in_development=False, use_short_run_name=True):
+    for test in _AllFoundYamlTests(use_short_run_name=True):
+        yield test
+
+
+def AllDarwinFrameworkToolYamlTests():
+    unsupported_tests = _GetDarwinFrameworkToolUnsupportedTests()
+    for test in _AllFoundYamlTests(use_short_run_name=True):
+        if test.run_name in unsupported_tests:
+            test.tags.add(TestTag.IN_DEVELOPMENT)
+
         yield test
 
 

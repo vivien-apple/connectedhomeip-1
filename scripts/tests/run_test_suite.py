@@ -160,8 +160,11 @@ def main(context, dry_run, log_level, target, target_glob, target_skip_glob,
     # Figures out selected test that match the given name(s)
     if runtime == TestRunTime.CHIP_REPL_PYTHON:
         all_tests = [test for test in chiptest.AllReplYamlTests()]
-    elif runtime == TestRunTime.CHIP_TOOL_PYTHON and os.path.basename(chip_tool) != "darwin-framework-tool":
-        all_tests = [test for test in chiptest.AllChipToolYamlTests()]
+    elif runtime == TestRunTime.CHIP_TOOL_PYTHON:
+        if os.path.basename(chip_tool) == "darwin-framework-tool":
+            all_tests = [test for test in chiptest.AllDarwinFrameworkToolYamlTests()]
+        else:
+            all_tests = [test for test in chiptest.AllChipToolYamlTests()]
     else:
         all_tests = [test for test in chiptest.AllChipToolTests(chip_tool)]
 
