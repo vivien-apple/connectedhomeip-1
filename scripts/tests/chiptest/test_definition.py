@@ -229,10 +229,9 @@ class TestTag(Enum):
 
 
 class TestRunTime(Enum):
-    CHIP_TOOL_BUILTIN = auto()  # run via chip-tool built-in test commands
     CHIP_TOOL_PYTHON = auto()  # use the python yaml test parser with chip-tool
+    DARWIN_FRAMEWORK_TOOL_PYTHON = auto()  # use the python yaml test parser with chip-tool
     CHIP_REPL_PYTHON = auto()       # use the python yaml test runner
-    DARWIN_FRAMEWORK_TOOL_BUILTIN = auto()  # run via darwin-framework-tool built-in test commands
 
 
 @dataclass
@@ -259,7 +258,7 @@ class TestDefinition:
         return ", ".join([t.to_s() for t in self.tags])
 
     def Run(self, runner, apps_register, paths: ApplicationPaths, pics_file: str,
-            timeout_seconds: typing.Optional[int], dry_run=False, test_runtime: TestRunTime = TestRunTime.CHIP_TOOL_BUILTIN):
+            timeout_seconds: typing.Optional[int], dry_run=False, test_runtime: TestRunTime = TestRunTime.CHIP_TOOL_PYTHON):
         """
         Executes the given test case using the provided runner for execution.
         """
@@ -308,42 +307,40 @@ class TestDefinition:
                 # so it will be commissionable again.
                 app.factoryReset()
 
-            tool_cmd = paths.chip_tool if test_runtime != TestRunTime.CHIP_TOOL_PYTHON else paths.chip_tool_with_python_cmd
-
             tool_storage_dir = tempfile.mkdtemp()
             tool_storage_args = ['--storage-directory', tool_storage_dir]
 
             # Only start and pair the default app
             app = apps_register.get('default')
             app.start()
-            pairing_cmd = tool_cmd + ['pairing', 'code', TEST_NODE_ID, app.setupCode]
-            test_cmd = tool_cmd + ['tests', self.run_name] + ['--PICS', pics_file]
-            if test_runtime == TestRunTime.CHIP_TOOL_PYTHON:
+
+            if test_runtime == TestRunTime.CHIP_REPL_PYTHON:
+                chip_repl_yaml_tester_cmd = paths.chip_repl_yaml_tester_cmd
+                python_cmd = chip_repl_yaml_tester_cmd + \
+                    ['--setup-code', app.setupCode] + ['--yaml-path', self.run_name] + ["--pics-file", pics_file]
+                if dry_run:
+                    logging.info(" ".join(python_cmd))
+                else:
+                    runner.RunSubprocess(python_cmd, name='CHIP_REPL_YAML_TESTER',
+                                         dependencies=[apps_register], timeout_seconds=timeout_seconds)
+            else:
+                pairing_cmd = paths.chip_tool_with_python_cmd + ['pairing', 'code', TEST_NODE_ID, app.setupCode]
+                test_cmd = paths.chip_tool_with_python_cmd + ['tests', self.run_name] + ['--PICS', pics_file]
                 server_args = ['--server_path', paths.chip_tool[-1]] + \
                     ['--server_arguments', 'interactive server ' + ' '.join(tool_storage_args)]
                 pairing_cmd += server_args
                 test_cmd += server_args
-            elif test_runtime == TestRunTime.CHIP_TOOL_BUILTIN:
-                pairing_cmd += tool_storage_args
-                test_cmd += tool_storage_args
 
-            if dry_run:
-                logging.info(" ".join(pairing_cmd))
-                logging.info(" ".join(test_cmd))
-            elif test_runtime == TestRunTime.CHIP_REPL_PYTHON:
-                chip_repl_yaml_tester_cmd = paths.chip_repl_yaml_tester_cmd
-                python_cmd = chip_repl_yaml_tester_cmd + \
-                    ['--setup-code', app.setupCode] + ['--yaml-path', self.run_name] + ["--pics-file", pics_file]
-                runner.RunSubprocess(python_cmd, name='CHIP_REPL_YAML_TESTER',
-                                     dependencies=[apps_register], timeout_seconds=timeout_seconds)
-            else:
-                runner.RunSubprocess(pairing_cmd,
-                                     name='PAIR', dependencies=[apps_register])
-
-                runner.RunSubprocess(
-                    test_cmd,
-                    name='TEST', dependencies=[apps_register],
-                    timeout_seconds=timeout_seconds)
+                if dry_run:
+                    logging.info(" ".join(pairing_cmd))
+                    logging.info(" ".join(test_cmd))
+                else:
+                    runner.RunSubprocess(pairing_cmd,
+                                         name='PAIR', dependencies=[apps_register])
+                    runner.RunSubprocess(
+                        test_cmd,
+                        name='TEST', dependencies=[apps_register],
+                        timeout_seconds=timeout_seconds)
 
         except Exception:
             logging.error("!!!!!!!!!!!!!!!!!!!! ERROR !!!!!!!!!!!!!!!!!!!!!!")
