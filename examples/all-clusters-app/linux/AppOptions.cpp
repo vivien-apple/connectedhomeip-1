@@ -18,19 +18,34 @@
 
 #include "AppOptions.h"
 
+#include <app/clusters/diagnostic-logs-server/diagnostic-logs-server.h>
 #include <app/server/CommissioningWindowManager.h>
 #include <app/server/Server.h>
 
+using namespace chip;
 using namespace chip::ArgParser;
+using namespace chip::app::Clusters::DiagnosticLogs;
 
 using chip::ArgParser::OptionDef;
 using chip::ArgParser::OptionSet;
 using chip::ArgParser::PrintArgError;
 
-constexpr uint16_t kOptionDacProviderFilePath     = 0xFF01;
-constexpr uint16_t kOptionMinCommissioningTimeout = 0xFF02;
+constexpr uint16_t kOptionDacProviderFilePath        = 0xFF01;
+constexpr uint16_t kOptionMinCommissioningTimeout    = 0xFF02;
+constexpr uint16_t kOptionEndUserSupportFilePath     = 0xFF03;
+constexpr uint16_t kOptionNetworkDiagnosticsFilePath = 0xFF04;
+constexpr uint16_t kOptionCrashFilePath              = 0xFF05;
 
 static chip::Credentials::Examples::TestHarnessDACProvider mDacProvider;
+
+static std::optional<std::string> sEndUserSupportLogFilePath;
+static std::optional<std::string> sNetworkDiagnosticsLogFilePath;
+static std::optional<std::string> sCrashLogFilePath;
+
+bool AppOptions::IsNull(const char * value)
+{
+    return (value == nullptr || strlen(value) == 0);
+}
 
 bool AppOptions::HandleOptions(const char * program, OptionSet * options, int identifier, const char * name, const char * value)
 {
@@ -43,6 +58,27 @@ bool AppOptions::HandleOptions(const char * program, OptionSet * options, int id
     case kOptionMinCommissioningTimeout: {
         auto & commissionMgr = chip::Server::GetInstance().GetCommissioningWindowManager();
         commissionMgr.OverrideMinCommissioningTimeout(chip::System::Clock::Seconds16(static_cast<uint16_t>(atoi(value))));
+        break;
+    }
+    case kOptionEndUserSupportFilePath: {
+        if (!IsNull(value))
+        {
+            sEndUserSupportLogFilePath = std::string{ value };
+        }
+        break;
+    }
+    case kOptionNetworkDiagnosticsFilePath: {
+        if (!IsNull(value))
+        {
+            sNetworkDiagnosticsLogFilePath = std::string{ value };
+        }
+        break;
+    }
+    case kOptionCrashFilePath: {
+        if (!IsNull(value))
+        {
+            sCrashLogFilePath = std::string{ value };
+        }
         break;
     }
     default:
@@ -59,6 +95,9 @@ OptionSet * AppOptions::GetOptions()
     static OptionDef optionsDef[] = {
         { "dac_provider", kArgumentRequired, kOptionDacProviderFilePath },
         { "min_commissioning_timeout", kArgumentRequired, kOptionMinCommissioningTimeout },
+        { "end_user_support_log", kArgumentRequired, kOptionEndUserSupportFilePath },
+        { "network_diagnostics_log", kArgumentRequired, kOptionNetworkDiagnosticsFilePath },
+        { "crash_log", kArgumentRequired, kOptionCrashFilePath },
         {},
     };
 
@@ -68,6 +107,12 @@ OptionSet * AppOptions::GetOptions()
         "       A json file with data used by the example dac provider to validate device attestation procedure.\n"
         "  --min_commissioning_timeout <value>\n"
         "       The minimum time in seconds during which commissioning session establishment is allowed by the Node.\n"
+        "  --end_user_support_log <value>\n"
+        "       The end user support log file to be used for diagnostic logs transfer.\n"
+        "  --network_diagnostics_log <value>\n"
+        "       The network diagnostics log file to be used for diagnostic logs transfer.\n"
+        "  --crash_log <value>\n"
+        "       The crash log file to be used for diagnostic logs transfer\n"
     };
 
     return &options;
@@ -76,4 +121,19 @@ OptionSet * AppOptions::GetOptions()
 chip::Credentials::DeviceAttestationCredentialsProvider * AppOptions::GetDACProvider()
 {
     return &mDacProvider;
+}
+
+std::optional<std::string> AppOptions::GetEndUserSupportLogFilePath()
+{
+    return sEndUserSupportLogFilePath;
+}
+
+std::optional<std::string> AppOptions::GetNetworkDiagnosticsLogFilePath()
+{
+    return sNetworkDiagnosticsLogFilePath;
+}
+
+std::optional<std::string> AppOptions::GetCrashLogFilePath()
+{
+    return sCrashLogFilePath;
 }

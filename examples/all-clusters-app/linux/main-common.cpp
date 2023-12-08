@@ -17,9 +17,11 @@
  */
 
 #include "AllClustersCommandDelegate.h"
+#include "AppOptions.h"
 #include "WindowCoveringManager.h"
 #include "air-quality-instance.h"
 #include "dishwasher-mode.h"
+#include "include/diagnostic-logs-provider-delegate-impl.h"
 #include "include/tv-callbacks.h"
 #include "laundry-washer-controls-delegate-impl.h"
 #include "laundry-washer-mode.h"
@@ -32,6 +34,7 @@
 #include <app-common/zap-generated/attributes/Accessors.h>
 #include <app/CommandHandler.h>
 #include <app/att-storage.h>
+#include <app/clusters/diagnostic-logs-server/diagnostic-logs-server.h>
 #include <app/clusters/identify-server/identify-server.h>
 #include <app/clusters/laundry-washer-controls-server/laundry-washer-controls-server.h>
 #include <app/clusters/mode-base-server/mode-base-server.h>
@@ -259,4 +262,15 @@ void emberAfWindowCoveringClusterInitCallback(chip::EndpointId endpoint)
     sWindowCoveringManager.Init(endpoint);
     Clusters::WindowCovering::SetDefaultDelegate(endpoint, &sWindowCoveringManager);
     Clusters::WindowCovering::ConfigStatusUpdateFeatures(endpoint);
+}
+
+using namespace chip::app::Clusters::DiagnosticLogs;
+void emberAfDiagnosticLogsClusterInitCallback(chip::EndpointId endpoint)
+{
+    ChipLogProgress(NotSpecified, "SetLogProviderDelegate");
+    DiagnosticLogsServer::Instance().SetLogProviderDelegate(endpoint, &LogProvider::GetInstance());
+
+    LogProvider::GetInstance().SetEndUserSupportLogFilePath(AppOptions::GetEndUserSupportLogFilePath());
+    LogProvider::GetInstance().SetNetworkDiagnosticsLogFilePath(AppOptions::GetNetworkDiagnosticsLogFilePath());
+    LogProvider::GetInstance().SetCrashLogFilePath(AppOptions::GetCrashLogFilePath());
 }
