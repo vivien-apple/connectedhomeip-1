@@ -38,6 +38,8 @@
 #import <XCTest/XCTest.h>
 
 static const uint16_t kPairingTimeoutInSeconds = 10;
+static const uint16_t kDownloadLogTimeoutInSeconds = 30;
+static const uint16_t kDownloadLogDelayTimeoutInSeconds = 5;
 static const uint16_t kTimeoutInSeconds = 3;
 static const uint64_t kDeviceId = 0x12344321;
 static NSString * kOnboardingPayload = @"MT:-24J0AFN00KA0648G00";
@@ -2630,6 +2632,113 @@ static void (^globalReportHandler)(id _Nullable values, NSError * _Nullable erro
     MTRTimeSynchronizationClusterTimeZoneStruct * currentTimeZone = timeZone[0];
     XCTAssertEqual(tz.secondsFromGMT, currentTimeZone.offset.intValue + currentDSTOffset.offset.intValue);
 #endif // MTR_ENABLE_PROVISIONAL
+}
+
+- (NSError *)generateLogFile:(NSString *)outFile
+                        size:(unsigned long long)size
+{
+    // Remove the file if one exists
+    [[NSFileManager defaultManager] removeItemAtPath:outFile error:nil];
+
+    // Create the file
+    [[NSFileManager defaultManager] createFileAtPath:outFile contents:nil attributes:nil];
+
+    NSString * content = @"The quick brown fox jumps over the lazy dog";
+    NSFileHandle * handle = [NSFileHandle fileHandleForWritingAtPath:outFile];
+    if (handle == nil) {
+        NSLog(@"Failed to generate the log file %@", outFile);
+        return [NSError errorWithDomain:MTRErrorDomain code:MTRErrorCodeInvalidState userInfo:nil];
+    }
+
+    NSError * error = nil;
+    unsigned long long count = 0;
+
+    while (count < size && error == nil) {
+        unsigned long long remainingSize = size - count;
+        [handle seekToEndOfFile];
+        if (remainingSize < content.length) {
+            NSString * substr = [content substringToIndex:remainingSize];
+            [handle writeData:[substr dataUsingEncoding:NSUTF8StringEncoding] error:&error];
+            count += remainingSize;
+        } else {
+            [handle writeData:[content dataUsingEncoding:NSUTF8StringEncoding] error:&error];
+            count += content.length;
+        }
+    }
+
+    [handle closeFile];
+    return error;
+}
+
+- (void)testDownloadLogOfType:(MTRDiagnosticLogType)logType
+                      timeout:(NSTimeInterval)timeout
+                  logFilePath:(NSString *)logFilePath
+                  logFileSize:(unsigned long long)logFileSize
+                  expectation:(XCTestExpectation *)expectation
+{
+    MTRDeviceController * controller = sController;
+    XCTAssertNotNil(controller);
+
+    dispatch_queue_t queue = dispatch_get_main_queue();
+
+    dispatch_async(queue, ^{
+        MTRDevice * device = [MTRDevice deviceWithNodeID:@(kDeviceId) controller:controller];
+        XCTAssertNotNil(device);
+
+        NSError * error = [self generateLogFile:logFilePath size:logFileSize];
+
+        if (error != nil) {
+            NSLog(@"Failed to generate log file");
+            return;
+        }
+
+        [device downloadLogOfType:logType timeout:timeout queue:queue completion:^(NSURL * _Nullable logResult, NSError * error) {
+            XCTAssertNil(error);
+            XCTAssertNotNil(logResult);
+            XCTAssertTrue([[NSFileManager defaultManager] contentsEqualAtPath:logFilePath andPath:[logResult path]]);
+            [expectation fulfill];
+        }];
+    });
+}
+
+- (void)test029_DownloadEndUserSupportLog_NoTimeout
+{
+    XCTestExpectation * expectation = [self expectationWithDescription:@"End User Support Log Transfer Complete"];
+    NSString * outFile = [NSString stringWithFormat:@"/tmp/endusersupportlog.txt"];
+
+    // Delay the request to allow the DiagnosticLogsServer to clean up and delete the DiagnosticLogsBDXTransferHandler object.
+    // TODO: Fix #30537 to keep retrying for a number of retry counts until we don't get busy anymore.
+    // Since these tests can be run in any order, we need this on all tests that download the diagnostic logs
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, kDownloadLogDelayTimeoutInSeconds * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+        [self testDownloadLogOfType:MTRDiagnosticLogTypeEndUserSupport timeout:0 logFilePath:outFile logFileSize:(10 * 1024) expectation:expectation];
+    });
+    [self waitForExpectations:@[ expectation ] timeout:(kDownloadLogTimeoutInSeconds + kDownloadLogDelayTimeoutInSeconds)];
+}
+
+- (void)test030_DownloadNetworkDiagnosticsLog_NoTimeout
+{
+    XCTestExpectation * expectation = [self expectationWithDescription:@"Network Diagnostics Log Transfer Complete"];
+    NSString * outFile = [NSString stringWithFormat:@"/tmp/networkdiagnosticslog.txt"];
+
+    // Delay the request to allow the DiagnosticLogsServer to clean up and delete the DiagnosticLogsBDXTransferHandler object.
+    // TODO: Fix #30537 to keep retrying for a number of retry counts until we don't get busy anymore.
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, kDownloadLogDelayTimeoutInSeconds * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+        [self testDownloadLogOfType:MTRDiagnosticLogTypeNetworkDiagnostics timeout:0 logFilePath:outFile logFileSize:(4 * 1024 + 200) expectation:expectation];
+    });
+    [self waitForExpectations:@[ expectation ] timeout:(kDownloadLogTimeoutInSeconds + kDownloadLogDelayTimeoutInSeconds)];
+}
+
+- (void)test031_DownloadCrashLog_NoTimeout
+{
+    XCTestExpectation * expectation = [self expectationWithDescription:@"Crash Log Transfer Complete"];
+    NSString * outFile = [NSString stringWithFormat:@"/tmp/crashlog.txt"];
+
+    // Delay the request to allow the DiagnosticLogsServer to clean up and delete the DiagnosticLogsBDXTransferHandler object.
+    // TODO: Fix #30537 to keep retrying for a number of retry counts until we don't get busy anymore.
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, kDownloadLogDelayTimeoutInSeconds * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+        [self testDownloadLogOfType:MTRDiagnosticLogTypeCrash timeout:0 logFilePath:outFile logFileSize:(3 * 1024) expectation:expectation];
+    });
+    [self waitForExpectations:@[ expectation ] timeout:(kDownloadLogTimeoutInSeconds + kDownloadLogDelayTimeoutInSeconds)];
 }
 
 - (void)test900_SubscribeAllAttributes

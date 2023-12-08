@@ -24,10 +24,12 @@
 #import "MTRBaseSubscriptionCallback.h"
 #import "MTRCluster.h"
 #import "MTRClusterConstants.h"
+#import "MTRClusters_Internal.h"
 #import "MTRCommandTimedCheck.h"
 #import "MTRDefines_Internal.h"
 #import "MTRDeviceController_Internal.h"
 #import "MTRDevice_Internal.h"
+#import "MTRDiagnosticsLogDownloadTask.h"
 #import "MTRError_Internal.h"
 #import "MTREventTLVValueDecoder_Internal.h"
 #import "MTRLogging_Internal.h"
@@ -144,7 +146,6 @@ typedef NS_ENUM(NSUInteger, MTRDeviceWorkItemDuplicateTypeID) {
 @property (nonatomic) chip::FabricIndex fabricIndex;
 @property (nonatomic) MTRWeakReference<id<MTRDeviceDelegate>> * weakDelegate;
 @property (nonatomic) dispatch_queue_t delegateQueue;
-@property (nonatomic) NSMutableArray<NSDictionary<NSString *, id> *> * unreportedEvents;
 @property (nonatomic) BOOL receivingReport;
 @property (nonatomic) BOOL receivingPrimingReport;
 
@@ -154,6 +155,11 @@ typedef NS_ENUM(NSUInteger, MTRDeviceWorkItemDuplicateTypeID) {
 //   Subscribed (gotten subscription response / in steady state with no OnError/OnDone)
 //   Actively receiving report
 //   Actively receiving priming report
+@property (nonatomic) NSArray<NSDictionary<NSString *, id> *> * unreportedEvents;
+
+@property (nonatomic) dispatch_source_t timerSource;
+@property (nonatomic) MTRDiagnosticLogsTransferHandler * diagnosticLogsTransferHandler;
+@property (nonatomic) MTRDiagnosticsLogDownloadTask * diagnosticsLogDownloadTask;
 
 /**
  * If subscriptionActive is true that means that either we are in the middle of
@@ -1348,6 +1354,20 @@ static BOOL AttributeHasChangesOmittedQuality(MTRAttributePath * attributePath)
 {
     auto * baseDevice = [self newBaseDevice];
     [baseDevice openCommissioningWindowWithDiscriminator:discriminator duration:duration queue:queue completion:completion];
+}
+
+- (void)downloadLogOfType:(MTRDiagnosticLogType)type
+                  timeout:(NSTimeInterval)timeout
+                    queue:(dispatch_queue_t)queue
+               completion:(void (^)(NSURL * _Nullable logResult, NSError * error))completion
+{
+    self->_diagnosticsLogDownloadTask = [[MTRDiagnosticsLogDownloadTask alloc] initWithDevice:self];
+    [self->_diagnosticsLogDownloadTask downloadLogOfType:type timeout:timeout queue:queue completion:completion];
+}
+
+- (void)removeDiagnosticsLogDownloadTask
+{
+    self->_diagnosticsLogDownloadTask = nil;
 }
 
 #pragma mark - Cache management
