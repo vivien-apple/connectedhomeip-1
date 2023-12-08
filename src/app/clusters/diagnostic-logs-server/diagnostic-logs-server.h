@@ -1,6 +1,6 @@
 /*
  *
- *    Copyright (c) 2021 Project CHIP Authors
+ *    Copyright (c) 2021-2023 Project CHIP Authors
  *    All rights reserved.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,31 +18,62 @@
 
 #pragma once
 
+#include <lib/core/CHIPConfig.h>
+
 #include <app-common/zap-generated/cluster-objects.h>
 #include <app/CommandHandlerInterface.h>
-#include <lib/support/BytesCircularBuffer.h>
+#include <app/clusters/diagnostic-logs-server/diagnostic-logs-provider-delegate.h>
 
-#include <array>
+namespace chip {
+namespace app {
+namespace Clusters {
+namespace DiagnosticLogs {
+
+// Spec mandated max file designator length
+static constexpr uint8_t kMaxFileDesignatorLen = 32;
+
+// Spec mandated max size of the log content field in the Response paylod
+static constexpr uint16_t kMaxLogContentSize = 1024;
 
 /// A reference implementation for DiagnosticLogs source.
-class DiagnosticLogsCommandHandler : public chip::app::CommandHandlerInterface
+class DiagnosticLogsServer
 {
 public:
-    static constexpr const uint16_t kDiagnosticLogsEndpoint   = 0;
-    static constexpr const uint16_t kDiagnosticLogsBufferSize = 4 * 1024; // 4K internal memory to store text logs
+    static DiagnosticLogsServer & Instance();
 
-    DiagnosticLogsCommandHandler() :
-        CommandHandlerInterface(chip::MakeOptional<chip::EndpointId>(chip::EndpointId(kDiagnosticLogsEndpoint)),
-                                chip::app::Clusters::DiagnosticLogs::Id),
-        mBuffer(mStorage.data(), mStorage.size())
-    {}
+    /**
+     * Set the default delegate of the diagnostic logs cluster for the specified endpoint
+     *
+     * @param endpoint ID of the endpoint
+     *
+     * @param delegate The log provider delegate at the endpoint
+     */
+    void SetLogProviderDelegate(EndpointId endpoint, LogProviderDelegate * delegate);
 
-    // Inherited from CommandHandlerInterface
-    void InvokeCommand(HandlerContext & handlerContext) override;
-
-    CHIP_ERROR PushLog(const chip::ByteSpan & payload);
+    /**
+     * Handles the request to download diagnostic logs of type specified in the intent argument for protocol type ResponsePayload
+     * This should return whatever fits in the logContent field of the RetrieveLogsResponse command
+     *
+     * @param commandHandler The command handler object from the RetrieveLogsRequest command
+     *
+     * @param path The command path from the RetrieveLogsRequest command
+     *
+     * @param intent The log type requested in the RetrieveLogsRequest command
+     *
+     */
+    void HandleLogRequestForResponsePayload(CommandHandler * commandHandler, ConcreteCommandPath path, IntentEnum intent);
 
 private:
-    std::array<uint8_t, kDiagnosticLogsBufferSize> mStorage;
-    chip::BytesCircularBuffer mBuffer;
+    LogSessionHandle mLogSessionHandle;
+
+    CommandHandler::Handle mAsyncCommandHandle;
+    ConcreteCommandPath mRequestPath = ConcreteCommandPath(0, 0, 0);
+    IntentEnum mIntent;
+
+    static DiagnosticLogsServer sInstance;
 };
+
+} // namespace DiagnosticLogs
+} // namespace Clusters
+} // namespace app
+} // namespace chip
