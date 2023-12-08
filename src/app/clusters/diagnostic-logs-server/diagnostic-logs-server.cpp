@@ -79,6 +79,77 @@ DiagnosticLogsServer & DiagnosticLogsServer::Instance()
     return sInstance;
 }
 
+#if CHIP_CONFIG_ENABLE_BDX_LOG_TRANSFER
+
+bool DiagnosticLogsServer::IsBDXProtocolRequested(TransferProtocolEnum requestedProtocol)
+{
+    return requestedProtocol == TransferProtocolEnum::kBdx;
+}
+
+bool DiagnosticLogsServer::HasValidFileDesignator(CharSpan transferFileDesignator)
+{
+    return (transferFileDesignator.size() <= kMaxFileDesignatorLen);
+}
+
+CHIP_ERROR DiagnosticLogsServer::HandleLogRequestForBDXProtocol(Messaging::ExchangeContext * exchangeCtx, EndpointId endpointId,
+                                                                IntentEnum intent, CharSpan fileDesignator)
+{
+
+    VerifyOrReturnError(exchangeCtx != nullptr, CHIP_ERROR_INCORRECT_STATE);
+
+    mIntent = intent;
+    ScopedNodeId scopedPeerNodeId;
+    auto sessionHandle = exchangeCtx->GetSessionHandle();
+
+    LogProviderDelegate * logProviderDelegate = GetLogProviderDelegate(endpointId);
+
+    VerifyOrReturnError(!(IsLogProviderDelegateNull(logProviderDelegate, endpointId)), CHIP_ERROR_INCORRECT_STATE);
+
+    // If there is already an existing mDiagnosticLogsBDXTransferHandler, we will return a busy error.
+    if (mDiagnosticLogsBDXTransferHandler != nullptr)
+    {
+        return CHIP_ERROR_BUSY;
+    }
+
+    // TODO: Need to resolve #30539. The spec says we should check the log size to see if it fits in the response payload.
+    // If it fits, we send the content in the response and not initiate BDX.
+    if (sessionHandle->IsSecureSession())
+    {
+        scopedPeerNodeId = sessionHandle->AsSecureSession()->GetPeer();
+    }
+
+    mDiagnosticLogsBDXTransferHandler = new DiagnosticLogsBDXTransferHandler();
+    CHIP_ERROR error                  = mDiagnosticLogsBDXTransferHandler->InitializeTransfer(
+        exchangeCtx->GetExchangeMgr(), exchangeCtx->GetSessionHandle(), scopedPeerNodeId.GetFabricIndex(),
+        scopedPeerNodeId.GetNodeId(), logProviderDelegate, intent, fileDesignator);
+    // TODO: Fix #30540 - If we fail to initialize a BDX session, we should call HandleLogRequestForResponsePayload.
+    return error;
+}
+
+void DiagnosticLogsServer::SendCommandResponse(StatusEnum status)
+{
+    auto commandHandleRef = std::move(mAsyncCommandHandle);
+    auto commandHandle    = commandHandleRef.Get();
+
+    if (commandHandle == nullptr)
+    {
+        ChipLogError(Zcl, "SendCommandResponse - commandHandler is null");
+        return;
+    }
+
+    Commands::RetrieveLogsResponse::Type response;
+    response.status = status;
+    commandHandle->AddResponse(mRequestPath, response);
+}
+
+void DiagnosticLogsServer::SetAsyncCommandHandleAndPath(CommandHandler * commandObj, const ConcreteCommandPath & commandPath)
+{
+    mAsyncCommandHandle = CommandHandler::Handle(commandObj);
+    mRequestPath        = commandPath;
+}
+
+#endif
+
 void DiagnosticLogsServer::HandleLogRequestForResponsePayload(CommandHandler * commandHandler, ConcreteCommandPath path,
                                                               IntentEnum intent)
 {
@@ -146,10 +217,34 @@ static void HandleRetrieveLogRequest(CommandHandler * commandObj, const Concrete
     {
         DiagnosticLogsServer::Instance().HandleLogRequestForResponsePayload(commandObj, commandPath, intent);
     }
+#if CHIP_CONFIG_ENABLE_BDX_LOG_TRANSFER
+    // TODO: Fix #30540 - If BDX is not supported, we should send whatever fits in the logContent of the ResponsePayload.
     else
     {
-        commandObj->AddStatus(commandPath, Protocols::InteractionModel::Status::InvalidCommand);
+        Commands::RetrieveLogsResponse::Type response;
+        if (!transferFileDesignator.HasValue() ||
+            !DiagnosticLogsServer::Instance().HasValidFileDesignator(transferFileDesignator.Value()))
+        {
+            ChipLogError(Zcl, "HandleRetrieveLogRequest - fileDesignator not valid for BDX protocol");
+            commandObj->AddStatus(commandPath, Protocols::InteractionModel::Status::InvalidCommand);
+            return;
+        }
+
+        if (DiagnosticLogsServer::Instance().IsBDXProtocolRequested(protocol))
+        {
+            CHIP_ERROR err = DiagnosticLogsServer::Instance().HandleLogRequestForBDXProtocol(
+                commandObj->GetExchangeContext(), commandPath.mEndpointId, intent, transferFileDesignator.Value());
+            if (err != CHIP_NO_ERROR)
+            {
+                LogErrorOnFailure(err);
+                // TODO: Fix #30540 - If a BDX session can't be started, we should send whatever fits in the logContent of the
+                // ResponsePayload.
+                return;
+            }
+            DiagnosticLogsServer::Instance().SetAsyncCommandHandleAndPath(std::move(commandObj), std::move(commandPath));
+        }
     }
+#endif
 }
 
 bool emberAfDiagnosticLogsClusterRetrieveLogsRequestCallback(CommandHandler * commandObj, const ConcreteCommandPath & commandPath,

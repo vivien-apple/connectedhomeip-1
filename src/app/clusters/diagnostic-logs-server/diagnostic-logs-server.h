@@ -20,6 +20,9 @@
 
 #include <lib/core/CHIPConfig.h>
 
+#if CHIP_CONFIG_ENABLE_BDX_LOG_TRANSFER
+#include <app/bdx/DiagnosticLogsBDXTransferHandler.h>
+#endif
 #include <app-common/zap-generated/cluster-objects.h>
 #include <app/CommandHandlerInterface.h>
 #include <app/clusters/diagnostic-logs-server/diagnostic-logs-provider-delegate.h>
@@ -63,7 +66,54 @@ public:
      */
     void HandleLogRequestForResponsePayload(CommandHandler * commandHandler, ConcreteCommandPath path, IntentEnum intent);
 
+#if CHIP_CONFIG_ENABLE_BDX_LOG_TRANSFER
+
+    /**
+     * Send the command response to the requestor with the status value passed in.
+     * This should be called if there are any errors before we receive a SendAccept
+     * from the requestor.
+     *
+     * @param status The status to send in the command response payload.
+     *
+     */
+    void SendCommandResponse(StatusEnum status);
+
+    /**
+     * Handles the request to download diagnostic logs of type specified in the intent argument for protocol type BDX
+     * This should return whatever fits in the logContent field of the RetrieveLogsResponse command
+     *
+     * @param commandHandler The command handler object from the RetrieveLogsRequest command
+     *
+     * @param path The command path from the RetrieveLogsRequest command
+     *
+     * @param intent The log type requested in the RetrieveLogsRequest command
+     *
+     */
+    CHIP_ERROR HandleLogRequestForBDXProtocol(Messaging::ExchangeContext * exchangeCtx, EndpointId endpointId, IntentEnum intent,
+                                              CharSpan fileDesignator);
+
+    void SetAsyncCommandHandleAndPath(CommandHandler * commandObj, const ConcreteCommandPath & commandPath);
+
+    bool HasValidFileDesignator(CharSpan transferFileDesignator);
+
+    bool IsBDXProtocolRequested(TransferProtocolEnum requestedProtocol);
+
+    /**
+     * Called to notify the DiagnosticsLogsServer that BDX has completed and the mDiagnosticLogsBDXTransferHandler
+     * object has been destroyed. We should set the mDiagnosticLogsBDXTransferHandler to null here.
+     *
+     */
+    void HandleBDXTransferDone() { mDiagnosticLogsBDXTransferHandler = nullptr; }
+
+#endif
+
 private:
+#if CHIP_CONFIG_ENABLE_BDX_LOG_TRANSFER
+
+    DiagnosticLogsBDXTransferHandler * mDiagnosticLogsBDXTransferHandler;
+
+#endif
+
     LogSessionHandle mLogSessionHandle;
 
     CommandHandler::Handle mAsyncCommandHandle;
