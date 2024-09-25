@@ -302,6 +302,7 @@ class _TestStepWithPlaceholders:
         self.min_interval = _value_or_none(test, 'minInterval')
         self.max_interval = _value_or_none(test, 'maxInterval')
         self.keep_subscriptions = _value_or_none(test, 'keepSubscriptions')
+        self.use_xpc = _value_or_none(test, 'useXPC')
         self.timed_interaction_timeout_ms = _value_or_none(
             test, 'timedInteractionTimeoutMs')
         self.timeout = _value_or_none(test, 'timeout')
@@ -820,6 +821,10 @@ class TestStep:
     @property
     def keep_subscriptions(self):
         return self._test.keep_subscriptions
+
+    @property
+    def use_xpc(self):
+        return self._test.use_xpc
 
     @property
     def timed_interaction_timeout_ms(self):
