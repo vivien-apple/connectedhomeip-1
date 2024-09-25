@@ -187,6 +187,8 @@ executable("darwin-framework-tool") {
     "commands/common/CHIPCommandBridge.mm",
     "commands/common/CHIPCommandStorageDelegate.mm",
     "commands/common/CHIPToolKeypair.mm",
+    "commands/common/CHIPXPCServer.h",
+    "commands/common/CHIPXPCServer.mm",
     "commands/common/MTRDevice_Externs.h",
     "commands/common/MTRError.mm",
     "commands/common/MTRError_Utils.h",

@@ -32,6 +32,7 @@
 static CHIPToolPersistentStorageDelegate * storage = nil;
 std::set<CHIPCommandBridge *> CHIPCommandBridge::sDeferredCleanups;
 std::map<std::string, MTRDeviceController *> CHIPCommandBridge::mControllers;
+std::map<std::string, MTRDeviceController *> CHIPCommandBridge::mRemoteControllers;
 dispatch_queue_t CHIPCommandBridge::mOTAProviderCallbackQueue;
 OTAProviderDelegate * CHIPCommandBridge::mOTADelegate;
 constexpr char kTrustStorePathVariable[] = "PAA_TRUST_STORE_PATH";
@@ -114,6 +115,9 @@ CHIP_ERROR CHIPCommandBridge::MaybeSetUpStack()
     if (IsInteractive()) {
         return CHIP_NO_ERROR;
     }
+
+    StartXPCListener();
+
     NSData * ipk;
     gNocSigner = [[CHIPToolKeypair alloc] init];
     storage = [[CHIPToolPersistentStorageDelegate alloc] init];
@@ -167,6 +171,11 @@ CHIP_ERROR CHIPCommandBridge::MaybeSetUpStack()
         }
 
         mControllers[identities[i]] = controller;
+
+        auto remoteController = [MTRDeviceController sharedControllerWithID:@(identities[i]) xpcConnectBlock:^NSXPCConnection * {
+            return [[NSXPCConnection alloc] initWithListenerEndpoint:GetXPCListenerEndPoint()];
+        }];
+        mRemoteControllers[identities[i]] = remoteController;
     }
 
     return CHIP_NO_ERROR;
@@ -177,6 +186,8 @@ void CHIPCommandBridge::MaybeTearDownStack()
     if (IsInteractive()) {
         return;
     }
+
+    StopXPCListener();
     ShutdownCommissioner();
 }
 
@@ -188,6 +199,7 @@ void CHIPCommandBridge::SetIdentity(const char * identity)
             kIdentityBeta, kIdentityGamma);
         chipDie();
     }
+    mCurrentIdentity = name;
     mCurrentController = mControllers[name];
 }
 
@@ -197,6 +209,13 @@ MTRDeviceController * CHIPCommandBridge::GetCommissioner(const char * identity) 
 
 MTRBaseDevice * CHIPCommandBridge::BaseDeviceWithNodeId(chip::NodeId nodeId)
 {
+    if (mUseXPC.ValueOr(false)) {
+        auto controller = mRemoteControllers[mCurrentIdentity];
+        VerifyOrReturnValue(controller != nil, nil);
+
+        return [MTRBaseDevice deviceWithNodeID:@(nodeId) controller:controller];
+    }
+
     MTRDeviceController * controller = CurrentCommissioner();
     VerifyOrReturnValue(controller != nil, nil);
     return [controller deviceBeingCommissionedWithNodeID:@(nodeId) error:nullptr]
@@ -283,4 +302,32 @@ void CHIPCommandBridge::ExecuteDeferredCleanups()
         cmd->Cleanup();
     }
     sDeferredCleanups.clear();
+}
+
+void CHIPCommandBridge::StartXPCListener()
+{
+    VerifyOrReturn(nil == mXPCListener);
+
+    auto xpcListenerDelegate = [[AppListenerDelegate alloc] init];
+    auto xpcListener = [NSXPCListener anonymousListener];
+    [xpcListener setDelegate:xpcListenerDelegate];
+    [xpcListener resume];
+
+    mXPCListener = xpcListener;
+    mXPCListenerDelegate = xpcListenerDelegate;
+}
+
+NSXPCListenerEndpoint * CHIPCommandBridge::GetXPCListenerEndPoint()
+{
+    VerifyOrReturnValue(nil != mXPCListener, nil);
+    return mXPCListener.endpoint;
+}
+
+void CHIPCommandBridge::StopXPCListener()
+{
+    VerifyOrReturn(nil != mXPCListener);
+
+    [mXPCListener suspend];
+    mXPCListener = nil;
+    mXPCListenerDelegate = nil;
 }

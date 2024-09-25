@@ -26,6 +26,7 @@
 #include <string>
 
 #include "../provider/OTAProviderDelegate.h"
+#include "CHIPXPCServer.h"
 
 inline constexpr char kIdentityAlpha[] = "alpha";
 inline constexpr char kIdentityBeta[] = "beta";
@@ -49,6 +50,7 @@ public:
         AddArgument("commissioner-vendor-id", 0, UINT16_MAX, &mCommissionerVendorId,
             "The vendor id to use for darwin-framework-tool. If not provided, chip::VendorId::TestVendor1 (65521, 0xFFF1) will be "
             "used.");
+        AddArgument("use-xpc", 0, 1, &mUseXPC, "This option uses the XPC implementation.");
     }
 
     /////////// Command Interface /////////
@@ -66,6 +68,9 @@ public:
     }
 
     static OTAProviderDelegate * mOTADelegate;
+
+    // Our three controllers: alpha, beta, gamma.
+    static std::map<std::string, MTRDeviceController *> mControllers;
 
 protected:
     // Will be called in a setting in which it's safe to touch the CHIP
@@ -132,10 +137,16 @@ private:
     CHIP_ERROR MaybeSetUpStack();
     void MaybeTearDownStack();
 
+    AppListenerDelegate * mXPCListenerDelegate = nil;
+    NSXPCListener * mXPCListener = nil;
+    void StartXPCListener();
+    void StopXPCListener();
+    NSXPCListenerEndpoint * GetXPCListenerEndPoint();
+
     CHIP_ERROR GetPAACertsFromFolder(NSArray<NSData *> * __autoreleasing * paaCertsResult);
 
-    // Our three controllers: alpha, beta, gamma.
-    static std::map<std::string, MTRDeviceController *> mControllers;
+    // Our three controllers accross XPC: alpha, beta, gamma.
+    static std::map<std::string, MTRDeviceController *> mRemoteControllers;
 
     // The current controller; the one the current command should be using.
     MTRDeviceController * mCurrentController;
@@ -148,4 +159,6 @@ private:
     static dispatch_queue_t mOTAProviderCallbackQueue;
     chip::Optional<char *> mPaaTrustStorePath;
     chip::Optional<chip::VendorId> mCommissionerVendorId;
+    chip::Optional<bool> mUseXPC;
+    std::string mCurrentIdentity;
 };
