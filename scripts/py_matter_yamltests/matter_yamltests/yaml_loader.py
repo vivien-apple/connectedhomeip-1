@@ -62,6 +62,7 @@ _TEST_STEP_SCHEMA = {
     'minInterval': int,
     'maxInterval': int,
     'keepSubscriptions': bool,
+    'useXPC': bool,
     'timeout': int,
     'timedInteractionTimeoutMs': int,
     'dataVersion': (list, int, str),  # Can be a variable

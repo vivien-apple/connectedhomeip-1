@@ -325,6 +325,8 @@ class Encoder:
             arguments, request.identity, "commissioner-name")
         arguments = self.__maybe_add(arguments, request.fabric_filtered,
                                      "fabric-filtered")
+        arguments = self.__maybe_add(arguments, request.use_xpc,
+                                     "use-xpc")
 
         return arguments
 
