@@ -190,6 +190,8 @@ executable("darwin-framework-tool") {
     "commands/common/CHIPCommandBridge.mm",
     "commands/common/CHIPCommandStorageDelegate.mm",
     "commands/common/CHIPToolKeypair.mm",
+    "commands/common/CHIPXPCServer.h",
+    "commands/common/CHIPXPCServer.mm",
     "commands/common/CertificateIssuer.h",
     "commands/common/CertificateIssuer.mm",
     "commands/common/ControllerStorage.h",

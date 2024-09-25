@@ -39,6 +39,7 @@ static DeviceDelegate * sDeviceDelegate = nil;
 static dispatch_queue_t sDeviceDelegateDispatchQueue = nil;
 std::set<CHIPCommandBridge *> CHIPCommandBridge::sDeferredCleanups;
 std::map<std::string, MTRDeviceController *> CHIPCommandBridge::mControllers;
+std::map<std::string, MTRDeviceController *> CHIPCommandBridge::mRemoteControllers;
 dispatch_queue_t CHIPCommandBridge::mOTAProviderCallbackQueue;
 OTAProviderDelegate * CHIPCommandBridge::mOTADelegate;
 bool CHIPCommandBridge::sUseSharedStorage = true;
@@ -238,6 +239,11 @@ CHIP_ERROR CHIPCommandBridge::SetUpStackWithSharedStorage(NSArray<NSData *> * pr
         }
         VerifyOrReturnError(nil != controller, MTRErrorToCHIPErrorCode(error), ChipLogError(chipTool, "Controller startup failure: %@", error));
         mControllers[identities[i]] = controller;
+
+        auto remoteController = [MTRDeviceController sharedControllerWithID:@(identities[i]) xpcConnectBlock:^NSXPCConnection * {
+            return [[NSXPCConnection alloc] initWithListenerEndpoint:GetXPCListenerEndPoint()];
+        }];
+        mRemoteControllers[identities[i]] = remoteController;
     }
 
     return CHIP_NO_ERROR;
@@ -248,6 +254,8 @@ void CHIPCommandBridge::MaybeTearDownStack()
     if (IsInteractive()) {
         return;
     }
+
+    StopXPCListener();
     ShutdownCommissioner();
 }
 
@@ -291,6 +299,13 @@ MTRDeviceController * CHIPCommandBridge::GetCommissioner(const char * identity) 
 
 MTRBaseDevice * CHIPCommandBridge::BaseDeviceWithNodeId(chip::NodeId nodeId)
 {
+    if (mUseXPC.ValueOr(false)) {
+        auto controller = mRemoteControllers[mCurrentIdentity];
+        VerifyOrReturnValue(controller != nil, nil);
+
+        return [MTRBaseDevice deviceWithNodeID:@(nodeId) controller:controller];
+    }
+
     MTRDeviceController * controller = CurrentCommissioner();
     VerifyOrReturnValue(controller != nil, nil);
     return [controller deviceBeingCommissionedWithNodeID:@(nodeId) error:nullptr]
@@ -405,4 +420,32 @@ void CHIPCommandBridge::ExecuteDeferredCleanups()
         cmd->Cleanup();
     }
     sDeferredCleanups.clear();
+}
+
+void CHIPCommandBridge::StartXPCListener()
+{
+    VerifyOrReturn(nil == mXPCListener);
+
+    auto xpcListenerDelegate = [[AppListenerDelegate alloc] init];
+    auto xpcListener = [NSXPCListener anonymousListener];
+    [xpcListener setDelegate:xpcListenerDelegate];
+    [xpcListener resume];
+
+    mXPCListener = xpcListener;
+    mXPCListenerDelegate = xpcListenerDelegate;
+}
+
+NSXPCListenerEndpoint * CHIPCommandBridge::GetXPCListenerEndPoint()
+{
+    VerifyOrReturnValue(nil != mXPCListener, nil);
+    return mXPCListener.endpoint;
+}
+
+void CHIPCommandBridge::StopXPCListener()
+{
+    VerifyOrReturn(nil != mXPCListener);
+
+    [mXPCListener suspend];
+    mXPCListener = nil;
+    mXPCListenerDelegate = nil;
 }
