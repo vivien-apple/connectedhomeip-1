@@ -189,6 +189,7 @@ public:
             params:params
             queue:callbackQueue
             reportHandler:^(NSArray<NSDictionary<NSString *, id> *> * _Nullable values, NSError * _Nullable error) {
+                ChipLogError(chipTool, "Main: Received a ReportData");
                 if (error != nil) {
                     RemoteDataModelLogger::LogAttributeErrorAsJSON(endpoint, cluster, attribute, error);
                 }

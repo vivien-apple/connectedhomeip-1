@@ -20,6 +20,9 @@
 
 #include "CHIPCommandBridge.h"
 
+#include <chrono>
+#include <thread>
+
 MTRBaseDevice * GetDevice(id controller, uint64_t nodeId)
 {
     if (![controller isKindOfClass:[NSString class]]) {
@@ -128,7 +131,10 @@ MTRBaseDevice * GetDevice(id controller, uint64_t nodeId)
                  timedInvokeTimeout:timeoutMs
                               queue:_callbackQueue
                          completion:^(NSArray<NSDictionary<NSString *, id> *> * _Nullable values, NSError * _Nullable error) {
+                             ChipLogError(chipTool, "XPC: Received a invoke response.");
+                             std::this_thread::sleep_for(std::chrono::microseconds(2500));
                              completion([MTRDeviceController encodeXPCResponseValues:values], error);
+                             ChipLogError(chipTool, "XPC: Invoke response has been dispatched.");
                          }];
 }
 
@@ -172,11 +178,13 @@ MTRBaseDevice * GetDevice(id controller, uint64_t nodeId)
                                           queue:_callbackQueue
                                   reportHandler:^(
                                       NSArray<NSDictionary<NSString *, id> *> * _Nullable values, NSError * _Nullable error) {
+                                      ChipLogError(chipTool, "XPC: Received a report.");
                                       [self.clientProxy
                                           handleReportWithController:controller
                                                               nodeId:nodeId
                                                               values:[MTRDeviceController encodeXPCResponseValues:values]
                                                                error:error];
+                                      ChipLogError(chipTool, "XPC: ReportData has been dispatched.");
                                   }
                         subscriptionEstablished:establishedHandler];
 }
@@ -238,8 +246,12 @@ MTRBaseDevice * GetDevice(id controller, uint64_t nodeId)
     auto server = [[AppDeviceControllerServerProtocol alloc] initWithClientProxy:[newConnection remoteObjectProxy]];
     newConnection.exportedObject = server;
 
+    newConnection.interruptionHandler = ^{
+        ChipLogProgress(chipTool, "XPC connection interrupted");
+    };
+
     newConnection.invalidationHandler = ^{
-        ChipLogProgress(chipTool, "XPC connection disconnected");
+        ChipLogProgress(chipTool, "XPC connection invalidated");
     };
 
     [newConnection resume];

@@ -75,6 +75,7 @@ public:
                                           queue:callbackQueue
                                      completion:^(
                                          NSArray<NSDictionary<NSString *, id> *> * _Nullable values, NSError * _Nullable error) {
+                                         ChipLogError(chipTool, "Main: Received a invoke response");
                                          responsesNeeded--;
                                          if (error != nil) {
                                              mError = error;
