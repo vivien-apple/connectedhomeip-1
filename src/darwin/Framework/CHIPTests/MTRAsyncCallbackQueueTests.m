@@ -36,7 +36,6 @@
     __block int counter = 0;
     MTRAsyncCallbackReadyHandler readyHandler = ^(MTRDevice * _Nonnull device, NSUInteger retryCount) {
         counter++;
-        [expectation fulfill];
         [workItem1 endWork];
     };
     workItem1.readyHandler = readyHandler;
@@ -50,6 +49,7 @@
         XCTAssertNil(weakItem);
     }];
 
+    [expectation fullfill];
     [self waitForExpectationsWithTimeout:5 handler:nil];
 
     // see that it only ran once
@@ -209,6 +209,7 @@
 {
     XCTestExpectation * expectation = [self expectationWithDescription:@"Work item called"];
     XCTestExpectation * cancelExpectation = [self expectationWithDescription:@"Work item canceled"];
+    [expectation fullfill];
 
     MTRAsyncCallbackWorkQueue * workQueue = [[MTRAsyncCallbackWorkQueue alloc] initWithContext:nil queue:dispatch_get_main_queue()];
 
@@ -220,7 +221,6 @@
         sleep(1);
         [workQueue invalidate];
         [workItem1 endWork];
-        [expectation fulfill];
     };
     workItem1.readyHandler = readyHandler1;
     // No cancel handler on purpose.
