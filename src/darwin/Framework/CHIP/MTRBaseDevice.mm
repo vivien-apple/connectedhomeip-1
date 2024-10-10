@@ -1911,7 +1911,8 @@ NSTimeInterval MTRTimeIntervalForEventTimestampValue(uint64_t timeValue)
     uint64_t eventTimestampValueRemainderMilliseconds = timeValue % chip::kMillisecondsPerSecond;
     NSTimeInterval eventTimestampValueRemainder
         = NSTimeInterval(eventTimestampValueRemainderMilliseconds) / static_cast<double>(chip::kMillisecondsPerSecond);
-    NSTimeInterval eventTimestampValue = eventTimestampValueSeconds + eventTimestampValueRemainder;
+    // MTRBaseDevice.mm: error: implicit conversion from 'uint64_t' (aka 'unsigned long long') to 'NSTimeInterval' (aka 'double') may lose precision [-Werror,-Wimplicit-int-float-conversion]
+    NSTimeInterval eventTimestampValue = static_cast<double>(eventTimestampValueSeconds) + eventTimestampValueRemainder;
 
     return eventTimestampValue;
 }

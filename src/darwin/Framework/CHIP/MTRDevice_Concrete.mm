@@ -1708,7 +1708,8 @@ typedef NS_ENUM(NSUInteger, MTRDeviceWorkItemDuplicateTypeID) {
                 cumulativeIntervals += intervalSinceLastReport;
             }
         }
-        NSTimeInterval averageTimeBetweenReports = cumulativeIntervals / (_mostRecentReportTimes.count - 1);
+        // MTRDevice_Concrete.mm: error: implicit conversion from 'NSUInteger' (aka 'unsigned long') to 'NSTimeInterval' (aka 'double') may lose precision [-Werror,-Wimplicit-int-float-conversion]
+        NSTimeInterval averageTimeBetweenReports = cumulativeIntervals / static_cast<double>(_mostRecentReportTimes.count - 1);
 
         if (averageTimeBetweenReports < _storageBehaviorConfiguration.timeBetweenReportsTooShortThreshold) {
             // Multiplier goes from 1 to _reportToPersistenceDelayMaxMultiplier uniformly, as
@@ -3660,7 +3661,8 @@ static BOOL AttributeHasChangesOmittedQuality(MTRAttributePath * attributePath)
                 // verify that the uptime is indeed the data type we want
                 if ([attributeDataValue[MTRTypeKey] isEqual:MTRUnsignedIntegerValueType]) {
                     NSNumber * upTimeNumber = attributeDataValue[MTRValueKey];
-                    NSTimeInterval upTime = upTimeNumber.unsignedLongLongValue; // UpTime unit is defined as seconds in the spec
+                    // MTRDevice_Concrete.mm: error: implicit conversion from 'unsigned long long' to 'NSTimeInterval' (aka 'double') may lose precision [-Werror,-Wimplicit-int-float-conversion]
+                    NSTimeInterval upTime = static_cast<double>(upTimeNumber.unsignedLongLongValue); // UpTime unit is defined as seconds in the spec
                     NSDate * potentialSystemStartTime = [NSDate dateWithTimeIntervalSinceNow:-upTime];
                     NSDate * oldSystemStartTime = _estimatedStartTime;
                     if (!_estimatedStartTime || ([potentialSystemStartTime compare:_estimatedStartTime] == NSOrderedAscending)) {

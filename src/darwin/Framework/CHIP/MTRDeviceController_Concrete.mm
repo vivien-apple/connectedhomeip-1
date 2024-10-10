@@ -1004,7 +1004,7 @@ static inline void emitMetricForSetupPayload(MTRSetupPayload * payload)
         using TimeZoneType = chip::app::Clusters::TimeSynchronization::Structs::TimeZoneStruct::Type;
         TimeZoneType timeZone;
         timeZone.validAt = 0;
-        timeZone.offset = static_cast<int32_t>(tz.secondsFromGMT - tz.daylightSavingTimeOffset);
+        timeZone.offset = static_cast<int32_t>(static_cast<double>(tz.secondsFromGMT) - tz.daylightSavingTimeOffset);
         timeZone.name.Emplace(AsCharSpan(tz.name));
 
         params.SetTimeZone(chip::app::DataModel::List<TimeZoneType>(&timeZone, 1));
