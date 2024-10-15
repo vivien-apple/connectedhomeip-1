@@ -467,6 +467,7 @@ void CHIPCommand::ShutdownCommissioner(const CommissionerIdentity & key)
 CHIP_ERROR CHIPCommand::InitializeCommissioner(CommissionerIdentity & identity, chip::FabricId fabricId)
 {
     std::unique_ptr<ChipDeviceCommissioner> commissioner = std::make_unique<ChipDeviceCommissioner>();
+    commissioner->SetUdcListenPort(CHIP_UDC_PORT + static_cast<uint16_t>(fabricId));
     chip::Controller::SetupParams commissionerParams;
 
     ReturnLogErrorOnFailure(mCredIssuerCmds->SetupDeviceAttestation(commissionerParams, sTrustStore, sRevocationDelegate));
