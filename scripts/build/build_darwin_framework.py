@@ -20,7 +20,8 @@ from subprocess import PIPE, Popen
 
 
 def get_file_from_pigweed(name):
-    CHIP_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+    CHIP_ROOT = os.path.abspath(os.path.join(
+        os.path.dirname(__file__), '..', '..'))
     PIGWEED = os.path.join(CHIP_ROOT, ".environment/cipd/packages/pigweed")
 
     pattern = os.path.join(PIGWEED, '**', name)
@@ -91,7 +92,8 @@ def build_darwin_framework(args):
         'CHIP_IS_ASAN': args.asan,
         'CHIP_IS_BLE': args.ble,
         'CHIP_IS_CLANG': args.clang,
-        'CHIP_ENABLE_ENCODING_SENTINEL_ENUM_VALUES': args.enable_encoding_sentinel_enum_values
+        'CHIP_ENABLE_ENCODING_SENTINEL_ENUM_VALUES': args.enable_encoding_sentinel_enum_values,
+        'CHIP_USE_NETWORK_FRAMEWORK': args.use_network_framework
     }
     for option in options:
         command += ["{}={}".format(option, "YES" if options[option] else "NO")]
@@ -132,7 +134,8 @@ def build_darwin_framework(args):
     if args.compdb:
         cflags += ["-gen-cdb-fragment-path ", abs_path + '/compdb']
 
-    command += ["OTHER_CFLAGS=" + ' '.join(cflags), "OTHER_LDFLAGS=" + ' '.join(ldflags)]
+    command += ["OTHER_CFLAGS=" +
+                ' '.join(cflags), "OTHER_LDFLAGS=" + ' '.join(ldflags)]
     command_result = run_command(command)
     print("Build Framework Result: {}".format(command_result))
     exit(command_result)
@@ -174,8 +177,11 @@ if __name__ == "__main__":
     parser.add_argument('--asan', action=argparse.BooleanOptionalAction)
     parser.add_argument('--ble', action=argparse.BooleanOptionalAction)
     parser.add_argument('--clang', action=argparse.BooleanOptionalAction)
-    parser.add_argument('--enable-encoding-sentinel-enum-values', action=argparse.BooleanOptionalAction)
+    parser.add_argument('--enable-encoding-sentinel-enum-values',
+                        action=argparse.BooleanOptionalAction)
     parser.add_argument('--compdb', action=argparse.BooleanOptionalAction)
+    parser.add_argument('--use-network-framework',
+                        action=argparse.BooleanOptionalAction)
 
     args = parser.parse_args()
     build_darwin_framework(args)

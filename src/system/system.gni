@@ -23,6 +23,9 @@ declare_args() {
   # Use BSD/POSIX socket API.
   chip_system_config_use_sockets = current_os != "freertos"
 
+  # Use Network.framework API
+  chip_system_config_use_network_framework = false
+
   # Mutex implementation: posix, freertos, none.
   chip_system_config_locking = ""
 

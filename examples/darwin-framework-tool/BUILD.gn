@@ -46,6 +46,9 @@ declare_args() {
 
   # Enable automatic leak checks before the application exits
   enable_leak_checking = !is_asan && target_os == "mac"
+
+  # Use the Network.framework instead of POSIX sockets
+  use_network_framework = false
 }
 
 sdk = "macosx"
@@ -121,6 +124,12 @@ action("build-darwin-framework") {
     args += [ "--enable-encoding-sentinel-enum-values" ]
   } else {
     args += [ "--no-enable-encoding-sentinel-enum-values" ]
+  }
+
+  if (defined(use_network_framework) && use_network_framework) {
+    args += [ "--use-network-framework" ]
+  } else {
+    args += [ "--no-use-network-framework" ]
   }
 
   output_name = "Matter.framework"
