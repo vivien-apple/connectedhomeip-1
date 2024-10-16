@@ -67,10 +67,10 @@ CHIP_ERROR LayerImplSelect::Init()
     mHandleSelectThread = PTHREAD_NULL;
 #endif // CHIP_SYSTEM_CONFIG_POSIX_LOCKING
 
-#if !CHIP_SYSTEM_CONFIG_USE_LIBEV
+#if !CHIP_SYSTEM_CONFIG_USE_LIBEV && !CHIP_SYSTEM_CONFIG_USE_DISPATCH
     // Create an event to allow an arbitrary thread to wake the thread in the select loop.
     ReturnErrorOnFailure(mWakeEvent.Open(*this));
-#endif // !CHIP_SYSTEM_CONFIG_USE_LIBEV
+#endif // !CHIP_SYSTEM_CONFIG_USE_LIBEV && !CHIP_SYSTEM_CONFIG_USE_DISPATCH
 
     VerifyOrReturnError(mLayerState.SetInitialized(), CHIP_ERROR_INCORRECT_STATE);
     return CHIP_NO_ERROR;
@@ -116,16 +116,16 @@ void LayerImplSelect::Shutdown()
     mTimerPool.ReleaseAll();
 #endif // CHIP_SYSTEM_CONFIG_USE_DISPATCH/LIBEV
 
-#if !CHIP_SYSTEM_CONFIG_USE_LIBEV
+#if !CHIP_SYSTEM_CONFIG_USE_LIBEV && !CHIP_SYSTEM_CONFIG_USE_DISPATCH
     mWakeEvent.Close(*this);
-#endif // !CHIP_SYSTEM_CONFIG_USE_LIBEV
+#endif // !CHIP_SYSTEM_CONFIG_USE_LIBEV && !CHIP_SYSTEM_CONFIG_USE_DISPATCH
 
     mLayerState.ResetFromShuttingDown(); // Return to uninitialized state to permit re-initialization.
 }
 
 void LayerImplSelect::Signal()
 {
-#if CHIP_SYSTEM_CONFIG_USE_LIBEV
+#if CHIP_SYSTEM_CONFIG_USE_LIBEV || CHIP_SYSTEM_CONFIG_USE_DISPATCH
     ChipLogError(DeviceLayer, "Signal() should not be called in CHIP_SYSTEM_CONFIG_USE_LIBEV builds (might be ok in tests)");
 #else
     /*
@@ -151,7 +151,7 @@ void LayerImplSelect::Signal()
 
         ChipLogError(chipSystemLayer, "System wake event notify failed: %" CHIP_ERROR_FORMAT, status.Format());
     }
-#endif // !CHIP_SYSTEM_CONFIG_USE_LIBEV
+#endif // !CHIP_SYSTEM_CONFIG_USE_LIBEV && !CHIP_SYSTEM_CONFIG_USE_DISPATCH
 }
 
 CHIP_ERROR LayerImplSelect::StartTimer(Clock::Timeout delay, TimerCompleteCallback onComplete, void * appState)
@@ -188,6 +188,7 @@ CHIP_ERROR LayerImplSelect::StartTimer(Clock::Timeout delay, TimerCompleteCallba
         dispatch_resume(timerSource);
         return CHIP_NO_ERROR;
     }
+    return CHIP_ERROR_INTERNAL;
 #elif CHIP_SYSTEM_CONFIG_USE_LIBEV
     VerifyOrDie(mLibEvLoopP != nullptr);
     ev_timer_init(&timer->mLibEvTimer, &LayerImplSelect::HandleLibEvTimer, 1, 0);
@@ -205,7 +206,7 @@ CHIP_ERROR LayerImplSelect::StartTimer(Clock::Timeout delay, TimerCompleteCallba
     ev_timer_start(mLibEvLoopP, &timer->mLibEvTimer);
     return CHIP_NO_ERROR;
 #endif
-#if !CHIP_SYSTEM_CONFIG_USE_LIBEV
+#if !CHIP_SYSTEM_CONFIG_USE_LIBEV && !CHIP_SYSTEM_CONFIG_USE_DISPATCH
     // Note: dispatch based implementation needs this as fallback, but not LIBEV (and dead code is not allowed with -Werror)
     if (mTimerList.Add(timer) == timer)
     {
@@ -213,7 +214,7 @@ CHIP_ERROR LayerImplSelect::StartTimer(Clock::Timeout delay, TimerCompleteCallba
         Signal();
     }
     return CHIP_NO_ERROR;
-#endif // !CHIP_SYSTEM_CONFIG_USE_LIBEV
+#endif // !CHIP_SYSTEM_CONFIG_USE_LIBEV && !CHIP_SYSTEM_CONFIG_USE_DISPATCH
 }
 
 CHIP_ERROR LayerImplSelect::ExtendTimerTo(Clock::Timeout delay, TimerCompleteCallback onComplete, void * appState)
@@ -290,7 +291,7 @@ void LayerImplSelect::CancelTimer(TimerCompleteCallback onComplete, void * appSt
 #endif // CHIP_SYSTEM_CONFIG_USE_DISPATCH/LIBEV
 
     mTimerPool.Release(timer);
-#if !CHIP_SYSTEM_CONFIG_USE_LIBEV
+#if !CHIP_SYSTEM_CONFIG_USE_LIBEV && !CHIP_SYSTEM_CONFIG_USE_DISPATCH
     // LIBEV has no I/O wakeup thread, so must not call Signal()
     Signal();
 #endif
@@ -311,6 +312,7 @@ CHIP_ERROR LayerImplSelect::ScheduleWork(TimerCompleteCallback onComplete, void 
         });
         return CHIP_NO_ERROR;
     }
+    return CHIP_ERROR_INTERNAL;
 #elif CHIP_SYSTEM_CONFIG_USE_LIBEV
     // schedule as timer with no delay, but do NOT cancel previous timers with same onComplete/appState!
     TimerList::Node * timer = mTimerPool.Create(*this, SystemClock().GetMonotonicTimestamp(), onComplete, appState);
@@ -324,7 +326,7 @@ CHIP_ERROR LayerImplSelect::ScheduleWork(TimerCompleteCallback onComplete, void 
     ev_timer_start(mLibEvLoopP, &timer->mLibEvTimer);
     return CHIP_NO_ERROR;
 #endif // CHIP_SYSTEM_CONFIG_USE_DISPATCH/LIBEV
-#if !CHIP_SYSTEM_CONFIG_USE_LIBEV
+#if !CHIP_SYSTEM_CONFIG_USE_LIBEV && !CHIP_SYSTEM_CONFIG_USE_DISPATCH
     // Note: dispatch based implementation needs this as fallback, but not LIBEV (and dead code is not allowed with -Werror)
     // Ideally we would not use a timer here at all, but if we try to just
     // ScheduleLambda the lambda needs to capture the following:
@@ -360,7 +362,7 @@ CHIP_ERROR LayerImplSelect::ScheduleWork(TimerCompleteCallback onComplete, void 
         Signal();
     }
     return CHIP_NO_ERROR;
-#endif // !CHIP_SYSTEM_CONFIG_USE_LIBEV
+#endif // !CHIP_SYSTEM_CONFIG_USE_LIBEV && !CHIP_SYSTEM_CONFIG_USE_DISPATCH
 }
 
 CHIP_ERROR LayerImplSelect::StartWatchingSocket(int fd, SocketWatchToken * tokenOut)
