@@ -45,7 +45,10 @@ namespace internal {
 class Statistics
 {
 public:
-    Statistics() : mAllocated(0), mHighWaterMark(0) {}
+    Statistics() : mAllocated(0), mHighWaterMark(0)
+    {
+        printf("(%p) %s sizeof(%lu) alignof(%lu)\n", this, typeid(Statistics).name(), sizeof(Statistics), alignof(Statistics));
+    }
 
     size_t Allocated() const { return mAllocated; }
     size_t HighWaterMark() const { return mHighWaterMark; }
@@ -144,6 +147,11 @@ private:
 
 struct HeapObjectListNode
 {
+    HeapObjectListNode()
+    {
+        printf("(%p) %s sizeof(%lu) alignof(%lu)\n", this, typeid(HeapObjectListNode).name(), sizeof(HeapObjectListNode),
+               alignof(HeapObjectListNode));
+    }
     void Remove()
     {
         mNext->mPrev = mPrev;
@@ -157,7 +165,12 @@ struct HeapObjectListNode
 
 struct HeapObjectList : HeapObjectListNode
 {
-    HeapObjectList() { mNext = mPrev = this; }
+    HeapObjectList()
+    {
+        printf("(%p) %s sizeof(%lu) alignof(%lu)\n", this, typeid(HeapObjectList).name(), sizeof(HeapObjectList),
+               alignof(HeapObjectList));
+        mNext = mPrev = this;
+    }
 
     void Append(HeapObjectListNode * node)
     {
@@ -263,7 +276,12 @@ template <class T, size_t N>
 class BitMapObjectPool : public internal::StaticAllocatorBitmap
 {
 public:
-    BitMapObjectPool() : StaticAllocatorBitmap(mData.mMemory, mUsage, N, sizeof(T)) {}
+    BitMapObjectPool() : StaticAllocatorBitmap(mData.mMemory, mUsage, N, sizeof(T))
+    {
+        printf("(%p) %s (N(%lu) * sizeof(%lu)) = %lu            alignof(%lu)\n", this, typeid(T).name(), N, sizeof(T),
+               N * sizeof(T), alignof(T));
+        printf("=====================\n");
+    }
     ~BitMapObjectPool() { VerifyOrDieWithObject(Allocated() == 0, this); }
 
     BitmapActiveObjectIterator<T> begin() { return BitmapActiveObjectIterator<T>(this, FirstActiveIndex()); }
@@ -381,7 +399,11 @@ template <class T>
 class HeapObjectPool : public internal::Statistics, public HeapObjectPoolExitHandling
 {
 public:
-    HeapObjectPool() {}
+    HeapObjectPool()
+    {
+        printf("(%p) %s sizeof(%lu) alignof(%lu)\n", this, typeid(T).name(), sizeof(T), alignof(T));
+        printf("=====================\n");
+    }
     ~HeapObjectPool()
     {
 #ifndef __SANITIZE_ADDRESS__

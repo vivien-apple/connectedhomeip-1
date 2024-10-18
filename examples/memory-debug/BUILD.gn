@@ -1,0 +1,167 @@
+# Copyright (c) 2020 Project CHIP Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//build_overrides/build.gni")
+import("//build_overrides/chip.gni")
+
+import("${chip_root}/config/standalone/args.gni")
+import("${chip_root}/build/chip/tools.gni")
+import("${chip_root}/build/config/mac/mac_sdk.gni")
+import("${chip_root}/src/lib/core/core.gni")
+
+assert(chip_build_tools)
+
+config("config-success") {
+  include_dirs = [
+    ".",
+    "${chip_root}/src/lib",
+  ]
+}
+
+executable("memory-debug-success") {
+  sources = [ "main-success.mm" ]
+
+  public_configs = [ ":config-success" ]
+
+  deps = [
+    "${chip_root}/src/controller/data_model",
+    "${chip_root}/src/lib",
+    "${chip_root}/src/platform/logging:stdio",
+  ]
+
+  output_dir = root_out_dir
+}
+
+output_sdk_type = "Debug"
+
+action("build-memory-debug-failure") {
+  script = "${chip_root}/scripts/build/build_darwin_framework.py"
+
+  inputs = [
+    "${chip_root}/src/darwin/Framework/CHIP",
+    "${chip_root}/src/darwin/Framework/CHIP/zap-generated",
+    "${chip_root}/src/darwin/Framework/Matter.xcodeproj",
+  ]
+
+  args = [
+    "--project_path",
+    rebase_path("${chip_root}/src/darwin/Framework/Matter.xcodeproj",
+                root_build_dir),
+    "--out_path",
+    "macos_framework_output",
+    "--target",
+    "Matter Framework",
+    "--log_path",
+    rebase_path("${root_build_dir}/darwin_framework_build.log", root_build_dir),
+    "--target_arch",
+    mac_target_arch,
+  ]
+
+  output_name = "Matter.framework"
+  outputs = [
+    "${root_out_dir}/macos_framework_output/Build/Products/${output_sdk_type}/${output_name}",
+    "${root_out_dir}/macos_framework_output/Build/Intermediates.noindex/Matter.build/${output_sdk_type}/Matter.build/out/gen/include",
+    "${root_build_dir}/darwin_framework_build.log",
+    "${root_out_dir}/macos_framework_output/ModuleCache.noindex/",
+    "${root_out_dir}/macos_framework_output/Logs",
+    "${root_out_dir}/macos_framework_output/Index",
+    "${root_out_dir}/macos_framework_output/Build",
+    "${root_out_dir}/macos_framework_output/Build/Intermediates.noindex/Matter.build/${output_sdk_type}/Matter.build/out/lib/libCHIP.a",
+  ]
+}
+
+config("config-failure") {
+  include_dirs = [
+    ".",
+    "include",
+    "${chip_root}/examples/common",
+    "${chip_root}/examples/darwin-framework-tool/commands/common",
+    "${chip_root}/zzz_generated/darwin-framework-tool",
+    "${chip_root}/zzz_generated/controller-clusters",
+    "${chip_root}/examples/chip-tool",
+    "${chip_root}/zzz_generated/chip-tool",
+    "${root_out_dir}/macos_framework_output/Build/Products/${output_sdk_type}/",
+  ]
+
+  framework_dirs = [
+    "${root_out_dir}/macos_framework_output/Build/Products/${output_sdk_type}/",
+  ]
+
+  defines = [
+    "CHIP_ADDRESS_RESOLVE_IMPL_INCLUDE_HEADER=<lib/address_resolve/AddressResolve_DefaultImpl.h>",
+    # Disable availability annotations in Matter.framework headers because we
+    # are not building against a system Matter.framework here anyway.
+    "MTR_NO_AVAILABILITY=1",
+  ]
+
+  cflags = [
+    "-Wconversion",
+    "-fobjc-arc",
+  ]
+}
+
+executable("memory-debug-failure") {
+  sources = [
+    "main-failure.mm",
+  ]
+
+  deps = [
+    ":build-memory-debug-failure",
+  ]
+
+  ldflags = [
+    "-rpath",
+    "@executable_path/macos_framework_output/Build/Products/${output_sdk_type}/",
+  ]
+
+  frameworks = [
+    "Matter.framework",
+    "Security.framework",
+  ]
+
+  include_dirs = [
+    "${chip_root}/config/standalone/",
+    "${chip_root}/src/",
+    "${chip_root}/src/include/",
+    "${root_gen_dir}/include",
+    "${root_out_dir}/macos_framework_output/Build/Intermediates.noindex/Matter.build/${output_sdk_type}/Matter.build/out/gen/include",
+  ]
+
+  defines = [
+    "CHIP_HAVE_CONFIG_H=1",
+    "CHIP_SYSTEM_CONFIG_USE_SOCKETS=1",
+  ]
+
+  frameworks += [
+    "CoreFoundation.framework",
+    "Foundation.framework",
+    "CoreBluetooth.framework",
+    "Network.framework",
+  ]
+
+  # Other SDKs are linked statically to Matter.framework but the macosx SDK is linked dynamically but needs some symbols that are
+  # not exposed by the dylib.
+  libs = [ "${root_out_dir}/macos_framework_output/Build/Intermediates.noindex/Matter.build/${output_sdk_type}/Matter.build/out/lib/libCHIP.a" ]
+
+  public_configs = [ ":config-failure" ]
+
+  output_dir = root_out_dir
+}
+
+group("default") {
+  deps = [
+    ":memory-debug-success",
+    ":memory-debug-failure",
+  ]
+}

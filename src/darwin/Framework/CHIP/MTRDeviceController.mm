@@ -153,6 +153,11 @@ using namespace chip::Tracing::DarwinFramework;
     return &_underlyingDeviceMapLock;
 }
 
++ (void)hack
+{
+    chip::app::InteractionModelEngine::GetInstance()->RegisterReadHandlerAppCallback(nullptr);
+}
+
 - (instancetype)initForSubclasses:(BOOL)startSuspended
 {
     if (self = [super init]) {
@@ -171,6 +176,7 @@ using namespace chip::Tracing::DarwinFramework;
 
 - (nullable MTRDeviceController *)initWithParameters:(MTRDeviceControllerAbstractParameters *)parameters error:(NSError * __autoreleasing *)error
 {
+
     // Dispatch to the right non-abstract implementation.
     if ([parameters isKindOfClass:MTRXPCDeviceControllerParameters.class]) {
         MTR_LOG("Starting up with XPC Device Controller Parameters: %@", parameters);

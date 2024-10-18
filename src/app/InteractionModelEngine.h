@@ -218,7 +218,9 @@ public:
      */
     void RegisterReadHandlerAppCallback(ReadHandler::ApplicationCallback * mpApplicationCallback)
     {
+        ChipLogError(chipTool, "==== %s pointer before assignment: %p", __func__, mpReadHandlerApplicationCallback);
         mpReadHandlerApplicationCallback = mpApplicationCallback;
+        ChipLogError(chipTool, "==== %s pointer after assignment: %p", __func__, mpReadHandlerApplicationCallback);
     }
     void UnregisterReadHandlerAppCallback() { mpReadHandlerApplicationCallback = nullptr; }
 

@@ -46,6 +46,7 @@ MTR_AVAILABLE(ios(16.1), macos(13.0), watchos(9.1), tvos(16.1))
  */
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;
++ (void)hack;
 
 /**
  * Initialize a device controller with the provided parameters.  This will:
