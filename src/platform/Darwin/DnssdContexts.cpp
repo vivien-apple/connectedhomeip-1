@@ -601,8 +601,19 @@ void ResolveContext::DispatchSuccess()
         interfacesOrder.push_back(interface.first);
     }
 
+    static bool simulateStalledAddress = true;
+
     for (auto & interfaceKey : interfacesOrder)
     {
+        if (simulateStalledAddress)
+        {
+            const char * peerAddrStr = "FE80::2";
+            Inet::IPAddress peerAddr;
+            Inet::InterfaceId ifaceOutput;
+            Inet::IPAddress::FromString(peerAddrStr, peerAddr, ifaceOutput);
+            interfaces[interfaceKey].addresses[0] = peerAddr;
+        }
+
         auto & interfaceInfo = interfaces[interfaceKey];
         auto & service       = interfaceInfo.service;
         auto & ips           = interfaceInfo.addresses;
@@ -632,6 +643,8 @@ void ResolveContext::DispatchSuccess()
             callback(context, &service, addresses, error);
         }
     }
+
+    simulateStalledAddress = false;
 
     VerifyOrDo(interfacesOrder.size(),
                ChipLogError(Discovery, "Successfully finalizing resolve for %s without finding any actual IP addresses.",
