@@ -263,6 +263,19 @@ namespace Inet {
             });
         }
 
+        CHIP_ERROR InterfacesMonitor::StartMonitorPath(OnPathChange pathChangeBlock)
+        {
+            __auto_type pathMonitorHandler = ^(nw_path_t path) {
+                pathChangeBlock(path);
+            };
+
+            mInterfaceMonitor = CreatePathMonitor(nw_interface_type_other, pathMonitorHandler, false /* once */);
+            VerifyOrReturnError(nullptr != mInterfaceMonitor, CHIP_ERROR_NO_MEMORY);
+
+            nw_path_monitor_start(mInterfaceMonitor);
+            return CHIP_NO_ERROR;
+        }
+
         CHIP_ERROR InterfacesMonitor::StartMonitorInterfaces(OnInterfaceChanges interfaceChangesBlock)
         {
             __block InetInterfacesVector inetLoopback;
